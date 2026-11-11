@@ -1662,7 +1662,7 @@ function openArticle(id) {
                 <span class="badge badge-multi">${currentLang === 'ar' ? 'متعدد المصادر' : 'Multi-source'}</span>
             </div>
             <h1>${a.title}</h1>
-            <p class="lead">${a.summary}</p>
+            <p class="lead">${a.summary.replace(/\n/g, '<br>')}</p>
             <div class="content">
                 <p>${currentLang === 'ar' ? 'هذا الخبر تمت معالجته آلياً من المصدر المذكور أعلاه. تعرض المنصة النص الأصلي للخبر مع رابط المصدر، دون تعديل في الأرقام أو التصريحات. يتم تحديث الخبر تلقائياً عند ورود معلومات جديدة من مصادر موثوقة.' : 'This article was automatically processed from the source above. The platform presents the original text with a source link, without altering figures or statements. The article is automatically updated when new information arrives from trusted sources.'}</p>
                 <p>${currentLang === 'ar' ? 'للاطلاع على التفاصيل الكاملة، يُرجى الرجوع إلى المصدر الأصلي عبر الرابط في الأعلى.' : 'For full details, please refer to the original source via the link above.'}</p>
