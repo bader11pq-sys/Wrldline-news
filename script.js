@@ -183,17 +183,6 @@ function renderNewsGrid() {
     </div>`).join('');
 }
 
-function initMarkets() {
-  // أسعار حقيقية ومحدثة (بناءً على بيانات 11 نوفمبر 2026)
-  const markets = [
-    { name: 'خام برنت', price: 92.01, change: 0.6 },
-    { name: 'الذهب', price: 4043.62, change: 0.3 },
-    { name: 'الفضة', price: 52.95, change: 2.22 },
-    { name: 'بيتكوين', price: 73866.65, change: 1.2 },
-    { name: 'S&P 500', price: 7520.93, change: -0.38 },
-    { name: 'النفط الخام', price: 86.26, change: -0.19 }
-  ];
-
   const renderMarkets = () => {
     // إنشاء HTML للعناصر
     const marketHTML = markets.map(m => {
