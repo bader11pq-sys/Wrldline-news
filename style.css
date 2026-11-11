@@ -341,3 +341,30 @@ input { font-family: inherit; outline: none; border: none; background: none; }
   animation: marquee 30s linear infinite;
   width: max-content; /* هذا السطر مهم لضمان عدم توقف الحركة */
 }
+/* زر تحميل المزيد */
+.btn-load-more {
+    background: var(--bg-surface);
+    color: var(--brand-main);
+    border: 2px solid var(--brand-main);
+    padding: 12px 32px;
+    border-radius: 30px;
+    font-size: 1rem;
+    font-weight: 700;
+    font-family: inherit;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+.btn-load-more:hover {
+    background: var(--brand-main);
+    color: #fff;
+    transform: translateY(-3px);
+    box-shadow: 0 6px 15px rgba(153, 27, 27, 0.3);
+}
+.btn-load-more:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+    background: var(--bg-surface);
+    color: var(--text-muted);
+    border-color: var(--text-muted);
+}
