@@ -228,13 +228,14 @@ function initMarkets() {
 }
 
 function initMarkets() {
-  // أسعار حقيقية ومحدثة
-  const markets = [
+  // القائمة الأولية للأسعار
+  let markets = [
     { name: 'خام برنت', price: 92.01, change: 0.6 },
     { name: 'الذهب', price: 4043.62, change: 0.3 },
     { name: 'الفضة', price: 52.95, change: 2.22 },
     { name: 'بيتكوين', price: 73866.65, change: 1.2 },
     { name: 'S&P 500', price: 7520.93, change: -0.38 },
+    { name: 'ناسداك', price: 16000.50, change: 0.85 },
     { name: 'النفط الخام', price: 86.26, change: -0.19 }
   ];
 
@@ -251,6 +252,45 @@ function initMarkets() {
         </div>
       `;
     }).join('');
+
+    // مضاعفة العناصر لضمان حركة مستمرة (Marquee)
+    document.getElementById('marketsTicker').innerHTML = marketHTML + marketHTML;
+  };
+
+  renderMarkets();
+
+  // دالة لجلب سعر البيتكوين الحقيقي من Binance
+  const fetchCrypto = async () => {
+    try {
+      const res = await fetch('https://api.binance.com/api/v3/ticker/24hr?symbol=BTCUSDT');
+      const data = await res.json();
+      const btcIndex = markets.findIndex(m => m.name === 'بيتكوين');
+      if (btcIndex !== -1) {
+        markets[btcIndex].price = parseFloat(data.lastPrice);
+        markets[btcIndex].change = parseFloat(data.priceChangePercent);
+      }
+    } catch (e) {
+      console.log("فشل جلب بيانات البيتكوين");
+    }
+  };
+
+  // تحديث الأسعار كل 5 ثوانٍ
+  setInterval(() => {
+    // 1. جلب البيتكوين الحقيقي
+    fetchCrypto();
+
+    // 2. محاكاة حركة لأسعار الذهب والنفط والأسهم (لأن APIs الحقيقية تتطلب اشتراكات مدفوعة)
+    markets.forEach(m => {
+      if (m.name !== 'بيتكوين') {
+        const movement = (Math.random() - 0.5) * 0.4; // حركة عشوائية بسيطة
+        m.price += m.price * (movement / 100);
+        m.change += movement;
+      }
+    });
+
+    renderMarkets();
+  }, 5000); // التحديث كل 5 ثواني
+}
 
     // مضاعفة العناصر لضمان عدم توقف الشريط
     document.getElementById('marketsTicker').innerHTML = marketHTML + marketHTML;
