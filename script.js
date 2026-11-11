@@ -361,3 +361,31 @@ window.onscroll = function() {
 function scrollToTop() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
+// دالة تحميل المزيد
+function loadMoreNews() {
+    const btn = document.getElementById('loadMoreBtn');
+    btn.innerText = "جاري التحميل...";
+    btn.disabled = true;
+
+    // محاكاة تأخير بسيط لإعطاء إحساس بالتحميل
+    setTimeout(() => {
+        state.visibleCount += 10;
+        renderNewsGrid();
+        updateLoadMoreButton();
+        btn.innerText = "تحميل المزيد من الأخبار ↓";
+        btn.disabled = false;
+    }, 600);
+}
+
+// دالة إخفاء الزر إذا انتهت الأخبار
+function updateLoadMoreButton() {
+    const container = document.getElementById('loadMoreContainer');
+    if (!container) return;
+
+    // 4 هو عدد الأخبار في القسم العلوي (1 رئيسي + 3 جانبي)
+    if (state.visibleCount >= state.displayedArticles.length - 4) {
+        container.style.display = 'none';
+    } else {
+        container.style.display = 'block';
+    }
+}
