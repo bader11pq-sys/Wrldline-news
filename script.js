@@ -355,11 +355,25 @@ function handleSearch(query) {
     </div>`).join('');
 }
 
-function toggleTheme() {
-  const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-  const newTheme = isDark ? 'light' : 'dark';
-  document.documentElement.setAttribute('data-theme', newTheme); localStorage.setItem('theme', newTheme); updateThemeIcon(!isDark);
+function toggleLang() {
+    // تغيير اللغة
+    state.lang = state.lang === 'ar' ? 'en' : 'ar';
+    
+    // تغيير اتجاه الصفحة
+    document.documentElement.lang = state.lang;
+    document.documentElement.dir = state.lang === 'ar' ? 'rtl' : 'ltr';
+    
+    // تغيير نص الزر
+    const btn = document.getElementById('langBtn');
+    btn.innerText = state.lang === 'ar' ? 'English' : 'عربي';
+
+    // تغيير خطوط العناوين حسب اللغة
+    document.body.style.fontFamily = state.lang === 'ar' ? 'var(--font-body)' : 'var(--font-serif)';
+
+    // إعادة جلب الأخبار باللغة الجديدة
+    fetchLiveNews();
 }
+
 function updateThemeIcon(isDark) {
   const icon = document.getElementById('themeBtn').firstElementChild;
   if (isDark) { icon.innerHTML = '<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/>'; }
