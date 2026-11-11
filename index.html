@@ -1627,8 +1627,11 @@ function openArticle(id) {
                 <span class="badge badge-multi">${currentLang === 'ar' ? 'متعدد المصادر' : 'Multi-source'}</span>
             </div>
             <h1>${a.title}</h1>
-            <p class="lead">${a.summary.replace(/\n/g, '<br>')}</p>
-        
+            <p class="lead">${a.summary ? a.summary.replace(/\n/g, '<br>') : ''}</p>
+            <div class="meta-grid">
+                <div class="meta-cell">
+                    <div class="k">${currentLang === 'ar' ? 'المصدر' : 'Source'}</div>
+                    <div class="v">${a.src}</div>
                 </div>
                 <div class="meta-cell">
                     <div class="k">${currentLang === 'ar' ? 'الوقت' : 'Time'}</div>
