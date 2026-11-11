@@ -38,12 +38,11 @@
       </div>
     </div>
     <nav class="nav-links">
-      <a class="nav-link active">الرئيسية</a>
-      <a class="nav-link">عاجل</a>
-      <a class="nav-link">سياسة</a>
-      <a class="nav-link">اقتصاد</a>
-      <a class="nav-link">أمن ودفاع</a>
-      <a class="nav-link">فيديو</a>
+      <a class="nav-link active" onclick="filterCategory('all', this)">الرئيسية</a>
+      <a class="nav-link" onclick="filterCategory('politics', this)">سياسة</a>
+      <a class="nav-link" onclick="filterCategory('economy', this)">اقتصاد</a>
+      <a class="nav-link" onclick="filterCategory('security', this)">أمن ودفاع</a>
+      <a class="nav-link" onclick="filterCategory('world', this)">العالم</a>
     </nav>
     <div class="header-actions">
       <button class="icon-btn" onclick="openSearch()">
