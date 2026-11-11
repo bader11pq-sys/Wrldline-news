@@ -125,22 +125,106 @@
     }
 
     document.getElementById('newsForm').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const btn = document.getElementById('submitBtn');
-        btn.disabled = true;
-        btn.innerText = "جاري الرفع والنشر...";
+    e.preventDefault();
+    const btn = document.getElementById('submitBtn');
+    btn.disabled = true;
+    btn.innerText = "جاري الرفع والنشر...";
 
-        const title = document.getElementById('title').value;
-        const summary = document.getElementById('summary').value;
-        const country = document.getElementById('country').value;
-        const category = document.getElementById('category').value;
-        const source_name = document.getElementById('source_name').value;
-        const fileInput = document.getElementById('mediaFile');
+    const title = document.getElementById('title').value;
+    const summary = document.getElementById('summary').value;
+    const category = document.getElementById('category').value;
+    const country = document.getElementById('country').value;
+    const source_name = document.getElementById('source_name').value;
+    const fileInput = document.getElementById('mediaFile');
+    
+    let mediaUrl = null;
+    let mediaType = 'image';
+
+    try {
+        // 1. التحقق من الملف ورفعه إذا تم اختياره
+        if (fileInput.files.length > 0) {
+            const file = fileInput.files[0];
+            
+            // فحص حجم الملف (الحد الأقصى 5 ميجابايت للصور، 30 للفيديو)
+            const maxSize = file.type.startsWith('video/') ? 30 * 1024 * 1024 : 5 * 1024 * 1024;
+            if (file.size > maxSize) {
+                throw new Error("حجم الملف كبير جداً. الحد الأقصى هو 5 ميجا للصور و 30 ميجا للفيديو.");
+            }
+
+            const fileExt = file.name.split('.').pop();
+            const fileName = `${Date.now()}.${fileExt}`;
+            const filePath = `uploads/${fileName}`;
+
+            if (file.type.startsWith('video/')) {
+                mediaType = 'video';
+            }
+
+            // الرفع إلى Supabase Storage
+            const { data: uploadData, error: uploadError } = await supabaseClient.storage
+                .from('news-media')
+                .upload(filePath, file);
+
+            if (uploadError) {
+                throw new Error("فشل رفع الملف: " + uploadError.message);
+            }
+
+            // الحصول على الرابط العام
+            const { data: urlData } = supabaseClient.storage
+                .from('news-media')
+                .getPublicUrl(filePath);
+            
+            mediaUrl = urlData.publicUrl;
+        }
+
+        // 2. تجهيز البيانات وإرسالها
+        const articleData = {
+            url: 'news-' + Date.now(),
+            title: title,
+            summary: summary,
+            image_url: mediaUrl,
+            media_type: mediaType,
+            category: category,
+            country: country || null,
+            source_name: source_name,
+            source_url: '#',
+            lang: 'ar',
+            verification: 'confirmed',
+            published_at: new Date().toISOString()
+        };
+
+        // التحقق من أن البيانات ليست فارغة قبل الإرسال
+        if (!articleData.title || !articleData.summary) {
+            throw new Error("العنوان أو النص فارغ. يرجى تعبئة الحقول.");
+        }
+
+        const res = await fetch(`${SUPABASE_URL}/rest/v1/articles`, {
+            method: 'POST',
+            headers: {
+                apikey: SUPABASE_ANON_KEY,
+                Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+                'Content-Type': 'application/json',
+                'Prefer': 'return=minimal'
+            },
+            body: JSON.stringify(articleData)
+        });
+
+        if (!res.ok) {
+            const errorData = await res.json();
+            throw new Error("فشل حفظ الخبر: " + (errorData.message || "خطأ غير معروف"));
+        }
+
+        showToast("تم نشر الخبر بنجاح!");
+        document.getElementById('newsForm').reset();
         
-        let mediaUrl = null;
-        let mediaType = 'image'; // Default
+    } catch (error) {
+        console.error(error);
+        showToast("حدث خطأ: " + error.message, true);
+    } finally {
+        btn.disabled = false;
+        btn.innerText = "نشر الخبر الآن 🚀";
+    }
+});
 
-        try {
             // 1. رفع الملف إذا تم اختياره
             if (fileInput.files.length > 0) {
                 const file = fileInput.files[0];
