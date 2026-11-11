@@ -228,30 +228,71 @@ function initMarkets() {
 }
 
 function initMarkets() {
-  // القائمة الأولية للأسعار
-  let markets = [
-    { name: 'خام برنت', price: 92.01, change: 0.6 },
-    { name: 'الذهب', price: 4043.62, change: 0.3 },
-    { name: 'الفضة', price: 52.95, change: 2.22 },
-    { name: 'بيتكوين', price: 73866.65, change: 1.2 },
-    { name: 'S&P 500', price: 7520.93, change: -0.38 },
-    { name: 'ناسداك', price: 16000.50, change: 0.85 },
-    { name: 'النفط الخام', price: 86.26, change: -0.19 }
+  // قائمة الرموز التي نريد جلبها مع أسمائها بالعربية
+  const symbolsMap = [
+    { sym: 'XAUUSD', name: 'الذهب' },
+    { sym: 'UKOIL', name: 'خام برنت' },
+    { sym: 'USOIL', name: 'النفط الخام' },
+    { sym: 'XAGUSD', name: 'الفضة' },
+    { sym: 'BTCUSD', name: 'بيتكوين' },
+    { sym: 'EURUSD', name: 'يورو/دولار' },
+    { sym: 'US500', name: 'S&P 500' },
+    { sym: 'AAPL', name: 'أبل' },
+    { sym: 'TSLA', name: 'تسلا' }
   ];
 
-  const renderMarkets = () => {
-    const marketHTML = markets.map(m => {
-      const isUp = m.change >= 0;
-      return `
-        <div class="market-item">
-          <span class="market-name">${m.name}</span>
-          <span class="market-price">${m.price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
-          <span class="market-change ${isUp ? 'market-up' : 'market-down'}">
-            ${isUp ? '▲' : '▼'} ${Math.abs(m.change).toFixed(2)}%
-          </span>
-        </div>
-      `;
-    }).join('');
+  // دالة لجلب الأسعار من Biquote
+  async function fetchMarketData() {
+    try {
+      // تجهيز رابط الطلب
+      const query = symbolsMap.map(s => `symbols=${s.sym}`).join('&');
+      const response = await fetch(`https://biquote.io/api/latest?${query}`);
+      
+      if (!response.ok) throw new Error("فشل الاتصال بمزود الأسعار");
+      
+      const data = await response.json();
+
+      // تحويل البيانات لتتناسب مع التصميم
+      const marketHTML = symbolsMap.map(item => {
+        const quote = data[item.sym];
+        
+        // إذا لم يتوفر السعر، نتجاهل هذا العنصر
+        if (!quote || !quote.mid) return '';
+
+        const price = quote.mid;
+        const change = quote.dayDiffPercent || 0;
+        const isUp = change >= 0;
+
+        // تنسيق السعر (إذا كان أقل من 10 نضع 4 أرقام عشرية، وإلا نضع 2)
+        const priceFormat = price < 10 
+          ? price.toLocaleString('en-US', { minimumFractionDigits: 4, maximumFractionDigits: 4 })
+          : price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+        return `
+          <div class="market-item">
+            <span class="market-name">${item.name}</span>
+            <span class="market-price">${priceFormat}</span>
+            <span class="market-change ${isUp ? 'market-up' : 'market-down'}">
+              ${isUp ? '▲' : '▼'} ${Math.abs(change).toFixed(2)}%
+            </span>
+          </div>
+        `;
+      }).join('');
+
+      // مضاعفة العناصر لضمان حركة مستمرة دون انقطاع
+      document.getElementById('marketsTicker').innerHTML = marketHTML + marketHTML;
+
+    } catch (error) {
+      console.error("خطأ في جلب الأسعار:", error);
+    }
+  }
+
+  // التشغيل الأولي فور تحميل الصفحة
+  fetchMarketData();
+
+  // تحديث الأسعار تلقائياً كل 15 ثانية (لتجنب إرهاق الخادم)
+  setInterval(fetchMarketData, 15000);
+}
 
     // مضاعفة العناصر لضمان حركة مستمرة (Marquee)
     document.getElementById('marketsTicker').innerHTML = marketHTML + marketHTML;
