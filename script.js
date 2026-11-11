@@ -1,7 +1,7 @@
 const SUPABASE_URL = "https://vmaxbnogmmfyrcucapnq.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_D3c88u75_LcEN460Y3Jcpw__EfqUnBx";
 
-let state = { lang: 'ar', articles: [], displayedArticles: [], currentCategory: 'all', breakingQueue: [], breakingInterval: null, isBreakingActive: false };
+let state = { lang: 'ar', articles: [], displayedArticles: [], currentCategory: 'all', visibleCount: 10, breakingQueue: [], breakingInterval: null, isBreakingActive: false };
 
 const mockArticles = [
   { id: 'm1', cat: 'politics', title: 'قمة عالمية في جنيف لبحث أزمات المناخ والطاقة', summary: 'انطلقت اليوم أعمال القمة الدولية في جنيف بمشاركة أكثر من 80 دولة...', img: 'https://images.unsplash.com/photo-1590076214307-5f9b9c7b7b4b?q=80&w=1200', media_type: 'image', src: 'الغيب', time: '10:30', date: '2026-11-11' },
