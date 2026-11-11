@@ -54,6 +54,7 @@ async function fetchLiveNews() {
 
 function filterCategory(category, element) {
   state.currentCategory = category;
+  state.visibleCount = 10; // إعادة تعيين عدد الأخبار المعروضة
   
   if (element) {
     document.querySelectorAll('.nav-link').forEach(link => link.classList.remove('active'));
