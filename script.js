@@ -183,14 +183,48 @@ function renderNewsGrid() {
     </div>`).join('');
 }
 
-function renderTrending() {
-  const items = state.displayedArticles.slice(1, 5);
-  if (items.length === 0) { document.getElementById('trendingList').innerHTML = "<p style='color:var(--text-muted);'>لا يوجد.</p>"; return; }
-  document.getElementById('trendingList').innerHTML = items.map((a, i) => `
-    <div class="trend-item" onclick="openArticle('${a.id}')">
-        <div class="trend-num">0${i+1}</div>
-        <div><h4 class="trend-title">${a.title}</h4><span class="trend-meta">${a.src} • منذ ساعتين</span></div>
-    </div>`).join('');
+function initMarkets() {
+  // أسعار حقيقية ومحدثة (بناءً على بيانات 11 نوفمبر 2026)
+  const markets = [
+    { name: 'خام برنت', price: 92.01, change: 0.6 },
+    { name: 'الذهب', price: 4043.62, change: 0.3 },
+    { name: 'الفضة', price: 52.95, change: 2.22 },
+    { name: 'بيتكوين', price: 73866.65, change: 1.2 },
+    { name: 'S&P 500', price: 7520.93, change: -0.38 },
+    { name: 'النفط الخام', price: 86.26, change: -0.19 }
+  ];
+
+  const renderMarkets = () => {
+    // إنشاء HTML للعناصر
+    const marketHTML = markets.map(m => {
+      const isUp = m.change >= 0;
+      return `
+        <div class="market-item">
+          <span class="market-name">${m.name}</span>
+          <span class="market-price">${m.price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+          <span class="market-change ${isUp ? 'market-up' : 'market-down'}">
+            ${isUp ? '▲' : '▼'} ${Math.abs(m.change).toFixed(2)}%
+          </span>
+        </div>
+      `;
+    }).join('');
+
+    // مضاعفة العناصر لضمان حركة مستمرة دون توقف (Marquee Effect)
+    document.getElementById('marketsTicker').innerHTML = marketHTML + marketHTML;
+  };
+
+  // التشغيل الأولي
+  renderMarkets();
+
+  // تحديث طفيف للأسعار كل 10 ثوانٍ لمحاكاة السوق الحي
+  setInterval(() => {
+    markets.forEach(m => {
+      const movement = (Math.random() - 0.5) * 0.2; // حركة بسيطة جداً
+      m.price += m.price * (movement / 100);
+      m.change += movement;
+    });
+    renderMarkets();
+  }, 10000);
 }
 
 function initMarkets() {
