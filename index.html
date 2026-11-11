@@ -551,15 +551,13 @@ let state = {
   currentBreakingIndex: 0
 };
 
-// Mock Data (Fallback)
+// Mock Data (احتياطي في حال تعطل قاعدة البيانات)
 const mockArticles = [
   { id: 'm1', cat: 'politics', title: 'قمة عالمية في جنيف لبحث أزمات المناخ والطاقة', summary: 'انطلقت اليوم أعمال القمة الدولية في جنيف بمشاركة أكثر من 80 دولة لمناقشة سبل مواجهة التغير المناخي وأمن الطاقة العالمي. وتأتي هذه القمة في وقت حرج يشهد توترات جيوسياسية تؤثر على سلاسل الإمداد...', img: 'https://images.unsplash.com/photo-1590076214307-5f9b9c7b7b4b?q=80&w=1200&auto=format&fit=crop', src: 'الغيب', time: '10:30', date: '2026-11-11' },
   { id: 'm2', cat: 'economy', title: 'الأسواق العالمية تتعافى وسط تفاؤل بوقف الحروب التجارية', summary: 'سجلت مؤشرات الأسهم العالمية ارتفاعات ملحوظة في تعاملات اليوم، بعد تصريحات إيجابية من قادة الاقتصاد الكبرى بشأن التوصل لاتفاقيات تجارية جديدة تعيد الاستقرار لأسواق المال...', img: 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?q=80&w=1200&auto=format&fit=crop', src: 'بلومبرغ', time: '09:15', date: '2026-11-11' },
   { id: 'm3', cat: 'security', title: 'تطورات ميدانية متسارعة في شرق أوروبا والحلفاء يعقدون اجتماعاً طارئاً', summary: 'تشهد المنطقة تطورات عسكرية متلاحقة، مما دفع مجلس الأمن الدولي وحلف الناتو لعقد جلسات مشتركة لبحث سبل احتواء الأزمة ومنع انزلاقها نحو صراع أوسع...', img: 'https://images.unsplash.com/photo-1580979832802-42a37a2338e8?q=80&w=1200&auto=format&fit=crop', src: 'رويترز', time: '08:00', date: '2026-11-11' },
   { id: 'm4', cat: 'tech', title: 'إطلاق الجيل الجديد من الرقائق الذكية المخصصة للذكاء الاصطناعي', summary: 'كشفت كبرى شركات التكنولوجيا عن رقائق جديدة توفر سرعة معالجة تفوق مثيلاتها بثلاثة أضعاف، مما يفتح آفاقاً جديدة لتطبيقات الذكاء الاصطناعي في مختلف القطاعات الحيوية...', img: 'https://images.unsplash.com/photo-1518770660439-4636190af475?q=80&w=1200&auto=format&fit=crop', src: 'تك كرانش', time: '07:45', date: '2026-11-11' }
 ];
-
-
 
 // ==========================================
 // 2. INITIALIZATION
@@ -576,9 +574,10 @@ function initUI() {
     document.documentElement.setAttribute('data-theme', 'dark');
     updateThemeIcon(true);
   }
-  
-  // Setup initial breaking news queue
+  // جلب العاجل التلقائي
   fetchAutomatedBreakingNews();
+}
+
 // ==========================================
 // 3. DATA FETCHING (Supabase)
 // ==========================================
@@ -590,35 +589,101 @@ async function fetchLiveNews() {
     if (!res.ok) throw new Error("DB Error");
     
     const data = await res.json();
-    const liveArticles = data.map(a => ({
-      id: a.id,
-      cat: a.category || 'world',
-      title: a.title,
-      summary: a.summary || '',
-      img: a.image_url || `https://picsum.photos/seed/${a.id}/1200/800`,
-      src: a.source_name || 'الغيب',
-      time: new Date(a.published_at).toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' }),
-      date: a.published_at.split('T')[0]
-    }));
-
-    // Merge mock data if DB has fewer than 5 items
-    state.articles = liveArticles.length >= 5 ? liveArticles : [...liveArticles, ...mockArticles];
     
-    renderHero();
-    renderNewsGrid();
-    renderTrending();
-    
+    if (data && data.length > 0) {
+      state.articles = data.map(a => ({
+        id: a.id,
+        cat: a.category || 'world',
+        title: a.title,
+        summary: a.summary || '',
+        img: a.image_url || `https://picsum.photos/seed/${a.id}/1200/800`,
+        src: a.source_name || 'الغيب',
+        time: new Date(a.published_at).toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' }),
+        date: a.published_at.split('T')[0]
+      }));
+    } else {
+      // إذا كانت قاعدة البيانات فارغة، نستخدم البيانات الاحتياطية
+      state.articles = [...mockArticles];
+    }
   } catch (e) {
     console.warn("Falling back to Mock Data", e);
     state.articles = [...mockArticles];
-    renderHero();
-    renderNewsGrid();
-    renderTrending();
   }
+  
+  // رسم الواجهة بعد جلب البيانات (أو فشلها)
+  renderHero();
+  renderNewsGrid();
+  renderTrending();
 }
 
 // ==========================================
-// 4. RENDER FUNCTIONS
+// 4. AUTOMATED BREAKING NEWS (Live from BBC)
+// ==========================================
+async function fetchAutomatedBreakingNews() {
+  try {
+    const rssUrl = "https://feeds.bbci.co.uk/arabic/rss.xml";
+    const response = await fetch(`https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(rssUrl)}`);
+    
+    if (!response.ok) throw new Error("Failed to fetch breaking news");
+    
+    const data = await response.json();
+    
+    if (data.items && data.items.length > 0) {
+      const liveBreaking = data.items.slice(0, 4).map(item => item.title);
+      startBreakingNews(liveBreaking);
+    } else {
+      throw new Error("No items found");
+    }
+  } catch (error) {
+    console.error("خطأ في جلب العاجل التلقائي:", error);
+    // أخبار احتياطية حقيقية في حال تعطل الاتصال ببي بي سي
+    startBreakingNews([
+      "عاجل: متابعة مستمرة لأهم التطورات والأحداث العالمية والإقليمية.",
+      "عاجل: الأسواق العالمية تسجل تحركات مفاجئة في تعاملات اليوم."
+    ]);
+  }
+}
+
+function startBreakingNews(queue) {
+  if (!queue || queue.length === 0) return;
+  state.breakingQueue = queue;
+  state.currentBreakingIndex = 0;
+  setTimeout(showNextBreaking, 3000); // يبدأ بعد 3 ثواني من فتح الموقع
+}
+
+function showNextBreaking() {
+  if (state.currentBreakingIndex >= state.breakingQueue.length) {
+    document.getElementById('breakingBanner').classList.remove('show');
+    return;
+  }
+
+  const banner = document.getElementById('breakingBanner');
+  const textEl = document.getElementById('breakingText');
+  
+  textEl.innerText = state.breakingQueue[state.currentBreakingIndex];
+  banner.classList.add('show');
+  
+  state.currentBreakingIndex++;
+  
+  // يبقى الخبر 10 ثواني ثم يختفي
+  state.breakingInterval = setTimeout(() => {
+    banner.classList.remove('show');
+    
+    // إذا كان هناك خبر آخر، يظهر بعد 5 ثواني
+    if (state.currentBreakingIndex < state.breakingQueue.length) {
+      setTimeout(showNextBreaking, 5000);
+    }
+  }, 10000);
+}
+
+function dismissBreaking() {
+  clearTimeout(state.breakingInterval);
+  document.getElementById('breakingBanner').classList.remove('show');
+  state.breakingQueue = []; 
+}
+
+// ==========================================
+// 5. RENDER FUNCTIONS
 // ==========================================
 function renderHero() {
   if (state.articles.length === 0) return;
@@ -657,6 +722,10 @@ function renderHero() {
 
 function renderNewsGrid() {
   const latest = state.articles.slice(4, 10);
+  if (latest.length === 0) {
+    document.getElementById('latestNewsGrid').innerHTML = "<p style='padding:20px;'>لا توجد أخبار إضافية حالياً.</p>";
+    return;
+  }
   document.getElementById('latestNewsGrid').innerHTML = latest.map(a => `
     <div class="card" onclick="openArticle('${a.id}')">
       <div class="card-img">
@@ -689,53 +758,7 @@ function renderTrending() {
 }
 
 // ==========================================
-// 5. SMART BREAKING NEWS LOGIC
-// ==========================================
-function startBreakingNews(queue) {
-  if (!queue || queue.length === 0) return;
-  
-  state.breakingQueue = queue;
-  state.currentBreakingIndex = 0;
-  
-  // Show first item after 3 seconds (simulate sudden news)
-  setTimeout(showNextBreaking, 3000);
-}
-
-function showNextBreaking() {
-  if (state.currentBreakingIndex >= state.breakingQueue.length) {
-    // No more breaking news. Hide banner and stop.
-    document.getElementById('breakingBanner').classList.remove('show');
-    return;
-  }
-
-  const banner = document.getElementById('breakingBanner');
-  const textEl = document.getElementById('breakingText');
-  
-  textEl.innerText = state.breakingQueue[state.currentBreakingIndex];
-  banner.classList.add('show');
-  
-  state.currentBreakingIndex++;
-  
-  // Stay for 10 seconds, then hide, wait 3 seconds, then show next (if any)
-  state.breakingInterval = setTimeout(() => {
-    banner.classList.remove('show');
-    
-    // If there is another item in queue, show it after 5 seconds
-    if (state.currentBreakingIndex < state.breakingQueue.length) {
-      setTimeout(showNextBreaking, 5000);
-    }
-  }, 10000); // 10 seconds visible
-}
-
-function dismissBreaking() {
-  clearTimeout(state.breakingInterval);
-  document.getElementById('breakingBanner').classList.remove('show');
-  // Stop showing further breaking news for this session
-  state.breakingQueue = []; 
-}
-
-// ==========================================
-// 6. MARKETS TICKER LOGIC (Simulated Live)
+// 6. MARKETS TICKER
 // ==========================================
 function initMarkets() {
   const markets = [
@@ -743,8 +766,7 @@ function initMarkets() {
     { name: 'الذهب', price: 2340.10, change: 1.2 },
     { name: 'بيتكوين', price: 67200, change: -2.1 },
     { name: 'يورو/دولار', price: 1.085, change: 0.1 },
-    { name: 'ستاندرد آند بورز', price: 5120, change: 0.8 },
-    { name: 'ناسداك', price: 16000, change: 1.5 }
+    { name: 'ستاندرد آند بورز', price: 5120, change: 0.8 }
   ];
 
   const renderMarkets = () => {
@@ -755,19 +777,15 @@ function initMarkets() {
           <span class="market-name">${m.name}</span>
           <span class="market-price">${m.price.toLocaleString()}</span>
           <span class="market-change ${isUp ? 'market-up' : 'market-down'}">
-            ${isUp ? '▲' : '▼'} ${Math.abs(m.change)}%
+            ${isUp ? '▲' : '▼'} ${Math.abs(m.change).toFixed(2)}%
           </span>
         </div>
       `;
     }).join('');
-    
-    // Duplicate for seamless marquee
     document.getElementById('marketsTicker').innerHTML = html + html;
   };
 
   renderMarkets();
-
-  // Simulate price changes every 5 seconds
   setInterval(() => {
     markets.forEach(m => {
       const movement = (Math.random() - 0.5) * 2;
@@ -779,7 +797,7 @@ function initMarkets() {
 }
 
 // ==========================================
-// 7. ARTICLE MODAL & READING PROGRESS
+// 7. ARTICLE MODAL
 // ==========================================
 function openArticle(id) {
   const a = state.articles.find(x => x.id === id);
@@ -795,13 +813,10 @@ function openArticle(id) {
       </div>
       <h1 class="modal-title">${a.title}</h1>
       <p class="modal-lead">${a.summary}</p>
-      
       <div class="modal-body">
         <p>هذا النص يمثل محتوى الخبر الصحفي المفصل. في المنصات الاحترافية، يتم كتابة فقرات كاملة هنا تشرح خلفية الحدث، وتفاصيله الدقيقة، وتصريحات المسؤولين، والسياق العام للأزمة أو التطور.</p>
         <p>تلتزم وكالة الغيب بنقل الأخبار بدقة وموضوعية، مع توفير كافة الزوايا والتحليلات التي تهم القارئ العربي. يتم تحديث هذا النص آلياً أو يدوياً من قبل فريق التحرير لضمان أعلى معايير الجودة والمصداقية.</p>
-        <p>تتضمن التغطية الشاملة عادةً تحليلات للخبراء، مقارنات بالأحداث الماضية، وتأثيرات مباشرة وغير مباشرة على الأسواق العالمية والسياسات الدولية. نضع بين يديك الحدث كما هو، مع كافة تفاصيله الكاملة.</p>
       </div>
-
       <div class="modal-source">
         <div><strong>المصدر:</strong> ${a.src}</div>
         <a href="#" style="color:var(--brand-main); font-weight:700;">الرابط الأصلي &larr;</a>
@@ -831,13 +846,12 @@ function closeModal() {
   document.body.style.overflow = '';
 }
 
-// Close modal on backdrop click
 document.getElementById('articleModal').addEventListener('click', function(e) {
   if (e.target === this) closeModal();
 });
 
 // ==========================================
-// 8. SEARCH LOGIC (Fixed Mobile Close)
+// 8. SEARCH LOGIC
 // ==========================================
 function openSearch() {
   document.getElementById('searchOverlay').classList.add('open');
@@ -879,7 +893,7 @@ function handleSearch(query) {
 }
 
 // ==========================================
-// 9. THEME & LANGUAGE TOGGLES
+// 9. THEME & LANGUAGE
 // ==========================================
 function toggleTheme() {
   const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
@@ -908,48 +922,17 @@ function toggleLang() {
   const btn = document.getElementById('langBtn');
   btn.innerText = isAr ? 'عربي' : 'English';
   
-  // Basic translation toggle for layout demonstration
   document.querySelector('.logo-sub').innerText = isAr ? 'AL GHAIB NEWS' : 'وكالة الغيب';
   document.querySelector('.section-title').innerHTML = isAr ? 'Latest <span>News</span>' : 'آخر <span>الأخبار</span>';
   document.body.style.fontFamily = isAr ? 'var(--font-serif)' : 'var(--font-body)';
 }
 
-// Keyboard Shortcuts (ESC to close)
 document.addEventListener('keydown', (e) => {
   if (e.key === 'Escape') {
     closeSearch();
     closeModal();
   }
 });
-// ==========================================
-// 10. AUTOMATED BREAKING NEWS (Live from BBC Arabic)
-// ==========================================
-async function fetchAutomatedBreakingNews() {
-  try {
-    // نستخدم خدمة rss2json المجانية لقراءة أخبار بي بي سي عربي
-    const rssUrl = "https://feeds.bbci.co.uk/arabic/rss.xml";
-    const response = await fetch(`https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(rssUrl)}`);
-    
-    if (!response.ok) throw new Error("Failed to fetch breaking news");
-    
-    const data = await response.json();
-    
-    if (data.items && data.items.length > 0) {
-      // نأخذ أول 4 أخبار عاجلة فقط لعدم الإزعاج
-      const liveBreaking = data.items.slice(0, 4).map(item => item.title);
-      
-      // تشغيل شريط العاجل بالأخبار الحقيقية
-      startBreakingNews(liveBreaking);
-    }
-  } catch (error) {
-    console.error("خطأ في جلب الأخبار العاجلة التلقائية:", error);
-    // في حال حدوث خطأ (انقطاع إنترنت)، نستخدم أخبار احتياطية حقيقية
-    startBreakingNews([
-      "متابعة مباشرة: تطورات الأحداث العالمية والإقليمية على مدار الساعة.",
-      "عاجل: اجتماعات مكثفة لقادة العالم لبحث الأزمات الاقتصادية."
-    ]);
-  }
-}
 </script>
 </body>
 </html>
