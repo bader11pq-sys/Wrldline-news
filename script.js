@@ -271,3 +271,18 @@ function updateThemeIcon(isDark) {
   else { icon.innerHTML = '<path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/>'; }
 }
 document.addEventListener('keydown', (e) => { if (e.key === 'Escape') { closeSearch(); closeModal(); } });
+// ==========================================
+// 10. BACK TO TOP BUTTON LOGIC
+// ==========================================
+window.onscroll = function() {
+    const backToTopBtn = document.getElementById("backToTop");
+    if (document.body.scrollTop > 300 || document.documentElement.scrollTop > 300) {
+        backToTopBtn.classList.add("show");
+    } else {
+        backToTopBtn.classList.remove("show");
+    }
+};
+
+function scrollToTop() {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
