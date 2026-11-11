@@ -1,0 +1,21 @@
+{
+  "name": "الغيب | Al Ghaib News",
+  "short_name": "الغيب",
+  "description": "منصة إعلامية عالمية رقمية رائدة، تقدم تغطية معمقة وتحليلات استراتيجية.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#09090b",
+  "theme_color": "#991b1b",
+  "icons": [
+    {
+      "src": "https://ui-avatars.com/api/?name=غ&background=991b1b&color=fff&size=192",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "https://ui-avatars.com/api/?name=غ&background=991b1b&color=fff&size=512",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
