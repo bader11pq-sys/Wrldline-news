@@ -7,7 +7,7 @@
     <!-- ================= SEO الأساسي ================= -->
     <title>الغيب | Al Ghaib — وكالة الأنباء العالمية</title>
     <meta name="description" content="وكالة الغيب للأنباء - منصة إعلامية عالمية رقمية رائدة، تغطية معمقة وتحليلات استراتيجية للأحداث الجارية على مدار الساعة، بدقة ومصداقية.">
-    <meta name="keywords" content="أخبار, عاجل, سياسة, اقتصاد, وكالة أنباء, الغيب, تحليلات">
+    <meta name="keywords" content="أخبار, عاجل, سياسة, اقتصاد, وكالة أنباء, الغيب, تحليلات, خريطة الأحداث">
     <meta name="author" content="وكالة الغيب">
     <link rel="canonical" href="https://al-ghaib.us.ci/">
 
@@ -16,7 +16,6 @@
     <meta property="og:url" content="https://al-ghaib.us.ci/">
     <meta property="og:title" content="الغيب | Al Ghaib — وكالة الأنباء العالمية">
     <meta property="og:description" content="منصة إعلامية عالمية رقمية رائدة، تقدم تغطية معمقة وتحليلات استراتيجية للأحداث الجارية على مدار الساعة.">
-    <!-- ضع هنا رابط صورة الشعار أو أي صورة تعبر عن الموقع -->
     <meta property="og:image" content="https://images.unsplash.com/photo-1585829365295-ab7cd400c167?q=80&w=1200&auto=format&fit=crop">
     
     <meta name="twitter:card" content="summary_large_image">
@@ -40,7 +39,7 @@
 </head>
 <body>
 
-<!-- SMART BREAKING NEWS BANNER -->
+<!-- شريط الأخبار العاجلة الذكي -->
 <div class="breaking-banner" id="breakingBanner">
   <div class="breaking-content">
     <div class="breaking-label"><span class="badge-live"></span> عاجل</div>
@@ -49,12 +48,14 @@
   <button class="breaking-close" onclick="dismissBreaking()">✕</button>
 </div>
 
-<!-- TOP MARKETS BAR -->
+<!-- شريط الأسعار (الاقتصاد) -->
 <div class="markets-bar">
-  <div class="markets-inner" id="marketsTicker"></div>
+  <div class="markets-inner" id="marketsTicker">
+    <!-- سيتم تعبئته بواسطة JS -->
+  </div>
 </div>
 
-<!-- HEADER -->
+<!-- الترويسة الرئيسية -->
 <header class="header">
   <div class="container header-inner">
     <div class="logo" onclick="window.scrollTo(0,0)">
@@ -64,19 +65,32 @@
         <div class="logo-sub">AL GHAIB NEWS</div>
       </div>
     </div>
+    
+    <!-- القائمة (تختفي في الجوال وتظهر في الكمبيوتر) -->
     <nav class="nav-links">
       <a class="nav-link active" onclick="filterCategory('all', this)">الرئيسية</a>
       <a class="nav-link" onclick="filterCategory('politics', this)">سياسة</a>
       <a class="nav-link" onclick="filterCategory('economy', this)">اقتصاد</a>
       <a class="nav-link" onclick="filterCategory('security', this)">أمن ودفاع</a>
       <a class="nav-link" onclick="filterCategory('world', this)">العالم</a>
-    <a href="map.html" class="nav-link" style="color:var(--brand-main);">خريطة الأحداث</a>
     </nav>
+
+    <!-- أزرار الترويسة (الخريطة، البحث، اللغة، الوضع الليلي) -->
     <div class="header-actions">
+      <!-- أيقونة الخريطة -->
+      <a href="map.html" class="icon-btn" title="خريطة الأحداث" style="text-decoration:none;">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/><line x1="9" y1="3" x2="9" y2="18"/><line x1="15" y1="6" x2="15" y2="21"/></svg>
+      </a>
+      
+      <!-- زر البحث -->
       <button class="icon-btn" onclick="openSearch()">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
       </button>
+      
+      <!-- زر اللغة -->
       <button class="btn-lang" onclick="toggleLang()" id="langBtn">English</button>
+      
+      <!-- زر الوضع الليلي -->
       <button class="icon-btn" onclick="toggleTheme()" id="themeBtn">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
       </button>
@@ -84,9 +98,14 @@
   </div>
 </header>
 
+<!-- المحتوى الرئيسي -->
 <main class="container">
+  
+  <!-- القسم الرئيسي (Hero) -->
   <section class="hero-section">
-    <div class="hero-main" id="mainHero"><div class="skeleton" style="width:100%; height:100%;"></div></div>
+    <div class="hero-main" id="mainHero">
+      <div class="skeleton" style="width:100%; height:100%;"></div>
+    </div>
     <div class="hero-side" id="sideHero">
       <div class="skeleton" style="width:100%; height:140px;"></div>
       <div class="skeleton" style="width:100%; height:140px;"></div>
@@ -94,24 +113,34 @@
     </div>
   </section>
 
+  <!-- التخطيط (أخبار + قائمة جانبية) -->
   <div class="layout-grid">
+    
+    <!-- الأخبار -->
     <div class="main-column">
       <div class="section-header">
         <h2 class="section-title">آخر <span>الأخبار</span></h2>
         <a href="#" style="color:var(--brand-main); font-weight:700;">عرض الكل &larr;</a>
       </div>
-      <div class="news-grid" id="latestNewsGrid"></div>
+      <div class="news-grid" id="latestNewsGrid">
+        <!-- سيتم تعبئتها بواسطة JS -->
+      </div>
     </div>
 
+    <!-- القائمة الجانبية -->
     <aside class="sidebar">
+      <!-- الأكثر قراءة -->
       <div class="widget">
         <div class="widget-header">
           <div class="badge badge-dark">HOT</div>
           <h3 class="widget-title">الأكثر قراءة</h3>
         </div>
-        <div class="trending-list" id="trendingList"></div>
+        <div class="trending-list" id="trendingList">
+          <!-- سيتم تعبئتها بواسطة JS -->
+        </div>
       </div>
 
+      <!-- النشرة البريدية -->
       <div class="newsletter-box">
         <h3>النشرة الإخبارية</h3>
         <p>اشترك ليصلك أهم الأخبار والتحليلات صباح كل يوم.</p>
@@ -123,6 +152,7 @@
     </aside>
   </div>
 
+  <!-- قسم الفيديو -->
   <section class="video-section">
     <div class="section-header">
       <h2 class="section-title">غيب <span>فيديو</span></h2>
@@ -148,6 +178,7 @@
   </section>
 </main>
 
+<!-- التذييل (Footer) -->
 <footer class="footer">
   <div class="container">
     <div class="footer-grid">
@@ -163,6 +194,8 @@
           <li><a href="#">الاقتصاد</a></li>
           <li><a href="#">الرياضة</a></li>
           <li><a href="#">التكنولوجيا</a></li>
+          <!-- رابط الخريطة في التذييل -->
+          <li><a href="map.html" style="color:var(--brand-main); font-weight:bold;">خريطة الأحداث الحية</a></li>
         </ul>
       </div>
       <div class="footer-col">
@@ -191,6 +224,7 @@
   </div>
 </footer>
 
+<!-- نافذة البحث -->
 <div class="search-overlay" id="searchOverlay">
   <div class="search-close" onclick="closeSearch()">✕</div>
   <div class="search-container">
@@ -202,6 +236,7 @@
   </div>
 </div>
 
+<!-- نافذة قراءة الخبر (Modal) -->
 <div class="modal-backdrop" id="articleModal">
   <button class="modal-close-btn" onclick="closeModal()">✕</button>
   <div class="modal-container" id="modalContainer">
@@ -212,20 +247,24 @@
   </div>
 </div>
 
+<!-- زر العودة للأعلى -->
+<button id="backToTop" class="back-to-top" onclick="scrollToTop()">↑</button>
+
 <!-- ربط ملف الجافاسكربت -->
 <script src="script.js"></script>
-<button id="backToTop" class="back-to-top" onclick="scrollToTop()">↑</button>
+
+<!-- تسجيل تطبيق الويب (PWA) -->
 <script>
-        // تسجيل ملف الـ Service Worker ليعمل الموقع كتطبيق
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/sw.js').then(registration => {
-                    console.log('SW registered: ', registration);
-                }).catch(registrationError => {
-                    console.log('SW registration failed: ', registrationError);
-                });
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('/sw.js').then(registration => {
+                console.log('SW registered: ', registration);
+            }).catch(registrationError => {
+                console.log('SW registration failed: ', registrationError);
             });
-        }
-    </script>
+        });
+    }
+</script>
+
 </body>
 </html>
