@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>لوحة التحكم | وكالة الغيب</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;600;700&display=swap" rel="stylesheet">
+<!-- استدعاء مكتبة Supabase -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+    :root { --bg: #09090b; --surface: #18181b; --border: #27272a; --text: #f4f4f5; --text-muted: #a1a1aa; --brand: #ef4444; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'IBM Plex Sans Arabic', sans-serif; background-color: var(--bg); color: var(--text); line-height: 1.6; display: flex; justify-content: center; padding: 40px 20px; }
+    .container { width: 100%; max-width: 700px; background: var(--surface); padding: 32px; border-radius: 16px; border: 1px solid var(--border); box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+    .header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 32px; border-bottom: 1px solid var(--border); padding-bottom: 16px; }
+    .header h1 { font-size: 1.5rem; color: var(--brand); }
+    .btn-dashboard { font-size: 0.9rem; color: var(--text-muted); text-decoration: none; transition: 0.2s; background: #27272a; padding: 8px 16px; border-radius: 8px;}
+    .btn-dashboard:hover { color: var(--text); background: var(--brand); }
+    .form-group { margin-bottom: 20px; }
+    label { display: block; margin-bottom: 8px; font-weight: 600; font-size: 0.95rem; }
+    input, select, textarea { width: 100%; padding: 12px 16px; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; color: var(--text); font-family: inherit; font-size: 1rem; }
+    input:focus, select:focus, textarea:focus { outline: none; border-color: var(--brand); }
+    textarea { resize: vertical; min-height: 150px; }
+    input[type="file"] { padding: 10px; background: var(--surface); border: 1px dashed var(--border); cursor: pointer; }
+    .btn-submit { width: 100%; padding: 16px; background: var(--brand); color: #fff; border: none; border-radius: 8px; font-size: 1.1rem; font-weight: 700; cursor: pointer; margin-top: 10px; transition: 0.2s; }
+    .btn-submit:hover { background: #dc2626; }
+    .btn-submit:disabled { background: #7f1d1d; cursor: not-allowed; }
+    .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(100px); background: #10b981; color: #fff; padding: 12px 24px; border-radius: 8px; font-weight: 600; transition: transform 0.3s; z-index: 1000; text-align: center; min-width: 250px;}
+    .toast.show { transform: translateX(-50%) translateY(0); }
+    .toast.error { background: var(--brand); }
+    .hidden { display: none !important; }
+</style>
+</head>
+<body>
+
+<!-- شاشة تسجيل الدخول -->
+<div class="container" id="loginScreen">
+    <div class="header" style="justify-content: center; border: none;">
+        <h1>تسجيل الدخول للوحة التحكم</h1>
+    </div>
+    <div class="form-group">
+        <label>رمز المرور السري (Password)</label>
+        <input type="password" id="adminPassword" placeholder="أدخل كلمة المرور...">
+    </div>
+    <button class="btn-submit" onclick="checkPassword()">دخول</button>
+</div>
+
+<!-- لوحة التحكم (مخفية في البداية) -->
+<div class="container hidden" id="adminPanel">
+    <div class="header">
+        <h1>لوحة تحكم الغيب</h1>
+        <a href="index.html" class="btn-dashboard">زيارة الموقع &larr;</a>
+    </div>
+
+    <form id="newsForm">
+        <div class="form-group">
+            <label>عنوان الخبر الرئيسي</label>
+            <input type="text" id="title" required placeholder="اكتب العنوان هنا...">
+        </div>
+        
+        <div class="form-group">
+            <label>نص الخبر الكامل</label>
+            <textarea id="summary" required placeholder="اكتب تفاصيل الخبر هنا..."></textarea>
+        </div>
+
+        <div class="form-group">
+            <label>الوسائط (اختر صورة أو فيديو من الاستديو)</label>
+            <input type="file" id="mediaFile" accept="image/*,video/*">
+            <small style="color:var(--text-muted); font-size:0.8rem; margin-top:4px; display:block;">ملاحظة: يفضل أن يكون حجم الفيديو أقل من 30 ميجابايت لسرعة التحميل.</small>
+        </div>
+
+        <div class="form-group">
+            <label>القسم</label>
+            <select id="category">
+                <option value="politics">سياسة</option>
+                <option value="economy">اقتصاد</option>
+                <option value="security">أمن ودفاع</option>
+                <option value="world">العالم</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>الدولة (لتظهر على الخريطة)</label>
+            <select id="country">
+                <option value="">بدون دولة (لن تظهر على الخريطة)</option>
+                <option value="السعودية">السعودية</option>
+                <option value="فلسطين">فلسطين</option>
+                <option value="أوكرانيا">أوكرانيا</option>
+                <option value="الولايات المتحدة">الولايات المتحدة</option>
+                <option value="روسيا">روسيا</option>
+                <option value="إيران">إيران</option>
+                <option value="تركيا">تركيا</option>
+                <option value="مصر">مصر</option>
+                <option value="اليمن">اليمن</option>
+                <option value="الإمارات">الإمارات</option>
+                <option value="الصين">الصين</option>
+                <option value="فرنسا">فرنسا</option>
+                <option value="ألمانيا">ألمانيا</option>
+                <option value="بريطانيا">بريطانيا</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>اسم المصدر</label>
+            <input type="text" id="source_name" value="محرر المنصة" required>
+        </div>
+
+        <button type="submit" class="btn-submit" id="submitBtn">نشر الخبر الآن 🚀</button>
+    </form>
+</div>
+
+<div class="toast" id="toast">تم النشر!</div>
+
+<script>
+    // إعدادات قاعدة البيانات
+    const SUPABASE_URL = "https://vmaxbnogmmfyrcucapnq.supabase.co";
+    const SUPABASE_ANON_KEY = "sb_publishable_D3c88u75_LcEN460Y3Jcpw__EfqUnBx";
+    
+    // ⚠️ كلمة المرور (يمكنك تغييرها)
+    const ADMIN_PASSWORD = "AlGhaib2026"; 
+
+    // تهيئة عميل Supabase (مهم جداً للتخزين)
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    // دالة فحص كلمة المرور
+    function checkPassword() {
+        const pass = document.getElementById('adminPassword').value;
+        if (pass === ADMIN_PASSWORD) {
+            document.getElementById('loginScreen').classList.add('hidden');
+            document.getElementById('adminPanel').classList.remove('hidden');
+        } else {
+            showToast("كلمة المرور غير صحيحة!", true);
+        }
+    }
+
+    // دالة إرسال النموذج (نشر الخبر)
+    document.getElementById('newsForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const btn = document.getElementById('submitBtn');
+        btn.disabled = true;
+        btn.innerText = "جاري الرفع والنشر...";
+
+        const title = document.getElementById('title').value;
+        const summary = document.getElementById('summary').value;
+        const category = document.getElementById('category').value;
+        const country = document.getElementById('country').value;
+        const source_name = document.getElementById('source_name').value;
+        const fileInput = document.getElementById('mediaFile');
+        
+        let mediaUrl = null;
+        let mediaType = 'image';
+
+        try {
+            // 1. رفع الملف إذا تم اختياره
+            if (fileInput.files.length > 0) {
+                const file = fileInput.files[0];
+                
+                // فحص الحجم
+                const maxSize = file.type.startsWith('video/') ? 30 * 1024 * 1024 : 5 * 1024 * 1024;
+                if (file.size > maxSize) {
+                    throw new Error("حجم الملف كبير جداً. الحد الأقصى هو 5 ميجا للصور و 30 ميجا للفيديو.");
+                }
+
+                const fileExt = file.name.split('.').pop();
+                const fileName = `${Date.now()}.${fileExt}`;
+                const filePath = `uploads/${fileName}`;
+
+                if (file.type.startsWith('video/')) {
+                    mediaType = 'video';
+                }
+
+                // الرفع إلى Supabase Storage
+                const { data: uploadData, error: uploadError } = await supabaseClient.storage
+                    .from('news-media')
+                    .upload(filePath, file);
+
+                if (uploadError) {
+                    throw new Error("فشل رفع الملف: " + uploadError.message);
+                }
+
+                // الحصول على الرابط
+                const { data: urlData } = supabaseClient.storage
+                    .from('news-media')
+                    .getPublicUrl(filePath);
+                
+                mediaUrl = urlData.publicUrl;
+            }
+
+            // 2. تجهيز البيانات
+            const articleData = {
+                url: 'news-' + Date.now(),
+                title: title,
+                summary: summary,
+                image_url: mediaUrl,
+                media_type: mediaType,
+                category: category,
+                country: country || null,
+                source_name: source_name,
+                source_url: '#',
+                lang: 'ar',
+                verification: 'confirmed',
+                published_at: new Date().toISOString()
+            };
+
+            // 3. الحفظ في قاعدة البيانات
+            const res = await fetch(`${SUPABASE_URL}/rest/v1/articles`, {
+                method: 'POST',
+                headers: {
+                    apikey: SUPABASE_ANON_KEY,
+                    Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+                    'Content-Type': 'application/json',
+                    'Prefer': 'return=minimal'
+                },
+                body: JSON.stringify(articleData)
+            });
+
+            if (!res.ok) {
+                const errorData = await res.json();
+                throw new Error("فشل حفظ الخبر: " + (errorData.message || "خطأ غير معروف"));
+            }
+
+            showToast("تم نشر الخبر بنجاح!");
+            document.getElementById('newsForm').reset();
+            
+        } catch (error) {
+            console.error(error);
+            showToast("حدث خطأ: " + error.message, true);
+        } finally {
+            btn.disabled = false;
+            btn.innerText = "نشر الخبر الآن 🚀";
+        }
+    });
+
+    // دالة إظهار التنبيهات
+    function showToast(msg, isError = false) {
+        const toast = document.getElementById('toast');
+        toast.innerText = msg;
+        toast.className = 'toast show' + (isError ? ' error' : '');
+        setTimeout(() => { toast.classList.remove('show'); }, 4000);
+    }
+</script>
+</body>
+</html>
