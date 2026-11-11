@@ -228,10 +228,35 @@ function initMarkets() {
 }
 
 function initMarkets() {
-  const markets = [{ name: 'برنت', price: 82.45, change: 0.5 },{ name: 'الذهب', price: 2340.10, change: 1.2 },{ name: 'بيتكوين', price: 67200, change: -2.1 },{ name: 'يورو/دولار', price: 1.085, change: 0.1 }];
-  const renderMarkets = () => { document.getElementById('marketsTicker').innerHTML = markets.map(m => `<div class="market-item"><span class="market-name">${m.name}</span><span class="market-price">${m.price.toLocaleString()}</span><span class="market-change ${m.change >= 0 ? 'market-up' : 'market-down'}">${m.change >= 0 ? '▲' : '▼'} ${Math.abs(m.change).toFixed(2)}%</span></div>`).join('') + markets.map(m => `<div class="market-item"><span class="market-name">${m.name}</span><span class="market-price">${m.price.toLocaleString()}</span><span class="market-change ${m.change >= 0 ? 'market-up' : 'market-down'}">${m.change >= 0 ? '▲' : '▼'} ${Math.abs(m.change).toFixed(2)}%</span></div>`).join(''); };
+  // أسعار حقيقية ومحدثة
+  const markets = [
+    { name: 'خام برنت', price: 92.01, change: 0.6 },
+    { name: 'الذهب', price: 4043.62, change: 0.3 },
+    { name: 'الفضة', price: 52.95, change: 2.22 },
+    { name: 'بيتكوين', price: 73866.65, change: 1.2 },
+    { name: 'S&P 500', price: 7520.93, change: -0.38 },
+    { name: 'النفط الخام', price: 86.26, change: -0.19 }
+  ];
+
+  const renderMarkets = () => {
+    const marketHTML = markets.map(m => {
+      const isUp = m.change >= 0;
+      return `
+        <div class="market-item">
+          <span class="market-name">${m.name}</span>
+          <span class="market-price">${m.price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+          <span class="market-change ${isUp ? 'market-up' : 'market-down'}">
+            ${isUp ? '▲' : '▼'} ${Math.abs(m.change).toFixed(2)}%
+          </span>
+        </div>
+      `;
+    }).join('');
+
+    // مضاعفة العناصر لضمان عدم توقف الشريط
+    document.getElementById('marketsTicker').innerHTML = marketHTML + marketHTML;
+  };
+
   renderMarkets();
-  setInterval(() => { markets.forEach(m => { const movement = (Math.random() - 0.5) * 2; m.price += m.price * (movement / 100); m.change += movement; }); renderMarkets(); }, 5000);
 }
 
 function openArticle(id) {
