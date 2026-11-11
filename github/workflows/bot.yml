@@ -2,8 +2,8 @@ name: Fetch News Automatically
 
 on:
   schedule:
-    - cron: '*/15 * * * *' # يعمل كل 15 دقيقة
-  workflow_dispatch: # يسمح لك بتشغيله يدوياً للتجربة
+    - cron: '*/15 * * * *'
+  workflow_dispatch:
 
 jobs:
   update-news:
