@@ -1,1 +1,155 @@
-s
+const SUPABASE_URL = "https://vmaxbnogmmfyrcucapnq.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_D3c88u75_LcEN460Y3Jcpw__EfqUnBx";
+
+let state = { lang: 'ar', articles: [], breakingQueue: [], breakingInterval: null, isBreakingActive: false };
+
+const mockArticles = [
+  { id: 'm1', cat: 'politics', title: 'قمة عالمية في جنيف لبحث أزمات المناخ والطاقة', summary: 'انطلقت اليوم أعمال القمة الدولية في جنيف بمشاركة أكثر من 80 دولة لمناقشة سبل مواجهة التغير المناخي وأمن الطاقة العالمي. وتأتي هذه القمة في وقت حرج يشهد توترات جيوسياسية تؤثر على سلاسل الإمداد...', img: 'https://images.unsplash.com/photo-1590076214307-5f9b9c7b7b4b?q=80&w=1200&auto=format&fit=crop', src: 'الغيب', time: '10:30', date: '2026-11-11' },
+  { id: 'm2', cat: 'economy', title: 'الأسواق العالمية تتعافى وسط تفاؤل بوقف الحروب التجارية', summary: 'سجلت مؤشرات الأسهم العالمية ارتفاعات ملحوظة في تعاملات اليوم، بعد تصريحات إيجابية من قادة الاقتصاد الكبرى بشأن التوصل لاتفاقيات تجارية جديدة تعيد الاستقرار لأسواق المال...', img: 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?q=80&w=1200&auto=format&fit=crop', src: 'بلومبرغ', time: '09:15', date: '2026-11-11' },
+  { id: 'm3', cat: 'security', title: 'تطورات ميدانية متسارعة في شرق أوروبا والحلفاء يعقدون اجتماعاً طارئاً', summary: 'تشهد المنطقة تطورات عسكرية متلاحقة، مما دفع مجلس الأمن الدولي وحلف الناتو لعقد جلسات مشتركة لبحث سبل احتواء الأزمة ومنع انزلاقها نحو صراع أوسع...', img: 'https://images.unsplash.com/photo-1580979832802-42a37a2338e8?q=80&w=1200&auto=format&fit=crop', src: 'رويترز', time: '08:00', date: '2026-11-11' },
+  { id: 'm4', cat: 'tech', title: 'إطلاق الجيل الجديد من الرقائق الذكية المخصصة للذكاء الاصطناعي', summary: 'كشفت كبرى شركات التكنولوجيا عن رقائق جديدة توفر سرعة معالجة تفوق مثيلاتها بثلاثة أضعاف، مما يفتح آفاقاً جديدة لتطبيقات الذكاء الاصطناعي في مختلف القطاعات الحيوية...', img: 'https://images.unsplash.com/photo-1518770660439-4636190af475?q=80&w=1200&auto=format&fit=crop', src: 'تك كرانش', time: '07:45', date: '2026-11-11' }
+];
+
+document.addEventListener('DOMContentLoaded', () => {
+  initUI();
+  fetchLiveNews();
+  initMarkets();
+  updateBreakingNews();
+  setInterval(updateBreakingNews, 120000); 
+});
+
+function initUI() {
+  const savedTheme = localStorage.getItem('theme') || 'light';
+  if (savedTheme === 'dark') {
+    document.documentElement.setAttribute('data-theme', 'dark');
+    updateThemeIcon(true);
+  }
+}
+
+async function fetchLiveNews() {
+  try {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/articles?select=*&order=published_at.desc&limit=20`, { headers: { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${SUPABASE_ANON_KEY}` } });
+    if (!res.ok) throw new Error("DB Error");
+    const data = await res.json();
+    if (data && data.length > 0) {
+      state.articles = data.map(a => ({ id: a.id, cat: a.category || 'world', title: a.title, summary: a.summary || '', img: a.image_url || `https://picsum.photos/seed/${a.id}/1200/800`, src: a.source_name || 'الغيب', time: new Date(a.published_at).toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' }), date: a.published_at.split('T')[0] }));
+    } else {
+      state.articles = [...mockArticles];
+    }
+  } catch (e) {
+    state.articles = [...mockArticles];
+  }
+  renderHero(); renderNewsGrid(); renderTrending();
+}
+
+async function updateBreakingNews() {
+  let currentQueue = state.breakingQueue;
+  try {
+    const rssUrl = "https://feeds.bbci.co.uk/arabic/rss.xml";
+    const response = await fetch(`https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(rssUrl)}`);
+    const data = await response.json();
+    if (data.items) {
+      data.items.forEach(item => {
+        const textToSearch = (item.title + " " + item.description).toLowerCase();
+        const isBreaking = textToSearch.includes('عاجل') || textToSearch.includes('breaking');
+        if (isBreaking) {
+          const pubTime = new Date(item.pubDate).getTime();
+          if (!currentQueue.find(q => q.id === item.guid)) {
+            currentQueue.push({ id: item.guid, title: item.title.replace('عاجل:', '').replace('عاجل :', '').trim(), pubDate: pubTime });
+          }
+        }
+      });
+    }
+  } catch (e) {}
+  const now = new Date().getTime();
+  state.breakingQueue = currentQueue.filter(item => ((now - item.pubDate) / 1000 / 60) <= 15);
+  state.breakingQueue.sort((a, b) => b.pubDate - a.pubDate);
+  renderBreakingBanner();
+}
+
+function renderBreakingBanner() {
+  const banner = document.getElementById('breakingBanner');
+  const textEl = document.getElementById('breakingText');
+  if (state.breakingQueue.length === 0) {
+    banner.classList.remove('show');
+    if (state.breakingInterval) { clearInterval(state.breakingInterval); state.breakingInterval = null; state.isBreakingActive = false; }
+    return;
+  }
+  if (!state.isBreakingActive) {
+    state.isBreakingActive = true;
+    banner.classList.add('show');
+    let index = 0;
+    textEl.innerText = state.breakingQueue[index].title;
+    state.breakingInterval = setInterval(() => {
+      if (state.breakingQueue.length === 0) { banner.classList.remove('show'); clearInterval(state.breakingInterval); state.isBreakingActive = false; return; }
+      index++;
+      if (index >= state.breakingQueue.length) index = 0;
+      textEl.style.opacity = 0;
+      setTimeout(() => { textEl.innerText = state.breakingQueue[index].title; textEl.style.opacity = 1; }, 300);
+    }, 10000);
+  }
+}
+
+function dismissBreaking() {
+  document.getElementById('breakingBanner').classList.remove('show');
+  state.isBreakingActive = false;
+  if (state.breakingInterval) { clearInterval(state.breakingInterval); state.breakingInterval = null; }
+}
+
+function renderHero() {
+  if (state.articles.length === 0) return;
+  const featured = state.articles[0]; const sides = state.articles.slice(1, 4);
+  document.getElementById('mainHero').innerHTML = `<img src="${featured.img}" alt=""><div class="hero-overlay" onclick="openArticle('${featured.id}')"><div class="hero-meta"><span class="badge badge-brand">${featured.cat}</span><span class="badge badge-dark">تغطية خاصة</span></div><h1 class="hero-title">${featured.title}</h1><p class="hero-desc">${featured.summary}</p><div class="hero-footer"><span>${featured.src} • ${featured.time}</span><span>وكالة الغيب</span></div></div>`;
+  document.getElementById('sideHero').innerHTML = sides.map(a => `<div class="side-story" onclick="openArticle('${a.id}')"><div class="side-story-content"><div><span class="badge badge-brand" style="margin-bottom:8px;">${a.cat}</span><h3 class="side-title">${a.title}</h3></div><div class="side-meta">${a.src} • ${a.time}</div></div><img src="${a.img}" class="side-img" alt=""></div>`).join('');
+}
+
+function renderNewsGrid() {
+  const latest = state.articles.slice(4, 10);
+  if (latest.length === 0) { document.getElementById('latestNewsGrid').innerHTML = "<p style='padding:20px;'>لا توجد أخبار إضافية حالياً.</p>"; return; }
+  document.getElementById('latestNewsGrid').innerHTML = latest.map(a => `<div class="card" onclick="openArticle('${a.id}')"><div class="card-img"><span class="badge badge-brand card-badge">${a.cat}</span><img src="${a.img}" alt=""></div><div class="card-body"><h3 class="card-title">${a.title}</h3><p class="card-desc">${a.summary}</p><div class="card-meta"><span>${a.src}</span><span>${a.time}</span></div></div></div>`).join('');
+}
+
+function renderTrending() {
+  const items = state.articles.slice(1, 5);
+  document.getElementById('trendingList').innerHTML = items.map((a, i) => `<div class="trend-item" onclick="openArticle('${a.id}')"><div class="trend-num">0${i+1}</div><div><h4 class="trend-title">${a.title}</h4><span class="trend-meta">${a.src} • منذ ساعتين</span></div></div>`).join('');
+}
+
+function initMarkets() {
+  const markets = [{ name: 'برنت', price: 82.45, change: 0.5 },{ name: 'الذهب', price: 2340.10, change: 1.2 },{ name: 'بيتكوين', price: 67200, change: -2.1 },{ name: 'يورو/دولار', price: 1.085, change: 0.1 }];
+  const renderMarkets = () => { document.getElementById('marketsTicker').innerHTML = markets.map(m => `<div class="market-item"><span class="market-name">${m.name}</span><span class="market-price">${m.price.toLocaleString()}</span><span class="market-change ${m.change >= 0 ? 'market-up' : 'market-down'}">${m.change >= 0 ? '▲' : '▼'} ${Math.abs(m.change).toFixed(2)}%</span></div>`).join('') + markets.map(m => `<div class="market-item"><span class="market-name">${m.name}</span><span class="market-price">${m.price.toLocaleString()}</span><span class="market-change ${m.change >= 0 ? 'market-up' : 'market-down'}">${m.change >= 0 ? '▲' : '▼'} ${Math.abs(m.change).toFixed(2)}%</span></div>`).join(''); };
+  renderMarkets();
+  setInterval(() => { markets.forEach(m => { const movement = (Math.random() - 0.5) * 2; m.price += m.price * (movement / 100); m.change += movement; }); renderMarkets(); }, 5000);
+}
+
+function openArticle(id) {
+  const a = state.articles.find(x => x.id === id); if (!a) return;
+  document.getElementById('modalContentArea').innerHTML = `<img src="${a.img}" class="modal-img" alt=""><div class="modal-content"><div class="modal-meta"><span class="badge badge-brand">${a.cat}</span><span style="color:var(--text-muted); font-size:0.9rem;">${a.date} | ${a.time}</span></div><h1 class="modal-title">${a.title}</h1><p class="modal-lead">${a.summary}</p><div class="modal-body"><p>هذا النص يمثل محتوى الخبر الصحفي المفصل. في المنصات الاحترافية، يتم كتابة فقرات كاملة هنا تشرح خلفية الحدث، وتفاصيله الدقيقة، وتصريحات المسؤولين، والسياق العام للأزمة أو التطور.</p></div><div class="modal-source"><div><strong>المصدر:</strong> ${a.src}</div></div></div>`;
+  const modal = document.getElementById('articleModal'); modal.classList.add('open'); document.body.style.overflow = 'hidden'; modal.scrollTop = 0;
+  const progressBar = document.getElementById('readingBar'); progressBar.style.width = '0%';
+  modal.onscroll = function() { const totalHeight = modal.scrollHeight - modal.clientHeight; if (totalHeight > 0) { progressBar.style.width = ((modal.scrollTop / totalHeight) * 100) + '%'; } };
+}
+
+function closeModal() { document.getElementById('articleModal').classList.remove('open'); document.body.style.overflow = ''; }
+document.getElementById('articleModal').addEventListener('click', function(e) { if (e.target === this) closeModal(); });
+
+function openSearch() { document.getElementById('searchOverlay').classList.add('open'); document.body.style.overflow = 'hidden'; setTimeout(() => document.getElementById('searchInput').focus(), 100); }
+function closeSearch() { document.getElementById('searchOverlay').classList.remove('open'); document.body.style.overflow = ''; document.getElementById('searchInput').value = ''; document.getElementById('searchResults').classList.remove('active'); }
+function handleSearch(query) {
+  if (!query.trim()) { document.getElementById('searchResults').classList.remove('active'); return; }
+  const results = state.articles.filter(a => a.title.includes(query) || a.summary.includes(query));
+  const resultsDiv = document.getElementById('searchResults'); resultsDiv.classList.add('active');
+  if (results.length === 0) { resultsDiv.innerHTML = `<div style="padding:32px; text-align:center; color:var(--text-muted);">لا توجد نتائج</div>`; return; }
+  resultsDiv.innerHTML = results.map(a => `<div class="search-item" onclick="closeSearch(); openArticle('${a.id}')"><img src="${a.img}" alt=""><div><h4>${a.title}</h4><span>${a.src} • ${a.time}</span></div></div>`).join('');
+}
+
+function toggleTheme() {
+  const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+  const newTheme = isDark ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', newTheme); localStorage.setItem('theme', newTheme); updateThemeIcon(!isDark);
+}
+function updateThemeIcon(isDark) {
+  const icon = document.getElementById('themeBtn').firstElementChild;
+  if (isDark) { icon.innerHTML = '<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/>'; }
+  else { icon.innerHTML = '<path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/>'; }
+}
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape') { closeSearch(); closeModal(); } });
