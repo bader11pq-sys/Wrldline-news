@@ -72,12 +72,11 @@
     // 1. تهيئة الخريطة (بمظهر داكن احترافي)
     const map = L.map('map').setView([25, 20], 2); // البداية من الشرق الأوسط والعالم
 
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
-        subdomains: 'abcd',
-        maxZoom: 19
+    L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}', {
+        attribution: 'Tiles &copy; Esri &mdash; Esri, DeLorme, NAVTEQ',
+        maxZoom: 16
     }).addTo(map);
-
+    
     // 2. جلب الأخبار وتحديد مواقعها على الخريطة
     async function loadMapNews() {
         try {
