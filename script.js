@@ -28,7 +28,7 @@ function initUI() {
 
 async function fetchLiveNews() {
   try {
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/articles?select=*&order=published_at.desc&limit=50`, { 
+const res = await fetch(`${SUPABASE_URL}/rest/v1/articles?select=*&order=published_at.desc&limit=300`, {
         headers: { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${SUPABASE_ANON_KEY}` } 
     });
     if (!res.ok) throw new Error("DB Error");
