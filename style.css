@@ -304,3 +304,10 @@ input { font-family: inherit; outline: none; border: none; background: none; }
     .related-grid { grid-template-columns: 1fr 1fr; }
     .related-card:last-child { display: none; } /* نعرض خبرين فقط في الجوال */
 }
+.markets-inner {
+  display: flex;
+  gap: 32px;
+  white-space: nowrap;
+  animation: marquee 30s linear infinite;
+  width: max-content; /* هذا السطر مهم لضمان عدم توقف الحركة */
+}
