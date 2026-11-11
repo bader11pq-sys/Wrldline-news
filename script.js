@@ -28,20 +28,34 @@ function initUI() {
 
 async function fetchLiveNews() {
   try {
-const res = await fetch(`${SUPABASE_URL}/rest/v1/articles?select=*&order=published_at.desc&limit=300`, {
+    // نطلب الأخبار مع جدول الترجمات المرتبط بها
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/articles?select=*,article_translations(*)&order=published_at.desc&limit=100`, { 
         headers: { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${SUPABASE_ANON_KEY}` } 
     });
     if (!res.ok) throw new Error("DB Error");
     const data = await res.json();
     
     if (data && data.length > 0) {
-      state.articles = data.map(a => ({ 
-          id: a.id, cat: a.category || 'world', title: a.title, summary: a.summary || '', 
-          img: a.image_url || `https://picsum.photos/seed/${a.id}/1200/800`, 
-          media_type: a.media_type || 'image', src: a.source_name || 'الغيب', 
-          time: new Date(a.published_at).toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' }), 
-          date: a.published_at.split('T')[0] 
-      }));
+      state.articles = data.map(a => {
+          // البحث عن ترجمة باللغة المطلوبة (إذا كنا نريد الإنجليزية)
+          const translation = a.article_translations?.find(t => t.lang === state.lang);
+
+          // إذا وجدنا ترجمة نستخدمها، وإلا نستخدم النص الأصلي (العربي)
+          const displayTitle = translation ? translation.title : a.title;
+          const displaySummary = translation ? translation.summary : a.summary;
+
+          return {
+              id: a.id, 
+              cat: a.category || 'world', 
+              title: displayTitle, 
+              summary: displaySummary || '', 
+              img: a.image_url || `https://picsum.photos/seed/${a.id}/1200/800`, 
+              media_type: a.media_type || 'image', 
+              src: a.source_name || 'الغيب', 
+              time: new Date(a.published_at).toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' }), 
+              date: a.published_at.split('T')[0] 
+          };
+      });
     } else {
       state.articles = [...mockArticles];
     }
@@ -49,7 +63,7 @@ const res = await fetch(`${SUPABASE_URL}/rest/v1/articles?select=*&order=publish
     state.articles = [...mockArticles];
   }
   
-  filterCategory('all', document.querySelector('.nav-link.active'));
+  filterCategory(state.currentCategory, document.querySelector('.nav-link.active'));
 }
 
 function filterCategory(category, element) {
