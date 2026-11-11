@@ -167,8 +167,14 @@ function renderHero() {
 }
 
 function renderNewsGrid() {
-  const latest = state.displayedArticles.slice(4, 10);
-  if (latest.length === 0) { document.getElementById('latestNewsGrid').innerHTML = "<p style='padding:20px; color:var(--text-muted);'>لا توجد مزيد من الأخبار في هذا القسم.</p>"; return; }
+  // عرض الأخبار من العنصر رقم 4 (لأن أول 4 في القسم الرئيسي) إلى الحد المسموح به
+  const latest = state.displayedArticles.slice(4, state.visibleCount);
+  
+  if (latest.length === 0) { 
+      document.getElementById('latestNewsGrid').innerHTML = "<p style='padding:20px; color:var(--text-muted);'>لا توجد مزيد من الأخبار في هذا القسم.</p>"; 
+      return; 
+  }
+  
   document.getElementById('latestNewsGrid').innerHTML = latest.map(a => `
     <div class="card" onclick="openArticle('${a.id}')">
         <div class="card-img">
@@ -181,8 +187,9 @@ function renderNewsGrid() {
             <div class="card-meta"><span>${a.src}</span><span>${a.time}</span></div>
         </div>
     </div>`).join('');
+    
+  updateLoadMoreButton(); // تحديث حالة الزر
 }
-
 function renderTrending() {
   const items = state.displayedArticles.slice(1, 5);
   if (items.length === 0) { document.getElementById('trendingList').innerHTML = "<p style='color:var(--text-muted);'>لا يوجد.</p>"; return; }
