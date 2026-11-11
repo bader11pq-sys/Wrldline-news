@@ -213,5 +213,17 @@
 
 <!-- ربط ملف الجافاسكربت -->
 <script src="script.js"></script>
+<script>
+        // تسجيل ملف الـ Service Worker ليعمل الموقع كتطبيق
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js').then(registration => {
+                    console.log('SW registered: ', registration);
+                }).catch(registrationError => {
+                    console.log('SW registration failed: ', registrationError);
+                });
+            });
+        }
+    </script>
 </body>
 </html>
