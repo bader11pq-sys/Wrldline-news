@@ -30,3 +30,6 @@
 .follow-chip{border:1px solid var(--line);background:var(--surface-2);color:var(--text);border-radius:22px;padding:6px 10px;font:inherit;font-size:11px}
 .follow-chip.selected{border-color:var(--accent);background:var(--navy);color:#fff}
 @media(max-width:680px){.follow-feed-toggle{padding:7px 9px;font-size:10px}.feed-controls{flex-wrap:wrap}}
+
+.story-meta .verification-badge{font-size:9px;color:var(--muted);border:1px solid var(--line);padding:2px 7px;border-radius:20px}
+.story-meta .breaking-badge{font-size:9px;background:#b83f49;color:#fff;padding:2px 8px;border-radius:20px;font-weight:700}
