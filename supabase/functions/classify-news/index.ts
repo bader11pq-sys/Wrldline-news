@@ -131,7 +131,7 @@ Deno.serve(async (req: Request) => {
       const update = {
         category: ["politics","economy","security","tech","sports","culture","health","world"].includes(parsed.category) ? parsed.category : "world",
         country: String(parsed.country || "غير محدد").slice(0, 80),
-        ai_country_code: typeof parsed.country_code === "string" && /^[A-Z]{3}$/.test(parsed.country_code) ? parsed.country_code : null,
+        ai_country_code: typeof parsed.country_code === "string" && /^[A-Z]{3}$/.test(parsed.country_code.toUpperCase()) ? parsed.country_code.toUpperCase() : null,
         ai_region: typeof parsed.region === "string" ? parsed.region.slice(0, 120) : null,
         ai_event_type: String(parsed.event_type || "عام").slice(0, 80),
         ai_risk_level: riskLevel,
