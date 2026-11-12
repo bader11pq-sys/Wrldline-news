@@ -40,6 +40,11 @@ jobs:
           SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
         run: node bot-world.js
+      - name: Fetch dedicated breaking-news alerts only
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: node bot-breaking.js
       - name: Classify newly fetched news
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
