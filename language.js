@@ -23,6 +23,7 @@ const AR_EN={
 };
 AR_EN["WRLDLINE / NEWS"]="WRLDLINE / NEWS";
 AR_EN["WRLDLINE NEWS | ورلدلاين نيوز"]="WRLDLINE NEWS";
+AR_EN["عرض الخبر"]="View story";
 AR_EN["حسابك واشتراكك | WRLDLINE NEWS"]="Your account & subscription | WRLDLINE NEWS";
 AR_EN["لوحة التحرير | WRLDLINE NEWS"]="Editorial desk | WRLDLINE NEWS";
 AR_EN["مرصد العالم | WRLDLINE NEWS"]="World Monitor | WRLDLINE NEWS";
