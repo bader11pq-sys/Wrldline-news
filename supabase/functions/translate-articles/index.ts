@@ -31,7 +31,7 @@ Deno.serve(async(req:Request)=>{
  for(const article of articles||[]){
   try{
    const target=/^en$/i.test(article.lang||"")||(!/[\u0600-\u06FF]/.test(article.title||"")&&/[A-Za-z]/.test(article.title||""))?"ar":"en";
-   const tickerOnly=/t\\.me|telegram\\.me|telegram/i.test([article.url,article.source_url,article.source_name].filter(Boolean).join(" "));
+   const tickerOnly=/t\.me|telegram\.me|telegram/i.test([article.url,article.source_url,article.source_name].filter(Boolean).join(" "));
    const existing=await db.from("article_translations").select("id,ai_summary,title,summary").eq("article_id",article.id).eq("lang",target).maybeSingle();
    const tickerExisting=tickerOnly?await db.from("telegram_breaking_translations").select("article_id").eq("article_id",article.id).eq("lang",target).maybeSingle():{data:{article_id:article.id}};
    if(existing.data?.title&&existing.data?.summary&&(!article.ai_summary||existing.data?.ai_summary)&&tickerExisting.data){results.push({id:article.id,status:"already_translated",lang:target});continue;}
