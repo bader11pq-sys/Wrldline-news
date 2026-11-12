@@ -13,7 +13,7 @@ async function main() {
   const response = await fetch(SUPABASE_URL + "/rest/v1/articles?" + query, { headers });
   if (!response.ok) throw new Error("Could not read pending articles: HTTP " + response.status + " " + (await response.text()).slice(0, 300));
   const rows = await response.json();
-  const pending = rows.filter(article => (!article.ai_classification_status || article.ai_classification_status === "pending") && !/t\.me|telegram\.me|telegram/i.test([article.url, article.source_url, article.source_name].filter(Boolean).join(" "))).slice(0, MAX_PER_RUN);
+  const pending = rows.filter(article => (!article.ai_classification_status || ["pending","failed"].includes(article.ai_classification_status)) && !/t\.me|telegram\.me|telegram/i.test([article.url, article.source_url, article.source_name].filter(Boolean).join(" "))).slice(0, MAX_PER_RUN);
   if (!pending.length) { console.log("No newly published stories are waiting for AI classification."); return; }
   let completed = 0;
   for (let offset = 0; offset < pending.length; offset += BATCH_SIZE) {
@@ -28,6 +28,7 @@ async function main() {
     const failed = results.filter(item => item.status === "failed").length;
     completed += body.processed || 0;
     console.log("Batch " + (Math.floor(offset / BATCH_SIZE) + 1) + ": " + classified + " classified, " + review + " need review, " + failed + " failed.");
+    for (const item of results.filter(item => item.status === "failed")) console.error("Classification failed for " + item.id + ": " + (item.error || "No error detail returned."));
   }
   console.log("Background AI classification processed " + completed + " stories.");
 }
