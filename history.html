@@ -135,7 +135,7 @@ const historySites={
  cn:{center:[35,104],zoom:4,sites:[["Xi'an",34.3416,108.9398],["Luoyang",34.6197,112.454],["Beijing",39.9042,116.4074],["Anyang",36.0976,114.392],["Nanjing",32.0603,118.7969],["Hangzhou",30.2741,120.1551],["Kashgar",39.47,75.99]],route:[[34.3416,108.9398],[36.06,103.8],[40.14,94.66],[39.47,75.99]],query:"China historical monuments Great Wall Forbidden City Terracotta Army"}
 };
 let historyMapInstance=null,historyMediaToken=0;
-function historyEscape(v){return String(v??"").replace(/[&<>\\"\']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",\\"":"&quot;",\'":"&#39;"}[c]));}
+function historyEscape(v){return String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
 function historyMediaUrl(v,kind){try{const u=new URL(v);if(u.protocol==="https:"&&(kind==="image"?u.hostname==="upload.wikimedia.org":u.hostname==="commons.wikimedia.org"))return u.href;}catch{}return "";}
 function H(ar,en){return window.wrldlineLang==="en"?en:ar;}
 async function loadHistoryMedia(country){
