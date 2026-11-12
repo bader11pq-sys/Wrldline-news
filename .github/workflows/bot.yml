@@ -43,6 +43,14 @@
             "SUPABASE_SERVICE_ROLE_KEY": "${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}"
           },
           "run": "node classify-pending.js"
+        },
+        {
+          "name": "Translate newly published stories into the other site language",
+          "env": {
+            "SUPABASE_URL": "${{ secrets.SUPABASE_URL }}",
+            "SUPABASE_SERVICE_ROLE_KEY": "${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}"
+          },
+          "run": "node translate-pending.js"
         }
       ]
     }
