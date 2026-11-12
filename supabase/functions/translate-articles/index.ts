@@ -31,10 +31,8 @@ Deno.serve(async(req:Request)=>{
  for(const article of articles||[]){
   try{
    const target=/^en$/i.test(article.lang||"")||(!/[\u0600-\u06FF]/.test(article.title||"")&&/[A-Za-z]/.test(article.title||""))?"ar":"en";
-   const tickerOnly=/t\.me|telegram\.me|telegram/i.test([article.url,article.source_url,article.source_name].filter(Boolean).join(" "));
    const existing=await db.from("article_translations").select("id,ai_summary,title,summary").eq("article_id",article.id).eq("lang",target).maybeSingle();
-   const tickerExisting=tickerOnly?await db.from("telegram_breaking_translations").select("article_id").eq("article_id",article.id).eq("lang",target).maybeSingle():{data:{article_id:article.id}};
-   if(existing.data?.title&&existing.data?.summary&&(!article.ai_summary||existing.data?.ai_summary)&&tickerExisting.data){results.push({id:article.id,status:"already_translated",lang:target});continue;}
+   if(existing.data?.title&&existing.data?.summary&&(!article.ai_summary||existing.data?.ai_summary)){results.push({id:article.id,status:"already_translated",lang:target});continue;}
    const response=await fetch("https://api.openai.com/v1/responses",{method:"POST",headers:{"Authorization":"Bearer "+openai,"Content-Type":"application/json"},body:JSON.stringify({
     model:"gpt-4o-mini",store:false,max_output_tokens:900,
     instructions:[
@@ -53,7 +51,6 @@ Deno.serve(async(req:Request)=>{
    const translated=JSON.parse(text);
    const {error:upsertError}=await db.from("article_translations").upsert({article_id:article.id,lang:target,title:String(translated.title||"").slice(0,500),summary:String(translated.summary||"").slice(0,4000),ai_summary:String(translated.ai_summary||"").slice(0,2000)},{onConflict:"article_id,lang"});
    if(upsertError)throw upsertError;
-   if(tickerOnly){const {error:tickerError}=await db.from("telegram_breaking_translations").upsert({article_id:article.id,lang:target,title:String(translated.title||"").slice(0,500),summary:String(translated.summary||"").slice(0,4000)},{onConflict:"article_id,lang"});if(tickerError)throw tickerError;}
    results.push({id:article.id,status:"translated",lang:target});
   }catch(error){results.push({id:article.id,status:"failed",error:String(error).slice(0,180)});}
  }

@@ -1,62 +1,57 @@
-{
-  "name": "Fetch News Automatically",
-  "on": {
-    "push": {
-      "branches": [
-        "main"
-      ]
-    },
-    "schedule": [
-      {
-        "cron": "*/15 * * * *"
-      }
-    ],
-    "workflow_dispatch": null
-  },
-  "jobs": {
-    "update-news": {
-      "runs-on": "ubuntu-latest",
-      "steps": [
-        {
-          "name": "Checkout repository",
-          "uses": "actions/checkout@v3"
-        },
-        {
-          "name": "Setup Node.js",
-          "uses": "actions/setup-node@v3",
-          "with": {
-            "node-version": "18"
-          }
-        },
-        {
-          "name": "Run News Bot",
-          "env": {
-            "SUPABASE_URL": "${{ secrets.SUPABASE_URL }}",
-            "SUPABASE_KEY": "${{ secrets.SUPABASE_KEY }}"
-          },
-          "run": "node bot.js"
-        },
-        {
-          "name": "Classify newly fetched news in the background",
-          "env": {
-            "SUPABASE_URL": "${{ secrets.SUPABASE_URL }}",
-            "SUPABASE_SERVICE_ROLE_KEY": "${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}"
-          },
-          "run": "node classify-pending.js"
-        },
-        {
-          "name": "Translate newly published stories into the other site language",
-          "env": {
-            "SUPABASE_URL": "${{ secrets.SUPABASE_URL }}",
-            "SUPABASE_SERVICE_ROLE_KEY": "${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}"
-          },
-          "run": "node translate-pending.js"
-        }
-      ]
-    }
-  },
-  "concurrency": {
-    "group": "wrldline-background-jobs",
-    "cancel-in-progress": false
-  }
-}
+name: Fetch News Automatically
+on:
+  schedule:
+    - cron: '*/10 * * * *'
+  workflow_dispatch:
+concurrency:
+  group: wrldline-background-jobs
+  cancel-in-progress: false
+jobs:
+  update-news:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Fetch Gulf news sources
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: node bot-gulf.js
+      - name: Fetch Levant news sources
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: node bot-levant.js
+      - name: Fetch Maghreb news sources
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: node bot-maghreb.js
+      - name: Fetch international news sources
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: node bot-world.js
+      - name: Fetch dedicated breaking-news alerts only
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: node bot-breaking.js
+      - name: Classify newly fetched news
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: node classify-pending.js
+      - name: Translate newly published stories
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: node translate-pending.js
