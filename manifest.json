@@ -1,21 +1,16 @@
 {
-  "name": "الغيب | Al Ghaib News",
-  "short_name": "الغيب",
-  "description": "منصة إعلامية عالمية رقمية رائدة، تقدم تغطية معمقة وتحليلات استراتيجية.",
+  "name": "WRLDLINE NEWS | ورلدلاين نيوز",
+  "short_name": "WRLDLINE",
+  "description": "منصة إخبارية رقمية بتغطية عالمية متعددة المصادر.",
   "start_url": "/",
+  "scope": "/",
   "display": "standalone",
-  "background_color": "#09090b",
-  "theme_color": "#991b1b",
+  "background_color": "#0b1421",
+  "theme_color": "#101b2d",
+  "lang": "ar",
+  "dir": "rtl",
   "icons": [
-    {
-      "src": "https://ui-avatars.com/api/?name=غ&background=991b1b&color=fff&size=192",
-      "sizes": "192x192",
-      "type": "image/png"
-    },
-    {
-      "src": "https://ui-avatars.com/api/?name=غ&background=991b1b&color=fff&size=512",
-      "sizes": "512x512",
-      "type": "image/png"
-    }
+    {"src":"https://ui-avatars.com/api/?name=W&background=101b2d&color=d5ad69&size=192","sizes":"192x192","type":"image/png"},
+    {"src":"https://ui-avatars.com/api/?name=W&background=101b2d&color=d5ad69&size=512","sizes":"512x512","type":"image/png"}
   ]
 }

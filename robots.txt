@@ -1,2 +1,3 @@
 User-agent: *
 Allow: /
+Sitemap: https://al-ghaib.us.ci/sitemap.xml

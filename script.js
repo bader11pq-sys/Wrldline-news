@@ -1,230 +1,68 @@
+/* WRLDLINE NEWS — editorial frontend */
 const SUPABASE_URL = "https://vmaxbnogmmfyrcucapnq.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_D3c88u75_LcEN460Y3Jcpw__EfqUnBx";
+const PAGE_SIZE = 24;
+const CATEGORY_NAMES = { politics:"سياسة", economy:"اقتصاد", security:"أمن ودفاع", tech:"تكنولوجيا", sports:"رياضة", culture:"ثقافة", health:"صحة", world:"حول العالم" };
+const state = { articles:[], filtered:[], category:"all", country:"all", lang:"ar", limit:PAGE_SIZE, saved:new Set(readSaved()), query:"", sort:"newest", loading:false };
 
-let state = {
-    articles: [],
-    filtered: [],
-    category: 'all',
-    country: 'all',
-    lang: 'ar',
-    limit: 12
-};
-
-// تشغيل الموقع
-document.addEventListener('DOMContentLoaded', () => {
-    initTheme();
-    fetchNews();
-    initMarkets();
+document.addEventListener("DOMContentLoaded", () => {
+  initPreferences(); bindEvents(); updateClock(); fetchNews(); setInterval(fetchNews, 180000);
 });
 
-// جلب الأخبار من Supabase
-async function fetchNews() {
-    try {
-        // جلب الأخبار مع جدول الترجمات المرتبط بها
-        const res = await fetch(`${SUPABASE_URL}/rest/v1/articles?select=*,article_translations(*)&order=published_at.desc&limit=100`, {
-            headers: { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${SUPABASE_ANON_KEY}` }
-        });
-        const data = await res.json();
-        
-        if (data && data.length > 0) {
-            state.articles = data.map(a => {
-                // البحث عن ترجمة باللغة المطلوبة
-                const trans = a.article_translations?.find(t => t.lang === state.lang);
-
-                return {
-                    id: a.id,
-                    // إذا وجدنا ترجمة نستخدمها، وإلا نستخدم النص الأصلي
-                    title: trans ? trans.title : a.title,
-                    summary: trans ? trans.summary : a.summary,
-                    img: a.image_url && a.image_url.startsWith('http') ? a.image_url : `https://picsum.photos/seed/${a.id}/800/500`,
-                    cat: a.category || 'world',
-                    country: a.country || 'دولي',
-                    src: a.source_name,
-                    time: new Date(a.published_at).toLocaleTimeString(state.lang === 'ar' ? 'ar-EG' : 'en-US', { hour: '2-digit', minute: '2-digit' })
-                };
-            });
-        } else {
-            state.articles = []; 
-        }
-    } catch (e) {
-        state.articles = [];
-    }
-    
-    populateCountries();
-    applyFilters();
+function readSaved(){ try{return JSON.parse(localStorage.getItem("wrldline:saved")||"[]");}catch{return [];} }
+function persistSaved(){ localStorage.setItem("wrldline:saved",JSON.stringify([...state.saved])); }
+function escapeHTML(value=""){ return String(value).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
+function safeURL(value){ try{const u=new URL(value);return ["http:","https:"].includes(u.protocol)?u.href:"#";}catch{return "#";} }
+function formatDate(value){const d=new Date(value);if(Number.isNaN(d.getTime()))return "وقت غير محدد";return new Intl.DateTimeFormat(state.lang==="ar"?"ar-SA":"en-US",{dateStyle:"medium",timeStyle:"short"}).format(d);}
+function timeAgo(value){const d=new Date(value);if(Number.isNaN(d.getTime()))return "";const mins=Math.max(0,Math.floor((Date.now()-d)/60000));if(mins<1)return "الآن";if(mins<60)return "قبل "+mins+" د";const h=Math.floor(mins/60);if(h<24)return "قبل "+h+" س";return formatDate(value);}
+function updateClock(){const now=new Date();document.getElementById("todayLabel").textContent=new Intl.DateTimeFormat("ar-SA",{weekday:"long",year:"numeric",month:"long",day:"numeric"}).format(now);document.getElementById("editionDate").textContent=formatDate(now);document.getElementById("year").textContent=now.getFullYear();}
+function initPreferences(){const theme=localStorage.getItem("wrldline:theme")||"light";document.documentElement.dataset.theme=theme;document.getElementById("themeButton").textContent=theme==="dark"?"☀":"☾";}
+function bindEvents(){
+ document.getElementById("themeButton").addEventListener("click",()=>{const next=document.documentElement.dataset.theme==="dark"?"light":"dark";document.documentElement.dataset.theme=next;localStorage.setItem("wrldline:theme",next);document.getElementById("themeButton").textContent=next==="dark"?"☀":"☾";});
+ document.getElementById("languageButton").addEventListener("click",()=>{state.lang=state.lang==="ar"?"en":"ar";document.documentElement.lang=state.lang;document.documentElement.dir=state.lang==="ar"?"rtl":"ltr";document.getElementById("languageButton").textContent=state.lang==="ar"?"English":"العربية";fetchNews();});
+ document.getElementById("menuButton").addEventListener("click",()=>{const nav=document.getElementById("mainNav");const open=nav.classList.toggle("mobile-open");document.getElementById("menuButton").setAttribute("aria-expanded",String(open));});
+ document.getElementById("searchButton").addEventListener("click",openSearch);document.getElementById("closeSearch").addEventListener("click",closeSearch);
+ document.getElementById("searchInput").addEventListener("input",e=>{state.query=e.target.value.trim().toLocaleLowerCase();renderSearch();});
+ document.getElementById("countryFilter").addEventListener("change",e=>{state.country=e.target.value;state.limit=PAGE_SIZE;applyFilters();});
+ document.getElementById("sortFilter").addEventListener("change",e=>{state.sort=e.target.value;applyFilters();});
+ document.getElementById("loadMoreButton").addEventListener("click",()=>{state.limit+=PAGE_SIZE;renderFeed();});
+ document.getElementById("savedButton").addEventListener("click",showSaved);document.getElementById("openSaved").addEventListener("click",showSaved);
+ document.querySelectorAll("[data-category]").forEach(el=>el.addEventListener("click",e=>{e.preventDefault();selectCategory(el.dataset.category);}));
+ document.getElementById("articleModal").addEventListener("click",e=>{if(e.target.id==="articleModal")closeArticle();});
+ document.getElementById("searchOverlay").addEventListener("click",e=>{if(e.target.id==="searchOverlay")closeSearch();});
+ document.addEventListener("keydown",e=>{if(e.key==="Escape"){closeArticle();closeSearch();}if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==="k"){e.preventDefault();openSearch();}});
 }
-
-// تعبئة قائمة الدول
-function populateCountries() {
-    const select = document.getElementById('countryFilter');
-    const countries = [...new Set(state.articles.map(a => a.country))].filter(c => c && c !== 'دولي');
-    countries.sort();
-    select.innerHTML = '<option value="all">🌍 كل الدول</option>';
-    countries.forEach(c => { select.innerHTML += `<option value="${c}">${c}</option>`; });
+async function fetchNews(){
+ if(state.loading)return;state.loading=true;document.getElementById("connectionLabel").textContent="جارٍ تحديث الأخبار";
+ try{
+  const url=SUPABASE_URL+"/rest/v1/articles?select=*,article_translations(*)&order=published_at.desc&limit=300";
+  const res=await fetch(url,{headers:{apikey:SUPABASE_ANON_KEY,Authorization:"Bearer "+SUPABASE_ANON_KEY},signal:AbortSignal.timeout(18000)});
+  if(!res.ok)throw new Error("تعذر جلب الأخبار ("+res.status+")");
+  const rows=await res.json();if(!Array.isArray(rows))throw new Error("استجابة الأخبار غير صالحة");
+  state.articles=rows.map(normalizeArticle).filter(a=>a.title).sort((a,b)=>new Date(b.published_at)-new Date(a.published_at));
+  populateCountries();applyFilters();updateBreaking();document.getElementById("lastUpdated").textContent="آخر تحديث: "+formatDate(new Date());document.getElementById("connectionLabel").textContent="تم تحديث غرفة الأخبار";
+ }catch(err){console.error("WRLDLINE fetch:",err);document.getElementById("connectionLabel").textContent="تعذر الاتصال بمصدر الأخبار";if(!state.articles.length){document.getElementById("heroLayout").innerHTML='<div class="empty-state"><strong>لم نتمكن من تحميل الأخبار</strong><p>تحقق من الاتصال وحاول التحديث بعد قليل.</p><button class="outline-button" onclick="fetchNews()">إعادة المحاولة</button></div>';document.getElementById("newsGrid").innerHTML="";}}
+ finally{state.loading=false;}
 }
-
-// الفلترة
-function filterCategory(cat, el) {
-    state.category = cat;
-    state.limit = 12;
-    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-    if(el) el.classList.add('active');
-    applyFilters();
+function normalizeArticle(a){
+ const translation=(a.article_translations||[]).find(t=>t.lang===state.lang);
+ const title=translation?.title||a.title||"";const summary=translation?.summary||a.summary||"";
+ return {id:String(a.id),title,summary,img:safeURL(a.image_url||""),cat:CATEGORY_NAMES[a.category]?a.category:"world",country:a.country||"دولي",src:a.source_name||"مصدر إخباري",sourceURL:safeURL(a.url||a.source_url||""),published_at:a.published_at||a.created_at||"",lang:a.lang||"ar",raw:a};
 }
-
-function filterCountry(country) {
-    state.country = country;
-    state.limit = 12;
-    applyFilters();
-}
-
-function applyFilters() {
-    state.filtered = state.articles.filter(a => {
-        const matchCat = state.category === 'all' || a.cat === state.category;
-        const matchCountry = state.country === 'all' || a.country === state.country;
-        return matchCat && matchCountry;
-    });
-    renderUI();
-}
-
-// رسم الواجهة
-function renderUI() {
-    const heroArea = document.getElementById('heroLayout');
-    const gridArea = document.getElementById('newsGrid');
-    
-    if (state.filtered.length === 0) {
-        heroArea.innerHTML = `<div style="padding:40px;text-align:center;color:var(--text-muted);grid-column:1/-1;">لا توجد أخبار حالياً.</div>`;
-        gridArea.innerHTML = '';
-        document.getElementById('loadMoreWrap').style.display = 'none';
-        return;
-    }
-
-    // الخبر الرئيسي
-    const main = state.filtered[0];
-    const sides = state.filtered.slice(1, 4);
-    
-    heroArea.innerHTML = `
-        <div class="hero-main" onclick="openArticle('${main.id}')">
-            <img src="${main.img}" alt="">
-            <div class="hero-meta"><span>${main.cat.toUpperCase()}</span><span>📍 ${main.country}</span></div>
-            <h1 class="hero-title">${main.title}</h1>
-            <p class="hero-desc">${main.summary}</p>
-            <div style="font-size:0.8rem; color:var(--text-muted);">${main.src} • ${main.time}</div>
-        </div>
-        <div class="hero-side">
-            ${sides.map(s => `
-                <div class="side-card" onclick="openArticle('${s.id}')">
-                    <img src="${s.img}" alt="">
-                    <div>
-                        <div class="side-title">${s.title}</div>
-                        <div class="side-meta">${s.src} • ${s.time}</div>
-                    </div>
-                </div>
-            `).join('')}
-        </div>
-    `;
-
-    // شبكة الأخبار
-    const rest = state.filtered.slice(4, state.limit);
-    gridArea.innerHTML = rest.map(a => `
-        <div class="card" onclick="openArticle('${a.id}')">
-            <img src="${a.img}" alt="">
-            <div class="card-body">
-                <div class="card-cat">${a.cat}</div>
-                <h3 class="card-title">${a.title}</h3>
-                <p class="card-desc">${a.summary}</p>
-                <div class="card-footer">
-                    <span>${a.src} • ${a.time}</span>
-                    <span class="country-badge">📍 ${a.country}</span>
-                </div>
-            </div>
-        </div>
-    `).join('');
-
-    // زر المزيد
-    const wrap = document.getElementById('loadMoreWrap');
-    wrap.style.display = state.limit >= state.filtered.length ? 'none' : 'block';
-}
-
-function loadMore() {
-    state.limit += 9;
-    renderUI();
-}
-
-// فتح الخبر
-function openArticle(id) {
-    const a = state.articles.find(x => x.id === id);
-    if(!a) return;
-    
-    document.getElementById('modalContent').innerHTML = `
-        <button class="close-modal" onclick="closeArticle()">✕</button>
-        <img src="${a.img}" class="modal-img">
-        <div class="modal-body">
-            <div class="card-cat">${a.cat} | 📍 ${a.country}</div>
-            <h1 class="modal-title">${a.title}</h1>
-            <p class="modal-lead">${a.summary}</p>
-            <div class="modal-text">
-                <p>هذا نص تجريبي للخبر. في المنصة الحقيقية، يتم وضع تفاصيل الخبر هنا.</p>
-                <p>المصدر: ${a.src} - التوقيت: ${a.time}</p>
-            </div>
-        </div>
-    `;
-    document.getElementById('articleModal').classList.add('active');
-    document.body.style.overflow = 'hidden';
-}
-
-function closeArticle() {
-    document.getElementById('articleModal').classList.remove('active');
-    document.body.style.overflow = 'auto';
-}
-
-// الأسعار
-function initMarkets() {
-    const markets = [
-        { n: 'برنت', p: 92.01, c: 0.6 }, { n: 'الذهب', p: 4043.62, c: 0.3 }, 
-        { n: 'بيتكوين', p: 73866, c: 1.2 }, { n: 'S&P 500', p: 7520.93, c: -0.38 }
-    ];
-    const html = markets.map(m => `
-        <div class="market-item">
-            <span>${m.n}</span>
-            <span>${m.p.toLocaleString()}</span>
-            <span class="${m.c >= 0 ? 'market-up' : 'market-down'}">${m.c >= 0 ? '▲' : '▼'} ${Math.abs(m.c)}%</span>
-        </div>
-    `).join('');
-    document.getElementById('marketsTicker').innerHTML = html + html;
-}
-
-// أدوات مساعدة
-function toggleMenu() { document.getElementById('mainNav').classList.toggle('active'); }
-function toggleSearch() { document.getElementById('searchOverlay').classList.toggle('active'); }
-function toggleTheme() {
-    const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-    document.documentElement.setAttribute('data-theme', isDark ? 'light' : 'dark');
-    document.getElementById('themeBtn').innerText = isDark ? '🌙' : '☀️';
-}
-function initTheme() {
-    if(localStorage.getItem('theme') === 'dark') {
-        document.documentElement.setAttribute('data-theme', 'dark');
-        document.getElementById('themeBtn').innerText = '☀️';
-    }
-}
-function toggleLang() {
-    state.lang = state.lang === 'ar' ? 'en' : 'ar';
-    document.documentElement.dir = state.lang === 'ar' ? 'rtl' : 'ltr';
-    document.getElementById('langBtn').innerText = state.lang === 'ar' ? 'EN' : 'ع';
-    
-    // إعادة جلب الأخبار باللغة الجديدة
-    fetchNews(); 
-}
-
-function handleSearch(q) {
-    const resDiv = document.getElementById('searchResults');
-    if(!q) { resDiv.innerHTML = ''; return; }
-    const results = state.articles.filter(a => a.title.includes(q));
-    resDiv.innerHTML = results.map(a => `
-        <div class="search-item" onclick="closeArticle(); toggleSearch(); openArticle('${a.id}')">
-            <h4>${a.title}</h4>
-            <span style="font-size:0.8rem;color:var(--text-muted)">${a.src}</span>
-        </div>
-    `).join('');
-}
+function populateCountries(){const select=document.getElementById("countryFilter"),previous=state.country;const countries=[...new Set(state.articles.map(a=>a.country).filter(c=>c&&c!=="دولي"))].sort((a,b)=>a.localeCompare(b,"ar"));select.innerHTML='<option value="all">كل الدول</option>'+countries.map(c=>'<option value="'+escapeHTML(c)+'">'+escapeHTML(c)+'</option>').join("");select.value=countries.includes(previous)?previous:"all";if(select.value==="all")state.country="all";}
+function selectCategory(cat){state.category=cat;state.limit=PAGE_SIZE;document.querySelectorAll(".nav-link,.chip").forEach(el=>el.classList.toggle("active",el.dataset.category===cat));document.getElementById("feedTitle").textContent=cat==="all"?"أحدث الأخبار":CATEGORY_NAMES[cat]||"أحدث الأخبار";applyFilters();document.getElementById("mainNav").classList.remove("mobile-open");}
+function applyFilters(){state.filtered=state.articles.filter(a=>(state.category==="all"||a.cat===state.category)&&(state.country==="all"||a.country===state.country));state.filtered.sort((a,b)=>state.sort==="oldest"?new Date(a.published_at)-new Date(b.published_at):new Date(b.published_at)-new Date(a.published_at));renderHero();renderFeed();}
+function imageMarkup(article,cls=""){return article.img&&article.img!=="#" ? '<img class="'+cls+'" src="'+escapeHTML(article.img)+'" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.style.display=\'none\'">':'<div class="image-placeholder '+cls+'">WRLDLINE</div>';}
+function renderHero(){const host=document.getElementById("heroLayout");if(!state.filtered.length){host.innerHTML='<div class="empty-state"><strong>لا توجد نتائج في هذا القسم</strong><p>جرّب تغيير الدولة أو اختيار قسم آخر.</p></div>';return;}const lead=state.filtered[0],others=state.filtered.slice(1,4);host.innerHTML='<article class="lead-story" data-open="'+escapeHTML(lead.id)+'">'+imageMarkup(lead,"lead-image")+'<div class="lead-overlay"><div class="story-meta"><span class="category-label">'+escapeHTML(CATEGORY_NAMES[lead.cat]||"عالم")+'</span><span>'+escapeHTML(lead.country)+'</span></div><h2>'+escapeHTML(lead.title)+'</h2><p>'+escapeHTML(lead.summary)+'</p><div class="story-byline">'+escapeHTML(lead.src)+' · '+escapeHTML(timeAgo(lead.published_at))+'</div></div></article><div class="lead-rail">'+others.map(a=>'<article class="rail-story" data-open="'+escapeHTML(a.id)+'">'+imageMarkup(a,"rail-image")+'<div><div class="story-meta"><span class="category-label">'+escapeHTML(CATEGORY_NAMES[a.cat]||"عالم")+'</span><span>'+escapeHTML(timeAgo(a.published_at))+'</span></div><h3>'+escapeHTML(a.title)+'</h3><small>'+escapeHTML(a.src)+'</small></div></article>').join("")+'</div>';host.querySelectorAll("[data-open]").forEach(el=>el.addEventListener("click",()=>openArticle(el.dataset.open)));}
+function renderFeed(){const host=document.getElementById("newsGrid"),items=state.filtered.slice(0,state.limit);if(!items.length){host.innerHTML='<div class="empty-state">لا توجد أخبار مطابقة حالياً.</div>';}else host.innerHTML=items.slice(4).map(a=>'<article class="news-card"><button class="save-button '+(state.saved.has(a.id)?"saved":"")+'" data-save="'+escapeHTML(a.id)+'" aria-label="حفظ الخبر">'+(state.saved.has(a.id)?"★":"☆")+'</button><div class="card-open" data-open="'+escapeHTML(a.id)+'">'+imageMarkup(a,"card-image")+'<div class="card-content"><div class="story-meta"><span class="category-label">'+escapeHTML(CATEGORY_NAMES[a.cat]||"عالم")+'</span><span>'+escapeHTML(a.country)+'</span></div><h3>'+escapeHTML(a.title)+'</h3><p>'+escapeHTML(a.summary)+'</p><div class="card-byline"><span>'+escapeHTML(a.src)+'</span><time>'+escapeHTML(timeAgo(a.published_at))+'</time></div></div></div></article>').join("");host.querySelectorAll("[data-open]").forEach(el=>el.addEventListener("click",()=>openArticle(el.dataset.open)));host.querySelectorAll("[data-save]").forEach(el=>el.addEventListener("click",e=>{e.stopPropagation();toggleSaved(el.dataset.save);}));document.getElementById("loadMoreButton").hidden=state.limit>=state.filtered.length;}
+function updateBreaking(){const item=state.articles[0];document.getElementById("breakingText").textContent=item?item.title:"لا توجد أخبار عاجلة متاحة حالياً";document.getElementById("breakingTime").textContent=item?timeAgo(item.published_at):"LIVE";}
+function openArticle(id){const a=state.articles.find(x=>x.id===id);if(!a)return;const host=document.getElementById("modalContent");host.innerHTML='<button class="modal-close" id="modalClose" aria-label="إغلاق">×</button>'+imageMarkup(a,"modal-image")+'<div class="modal-article-body"><div class="story-meta"><span class="category-label">'+escapeHTML(CATEGORY_NAMES[a.cat]||"عالم")+'</span><span>'+escapeHTML(a.country)+'</span><time>'+escapeHTML(formatDate(a.published_at))+'</time></div><h1>'+escapeHTML(a.title)+'</h1><p class="modal-summary">'+escapeHTML(a.summary)+'</p><div class="source-box"><span>المصدر</span><strong>'+escapeHTML(a.src)+'</strong><a href="'+escapeHTML(a.sourceURL)+'" target="_blank" rel="noopener noreferrer">قراءة الخبر لدى المصدر الأصلي ↗</a></div><p class="disclaimer">يعرض ورلدلاين البيانات المتاحة من المصدر. قد تكون تفاصيل الخبر الكاملة أو تحديثاته منشورة في الموقع الأصلي.</p><button class="outline-button" id="modalSave">'+(state.saved.has(a.id)?"★ إزالة من المحفوظات":"☆ حفظ الخبر")+'</button></div>';document.getElementById("modalClose").addEventListener("click",closeArticle);document.getElementById("modalSave").addEventListener("click",()=>{toggleSaved(a.id);document.getElementById("modalSave").textContent=state.saved.has(a.id)?"★ إزالة من المحفوظات":"☆ حفظ الخبر";});showModal("articleModal");}
+function closeArticle(){hideModal("articleModal");}
+function toggleSaved(id){state.saved.has(id)?state.saved.delete(id):state.saved.add(id);persistSaved();renderFeed();showToast(state.saved.has(id)?"أُضيف الخبر إلى محفوظاتك":"أُزيل الخبر من محفوظاتك");}
+function showSaved(){const list=state.articles.filter(a=>state.saved.has(a.id));const host=document.getElementById("modalContent");host.innerHTML='<button class="modal-close" id="modalClose" aria-label="إغلاق">×</button><div class="modal-article-body saved-view"><span class="section-kicker">مكتبتك الشخصية</span><h2>الأخبار المحفوظة</h2>'+(list.length?list.map(a=>'<button class="saved-row" data-open="'+escapeHTML(a.id)+'"><strong>'+escapeHTML(a.title)+'</strong><small>'+escapeHTML(a.src)+' · '+escapeHTML(timeAgo(a.published_at))+'</small></button>').join(""):'<p class="muted">لم تحفظ أي خبر بعد.</p>')+'</div>';document.getElementById("modalClose").addEventListener("click",closeArticle);host.querySelectorAll("[data-open]").forEach(el=>el.addEventListener("click",()=>openArticle(el.dataset.open)));showModal("articleModal");}
+function showModal(id){const el=document.getElementById(id);el.classList.add("visible");el.setAttribute("aria-hidden","false");document.body.classList.add("modal-open");}
+function hideModal(id){const el=document.getElementById(id);el.classList.remove("visible");el.setAttribute("aria-hidden","true");document.body.classList.remove("modal-open");}
+function openSearch(){showModal("searchOverlay");document.getElementById("searchInput").focus();}
+function closeSearch(){hideModal("searchOverlay");}
+function renderSearch(){const q=state.query,host=document.getElementById("searchResults");if(!q){host.innerHTML='<p class="muted">اكتب كلمة للبدء.</p>';return;}const results=state.articles.filter(a=>(a.title+" "+a.summary+" "+a.country+" "+a.src).toLocaleLowerCase().includes(q)).slice(0,30);host.innerHTML=results.length?results.map(a=>'<button class="search-result" data-open="'+escapeHTML(a.id)+'"><strong>'+escapeHTML(a.title)+'</strong><small>'+escapeHTML(a.src)+' · '+escapeHTML(a.country)+'</small></button>').join(""):'<p class="muted">لا توجد نتائج مطابقة.</p>';host.querySelectorAll("[data-open]").forEach(el=>el.addEventListener("click",()=>{closeSearch();openArticle(el.dataset.open);}));}
+function showToast(message){const el=document.getElementById("toast");el.textContent=message;el.classList.add("visible");clearTimeout(showToast.timer);showToast.timer=setTimeout(()=>el.classList.remove("visible"),2300);}

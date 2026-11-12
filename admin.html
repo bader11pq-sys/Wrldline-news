@@ -1,318 +1,41 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ar" dir="rtl">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>لوحة التحكم | وكالة الغيب</title>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;600;700&display=swap" rel="stylesheet">
-<!-- استدعاء مكتبة Supabase الرسمية -->
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow"><meta name="theme-color" content="#101b2d">
+<title>لوحة التحرير | WRLDLINE NEWS</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
-    :root { --bg: #09090b; --surface: #18181b; --border: #27272a; --text: #f4f4f5; --text-muted: #a1a1aa; --brand: #ef4444; --success: #10b981; --info: #3b82f6; }
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: 'IBM Plex Sans Arabic', sans-serif; background-color: var(--bg); color: var(--text); line-height: 1.6; display: flex; justify-content: center; padding: 20px; }
-    .container { width: 100%; max-width: 800px; background: var(--surface); padding: 24px; border-radius: 16px; border: 1px solid var(--border); box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-    .header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; border-bottom: 1px solid var(--border); padding-bottom: 16px; flex-wrap: wrap; gap: 10px; }
-    .header h1 { font-size: 1.3rem; color: var(--brand); }
-    .btn-dashboard { font-size: 0.85rem; color: var(--text-muted); text-decoration: none; background: #27272a; padding: 6px 12px; border-radius: 8px; }
-    .form-group { margin-bottom: 15px; }
-    label { display: block; margin-bottom: 6px; font-weight: 600; font-size: 0.9rem; }
-    input, select, textarea { width: 100%; padding: 10px 14px; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; color: var(--text); font-family: inherit; font-size: 0.95rem; }
-    input:focus, select:focus, textarea:focus { outline: none; border-color: var(--brand); }
-    textarea { resize: vertical; min-height: 100px; }
-    input[type="file"] { padding: 8px; background: var(--surface); border: 1px dashed var(--border); }
-    .btn-submit { width: 100%; padding: 14px; background: var(--brand); color: #fff; border: none; border-radius: 8px; font-size: 1rem; font-weight: 700; cursor: pointer; margin-top: 10px; transition: 0.2s; }
-    .btn-submit:hover { background: #dc2626; }
-    .btn-submit:disabled { background: #7f1d1d; cursor: not-allowed; }
-    .btn-cancel { width: 100%; padding: 10px; background: #27272a; color: #fff; border: none; border-radius: 8px; font-size: 0.9rem; font-weight: 700; cursor: pointer; margin-top: 10px; display: none; }
-    
-    .manage-section { margin-top: 30px; border-top: 2px solid var(--border); padding-top: 20px; }
-    .manage-title { font-size: 1.2rem; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; }
-    .article-list { display: flex; flex-direction: column; gap: 10px; max-height: 500px; overflow-y: auto; padding-left: 5px; }
-    .article-item { background: var(--bg); border: 1px solid var(--border); padding: 12px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; gap: 10px; }
-    .article-info { flex: 1; }
-    .article-info h4 { font-size: 0.95rem; margin-bottom: 4px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-    .article-info span { font-size: 0.75rem; color: var(--text-muted); }
-    .article-actions { display: flex; gap: 6px; }
-    .btn-action { padding: 6px 10px; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 0.8rem; color: #fff; }
-    .btn-edit { background: var(--info); }
-    .btn-delete { background: var(--brand); }
-    
-    .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(100px); background: var(--success); color: #fff; padding: 12px 24px; border-radius: 8px; font-weight: 600; transition: transform 0.3s; z-index: 1000; text-align: center; }
-    .toast.show { transform: translateX(-50%) translateY(0); }
-    .toast.error { background: var(--brand); }
-    .hidden { display: none !important; }
-</style>
-</head>
-<body>
-
-<!-- شاشة تسجيل الدخول -->
-<div class="container" id="loginScreen">
-    <div class="header" style="justify-content: center; border: none;">
-        <h1>تسجيل الدخول للوحة التحكم</h1>
-    </div>
-    <div class="form-group">
-        <label>رمز المرور السري (Password)</label>
-        <input type="password" id="adminPassword" placeholder="أدخل كلمة المرور...">
-    </div>
-    <button class="btn-submit" onclick="checkPassword()">دخول</button>
-</div>
-
-<!-- لوحة التحكم -->
-<div class="container hidden" id="adminPanel">
-    <div class="header">
-        <h1>لوحة تحكم الغيب</h1>
-        <a href="index.html" class="btn-dashboard">زيارة الموقع &larr;</a>
-    </div>
-
-    <form id="newsForm">
-        <input type="hidden" id="editId" value="">
-        
-        <div class="form-group">
-            <label>عنوان الخبر الرئيسي</label>
-            <input type="text" id="title" required placeholder="اكتب العنوان هنا...">
-        </div>
-        
-        <div class="form-group">
-            <label>نص الخبر الكامل</label>
-            <textarea id="summary" required placeholder="اكتب تفاصيل الخبر هنا..."></textarea>
-        </div>
-
-        <div class="form-group">
-            <label>الوسائط (اختر صورة أو فيديو - اختياري)</label>
-            <input type="file" id="mediaFile" accept="image/*,video/*">
-            <small style="color:var(--text-muted); font-size:0.8rem; margin-top:4px; display:block;">الحد الأقصى 15 ميجابايت.</small>
-        </div>
-
-        <div class="form-group">
-            <label>القسم</label>
-            <select id="category">
-                <option value="politics">سياسة</option>
-                <option value="economy">اقتصاد</option>
-                <option value="security">أمن ودفاع</option>
-                <option value="world">العالم</option>
-                <option value="sports">رياضة</option>
-                <option value="tech">تكنولوجيا</option>
-                <option value="culture">ثقافة</option>
-                <option value="health">صحة</option>
-            </select>
-        </div>
-
-        <div class="form-group">
-            <label>الدولة (لتظهر على الخريطة)</label>
-            <select id="country">
-                <option value="">بدون دولة (دولي)</option>
-                <option value="السعودية">السعودية</option>
-                <option value="فلسطين">فلسطين</option>
-                <option value="أوكرانيا">أوكرانيا</option>
-                <option value="الولايات المتحدة">الولايات المتحدة</option>
-                <option value="روسيا">روسيا</option>
-                <option value="إيران">إيران</option>
-                <option value="تركيا">تركيا</option>
-                <option value="مصر">مصر</option>
-                <option value="اليمن">اليمن</option>
-                <option value="الإمارات">الإمارات</option>
-                <option value="قطر">قطر</option>
-                <option value="الكويت">الكويت</option>
-                <option value="الأردن">الأردن</option>
-                <option value="لبنان">لبنان</option>
-                <option value="سوريا">سوريا</option>
-                <option value="العراق">العراق</option>
-                <option value="المغرب">المغرب</option>
-                <option value="الجزائر">الجزائر</option>
-                <option value="تونس">تونس</option>
-                <option value="ليبيا">ليبيا</option>
-                <option value="السودان">السودان</option>
-            </select>
-        </div>
-
-        <div class="form-group">
-            <label>اسم المصدر</label>
-            <input type="text" id="source_name" value="محرر المنصة" required>
-        </div>
-
-        <button type="submit" class="btn-submit" id="submitBtn">نشر الخبر الآن 🚀</button>
-        <button type="button" class="btn-cancel" id="cancelEditBtn" onclick="cancelEdit()">إلغاء التعديل</button>
-    </form>
-
-    <div class="manage-section">
-        <div class="manage-title">
-            <h2>إدارة الأخبار المنشورة</h2>
-            <button onclick="fetchArticles()" style="background:transparent; border:none; color:var(--info); cursor:pointer; font-weight:bold;">🔄 تحديث</button>
-        </div>
-        <div class="article-list" id="articlesList"></div>
-    </div>
-</div>
-
-<div class="toast" id="toast">تم!</div>
-
+:root{font-family:"IBM Plex Sans Arabic",sans-serif;color-scheme:dark;--bg:#0b1421;--panel:#142238;--line:#2b3d55;--text:#f2f5f9;--muted:#a9b6c7;--gold:#d5ad69;--red:#c64a52}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);padding:24px;line-height:1.7}.wrap{max-width:920px;margin:auto}.panel{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:24px;margin-bottom:18px}h1,h2{margin:0 0 12px}h1{font-size:24px}h2{font-size:18px}.muted,small{color:var(--muted)}label{display:block;font-weight:600;margin:12px 0 5px}input,textarea,select{width:100%;padding:11px;border:1px solid var(--line);border-radius:9px;background:#0d1929;color:var(--text);font:inherit}textarea{min-height:130px;resize:vertical}.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.btn{border:0;border-radius:9px;padding:11px 18px;background:var(--gold);color:#172234;font:700 14px inherit;cursor:pointer;margin-top:14px}.btn.secondary{background:#263b56;color:#fff}.btn.danger{background:var(--red);color:white}.row{display:flex;justify-content:space-between;align-items:center;gap:12px}.item{padding:14px 0;border-top:1px solid var(--line)}.item strong{display:block}.item small{display:block}.status{padding:10px;border-radius:9px;background:#0d1929;color:var(--muted);margin-top:12px}.hidden{display:none!important}.actions{display:flex;gap:8px;flex-wrap:wrap}.actions .btn{margin-top:8px}.notice{border-inline-start:3px solid var(--gold);padding:10px 14px;background:#1a2a40;color:#d9e2ed;font-size:13px;margin:16px 0}@media(max-width:600px){body{padding:12px}.panel{padding:17px}.grid{grid-template-columns:1fr}.row{align-items:flex-start;flex-direction:column}}
+</style></head>
+<body><main class="wrap">
+<header class="panel row"><div><h1>WRLDLINE <span style="color:var(--gold)">/</span> لوحة التحرير</h1><small>إدارة المحتوى — وصول محمي بحساب Supabase</small></div><a href="index.html" style="color:var(--gold)">عرض الموقع ↗</a></header>
+<section class="panel" id="loginPanel"><h2>تسجيل دخول المحرر</h2><p class="muted">استخدم حساب محرر مصرحاً به. لا توجد كلمة مرور مشتركة أو مخزنة داخل ملفات الموقع.</p><form id="loginForm"><label for="email">البريد الإلكتروني</label><input id="email" type="email" autocomplete="username" required><label for="password">كلمة المرور</label><input id="password" type="password" autocomplete="current-password" required><button class="btn" type="submit">تسجيل الدخول</button></form></section>
+<section class="panel hidden" id="editorPanel"><div class="row"><div><h2>إدارة الأخبار</h2><small id="userLabel"></small></div><button class="btn secondary" id="logoutButton">تسجيل الخروج</button></div>
+<div class="notice">تخضع عمليات النشر والتعديل والحذف لسياسات Row Level Security في Supabase. لا تمنح صلاحيات الكتابة للمستخدمين المجهولين.</div>
+<form id="articleForm"><input type="hidden" id="articleId"><label for="title">عنوان الخبر</label><input id="title" maxlength="300" required><label for="summary">ملخص / نص الخبر</label><textarea id="summary" maxlength="20000" required></textarea>
+<div class="grid"><div><label for="category">القسم</label><select id="category"><option value="politics">سياسة</option><option value="economy">اقتصاد</option><option value="security">أمن ودفاع</option><option value="world">العالم</option><option value="sports">رياضة</option><option value="tech">تكنولوجيا</option><option value="culture">ثقافة</option><option value="health">صحة</option></select></div><div><label for="country">الدولة</label><input id="country" placeholder="دولي"></div></div>
+<div class="grid"><div><label for="source">اسم المصدر</label><input id="source" value="هيئة التحرير" required></div><div><label for="sourceUrl">رابط المصدر الأصلي</label><input id="sourceUrl" type="url" placeholder="https://..." ></div></div>
+<label for="imageUrl">رابط الصورة (اختياري)</label><input id="imageUrl" type="url" placeholder="https://...">
+<div class="actions"><button class="btn" type="submit" id="saveButton">نشر الخبر</button><button class="btn secondary" type="button" id="resetButton">تفريغ الحقول</button></div></form>
+<div class="row" style="margin-top:25px"><h2>آخر الأخبار</h2><button class="btn secondary" id="refreshButton">تحديث القائمة</button></div><div id="articleList" class="status">جارٍ التحميل...</div></section>
+<div id="status" class="status" role="status" aria-live="polite">يلزم تسجيل الدخول للمتابعة.</div>
+</main>
 <script>
-    const SUPABASE_URL = "https://vmaxbnogmmfyrcucapnq.supabase.co";
-    const SUPABASE_ANON_KEY = "sb_publishable_D3c88u75_LcEN460Y3Jcpw__EfqUnBx";
-    const ADMIN_PASSWORD = "Badered2009"; 
-
-    // تهيئة مكتبة Supabase
-    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-    function checkPassword() {
-        const pass = document.getElementById('adminPassword').value.trim();
-        if (pass === ADMIN_PASSWORD) {
-            document.getElementById('loginScreen').classList.add('hidden');
-            document.getElementById('adminPanel').classList.remove('hidden');
-            fetchArticles(); 
-        } else {
-            showToast("كلمة المرور غير صحيحة!", true);
-        }
-    }
-
-    async function fetchArticles() {
-        const list = document.getElementById('articlesList');
-        list.innerHTML = '<p style="color:var(--text-muted); text-align:center;">جاري التحميل...</p>';
-        try {
-            const res = await fetch(`${SUPABASE_URL}/rest/v1/articles?select=*&order=published_at.desc&limit=50`, {
-                headers: { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${SUPABASE_ANON_KEY}` }
-            });
-            const data = await res.json();
-            if (data.length === 0) { list.innerHTML = '<p style="text-align:center;">لا توجد أخبار.</p>'; return; }
-
-            list.innerHTML = data.map(a => `
-                <div class="article-item">
-                    <div class="article-info">
-                        <h4>${a.title}</h4>
-                        <span>${a.source_name} • ${new Date(a.published_at).toLocaleDateString('ar-EG')}</span>
-                    </div>
-                    <div class="article-actions">
-                        <button class="btn-action btn-edit" onclick='editArticle(${JSON.stringify(a).replace(/'/g, "&#39;")})'>تعديل</button>
-                        <button class="btn-action btn-delete" onclick="deleteArticle('${a.id}')">حذف</button>
-                    </div>
-                </div>
-            `).join('');
-        } catch (e) { list.innerHTML = '<p style="color:red; text-align:center;">حدث خطأ.</p>'; }
-    }
-
-    async function deleteArticle(id) {
-        if (!confirm("هل أنت متأكد من الحذف؟")) return;
-        try {
-            const res = await fetch(`${SUPABASE_URL}/rest/v1/articles?id=eq.${id}`, { method: 'DELETE', headers: { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${SUPABASE_ANON_KEY}` } });
-            if (res.ok) { showToast("تم الحذف"); fetchArticles(); } else { showToast("فشل الحذف", true); }
-        } catch (e) { showToast("خطأ أثناء الحذف", true); }
-    }
-
-    function editArticle(article) {
-        document.getElementById('editId').value = article.id;
-        document.getElementById('title').value = article.title;
-        document.getElementById('summary').value = article.summary || '';
-        document.getElementById('category').value = article.category || 'world';
-        document.getElementById('country').value = article.country || '';
-        document.getElementById('source_name').value = article.source_name || 'محرر المنصة';
-        
-        document.getElementById('submitBtn').innerText = "حفظ التعديلات 💾";
-        document.getElementById('submitBtn').style.background = "var(--info)";
-        document.getElementById('cancelEditBtn').style.display = "block";
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-
-    function cancelEdit() {
-        document.getElementById('editId').value = "";
-        document.getElementById('newsForm').reset();
-        document.getElementById('submitBtn').innerText = "نشر الخبر الآن 🚀";
-        document.getElementById('submitBtn').style.background = "var(--brand)";
-        document.getElementById('cancelEditBtn').style.display = "none";
-    }
-
-    document.getElementById('newsForm').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const btn = document.getElementById('submitBtn');
-        const editId = document.getElementById('editId').value;
-        btn.disabled = true;
-        btn.innerText = "جاري المعالجة...";
-
-        const title = document.getElementById('title').value;
-        const summary = document.getElementById('summary').value;
-        const category = document.getElementById('category').value;
-        const country = document.getElementById('country').value;
-        const source_name = document.getElementById('source_name').value;
-        const fileInput = document.getElementById('mediaFile');
-        
-        let mediaUrl = undefined; 
-        let mediaType = 'image';
-
-        try {
-            if (fileInput.files.length > 0) {
-                const file = fileInput.files[0];
-                
-                if (file.size > 15 * 1024 * 1024) {
-                    throw new Error("حجم الملف كبير جداً (الحد الأقصى 15 ميجابايت).");
-                }
-
-                const fileExt = file.name.split('.').pop();
-                const fileName = `${Date.now()}.${fileExt}`;
-                const filePath = `uploads/${fileName}`;
-
-                if (file.type.startsWith('video/')) mediaType = 'video';
-
-                // استخدام مكتبة Supabase للرفع (أكثر استقراراً مع الآيفون)
-                const { data, error } = await supabaseClient.storage
-                    .from('news-media')
-                    .upload(filePath, file);
-
-                if (error) {
-                    throw new Error("فشل الرفع: " + error.message);
-                }
-                
-                const { data: urlData } = supabaseClient.storage.from('news-media').getPublicUrl(filePath);
-                mediaUrl = urlData.publicUrl;
-            }
-
-            const articleData = {
-                title: title,
-                summary: summary,
-                category: category,
-                country: country || null,
-                source_name: source_name
-            };
-            
-            if (mediaUrl !== undefined) {
-                articleData.image_url = mediaUrl;
-                articleData.media_type = mediaType;
-            }
-
-            const method = editId ? 'PATCH' : 'POST';
-            const url = editId ? `${SUPABASE_URL}/rest/v1/articles?id=eq.${editId}` : `${SUPABASE_URL}/rest/v1/articles`;
-            
-            if (!editId) {
-                articleData.url = 'news-' + Date.now();
-                articleData.lang = 'ar';
-                articleData.verification = 'confirmed';
-                articleData.published_at = new Date().toISOString();
-            }
-
-            const res = await fetch(url, {
-                method: method,
-                headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': `Bearer ${SUPABASE_ANON_KEY}`, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
-                body: JSON.stringify(articleData)
-            });
-
-            if (!res.ok) throw new Error("فشل الحفظ في قاعدة البيانات");
-
-            showToast(editId ? "تم حفظ التعديلات" : "تم نشر الخبر");
-            cancelEdit(); 
-            fetchArticles(); 
-            
-        } catch (error) {
-            showToast("حدث خطأ: " + error.message, true);
-        } finally {
-            btn.disabled = false;
-            btn.innerText = editId ? "حفظ التعديلات 💾" : "نشر الخبر الآن 🚀";
-        }
-    });
-
-    function showToast(msg, isError = false) {
-        const toast = document.getElementById('toast');
-        toast.innerText = msg;
-        toast.className = 'toast show' + (isError ? ' error' : '');
-        setTimeout(() => { toast.classList.remove('show'); }, 5000);
-    }
-</script>
-</body>
-</html>
+const URL="https://vmaxbnogmmfyrcucapnq.supabase.co";
+const KEY="sb_publishable_D3c88u75_LcEN460Y3Jcpw__EfqUnBx";
+const db=window.supabase.createClient(URL,KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
+const $=id=>document.getElementById(id);
+function message(t){$("status").textContent=t;}
+function resetForm(){$("articleForm").reset();$("articleId").value="";$("source").value="هيئة التحرير";$("saveButton").textContent="نشر الخبر";}
+async function showSession(){const {data:{session}}=await db.auth.getSession();$("loginPanel").classList.toggle("hidden",!!session);$("editorPanel").classList.toggle("hidden",!session);if(session){$("userLabel").textContent=session.user.email||"محرر مسجل";await loadArticles();}}
+$("loginForm").addEventListener("submit",async e=>{e.preventDefault();message("جارٍ التحقق...");const {error}=await db.auth.signInWithPassword({email:$("email").value.trim(),password:$("password").value});if(error){message("تعذر تسجيل الدخول: "+error.message);return;}message("تم تسجيل الدخول.");await showSession();});
+$("logoutButton").addEventListener("click",async()=>{await db.auth.signOut();message("تم تسجيل الخروج.");await showSession();});
+$("resetButton").addEventListener("click",resetForm);$("refreshButton").addEventListener("click",loadArticles);
+async function loadArticles(){const {data,error}=await db.from("articles").select("id,title,summary,category,country,source_name,published_at,url,image_url").order("published_at",{ascending:false}).limit(60);if(error){$("articleList").textContent="تعذر تحميل الأخبار: "+error.message;return;}const list=$("articleList");list.replaceChildren();if(!data.length){list.textContent="لا توجد أخبار منشورة.";return;}for(const a of data){const row=document.createElement("div");row.className="item";const title=document.createElement("strong");title.textContent=a.title||"بلا عنوان";const meta=document.createElement("small");meta.textContent=[a.source_name,a.country,a.published_at?new Date(a.published_at).toLocaleString("ar-SA"):""].filter(Boolean).join(" · ");const actions=document.createElement("div");actions.className="actions";const edit=document.createElement("button");edit.className="btn secondary";edit.textContent="تعديل";edit.addEventListener("click",()=>editArticle(a));const del=document.createElement("button");del.className="btn danger";del.textContent="حذف";del.addEventListener("click",()=>deleteArticle(a.id));actions.append(edit,del);row.append(title,meta,actions);list.append(row);}}
+function editArticle(a){$("articleId").value=a.id;$("title").value=a.title||"";$("summary").value=a.summary||"";$("category").value=a.category||"world";$("country").value=a.country||"";$("source").value=a.source_name||"هيئة التحرير";$("sourceUrl").value=a.url||"";$("imageUrl").value=a.image_url||"";$("saveButton").textContent="حفظ التعديلات";window.scrollTo({top:0,behavior:"smooth"});}
+$("articleForm").addEventListener("submit",async e=>{e.preventDefault();const id=$("articleId").value;const payload={title:$("title").value.trim(),summary:$("summary").value.trim(),category:$("category").value,country:$("country").value.trim()||"دولي",source_name:$("source").value.trim(),url:$("sourceUrl").value.trim()||("editorial-"+Date.now()),image_url:$("imageUrl").value.trim()||null};const button=$("saveButton");button.disabled=true;const result=id?await db.from("articles").update(payload).eq("id",id):await db.from("articles").insert({...payload,lang:"ar",verification:"editorial",published_at:new Date().toISOString()});button.disabled=false;if(result.error){message("فشل الحفظ: "+result.error.message);return;}message(id?"تم تحديث الخبر.":"تم نشر الخبر.");resetForm();await loadArticles();});
+async function deleteArticle(id){if(!confirm("هل تريد حذف هذا الخبر نهائياً؟"))return;const {error}=await db.from("articles").delete().eq("id",id);if(error){message("فشل الحذف: "+error.message);return;}message("تم حذف الخبر.");await loadArticles();}
+showSession();
+</script></body></html>
