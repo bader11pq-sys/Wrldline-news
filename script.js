@@ -212,8 +212,11 @@ function toggleLang() {
     state.lang = state.lang === 'ar' ? 'en' : 'ar';
     document.documentElement.dir = state.lang === 'ar' ? 'rtl' : 'ltr';
     document.getElementById('langBtn').innerText = state.lang === 'ar' ? 'EN' : 'ع';
-    // لاحقاً: أضف كود جلب الترجمة هنا
+    
+    // إعادة جلب الأخبار باللغة الجديدة
+    fetchNews(); 
 }
+
 function handleSearch(q) {
     const resDiv = document.getElementById('searchResults');
     if(!q) { resDiv.innerHTML = ''; return; }
