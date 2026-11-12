@@ -77,15 +77,16 @@ async function fetchNews(){
   if(!res.ok)throw new Error("تعذر جلب الأخبار ("+res.status+")");
   const rows=await res.json();if(!Array.isArray(rows))throw new Error("استجابة الأخبار غير صالحة");
   if(tickerRes?.ok){const tickerRows=await tickerRes.json();state.telegramTicker=Array.isArray(tickerRows)?tickerRows:[];}else state.telegramTicker=[];
-  state.articles=rows.map(normalizeArticle).filter(a=>a.title).sort((a,b)=>new Date(b.published_at)-new Date(a.published_at));
+  state.articles=rows.map(normalizeArticle).filter(a=>a.title&&!isTelegramArticle(a.raw)).sort((a,b)=>new Date(b.published_at)-new Date(a.published_at));
   populateCountries();applyFilters();updateBreaking();if(state.user)syncLocalSavedToCloud();const linkedId=new URLSearchParams(location.search).get("article");if(linkedId)openArticle(linkedId,false);document.getElementById("lastUpdated").textContent="آخر تحديث: "+formatDate(new Date());document.getElementById("connectionLabel").textContent="تم تحديث غرفة الأخبار";
  }catch(err){console.error("WRLDLINE fetch:",err);document.getElementById("connectionLabel").textContent="تعذر الاتصال بمصدر الأخبار";if(!state.articles.length){document.getElementById("heroLayout").innerHTML='<div class="empty-state"><strong>لم نتمكن من تحميل الأخبار</strong><p>تحقق من الاتصال وحاول التحديث بعد قليل.</p><button class="outline-button" onclick="fetchNews()">إعادة المحاولة</button></div>';document.getElementById("newsGrid").innerHTML="";}}
  finally{state.loading=false;}
 }
+function isTelegramArticle(a){return /t\\.me|telegram\\.me|telegram/i.test([a?.url,a?.source_url,a?.source_name].filter(Boolean).join(" "));}
 function normalizeArticle(a){
  const translation=(a.article_translations||[]).find(t=>t.lang===state.lang);
  const title=translation?.title||a.title||"";const summary=translation?.summary||a.summary||"";
- return {id:String(a.id),title,summary,img:safeURL(a.image_url||""),cat:CATEGORY_NAMES[a.category]?a.category:"world",country:a.country||"دولي",src:a.source_name||"مصدر إخباري",sourceURL:safeURL(a.url||a.source_url||""),published_at:a.published_at||a.created_at||"",lang:a.lang||"ar",verification:a.verification||"preliminary",isBreaking:!!a.is_breaking,editorialStatus:a.editorial_status||"published",raw:a};
+ return {id:String(a.id),title,summary,img:safeURL(a.image_url||""),cat:CATEGORY_NAMES[a.category]?a.category:"world",country:a.country||"دولي",src:a.source_name||"مصدر إخباري",sourceURL:safeURL(a.url||a.source_url||""),published_at:a.published_at||a.created_at||"",lang:a.lang||"ar",verification:a.verification||"preliminary",isBreaking:!!a.is_breaking,editorialStatus:a.editorial_status||"published",aiSummary:a.ai_summary||"",aiRiskLevel:a.ai_risk_level||"unknown",aiRiskScore:a.ai_risk_score||0,aiConfidence:a.ai_confidence||null,raw:a};
 }
 function populateCountries(){const select=document.getElementById("countryFilter"),previous=state.country;const countries=[...new Set([...state.articles.map(a=>a.country).filter(c=>c&&c!=="دولي"),...state.follows.country])].sort((a,b)=>a.localeCompare(b,"ar"));select.innerHTML='<option value="all">كل الدول</option>'+countries.map(c=>'<option value="'+escapeHTML(c)+'">'+escapeHTML(c)+'</option>').join("");select.value=countries.includes(previous)?previous:"all";if(select.value==="all")state.country="all";renderFollowPanel();}
 function renderFollowPanel(){
