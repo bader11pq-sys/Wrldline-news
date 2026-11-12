@@ -118,9 +118,22 @@
     
     <!-- الأخبار -->
     <div class="main-column">
-      <div class="section-header">
+    <div class="section-header">
         <h2 class="section-title">آخر <span>الأخبار</span></h2>
         <a href="#" style="color:var(--brand-main); font-weight:700;">عرض الكل &larr;</a>
+      </div>
+      
+      <!-- شريط الفلترة -->
+      <div class="filter-bar">
+          <div class="tabs" id="tabs">
+              <!-- سيتم تعبئتها بواسطة JS -->
+          </div>
+          <div class="country-filter">
+              <select id="countrySelect" onchange="filterByCountry(this.value)">
+                  <option value="all">كل الدول 🌍</option>
+                  <!-- سيتم تعبئتها بواسطة JS -->
+              </select>
+          </div>
       </div>
       <div class="news-grid" id="latestNewsGrid">
         <!-- سيتم تعبئتها بواسطة JS -->
