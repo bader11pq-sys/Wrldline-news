@@ -170,7 +170,7 @@ async function toggleSaved(id){
  wasSaved?state.saved.delete(id):state.saved.add(id);if(!state.user){wasSaved?state.pendingLocalSaved.delete(id):state.pendingLocalSaved.add(id);}persistSaved();renderFeed();
  showToast(wasSaved?"أُزيل الخبر من مكتبتك":"أُضيف الخبر إلى مكتبتك");
 }
-async async function showSaved(){
+async function showSaved(){
  let list=state.articles.filter(a=>state.saved.has(a.id));
  if(state.user&&state.db){
   const {data,error}=await state.db.from("user_saved_articles").select("article_id, article:articles(*, article_translations(*))").eq("user_id",state.user.id).order("created_at",{ascending:false});
