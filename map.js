@@ -20,7 +20,7 @@ async function loadData(){
  try{
   const url=API+"/rest/v1/articles?select=id,title,summary,category,country,source_name,url,published_at,article_translations(*),ai_country_code,ai_region,ai_event_type,ai_risk_level,ai_risk_score,ai_confidence,ai_summary,ai_location_name,ai_latitude,ai_longitude,ai_classification_status&editorial_status=eq.published&ai_classification_status=eq.classified&ai_country_code=not.is.null&not.or=(url.ilike.*t.me*,source_url.ilike.*t.me*,source_name.ilike.*telegram*)&order=published_at.desc&limit=1000";
   const res=await fetch(url,{headers:{apikey:KEY,Authorization:"Bearer "+KEY}});
-  if(!res.ok)throw new Error("تعذر تحميل التحليلات ("+res.status+")");
+  if(!res.ok)throw new Error(t("تعذر تحميل التحليلات (","Could not load analysis (")+res.status+")");
   const data=await res.json(),since=Date.now()-7*86400000;
   articles=(Array.isArray(data)?data:[]).filter(a=>a.ai_confidence>=0.68&&a.ai_country_code&&new Date(a.published_at||0).getTime()>=since).map(a=>{const tr=(a.article_translations||[]).find(x=>x.lang===lang);return {...a,title:tr?.title||a.title,summary:tr?.summary||a.summary,ai_summary:tr?.ai_summary||a.ai_summary};});
   countryEvents=new Map();for(const a of articles){const code=a.ai_country_code.toUpperCase();if(!countryEvents.has(code))countryEvents.set(code,[]);countryEvents.get(code).push(a);}
@@ -32,12 +32,13 @@ async function loadData(){
   $("eventTypeFilter").innerHTML='<option value="all">'+t("كل أنواع الأحداث","All event types")+"</option>"+types.map(x=>'<option value="'+esc(x)+'">'+esc(x)+'</option>').join("");
   renderEvents(filteredItems(articles),t("أبرز الأحداث","Top events"));
   const geo=await fetch("https://raw.githubusercontent.com/datasets/geo-countries/master/data/countries.geojson");
-  if(!geo.ok)throw new Error("تعذر تحميل حدود الدول الجغرافية");
+  if(!geo.ok)throw new Error(t("تعذر تحميل حدود الدول الجغرافية","Could not load country boundaries"));
   geoCache=await geo.json();drawCountries(geoCache);addEventMarkers();
- }catch(err){$("eventList").innerHTML='<div class="empty">'+esc(err.message)+'</div>';$("updatedAt").textContent="تعذر تحديث المرصد";console.error(err);}
+ }catch(err){$("eventList").innerHTML='<div class="empty">'+esc(err.message)+'</div>';$("updatedAt").textContent=t("تعذر تحديث المرصد","Monitor update failed");console.error(err);}
 }
 function countryCode(feature){const p=feature.properties||{};return String(p.ISO_A3||p.ADM0_A3||p.iso_a3||feature.id||"").toUpperCase();}
 function countryName(feature){const p=feature.properties||{};const code=String(p.ISO_A2||p.iso_a2||"").toUpperCase();try{if(code&&code!=="-")return new Intl.DisplayNames([lang==="ar"?"ar":"en"],{type:"region"}).of(code);}catch{}return p.ADMIN||p.name||p.NAME||t("دولة","Country");}
+function articleCountry(a){if(lang==="ar")return a.country||"دولي";const codes={SAU:"SA",EGY:"EG",CHN:"CN",ARE:"AE",QAT:"QA",KWT:"KW",BHR:"BH",OMN:"OM",YEM:"YE,","JOR":"JO","LBN":"LB","PSE":"PS","SYR":"SY","IRQ":"IQ","MAR":"MA","DZA":"DZ","TUN":"TN","LBY":"LY","SDN":"SD","USA":"US","GBR":"GB","FRA":"FR","RUS":"RU","UKR":"UA","IRN":"IR","TUR":"TR","IND":"IN","JPN":"JP"};const alpha2=codes[a.ai_country_code];try{if(alpha2&&alpha2!=="YE,")return new Intl.DisplayNames(["en"],{type:"region"}).of(alpha2);}catch{}return a.country||"International";}
 function drawCountries(data){
  if(geoLayer)map.removeLayer(geoLayer);
  geoLayer=L.geoJSON(data,{style:feature=>{
@@ -53,14 +54,14 @@ function addEventMarkers(){
  if(markerLayer)map.removeLayer(markerLayer);markerLayer=L.layerGroup().addTo(map);
  filteredItems(articles).filter(a=>Number.isFinite(a.ai_latitude)&&Number.isFinite(a.ai_longitude)).forEach(a=>{
   const marker=L.circleMarker([a.ai_latitude,a.ai_longitude],{radius:6,color:"#fff",weight:1,fillColor:riskColor(a),fillOpacity:.95});
-  marker.bindPopup('<strong>'+esc(a.ai_location_name||a.ai_region||a.country)+'</strong><br>'+esc(a.title)+'<br><small>'+esc(label(a.ai_risk_level))+' · '+esc(fmtDate(a.published_at))+'</small>');
+  marker.bindPopup('<strong>'+esc(a.ai_location_name||a.ai_region||articleCountry(a))+'</strong><br>'+esc(a.title)+'<br><small>'+esc(label(a.ai_risk_level))+' · '+esc(fmtDate(a.published_at))+'</small>');
   marker.on("click",()=>showCountry(a.ai_country_code,a.country));marker.addTo(markerLayer);
  });
 }
 function renderEvents(items,title){
  $("panelTitle").textContent=title;$("eventCount").textContent=items.length+t(" حدث"," events");
  const host=$("eventList");if(!items.length){host.innerHTML='<div class="empty">'+t("لا توجد أحداث مطابقة في البيانات المصنّفة خلال الفترة المحددة.","No matching classified events in the selected period.")+'</div>';return;}
- host.innerHTML=items.slice(0,40).map(a=>'<article class="event"><div class="event-top"><span class="risk '+riskClass(a.ai_risk_level)+'">'+esc(label(a.ai_risk_level))+' · '+(a.ai_risk_score||0)+'/100</span><small>'+esc(a.country||"")+'</small></div><h3>'+esc(a.title)+'</h3><p>'+esc(a.ai_summary||a.summary||"")+'</p><p>'+esc(a.ai_event_type||"حدث عام")+' · '+esc(fmtDate(a.published_at))+'</p>'+(a.url?'<a href="'+esc(a.url)+'" target="_blank" rel="noopener noreferrer">المصدر الأصلي ↗</a>':"")+'</article>').join("");
+ host.innerHTML=items.slice(0,40).map(a=>'<article class="event"><div class="event-top"><span class="risk '+riskClass(a.ai_risk_level)+'">'+esc(label(a.ai_risk_level))+' · '+(a.ai_risk_score||0)+'/100</span><small>'+esc(articleCountry(a))+'</small></div><h3>'+esc(a.title)+'</h3><p>'+esc(a.ai_summary||a.summary||"")+'</p><p>'+esc(a.ai_event_type||t("حدث عام","General event"))+' · '+esc(fmtDate(a.published_at))+'</p>'+(a.url?'<a href="'+esc(a.url)+'" target="_blank" rel="noopener noreferrer">المصدر الأصلي ↗</a>':"")+'</article>').join("");
 }
 function showCountry(code,name){
  activeCountry=code;activeCountryName=name;
