@@ -33,6 +33,7 @@ async function fetchLiveNews() {
   try {
     const res = await fetch(`${SUPABASE_URL}/rest/v1/articles?select=*&order=published_at.desc&limit=200`, { 
         headers: { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${SUPABASE_ANON_KEY}` } 
+        img: (a.image_url && a.image_url.startsWith('http')) ? a.image_url : `https://picsum.photos/seed/${a.id}/1200/800`,
     });
     if (!res.ok) throw new Error("DB Error");
     const data = await res.json();
