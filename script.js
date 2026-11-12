@@ -9,7 +9,7 @@ function countryName(value,code){const iso3={SAU:"SA",EGY:"EG",CHN:"CN",ARE:"AE"
 function riskLabel(value){const labels={ar:{critical:"حرج",high:"مرتفع",elevated:"متصاعد",guarded:"مراقبة",low:"منخفض",unknown:"غير محدد"},en:{critical:"Critical",high:"High",elevated:"Elevated",guarded:"Guarded",low:"Low",unknown:"Unknown"}};return labels[state.lang]?.[value]||labels[state.lang].unknown;}
 function translationBadge(a){return ui("الترجمة قيد الانتظار · النص الأصلي","Translation pending · original text");}
 function verificationCounts(a){const n=a.verificationIndependentCount||0,f=a.verificationFieldCount||0,o=a.verificationOfficialCount||0,c=a.verificationConflictCount||0,r=a.verificationCorrectionCount||0;return ui(n+" مصدر مستقل · "+f+" ميداني · "+o+" رسمي · "+c+" تعارض · "+r+" تصحيح",n+" independent · "+f+" field · "+o+" official · "+c+" conflicts · "+r+" corrections");}
-const state = { articles:[], filtered:[], category:"all", country:"all", lang:localStorage.getItem("wrldline:language")==="en"?"en":"ar", limit:PAGE_SIZE, saved:new Set(readSaved()), query:"", sort:"newest", loading:false, db:null, user:null, follows:{category:[],country:[]}, followOnly:false, realtime:null, verificationChannel:null, pendingLocalSaved:new Set(readSaved()), telegramTicker:[], telegramTickerIndex:0 };
+const state = { articles:[], filtered:[], category:"all", country:"all", lang:localStorage.getItem("wrldline:language")==="en"?"en":"ar", limit:PAGE_SIZE, saved:new Set(readSaved()), query:"", sort:"newest", loading:false, db:null, user:null, follows:{category:[],country:[]}, followOnly:false, realtime:null, verificationChannel:null, pendingLocalSaved:new Set(readSaved()), breakingTickerIndex:0 };
 
 document.addEventListener("DOMContentLoaded", () => {
   initPreferences(); bindEvents(); updateClock(); fetchNews(); initPersonalization(); setInterval(fetchNews, 180000); setInterval(rotateBreaking, 8000);
@@ -76,13 +76,9 @@ async function fetchNews(){
  if(state.loading)return;state.loading=true;document.getElementById("connectionLabel").textContent=ui("جارٍ تحديث الأخبار","Updating newsroom");
  try{
   const headers={apikey:SUPABASE_ANON_KEY,Authorization:"Bearer "+SUPABASE_ANON_KEY};
-  const [res,tickerRes]=await Promise.all([
-   fetch(SUPABASE_URL+"/rest/v1/articles?select=*,article_translations(*),article_evidence(*)&editorial_status=eq.published&order=published_at.desc&limit=300",{headers,signal:AbortSignal.timeout(18000)}),
-   fetch(SUPABASE_URL+"/rest/v1/telegram_breaking_items?select=article_id,title,summary,source_name,source_url,article_url,published_at,received_at,translations:telegram_breaking_translations(lang,title,summary)&order=received_at.desc&limit=20",{headers,signal:AbortSignal.timeout(12000)}).catch(()=>null)
-  ]);
+  const res=await fetch(SUPABASE_URL+"/rest/v1/articles?select=*,article_translations(*),article_evidence(*)&editorial_status=eq.published&order=published_at.desc&limit=300",{headers,signal:AbortSignal.timeout(18000)});
   if(!res.ok)throw new Error(ui("تعذر جلب الأخبار ("+res.status+")","Could not fetch stories ("+res.status+")"));
   const rows=await res.json();if(!Array.isArray(rows))throw new Error(ui("استجابة الأخبار غير صالحة","Invalid news response"));
-  if(tickerRes?.ok){const tickerRows=await tickerRes.json();state.telegramTicker=Array.isArray(tickerRows)?tickerRows:[];}else state.telegramTicker=[];
   state.articles=rows.map(normalizeArticle).filter(a=>a.title&&!isTelegramArticle(a.raw)).sort((a,b)=>new Date(b.published_at)-new Date(a.published_at));
   populateCountries();applyFilters();updateBreaking();if(state.user)syncLocalSavedToCloud();const linkedId=new URLSearchParams(location.search).get("article");if(linkedId)openArticle(linkedId,false);document.getElementById("lastUpdated").textContent=ui("آخر تحديث: ","Last updated: ")+formatDate(new Date());document.getElementById("connectionLabel").textContent=ui("تم تحديث غرفة الأخبار","Newsroom updated");
  }catch(err){console.error("WRLDLINE fetch:",err);document.getElementById("connectionLabel").textContent=ui("تعذر الاتصال بمصدر الأخبار","Could not connect to news sources");if(!state.articles.length){document.getElementById("heroLayout").innerHTML='<div class="empty-state"><strong>لم نتمكن من تحميل الأخبار</strong><p>تحقق من الاتصال وحاول التحديث بعد قليل.</p><button class="outline-button" onclick="fetchNews()">إعادة المحاولة</button></div>';document.getElementById("newsGrid").innerHTML="";}}
@@ -182,15 +178,25 @@ function evidenceMarkup(a){
  return '<section class="verification-panel"><div class="verification-head"><strong>'+ui("مؤشر موثوقية الخبر","Story reliability")+'</strong><span class="verification-badge status-'+escapeHTML(a.verification)+'">'+escapeHTML(verificationLabel(a.verification))+'</span></div><p>'+escapeHTML(verificationCounts(a))+'</p><small>'+ui("الحالة مبنية على أدلة مسجلة، وتتغير تلقائياً عند إضافة دليل أو تعارض أو تصحيح.","Status is based on recorded evidence and updates automatically when evidence, a contradiction, or a correction is added.")+'</small><div class="evidence-list">'+list+'</div>'+form+'</section>';
 }
 function verificationLabel(value){const labels={ar:{confirmed:"مؤكد من مصادر مستقلة",multi:"أكدته مصادر مستقلة",single:"مصدر واحد",official_confirmed:"تأكيد رسمي + مصادر مستقلة",field_confirmed:"تأكيد ميداني + مصادر مستقلة",disputed:"متنازع عليه",retracted:"مسحوب",corrected:"صُحّح",unconfirmed:"غير مؤكد",preliminary:"أولي"},en:{confirmed:"Corroborated",multi:"Multiple independent sources",single:"Single source",official_confirmed:"Official + independent confirmation",field_confirmed:"Field + independent confirmation",disputed:"Disputed",retracted:"Retracted",corrected:"Corrected",unconfirmed:"Unverified",preliminary:"Preliminary"}};return labels[state.lang]?.[value]||labels[state.lang].unconfirmed;}
-function rotateBreaking(){if(state.telegramTicker.length>1){state.telegramTickerIndex=(state.telegramTickerIndex+1)%state.telegramTicker.length;updateBreaking();}}
+function isDedicatedBreakingSource(name){
+ const source=String(name||"").trim().toLocaleLowerCase();
+ return /breaking news|breaking desk|news alert|عاجل فقط|الأخبار العاجلة|غرفة الأخبار العاجلة/.test(source);
+}
+function breakingItems(){
+ return state.articles.filter(a=>a.isBreaking===true&&isDedicatedBreakingSource(a.src))
+  .sort((a,b)=>new Date(b.published_at)-new Date(a.published_at));
+}
+function rotateBreaking(){
+ const items=breakingItems();
+ if(items.length>1){state.breakingTickerIndex=(state.breakingTickerIndex+1)%items.length;updateBreaking();}
+}
 function updateBreaking(){
- const telegram=state.telegramTicker.length?state.telegramTicker[state.telegramTickerIndex%state.telegramTicker.length]:null;
- const item=telegram||state.articles.find(a=>a.isBreaking)||state.articles[0];
+ const items=breakingItems();
+ const item=items.length?items[state.breakingTickerIndex%items.length]:null;
  const title=document.getElementById("breakingText");
- const tickerTranslation=telegram?(telegram.translations||[]).find(x=>x.lang===state.lang):null;
- title.textContent=item?(tickerTranslation?.title||item.title):ui("لا توجد أخبار عاجلة متاحة حالياً","No breaking news is available right now.");
- title.title=telegram?ui("مصدر تيليجرام · شريط العاجل فقط","Telegram source · breaking ticker only"):ui("آخر تحديث إخباري","Latest news update");
- document.getElementById("breakingTime").textContent=item?(telegram?ui("تيليجرام · ","Telegram · ")+timeAgo(item.received_at||item.published_at):(item.isBreaking?ui("عاجل · ","Breaking · "):"")+timeAgo(item.published_at)):"LIVE";
+ title.textContent=item?item.title:ui("لا توجد تنبيهات عاجلة من مصادر العاجل المعتمدة حالياً","No alerts from approved breaking-news desks right now.");
+ title.title=item?ui("تنبيه من مصدر متخصص بالعاجل","Alert from a dedicated breaking-news desk"):ui("لا تُعرض المقالات العادية في هذا الشريط","Regular articles are never shown in this ticker");
+ document.getElementById("breakingTime").textContent=item?ui("عاجل · ","Breaking · ")+timeAgo(item.published_at):"LIVE";
 }
 function openArticle(id,updateUrl=true){
  const a=state.articles.find(x=>x.id===id);if(!a)return;
