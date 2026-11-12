@@ -56,4 +56,5 @@ function editArticle(a){$("articleId").value=a.id;$("title").value=a.title||"";$
 $("articleForm").addEventListener("submit",async e=>{e.preventDefault();const id=$("articleId").value;const payload={title:$("title").value.trim(),summary:$("summary").value.trim(),category:$("category").value,country:$("country").value.trim()||"دولي",source_name:$("source").value.trim(),url:$("sourceUrl").value.trim()||("editorial-"+Date.now()),image_url:$("imageUrl").value.trim()||null,editorial_status:$("editorialStatus").value,verification:$("verification").value,is_breaking:$("isBreaking").checked};const button=$("saveButton");button.disabled=true;const result=id?await db.from("articles").update(payload).eq("id",id):await db.from("articles").insert({...payload,lang:"ar",published_at:new Date().toISOString()});button.disabled=false;if(result.error){message("فشل الحفظ: "+result.error.message);return;}message(id?"تم تحديث الخبر.":"تم نشر الخبر.");resetForm();await loadArticles();});
 async function deleteArticle(id){if(!confirm("هل تريد حذف هذا الخبر نهائياً؟"))return;const {error}=await db.from("articles").delete().eq("id",id);if(error){message("فشل الحذف: "+error.message);return;}message("تم حذف الخبر.");await loadArticles();}
 showSession();
-</script></body></html>
+</script><script src="language.js" defer></script>
+</body></html>
