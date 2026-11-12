@@ -3,11 +3,11 @@ const SERVICE_KEY=process.env.SUPABASE_SERVICE_ROLE_KEY;
 if(!SUPABASE_URL||!SERVICE_KEY){console.log("Translation worker skipped: configure Supabase URL and service role key.");process.exit(0);}
 const headers={apikey:SERVICE_KEY,Authorization:"Bearer "+SERVICE_KEY};
 async function main(){
- const q=new URLSearchParams({select:"id,title,summary,lang,article_translations(lang)",editorial_status:"eq.published",order:"published_at.desc",limit:"300"});
+ const q=new URLSearchParams({select:"id,title,summary,ai_summary,lang,article_translations(lang,ai_summary,title,summary)",editorial_status:"eq.published",order:"published_at.desc",limit:"300"});
  const res=await fetch(SUPABASE_URL+"/rest/v1/articles?"+q,{headers});
  if(!res.ok)throw new Error("Could not load articles: "+res.status+" "+(await res.text()).slice(0,200));
  const rows=await res.json();
- const pending=rows.filter(a=>{const target=/^en$/i.test(a.lang||"")||(!/[\u0600-\u06FF]/.test(a.title||"")&&/[A-Za-z]/.test(a.title||""))?"ar":"en";return !(a.article_translations||[]).some(t=>t.lang===target);}).slice(0,30);
+ const pending=rows.filter(a=>{const target=/^en$/i.test(a.lang||"")||(!/[\u0600-\u06FF]/.test(a.title||"")&&/[A-Za-z]/.test(a.title||""))?"ar":"en";const translation=(a.article_translations||[]).find(t=>t.lang===target);return !translation||!translation.title||!translation.summary||(!!a.ai_summary&&!translation.ai_summary);}).slice(0,30);
  if(!pending.length){console.log("All recent published articles already have their counterpart translation.");return;}
  let total=0;
  for(let i=0;i<pending.length;i+=10){
