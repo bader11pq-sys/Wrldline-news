@@ -1,6 +1,6 @@
-const CACHE_NAME = "wrldline-shell-v6";
+const CACHE_NAME = "wrldline-shell-v9";
 const NEWS_CACHE = "wrldline-public-news-v1";
-const APP_SHELL = ["/", "/index.html", "/account.html", "/style.css", "/script.js", "/manifest.json", "/map.html", "/map.js", "/history.html"];
+const APP_SHELL = ["/", "/index.html", "/account.html", "/style.css", "/language.js", "/history-en.js", "/script.js", "/manifest.json", "/map.html", "/map.js", "/history.html"];
 
 self.addEventListener("install", event => {
   event.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(APP_SHELL)).then(() => self.skipWaiting()));

@@ -81,7 +81,7 @@ async function fetchFeed(feed) {
             const articleData = {
                 url: link, title: title, summary: description.substring(0, 500), image_url: imageUrl,
                 category: aiResult.category, country: aiResult.country, source_name: feed.name, source_url: feed.url,
-                lang: origLang, verification: 'multi', published_at: new Date(pubDate).toISOString()
+                lang: origLang, verification: 'unconfirmed', published_at: new Date(pubDate).toISOString()
             };
 
             await fetch(`${SUPABASE_URL}/rest/v1/articles?on_conflict=url`, {
