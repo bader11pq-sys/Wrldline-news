@@ -34,7 +34,7 @@ async function loadData(){
   geoCache=await geo.json();drawCountries(geoCache);addEventMarkers();
  }catch(err){$("eventList").innerHTML='<div class="empty">'+esc(err.message)+'</div>';$("updatedAt").textContent="تعذر تحديث المرصد";console.error(err);}
 }
-function countryCode(feature){const p=feature.properties||{};return String(p.ISO_A3||p.ADM0_A3||p.iso_a3||"").toUpperCase();}
+function countryCode(feature){const p=feature.properties||{};return String(p.ISO_A3||p.ADM0_A3||p.iso_a3||feature.id||"").toUpperCase();}
 function countryName(feature){const p=feature.properties||{};return p.ADMIN||p.name||p.NAME||"دولة";}
 function drawCountries(data){
  if(geoLayer)map.removeLayer(geoLayer);
