@@ -1,5 +1,12 @@
 name: WRLDLINE Multi-source News Ingestion
 on:
+  push:
+    branches: [main]
+    paths:
+      - 'bot-ingest.js'
+      - 'classify-pending.js'
+      - 'translate-pending.js'
+      - '.github/workflows/bot.yml'
   schedule:
     - cron: '*/10 * * * *'
   workflow_dispatch:
