@@ -49,7 +49,7 @@ async function fetchFeed(feed) {
         const items = xml.match(/<item>([\s\S]*?)<\/item>/g);
         if (!items) return;
 
-        for (const item of items.slice(0, 2)) {
+        for (const item of items.slice(0, 5)) {
             const titleMatch = item.match(/<title>(?:<!\[CDATA\[)?([\s\S]*?)(?:\]\]>)?<\/title>/);
             const linkMatch = item.match(/<link>([\s\S]*?)<\/link>/);
             const descMatch = item.match(/<description>(?:<!\[CDATA\[)?([\s\S]*?)(?:\]\]>)?<\/description>/);
@@ -80,7 +80,7 @@ async function fetchFeed(feed) {
                 headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}`, 'Content-Type': 'application/json', 'Prefer': 'resolution=ignore-duplicates' },
                 body: JSON.stringify(articleData)
             });
-            await new Promise(r => setTimeout(r, 2000)); 
+            await new Promise(r => setTimeout(r, 250)); 
         }
     } catch (error) {
         console.error(`❌ فشل ${feed.name}: ${error.message}`);
