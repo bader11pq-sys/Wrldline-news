@@ -7,7 +7,7 @@ const t=(ar,en)=>lang==="ar"?ar:en;const label=r=>labels[lang][r]||labels[lang].
 const colors={critical:"#541522",high:"#d94b4b",elevated:"#e9953e",guarded:"#e6c84f",low:"#42a875",unknown:"#cbd3dc"};
 let map,geoLayer,markerLayer,geoCache=null,articles=[],countryEvents=new Map(),activeCountry=null,activeCountryName="";
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-const riskClass=r=>"risk-"+(labels[r]?r:"unknown");
+const riskClass=r=>"risk-"+(labels[lang][r]?r:"unknown");
 function riskOf(items){return items.reduce((best,a)=>((a.ai_risk_score||0)>(best?.ai_risk_score||0)?a:best),null);}
 function riskColor(a){return colors[a?.ai_risk_level]||colors.unknown;}
 function fmtDate(d){if(!d)return t("وقت غير محدد","Time unavailable");const date=new Date(d);return Number.isNaN(date.getTime())?t("وقت غير محدد","Time unavailable"):date.toLocaleString(lang==="ar"?"ar-SA":"en-US",{dateStyle:"medium",timeStyle:"short"});}
@@ -45,7 +45,7 @@ function drawCountries(data){
   return {color:"#fff",weight:.7,fillColor:riskColor(top),fillOpacity:top?0.72:0.12};
  },onEachFeature:(feature,layer)=>{
   const code=countryCode(feature),name=countryName(feature),top=riskOf(filteredItems(countryEvents.get(code)||[]));
-  layer.bindPopup('<strong>'+esc(name)+'</strong><br>'+(top?t("Risk signal: ","Risk signal: ")+esc(label(top.ai_risk_level))+" · "+(top.ai_risk_score||0)+"/100":t("لا توجد أحداث مصنّفة كافية","No sufficiently classified events")));
+  layer.bindPopup('<strong>'+esc(name)+'</strong><br>'+(top?t("إشارة المخاطر: ","Risk signal: ")+esc(label(top.ai_risk_level))+" · "+(top.ai_risk_score||0)+"/100":t("لا توجد أحداث مصنّفة كافية","No sufficiently classified events")));
   layer.on({mouseover:e=>e.target.setStyle({weight:2,color:"#18283e",fillOpacity:.9}),mouseout:e=>geoLayer.resetStyle(e.target),click:()=>showCountry(code,name)});
  }}).addTo(map);
 }
@@ -60,12 +60,12 @@ function addEventMarkers(){
 function renderEvents(items,title){
  $("panelTitle").textContent=title;$("eventCount").textContent=items.length+t(" حدث"," events");
  const host=$("eventList");if(!items.length){host.innerHTML='<div class="empty">'+t("لا توجد أحداث مطابقة في البيانات المصنّفة خلال الفترة المحددة.","No matching classified events in the selected period.")+'</div>';return;}
- host.innerHTML=items.slice(0,40).map(a=>'<article class="event"><div class="event-top"><span class="risk '+riskClass(a.ai_risk_level)+'">'+esc(labels[a.ai_risk_level]||"غير محدد")+' · '+(a.ai_risk_score||0)+'/100</span><small>'+esc(a.country||"")+'</small></div><h3>'+esc(a.title)+'</h3><p>'+esc(a.ai_summary||a.summary||"")+'</p><p>'+esc(a.ai_event_type||"حدث عام")+' · '+esc(fmtDate(a.published_at))+'</p>'+(a.url?'<a href="'+esc(a.url)+'" target="_blank" rel="noopener noreferrer">المصدر الأصلي ↗</a>':"")+'</article>').join("");
+ host.innerHTML=items.slice(0,40).map(a=>'<article class="event"><div class="event-top"><span class="risk '+riskClass(a.ai_risk_level)+'">'+esc(label(a.ai_risk_level))+' · '+(a.ai_risk_score||0)+'/100</span><small>'+esc(a.country||"")+'</small></div><h3>'+esc(a.title)+'</h3><p>'+esc(a.ai_summary||a.summary||"")+'</p><p>'+esc(a.ai_event_type||"حدث عام")+' · '+esc(fmtDate(a.published_at))+'</p>'+(a.url?'<a href="'+esc(a.url)+'" target="_blank" rel="noopener noreferrer">المصدر الأصلي ↗</a>':"")+'</article>').join("");
 }
 function showCountry(code,name){
  activeCountry=code;activeCountryName=name;
  const items=filteredItems(countryEvents.get(String(code).toUpperCase())||[]),top=riskOf(items);
- $("countrySummary").innerHTML='<strong>'+esc(name)+'</strong><p>'+(items.length?items.length+(lang==="ar"?" أحداث مصنّفة خلال الفترة المحددة":" classified events in the selected period"):t("لا توجد أحداث مصنّفة كافية","No sufficiently classified events"))+'</p><span class="risk '+riskClass(top?.ai_risk_level)+'">'+(top?esc(labels[top.ai_risk_level]||"غير محدد")+" · "+(top.ai_risk_score||0)+"/100":"لا توجد إشارة")+'</span>';
+ $("countrySummary").innerHTML='<strong>'+esc(name)+'</strong><p>'+(items.length?items.length+(lang==="ar"?" أحداث مصنّفة خلال الفترة المحددة":" classified events in the selected period"):t("لا توجد أحداث مصنّفة كافية","No sufficiently classified events"))+'</p><span class="risk '+riskClass(top?.ai_risk_level)+'">'+(top?esc(label(top.ai_risk_level))+" · "+(top.ai_risk_score||0)+"/100":"لا توجد إشارة")+'</span>';
  renderEvents(items,t("أحداث ","Events about ")+name);
 }
 function refreshFilters(){
