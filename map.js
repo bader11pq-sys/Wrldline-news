@@ -38,7 +38,7 @@ async function loadData(){
 }
 function countryCode(feature){const p=feature.properties||{};return String(p.ISO_A3||p.ADM0_A3||p.iso_a3||feature.id||"").toUpperCase();}
 function countryName(feature){const p=feature.properties||{};const code=String(p.ISO_A2||p.iso_a2||"").toUpperCase();try{if(code&&code!=="-")return new Intl.DisplayNames([lang==="ar"?"ar":"en"],{type:"region"}).of(code);}catch{}return p.ADMIN||p.name||p.NAME||t("دولة","Country");}
-function articleCountry(a){if(lang==="ar")return a.country||"دولي";const codes={SAU:"SA",EGY:"EG",CHN:"CN",ARE:"AE",QAT:"QA",KWT:"KW",BHR:"BH",OMN:"OM",YEM:"YE,","JOR":"JO","LBN":"LB","PSE":"PS","SYR":"SY","IRQ":"IQ","MAR":"MA","DZA":"DZ","TUN":"TN","LBY":"LY","SDN":"SD","USA":"US","GBR":"GB","FRA":"FR","RUS":"RU","UKR":"UA","IRN":"IR","TUR":"TR","IND":"IN","JPN":"JP"};const alpha2=codes[a.ai_country_code];try{if(alpha2&&alpha2!=="YE,")return new Intl.DisplayNames(["en"],{type:"region"}).of(alpha2);}catch{}return a.country||"International";}
+function articleCountry(a){if(lang==="ar")return a.country||"دولي";const codes={SAU:"SA",EGY:"EG",CHN:"CN",ARE:"AE",QAT:"QA",KWT:"KW",BHR:"BH",OMN:"OM",YEM:"YE","JOR":"JO","LBN":"LB","PSE":"PS","SYR":"SY","IRQ":"IQ","MAR":"MA","DZA":"DZ","TUN":"TN","LBY":"LY","SDN":"SD","USA":"US","GBR":"GB","FRA":"FR","RUS":"RU","UKR":"UA","IRN":"IR","TUR":"TR","IND":"IN","JPN":"JP"};const alpha2=codes[a.ai_country_code];try{if(alpha2)return new Intl.DisplayNames(["en"],{type:"region"}).of(alpha2);}catch{}return a.country||"International";}
 function drawCountries(data){
  if(geoLayer)map.removeLayer(geoLayer);
  geoLayer=L.geoJSON(data,{style:feature=>{
