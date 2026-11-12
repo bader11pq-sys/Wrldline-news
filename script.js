@@ -77,7 +77,7 @@ async function fetchNews(){
   const headers={apikey:SUPABASE_ANON_KEY,Authorization:"Bearer "+SUPABASE_ANON_KEY};
   const [res,tickerRes]=await Promise.all([
    fetch(SUPABASE_URL+"/rest/v1/articles?select=*,article_translations(*),article_evidence(*)&editorial_status=eq.published&order=published_at.desc&limit=300",{headers,signal:AbortSignal.timeout(18000)}),
-   fetch(SUPABASE_URL+"/rest/v1/telegram_breaking_items?select=article_id,title,summary,source_name,source_url,article_url,published_at,received_at,article:articles(article_translations(*))&order=received_at.desc&limit=20",{headers,signal:AbortSignal.timeout(12000)}).catch(()=>null)
+   fetch(SUPABASE_URL+"/rest/v1/telegram_breaking_items?select=article_id,title,summary,source_name,source_url,article_url,published_at,received_at,translations:telegram_breaking_translations(lang,title,summary)&order=received_at.desc&limit=20",{headers,signal:AbortSignal.timeout(12000)}).catch(()=>null)
   ]);
   if(!res.ok)throw new Error("تعذر جلب الأخبار ("+res.status+")");
   const rows=await res.json();if(!Array.isArray(rows))throw new Error("استجابة الأخبار غير صالحة");
@@ -186,7 +186,7 @@ function updateBreaking(){
  const telegram=state.telegramTicker.length?state.telegramTicker[state.telegramTickerIndex%state.telegramTicker.length]:null;
  const item=telegram||state.articles.find(a=>a.isBreaking)||state.articles[0];
  const title=document.getElementById("breakingText");
- const tickerTranslation=telegram?(telegram.article?.article_translations||[]).find(x=>x.lang===state.lang):null;
+ const tickerTranslation=telegram?(telegram.translations||[]).find(x=>x.lang===state.lang):null;
  title.textContent=item?(tickerTranslation?.title||item.title):ui("لا توجد أخبار عاجلة متاحة حالياً","No breaking news is available right now.");
  title.title=telegram?ui("مصدر تيليجرام · شريط العاجل فقط","Telegram source · breaking ticker only"):ui("آخر تحديث إخباري","Latest news update");
  document.getElementById("breakingTime").textContent=item?(telegram?ui("تيليجرام · ","Telegram · ")+timeAgo(item.received_at||item.published_at):(item.isBreaking?ui("عاجل · ","Breaking · "):"")+timeAgo(item.published_at)):"LIVE";
