@@ -25,7 +25,7 @@ Deno.serve(async(req:Request)=>{
  const ids=Array.isArray(body.article_ids)?[...new Set(body.article_ids.filter((x:unknown)=>typeof x==="string"))].slice(0,10):[];
  if(!ids.length)return json({error:"Send 1 to 10 article_ids."},400);
  const db=createClient(url,service,{auth:{persistSession:false,autoRefreshToken:false}});
- const {data:articles,error}=await db.from("articles").select("id,title,summary,ai_summary,lang,url,source_name").in("id",ids);
+ const {data:articles,error}=await db.from("articles").select("id,title,summary,ai_summary,lang,url,source_url,source_name").in("id",ids);
  if(error)return json({error:"Could not load articles."},500);
  const results:any[]=[];
  for(const article of articles||[]){
@@ -51,6 +51,7 @@ Deno.serve(async(req:Request)=>{
    const translated=JSON.parse(text);
    const {error:upsertError}=await db.from("article_translations").upsert({article_id:article.id,lang:target,title:String(translated.title||"").slice(0,500),summary:String(translated.summary||"").slice(0,4000),ai_summary:String(translated.ai_summary||"").slice(0,2000)},{onConflict:"article_id,lang"});
    if(upsertError)throw upsertError;
+   if(/t\\.me|telegram\\.me|telegram/i.test([article.url,article.source_url,article.source_name].filter(Boolean).join(" "))){const {error:tickerError}=await db.from("telegram_breaking_translations").upsert({article_id:article.id,lang:target,title:String(translated.title||"").slice(0,500),summary:String(translated.summary||"").slice(0,4000)},{onConflict:"article_id,lang"});if(tickerError)throw tickerError;}
    results.push({id:article.id,status:"translated",lang:target});
   }catch(error){results.push({id:article.id,status:"failed",error:String(error).slice(0,180)});}
  }
