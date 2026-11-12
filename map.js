@@ -12,7 +12,7 @@ function fmtDate(d){if(!d)return"وقت غير محدد";const date=new Date(d);
 function initMap(){map=L.map("worldMap",{worldCopyJump:true,scrollWheelZoom:true}).setView([24,25],2);L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:8,attribution:'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'}).addTo(map);}
 async function loadData(){
  try{
-  const url=API+"/rest/v1/articles?select=id,title,summary,category,country,source_name,url,published_at,ai_country_code,ai_region,ai_event_type,ai_risk_level,ai_risk_score,ai_confidence,ai_summary,ai_location_name,ai_latitude,ai_longitude,ai_classification_status&editorial_status=eq.published&ai_classification_status=eq.classified&ai_country_code=not.is.null&order=published_at.desc&limit=1000";
+  const url=API+"/rest/v1/articles?select=id,title,summary,category,country,source_name,url,published_at,ai_country_code,ai_region,ai_event_type,ai_risk_level,ai_risk_score,ai_confidence,ai_summary,ai_location_name,ai_latitude,ai_longitude,ai_classification_status&editorial_status=eq.published&ai_classification_status=eq.classified&ai_country_code=not.is.null&not.or=(url.ilike.*t.me*,source_url.ilike.*t.me*,source_name.ilike.*telegram*)&order=published_at.desc&limit=1000";
   const res=await fetch(url,{headers:{apikey:KEY,Authorization:"Bearer "+KEY}});
   if(!res.ok)throw new Error("تعذر تحميل التحليلات ("+res.status+")");
   const data=await res.json();const since=Date.now()-7*24*60*60*1000;
@@ -26,7 +26,7 @@ async function loadData(){
   renderEvents(articles,"أبرز الأحداث");
   const geo=await fetch("https://raw.githubusercontent.com/datasets/geo-countries/master/data/countries.geojson");
   if(!geo.ok)throw new Error("تعذر تحميل حدود الدول الجغرافية");
-  const geoData=await geo.json();drawCountries(geoData);
+  const geoData=await geo.json();geoCache=geoData;drawCountries(geoData);
   addEventMarkers();
  }catch(err){$("eventList").innerHTML='<div class="empty">'+esc(err.message)+'</div>';$("updatedAt").textContent="تعذر تحديث المرصد";console.error(err);}
 }
@@ -37,7 +37,7 @@ function drawCountries(data){
  if(geoLayer)map.removeLayer(geoLayer);
  geoLayer=L.geoJSON(data,{style:feature=>{
   const items=filteredItems(countryEvents.get(countryCode(feature))||[]);const top=riskOf(items);
-  return {color:"#fff",weight:.7,fillColor:riskColor(top),fillOpacity:top?.ai_risk_level==="unknown"?.35:.72};
+  return {color:"#fff",weight:.7,fillColor:riskColor(top),fillOpacity:top?0.72:0.12};
  },onEachFeature:(feature,layer)=>{
   const code=countryCode(feature),name=countryName(feature);
   const items=filteredItems(countryEvents.get(code)||[]),top=riskOf(items);
@@ -66,6 +66,5 @@ $("riskFilter").addEventListener("change",()=>{drawCountriesCached();if(activeCo
 let geoCache=null;
 function drawCountriesCached(){if(geoCache)drawCountries(geoCache);}
 initMap();
-fetch("https://raw.githubusercontent.com/datasets/geo-countries/master/data/countries.geojson").then(r=>r.json()).then(data=>{geoCache=data;}).catch(()=>{});
 loadData();
 setInterval(loadData,300000);
