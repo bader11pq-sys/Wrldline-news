@@ -9,7 +9,6 @@ const FEEDS = [
   {url:"https://www.skynewsarabia.com/web/rss",name:"سكاي نيوز عربية",country:"دولي"},
   {url:"https://www.france24.com/ar/rss",name:"فرانس 24 عربي",country:"دولي"},
   {url:"https://rss.dw.com/xml/rss-ar-all",name:"DW عربية",country:"دولي"},
-  {url:"https://www.aljazeera.net/aljazeerarss/a7c186be-1baa-4bd4-9d80-a84db769f779/73d0e1b4-532f-45ef-b135-bfdff8b8cab9",name:"الجزيرة",country:"دولي"},
   // Gulf official and regional
   {url:"https://www.spa.gov.sa/rss",name:"وكالة الأنباء السعودية واس",country:"السعودية"},
   {url:"https://www.kuna.net.kw/rss",name:"كونا",country:"الكويت"},
