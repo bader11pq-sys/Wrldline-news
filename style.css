@@ -20,3 +20,13 @@
 .article-actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:18px}
 .article-actions .outline-button{min-height:44px}
 @media(max-width:600px){.article-actions .outline-button{flex:1;min-width:130px}}
+
+/* Personal library and followed topics */
+.follow-feed-toggle{white-space:nowrap;min-height:36px;font-size:11px}
+.follow-feed-toggle.active{background:var(--navy);border-color:var(--navy);color:#fff}
+.follow-options{display:flex;flex-direction:column;gap:13px}
+.follow-group>strong{display:block;font-size:11px;margin-bottom:8px;color:var(--muted)}
+.follow-chip-list{display:flex;flex-wrap:wrap;gap:7px}
+.follow-chip{border:1px solid var(--line);background:var(--surface-2);color:var(--text);border-radius:22px;padding:6px 10px;font:inherit;font-size:11px}
+.follow-chip.selected{border-color:var(--accent);background:var(--navy);color:#fff}
+@media(max-width:680px){.follow-feed-toggle{padding:7px 9px;font-size:10px}.feed-controls{flex-wrap:wrap}}
