@@ -54,5 +54,9 @@
         }
       ]
     }
+  },
+  "concurrency": {
+    "group": "wrldline-background-jobs",
+    "cancel-in-progress": false
   }
 }
