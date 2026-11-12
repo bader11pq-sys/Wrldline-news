@@ -260,10 +260,91 @@
         const source_name = document.getElementById('source_name').value;
         const fileInput = document.getElementById('mediaFile');
         
-        let mediaUrl = undefined; // undefined يعني لا نغير الصورة الحالية
+        let mediaUrl = undefined; 
         let mediaType = 'image';
 
         try {
+            if (fileInput.files.length > 0) {
+                const file = fileInput.files[0];
+                
+                // فحص حجم الملف (الحد الأقصى 10 ميجابايت لضمان عدم فشل الرفع من الجوال)
+                if (file.size > 10 * 1024 * 1024) {
+                    throw new Error("حجم الملف كبير جداً (الحد الأقصى 10 ميجابايت). جرب فيديو أقصر.");
+                }
+
+                const fileExt = file.name.split('.').pop();
+                const fileName = `${Date.now()}.${fileExt}`;
+                const filePath = `uploads/${fileName}`;
+
+                if (file.type.startsWith('video/')) mediaType = 'video';
+
+                const formData = new FormData();
+                formData.append('file', file);
+
+                const uploadRes = await fetch(`${SUPABASE_URL}/storage/v1/object/news-media/${filePath}`, {
+                    method: 'POST',
+                    headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': `Bearer ${SUPABASE_ANON_KEY}` },
+                    body: formData
+                });
+
+                if (!uploadRes.ok) {
+                    // هذا السطر سيطبع لك الخطأ الحقيقي من Supabase (مثلاً: الملف كبير، أو الصلاحيات ممنوعة)
+                    const errorText = await uploadRes.text();
+                    throw new Error("فشل رفع الملف: " + errorText);
+                }
+                
+                mediaUrl = `${SUPABASE_URL}/storage/v1/object/public/news-media/${filePath}`;
+            }
+
+            const articleData = {
+                title: title,
+                summary: summary,
+                category: category,
+                country: country || null,
+                source_name: source_name
+            };
+            
+            if (mediaUrl !== undefined) {
+                articleData.image_url = mediaUrl;
+                articleData.media_type = mediaType;
+            }
+
+            const method = editId ? 'PATCH' : 'POST';
+            const url = editId ? `${SUPABASE_URL}/rest/v1/articles?id=eq.${editId}` : `${SUPABASE_URL}/rest/v1/articles`;
+            
+            if (!editId) {
+                articleData.url = 'news-' + Date.now();
+                articleData.lang = 'ar';
+                articleData.verification = 'confirmed';
+                articleData.published_at = new Date().toISOString();
+            }
+
+            const res = await fetch(url, {
+                method: method,
+                headers: {
+                    'apikey': SUPABASE_ANON_KEY,
+                    'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+                    'Content-Type': 'application/json',
+                    'Prefer': 'return=minimal'
+                },
+                body: JSON.stringify(articleData)
+            });
+
+            if (!res.ok) throw new Error("فشل الحفظ في قاعدة البيانات");
+
+            showToast(editId ? "تم حفظ التعديلات بنجاح" : "تم نشر الخبر بنجاح");
+            cancelEdit(); 
+            fetchArticles(); 
+            
+        } catch (error) {
+            // سيظهر لك هنا السبب الحقيقي (حجم الملف أو الصلاحيات)
+            showToast("حدث خطأ: " + error.message, true);
+        } finally {
+            btn.disabled = false;
+            btn.innerText = editId ? "حفظ التعديلات 💾" : "نشر الخبر الآن 🚀";
+        }
+    });
+    
             // رفع الملف إذا تم اختياره
             if (fileInput.files.length > 0) {
                 const file = fileInput.files[0];
