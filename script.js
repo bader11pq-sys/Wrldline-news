@@ -82,7 +82,7 @@ async function fetchNews(){
  }catch(err){console.error("WRLDLINE fetch:",err);document.getElementById("connectionLabel").textContent="تعذر الاتصال بمصدر الأخبار";if(!state.articles.length){document.getElementById("heroLayout").innerHTML='<div class="empty-state"><strong>لم نتمكن من تحميل الأخبار</strong><p>تحقق من الاتصال وحاول التحديث بعد قليل.</p><button class="outline-button" onclick="fetchNews()">إعادة المحاولة</button></div>';document.getElementById("newsGrid").innerHTML="";}}
  finally{state.loading=false;}
 }
-function isTelegramArticle(a){return /t\\.me|telegram\\.me|telegram/i.test([a?.url,a?.source_url,a?.source_name].filter(Boolean).join(" "));}
+function isTelegramArticle(a){return /t\.me|telegram\.me|telegram/i.test([a?.url,a?.source_url,a?.source_name].filter(Boolean).join(" "));}
 function normalizeArticle(a){
  const translation=(a.article_translations||[]).find(t=>t.lang===state.lang);
  const title=translation?.title||a.title||"";const summary=translation?.summary||a.summary||"";
@@ -173,7 +173,7 @@ async async function showSaved(){
  let list=state.articles.filter(a=>state.saved.has(a.id));
  if(state.user&&state.db){
   const {data,error}=await state.db.from("user_saved_articles").select("article_id, article:articles(*, article_translations(*))").eq("user_id",state.user.id).order("created_at",{ascending:false});
-  if(!error){list=(data||[]).map(row=>row.article).filter(Boolean).map(normalizeArticle);for(const a of list)if(!state.articles.some(x=>x.id===a.id))state.articles.push(a);}
+  if(!error){list=(data||[]).map(row=>row.article).filter(row=>row&&!isTelegramArticle(row)).map(normalizeArticle);for(const a of list)if(!state.articles.some(x=>x.id===a.id))state.articles.push(a);}
   else showToast("تعذر تحميل المكتبة المتزامنة حالياً");
  }
  const host=document.getElementById("modalContent");host.innerHTML='<button class="modal-close" id="modalClose" aria-label="إغلاق">×</button><div class="modal-article-body saved-view"><span class="section-kicker">مكتبتك الشخصية</span><h2>الأخبار المحفوظة</h2><p class="muted">'+(state.user?"مزامنة مع حسابك على جميع أجهزتك":"محفوظات هذا الجهاز فقط — سجّل الدخول للمزامنة")+'</p>'+(list.length?list.map(a=>'<button class="saved-row" data-open="'+escapeHTML(a.id)+'"><strong>'+escapeHTML(a.title)+'</strong><small>'+escapeHTML(a.src)+' · '+escapeHTML(timeAgo(a.published_at))+'</small></button>').join(""):'<p class="muted">لم تحفظ أي خبر بعد.</p>')+'</div>';document.getElementById("modalClose").addEventListener("click",closeArticle);host.querySelectorAll("[data-open]").forEach(el=>el.addEventListener("click",()=>openArticle(el.dataset.open)));showModal("articleModal");}
