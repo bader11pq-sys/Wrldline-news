@@ -27,6 +27,7 @@ AR_EN["حسابك واشتراكك | WRLDLINE NEWS"]="Your account & subscriptio
 AR_EN["لوحة التحرير | WRLDLINE NEWS"]="Editorial desk | WRLDLINE NEWS";
 AR_EN["مرصد العالم | WRLDLINE NEWS"]="World Monitor | WRLDLINE NEWS";
 AR_EN["موسوعة التاريخ | WRLDLINE NEWS"]="History Encyclopedia | WRLDLINE NEWS";
+AR_EN["عضوية Plus فعالة حتى"]="Plus membership active until";
 AR_EN["حسابك. عالمك."]="Your account. Your world.";
 AR_EN["ابدأ حسابك"]="Get started";
 AR_EN["يمكنك البدء بعضوية مجانية."]="You can start with a free membership.";
@@ -259,7 +260,7 @@ AR_EN["تعذر تحميل حدود الدول الجغرافية"]="Could not l
 AR_EN["تعذر تحديث المرصد"]="Could not update the monitor";
 Object.assign(AR_EN,window.WRLDLINE_HISTORY_EN||{});
 const original=new WeakMap();
-function translateValue(value,lang){const trimmed=String(value??"").trim();if(!trimmed)return value;if(lang==="en"){if(AR_EN[trimmed])return AR_EN[trimmed];const keys=Object.keys(AR_EN).filter(k=>trimmed.startsWith(k)&&k.length>2).sort((a,b)=>b.length-a.length);if(keys.length){const k=keys[0];return String(value).replace(trimmed,AR_EN[k]+trimmed.slice(k.length));}return value;}if(/[\u0600-\u06FF]/.test(trimmed))return value;const reverse=reverseMap[trimmed];return reverse?String(value).replace(trimmed,reverse):value;}
+function translateValue(value,lang){const trimmed=String(value??"").trim();if(!trimmed)return value;if(lang==="en"){if(AR_EN[trimmed])return AR_EN[trimmed];const keys=Object.keys(AR_EN).filter(k=>trimmed.startsWith(k)&&k.length>2&&(k.endsWith(":")||k.endsWith("،")||k==="عضوية Plus فعالة حتى")).sort((a,b)=>b.length-a.length);if(keys.length){const k=keys[0];return String(value).replace(trimmed,AR_EN[k]+trimmed.slice(k.length));}return value;}if(/[\u0600-\u06FF]/.test(trimmed))return value;if(reverseMap[trimmed])return String(value).replace(trimmed,reverseMap[trimmed]);const keys=Object.keys(reverseMap).filter(k=>trimmed.startsWith(k)&&k.length>2&&(k.endsWith(":")||k.endsWith(","))).sort((a,b)=>b.length-a.length);if(keys.length){const k=keys[0];return String(value).replace(trimmed,reverseMap[k]+trimmed.slice(k.length));}return value;}
 const reverseMap=Object.fromEntries(Object.entries(AR_EN).map(([a,e])=>[e,a]));
 function visit(root=document){const walker=document.createTreeWalker(root,NodeFilter.SHOW_TEXT);let node;while((node=walker.nextNode())){if(!node.parentElement||/^(SCRIPT|STYLE|NOSCRIPT|TEXTAREA)$/i.test(node.parentElement.tagName))continue;let base=original.get(node);if(base===undefined){base=node.nodeValue;original.set(node,base)}const next=translateValue(base,window.wrldlineLang);if(node.nodeValue!==next)node.nodeValue=next;}
  const elements=root.querySelectorAll?root.querySelectorAll("[placeholder],[aria-label],[title]"):[];elements.forEach(el=>{for(const attr of ["placeholder","aria-label","title"]){if(!el.hasAttribute(attr))continue;const key=attr+":"+attr;let map=el.__wrldlineAttrs||(el.__wrldlineAttrs={});if(map[attr]===undefined)map[attr]=el.getAttribute(attr);el.setAttribute(attr,translateValue(map[attr],window.wrldlineLang));}});}
