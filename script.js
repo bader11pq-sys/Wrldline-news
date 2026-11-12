@@ -2,7 +2,11 @@
 const SUPABASE_URL = "https://vmaxbnogmmfyrcucapnq.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_D3c88u75_LcEN460Y3Jcpw__EfqUnBx";
 const PAGE_SIZE = 24;
-const CATEGORY_NAMES = { politics:"سياسة", economy:"اقتصاد", security:"أمن ودفاع", tech:"تكنولوجيا", sports:"رياضة", culture:"ثقافة", health:"صحة", world:"حول العالم" };
+const CATEGORY_NAMES = { ar:{politics:"سياسة",economy:"اقتصاد",security:"أمن ودفاع",tech:"تكنولوجيا",sports:"رياضة",culture:"ثقافة",health:"صحة",world:"حول العالم"}, en:{politics:"Politics",economy:"Economy",security:"Security & Defence",tech:"Technology",sports:"Sports",culture:"Culture",health:"Health",world:"Around the world"} };
+function categoryName(value){return CATEGORY_NAMES[state.lang]?.[value]||value||(state.lang==="ar"?"حول العالم":"Around the world");}
+function ui(ar,en){return state.lang==="ar"?ar:en;}
+function countryName(value){const map={"دولي":"International","السعودية":"Saudi Arabia","المملكة العربية السعودية":"Saudi Arabia","الإمارات":"United Arab Emirates","الإمارات العربية المتحدة":"United Arab Emirates","قطر":"Qatar","الكويت":"Kuwait","البحرين":"Bahrain","عمان":"Oman","اليمن":"Yemen","مصر":"Egypt","الأردن":"Jordan","لبنان":"Lebanon","فلسطين":"Palestine","سوريا":"Syria","العراق":"Iraq","المغرب":"Morocco","الجزائر":"Algeria","تونس":"Tunisia","ليبيا":"Libya","السودان":"Sudan","الصين":"China","الولايات المتحدة":"United States","بريطانيا":"United Kingdom","فرنسا":"France","روسيا":"Russia","أوكرانيا":"Ukraine","إيران":"Iran","تركيا":"Türkiye","الهند":"India","اليابان":"Japan"};return state.lang==="en"?(map[value]||value):value;}
+function verificationCounts(a){return ui(`${a.verificationIndependentCount||0} independent · ${a.verificationFieldCount||0} field · ${a.verificationOfficialCount||0} official`,`${a.verificationIndependentCount||0} مصدر مستقل · ${a.verificationFieldCount||0} ميداني · ${a.verificationOfficialCount||0} رسمي`);}
 const state = { articles:[], filtered:[], category:"all", country:"all", lang:localStorage.getItem("wrldline:language")==="en"?"en":"ar", limit:PAGE_SIZE, saved:new Set(readSaved()), query:"", sort:"newest", loading:false, db:null, user:null, follows:{category:[],country:[]}, followOnly:false, realtime:null, pendingLocalSaved:new Set(readSaved()), telegramTicker:[], telegramTickerIndex:0 };
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -71,7 +75,7 @@ async function fetchNews(){
  try{
   const headers={apikey:SUPABASE_ANON_KEY,Authorization:"Bearer "+SUPABASE_ANON_KEY};
   const [res,tickerRes]=await Promise.all([
-   fetch(SUPABASE_URL+"/rest/v1/articles?select=*,article_translations(*)&editorial_status=eq.published&order=published_at.desc&limit=300",{headers,signal:AbortSignal.timeout(18000)}),
+   fetch(SUPABASE_URL+"/rest/v1/articles?select=*,article_translations(*),article_evidence(*)&editorial_status=eq.published&order=published_at.desc&limit=300",{headers,signal:AbortSignal.timeout(18000)}),
    fetch(SUPABASE_URL+"/rest/v1/telegram_breaking_items?select=article_id,title,summary,source_name,source_url,article_url,published_at,received_at&order=received_at.desc&limit=20",{headers,signal:AbortSignal.timeout(12000)}).catch(()=>null)
   ]);
   if(!res.ok)throw new Error("تعذر جلب الأخبار ("+res.status+")");
