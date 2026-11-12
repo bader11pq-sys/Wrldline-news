@@ -37,13 +37,14 @@
     <section id="heroLayout" class="hero-layout" aria-live="polite"><div class="loading-state">جارٍ تحميل الأخبار...</div></section>
     <section class="content-layout">
       <div class="feed-column">
-        <div class="section-heading feed-heading"><div><span class="section-kicker">تغطية مستمرة</span><h2 id="feedTitle">أحدث الأخبار</h2></div><div class="feed-controls"><select id="countryFilter" aria-label="تصفية حسب الدولة"><option value="all">كل الدول</option></select><select id="sortFilter" aria-label="ترتيب الأخبار"><option value="newest">الأحدث أولاً</option><option value="oldest">الأقدم أولاً</option></select></div></div>
+        <div class="section-heading feed-heading"><div><span class="section-kicker">تغطية مستمرة</span><h2 id="feedTitle">أحدث الأخبار</h2></div><div class="feed-controls"><select id="countryFilter" aria-label="تصفية حسب الدولة"><option value="all">كل الدول</option></select><button class="outline-button follow-feed-toggle" id="followFeedButton" type="button" aria-pressed="false">موجز متابعاتي</button><select id="sortFilter" aria-label="ترتيب الأخبار"><option value="newest">الأحدث أولاً</option><option value="oldest">الأقدم أولاً</option></select></div></div>
         <div class="category-chips" id="categoryChips"><button class="chip active" data-category="all">الكل</button><button class="chip" data-category="politics">سياسة</button><button class="chip" data-category="economy">اقتصاد</button><button class="chip" data-category="tech">تقنية</button><button class="chip" data-category="sports">رياضة</button><button class="chip" data-category="world">عالم</button></div>
         <div id="newsGrid" class="news-grid"><div class="loading-state">جارٍ تجهيز غرفة الأخبار...</div></div>
         <div class="load-more-wrap"><button class="primary-button" id="loadMoreButton" type="button">عرض المزيد من الأخبار</button></div>
       </div>
       <aside class="sidebar">
         <section class="sidebar-panel"><div class="panel-heading"><span class="section-kicker">مختاراتك</span><h3>غرفة المتابعة</h3></div><p class="panel-copy">احفظ القصص التي تهمك وارجع إليها في أي وقت من هذا الجهاز.</p><button class="outline-button" id="openSaved" type="button">عرض الأخبار المحفوظة <span>←</span></button></section>
+        <section class="sidebar-panel" id="followPanel"><div class="panel-heading"><span class="section-kicker">تخصيص تجربتك</span><h3>الأقسام والدول التي تتابعها</h3></div><p class="panel-copy" id="followHint">سجّل الدخول لمزامنة اختياراتك بين أجهزتك.</p><div id="followOptions" class="follow-options"><a class="outline-button" href="account.html">تسجيل الدخول أو إنشاء حساب</a></div></section>
         <section class="sidebar-panel"><div class="panel-heading"><span class="section-kicker">الأقسام</span><h3>استكشف التغطية</h3></div><div class="topic-list"><button data-category="politics">السياسة والدبلوماسية <span>↗</span></button><button data-category="economy">الاقتصاد والأعمال <span>↗</span></button><button data-category="security">الأمن والدفاع <span>↗</span></button><button data-category="tech">العلوم والتكنولوجيا <span>↗</span></button><button data-category="sports">الرياضة <span>↗</span></button><button data-category="culture">الثقافة والمجتمع <span>↗</span></button></div></section>
         <section class="sidebar-note"><span class="note-icon">◎</span><h3>اقرأ الخبر من مصدره</h3><p>نعرض بيانات الخبر المتاحة ونوفر رابط المصدر الأصلي للتحقق وقراءة التفاصيل الكاملة.</p></section>
       </aside>
@@ -53,6 +54,7 @@
   <div class="search-overlay" id="searchOverlay" aria-hidden="true"><div class="search-dialog" role="dialog" aria-modal="true" aria-label="البحث في الأخبار"><div class="search-top"><label for="searchInput">ابحث في التغطية</label><button class="icon-button" id="closeSearch" aria-label="إغلاق البحث">×</button></div><input id="searchInput" type="search" placeholder="عنوان، موضوع، دولة أو مصدر..." autocomplete="off"><div id="searchResults" class="search-results"><p class="muted">اكتب كلمة للبدء.</p></div></div></div>
   <div class="modal-overlay" id="articleModal" aria-hidden="true"><article class="article-dialog" id="modalContent"></article></div>
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="script.js" defer></script>
 </body>
 </html>
