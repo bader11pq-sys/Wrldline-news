@@ -7,21 +7,20 @@ const TELEGRAM_CHANNELS = [
     { username: 'GhaybIntel', name: 'قناة الغيب' }
 ];
 
-// دالة تنظيف النص من وسوم HTML والروابط
 function cleanHTML(html) {
     if (!html) return "";
     return html
         .replace(/<script[\s\S]*?<\/script>/gi, '') 
         .replace(/<style[\s\S]*?<\/style>/gi, '')   
-        .replace(/<[^>]+>/g, ' ') // إزالة جميع الوسوم
+        .replace(/<[^>]+>/g, ' ') 
         .replace(/&nbsp;/g, ' ')
         .replace(/&amp;/g, '&')
         .replace(/&lt;/g, '<')
         .replace(/&gt;/g, '>')
         .replace(/&quot;/g, '"')
         .replace(/&#39;/g, "'")
-        .replace(/https?:\/\/\S+/g, '') // إزالة الروابط الطويلة
-        .replace(/\s+/g, ' ') // إزالة المسافات الزائدة
+        .replace(/https?:\/\/\S+/g, '') 
+        .replace(/\s+/g, ' ') 
         .trim();
 }
 
@@ -29,13 +28,23 @@ function getRssUrl(channelUsername) {
     return `https://purfled.com/rss/telegram/${channelUsername}`;
 }
 
-// استخراج الصور من محتوى RSS
+// استخراج الصور بشكل أقوى، مع استخدام Proxy لصور تيليجرام
 function extractImage(item) {
+    // نبحث عن الصورة بأي شكل من الأشكال
     let match = item.match(/<enclosure[^>]+url="([^"]+)"/i) ||
                 item.match(/<media:content[^>]+url="([^"]+)"/i) ||
                 item.match(/<media:thumbnail[^>]+url="([^"]+)"/i) ||
                 item.match(/<img[^>]+src="([^">]+)"/i);
-    return match ? match[1] : null;
+    
+    if (match) {
+        let imgUrl = match[1];
+        // إذا كانت الصورة من خوادم تيليجرام، نستخدم Proxy لتجاوز الحظر
+        if (imgUrl.includes('telesco.pe') || imgUrl.includes('telegram.org')) {
+            return `https://images.weserv.nl/?url=${encodeURIComponent(imgUrl)}`;
+        }
+        return imgUrl;
+    }
+    return null;
 }
 
 async function analyzeWithAI(title, summary) {
@@ -75,23 +84,18 @@ async function fetchTelegramChannel(channel) {
             const descMatch = item.match(/<description>(?:<!\[CDATA\[)?([\s\S]*?)(?:\]\]>)?<\/description>/);
             const pubDateMatch = item.match(/<pubDate>(.*?)<\/pubDate>/);
 
-            // 1. استخراج الصورة أولاً قبل التنظيف
             const imageUrl = extractImage(item);
 
-            // 2. تنظيف النص
             let title = titleMatch ? cleanHTML(titleMatch[1]) : "";
             let description = descMatch ? cleanHTML(descMatch[1]) : "";
             const link = linkMatch ? linkMatch[1].trim() : "";
             const pubDate = pubDateMatch ? pubDateMatch[1] : new Date().toISOString();
 
-            if (!title && !description) continue; // تخطي إذا كان فارغاً
+            if (!title && !description) continue;
 
-            // إذا لم يوجد عنوان، نأخذ أول 50 حرف من الوصف كعنوان
             if (!title) {
                 title = description.substring(0, 50) + "...";
             }
-
-            // إذا كان الوصف يحتوي على نفس نص العنوان، نفرغه
             if (description === title) {
                 description = "";
             }
@@ -105,7 +109,7 @@ async function fetchTelegramChannel(channel) {
             const articleData = {
                 url: link,
                 title: title,
-                summary: description.substring(0, 500), // سيتم حفظ النص النظيف فقط
+                summary: description.substring(0, 500),
                 image_url: imageUrl,
                 category: aiResult.category,
                 country: aiResult.country,
