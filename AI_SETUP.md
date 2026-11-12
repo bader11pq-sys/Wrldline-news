@@ -1,24 +1,23 @@
-# WRLDLINE AI classification and risk map setup
+# WRLDLINE AI classification and risk map
 
-The `classify-news` Supabase Edge Function is deployed with JWT verification enabled. It only accepts authenticated users whose trusted Supabase `app_metadata.role` is `editor` or `admin`.
+## Automatic background classification
 
-## Enable AI classification
+The repository includes a background worker (`classify-pending.js`) and GitHub Actions workflow. It checks newly published non-Telegram articles every 10 minutes and also runs after the regional/world ingestion workflows. It only sends rows whose AI status is empty or pending; low-confidence stories remain in editorial review and are not repeatedly billed.
 
-1. Open Supabase Dashboard → Project Settings → Edge Functions → Secrets.
-2. Add a secret named `OPENAI_API_KEY` with an API key from your OpenAI Platform project.
-3. Do not commit the key, place it in browser JavaScript, or send it in chat.
-4. Open `/admin.html`, sign in as an editor/admin, then use **تحليل 10 أخبار بالذكاء الاصطناعي**. Each run classifies up to ten published, non-Telegram articles.
+### Required secrets — never commit or paste keys into chat
 
-The classifier uses the OpenAI Responses API with structured JSON output. It classifies category, country, ISO alpha-3 country code, event type, summary, confidence, and event-level risk. Precise coordinates are returned only when the location is explicitly identified. Low-confidence results are marked for editorial review.
+1. In Supabase Dashboard → Project Settings → Edge Functions → Secrets, add `OPENAI_API_KEY`.
+2. In GitHub repository Settings → Secrets and variables → Actions, add `SUPABASE_SERVICE_ROLE_KEY` using the project's service-role/secret key. This is used only by the server-side GitHub Actions worker and is never placed in browser code.
+3. Keep the existing `SUPABASE_URL` and `SUPABASE_KEY` secrets for the news ingestion bots. Never place a service key in frontend JavaScript.
 
-## Telegram source handling
+The Edge Function accepts either a real authenticated editor/admin session or an exact server-side service-role token. The key is checked server-side and never returned to the browser.
 
-Published rows whose source URL, article URL, or source name identifies Telegram are copied to `telegram_breaking_items`. The public article policies exclude those rows from ordinary article feeds; the dedicated ticker table is the only public reader path. A database trigger keeps the ticker synchronized when Telegram article metadata changes.
+## Operation
+
+Each background run processes up to 30 pending stories in batches of ten. Telegram items are excluded from ordinary classification and remain ticker-only. The admin page retains a retry action for pending work; normal operation does not require pressing it.
 
 ## Risk map
 
-The map at `/map.html` uses only published, AI-classified, non-Telegram stories with confidence >= 0.68 from the last seven days. Country shading reflects the highest event-level risk signal in recent coverage; it is not a country-wide safety rating or official travel advisory. Event coordinates are shown only when the classifier identifies a precise place.
+The map at `/map.html` uses published, AI-classified, non-Telegram stories with confidence >= 0.68 from the last seven days. Country shading reflects the highest event-level risk signal in recent coverage; it is not a country-wide safety rating or official travel advisory.
 
-## Cost and operations
-
-The admin action processes up to ten articles per request. Each article is a separate model request and incurs API usage. Monitor usage and set budget limits in the OpenAI Platform. Re-run only pending, failed, or review-needed stories as editorially appropriate.
+Each story uses one model request. Monitor OpenAI usage and set a budget limit. GitHub scheduled workflows can start late during platform load; ingestion workflows also trigger classification directly after fetching.
