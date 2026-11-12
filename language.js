@@ -136,7 +136,7 @@ AR_EN["رحلة عبر العصور"]="Journey through the ages";
 AR_EN["افتح أي عصر لتقرأ فصوله وموضوعاته"]="Open any era to explore its chapters and themes";
 Object.assign(AR_EN,window.WRLDLINE_HISTORY_EN||{});
 const original=new WeakMap();
-function translateValue(value,lang){const trimmed=String(value??"").trim();if(!trimmed)return value;if(lang==="en")return AR_EN[trimmed]??value;if(/[\\u0600-\\u06FF]/.test(trimmed))return value;const reverse=reverseMap[trimmed];return reverse?String(value).replace(trimmed,reverse):value;}
+function translateValue(value,lang){const trimmed=String(value??"").trim();if(!trimmed)return value;if(lang==="en")return AR_EN[trimmed]??value;if(/[\u0600-\u06FF]/.test(trimmed))return value;const reverse=reverseMap[trimmed];return reverse?String(value).replace(trimmed,reverse):value;}
 const reverseMap=Object.fromEntries(Object.entries(AR_EN).map(([a,e])=>[e,a]));
 function visit(root=document){const walker=document.createTreeWalker(root,NodeFilter.SHOW_TEXT);let node;while((node=walker.nextNode())){if(!node.parentElement||/^(SCRIPT|STYLE|NOSCRIPT|TEXTAREA)$/i.test(node.parentElement.tagName))continue;let base=original.get(node);if(base===undefined){base=node.nodeValue;original.set(node,base)}const next=translateValue(base,window.wrldlineLang);if(node.nodeValue!==next)node.nodeValue=next;}
  const elements=root.querySelectorAll?root.querySelectorAll("[placeholder],[aria-label],[title]"):[];elements.forEach(el=>{for(const attr of ["placeholder","aria-label","title"]){if(!el.hasAttribute(attr))continue;const key=attr+":"+attr;let map=el.__wrldlineAttrs||(el.__wrldlineAttrs={});if(map[attr]===undefined)map[attr]=el.getAttribute(attr);el.setAttribute(attr,translateValue(map[attr],window.wrldlineLang));}});}
