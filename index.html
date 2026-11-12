@@ -1,110 +1,58 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ar" dir="rtl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
-    <title>الغيب | Al Ghaib News — وكالة الأنباء العالمية</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#101b2d">
+  <meta name="description" content="ورلدلاين نيوز — تغطية إخبارية عالمية، عاجل، سياسة، اقتصاد، تقنية، رياضة وتحليلات من مصادرها.">
+  <meta name="robots" content="index,follow,max-image-preview:large">
+  <link rel="canonical" href="https://wrldline-news.com/">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="WRLDLINE NEWS | ورلدلاين نيوز">
+  <meta property="og:description" content="العالم أمامك — أخبار موثوقة وتغطية مستمرة.">
+  <title>WRLDLINE NEWS | ورلدلاين نيوز</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <link rel="manifest" href="manifest.json">
 </head>
 <body>
-
-    <!-- شريط الأسعار العلوي -->
-    <div class="markets-bar">
-        <div class="markets-inner" id="marketsTicker"></div>
+  <a class="skip-link" href="#mainContent">تجاوز إلى المحتوى</a>
+  <div class="utility-bar"><div class="container utility-inner"><span id="todayLabel">تغطية عالمية على مدار الساعة</span><span class="utility-right"><span class="status-dot"></span> <span id="connectionLabel">متصل بمركز الأخبار</span><button id="languageButton" class="text-button" type="button">English</button></span></div></div>
+  <header class="site-header">
+    <div class="container masthead">
+      <button class="icon-button mobile-menu" id="menuButton" aria-label="فتح القائمة" aria-expanded="false">☰</button>
+      <a class="brand" href="#" aria-label="ورلدلاين نيوز الصفحة الرئيسية"><span class="brand-mark">W</span><span class="brand-copy"><strong>WRLDLINE</strong><small>GLOBAL NEWS NETWORK</small></span></a>
+      <div class="header-tools"><button class="tool-button" id="searchButton" type="button">⌕ <span>بحث</span></button><button class="icon-button" id="savedButton" type="button" aria-label="المحفوظات">☆</button><button class="icon-button" id="themeButton" type="button" aria-label="تغيير المظهر">☾</button></div>
     </div>
-
-    <!-- الترويسة (رويترز ستايل) -->
-    <header class="main-header">
-        <div class="header-top">
-            <button class="menu-btn" onclick="toggleMenu()">☰</button>
-            <div class="logo" onclick="window.scrollTo(0,0)">
-                <span class="logo-ar">الغيب</span>
-                <span class="logo-en">AL GHAIB NEWS</span>
-            </div>
-            <div class="header-actions">
-                <button class="icon-btn" onclick="toggleSearch()">🔍</button>
-                <button class="icon-btn" onclick="toggleLang()" id="langBtn">EN</button>
-                <button class="icon-btn" onclick="toggleTheme()" id="themeBtn">🌙</button>
-            </div>
-        </div>
-        
-        <!-- القائمة الرئيسية -->
-        <nav class="main-nav" id="mainNav">
-            <a href="#" class="nav-item active" onclick="filterCategory('all', this)">الرئيسية</a>
-            <a href="#" class="nav-item" onclick="filterCategory('politics', this)">سياسة</a>
-            <a href="#" class="nav-item" onclick="filterCategory('economy', this)">اقتصاد</a>
-            <a href="#" class="nav-item" onclick="filterCategory('security', this)">أمن ودفاع</a>
-            <a href="#" class="nav-item" onclick="filterCategory('tech', this)">تكنولوجيا</a>
-            <a href="#" class="nav-item" onclick="filterCategory('sports', this)">رياضة</a>
-            <a href="#" class="nav-item" onclick="filterCategory('culture', this)">ثقافة</a>
-        </nav>
-    </header>
-
-    <!-- شريط الأخبار العاجلة -->
-    <div class="breaking-bar" id="breakingBar">
-        <span class="live-dot"></span>
-        <span class="breaking-text" id="breakingText">جاري التحميل...</span>
-    </div>
-
-    <main class="main-content container">
-        
-        <!-- تخطيط رويترز: خبر رئيسي + أخبار جانبية -->
-        <section class="hero-layout" id="heroLayout">
-            <!-- سيتم تعبئته بواسطة JS -->
-        </section>
-
-        <!-- الفلاتر (دولة) -->
-        <section class="filters-section">
-            <h2 class="section-title">آخر الأخبار</h2>
-            <select id="countryFilter" class="country-select" onchange="filterCountry(this.value)">
-                <option value="all">🌍 كل الدول</option>
-            </select>
-        </section>
-
-        <!-- شبكة الأخبار -->
-        <section class="news-grid" id="newsGrid">
-            <!-- سيتم تعبئته بواسطة JS -->
-        </section>
-
-        <!-- زر تحميل المزيد -->
-        <div class="load-more-wrap" id="loadMoreWrap">
-            <button class="btn-load-more" onclick="loadMore()">تحميل المزيد من الأخبار</button>
-        </div>
-
-    </main>
-
-    <!-- التذييل -->
-    <footer class="main-footer">
-        <div class="container">
-            <div class="footer-logo">الغيب | AL GHAIB NEWS</div>
-            <p>منصة إعلامية عالمية رقمية. تغطية معمقة وتحليلات استراتيجية.</p>
-            <div class="footer-links">
-                <a href="#">من نحن</a>
-                <a href="#">سياسة الخصوصية</a>
-                <a href="#">اتصل بنا</a>
-            </div>
-        </div>
-    </footer>
-
-    <!-- نافذة قراءة الخبر (Modal) -->
-    <div class="modal-overlay" id="articleModal">
-        <div class="modal-content" id="modalContent">
-            <!-- سيتم تعبئته بواسطة JS -->
-        </div>
-    </div>
-
-    <!-- شاشة البحث -->
-    <div class="search-overlay" id="searchOverlay">
-        <div class="search-box">
-            <input type="text" id="searchInput" placeholder="ابحث عن خبر..." oninput="handleSearch(this.value)">
-            <button class="close-search" onclick="toggleSearch()">✕</button>
-        </div>
-        <div class="search-results" id="searchResults"></div>
-    </div>
-
-    <script src="script.js"></script>
+    <nav class="main-nav" id="mainNav" aria-label="الأقسام الرئيسية"><div class="container nav-inner">
+      <a class="nav-link active" href="#" data-category="all">الرئيسية</a><a class="nav-link" href="#" data-category="politics">سياسة</a><a class="nav-link" href="#" data-category="economy">اقتصاد وأسواق</a><a class="nav-link" href="#" data-category="security">أمن ودفاع</a><a class="nav-link" href="#" data-category="tech">تكنولوجيا</a><a class="nav-link" href="#" data-category="sports">رياضة</a><a class="nav-link" href="#" data-category="culture">ثقافة</a><a class="nav-link" href="#" data-category="health">صحة</a><a class="nav-link" href="#" data-category="world">حول العالم</a>
+    </div></nav>
+  </header>
+  <div class="breaking-strip"><div class="container breaking-inner"><span class="breaking-label"><i></i> عاجل</span><p id="breakingText" aria-live="polite">يتم تحديث موجز الأخبار...</p><span class="breaking-time" id="breakingTime">LIVE</span></div></div>
+  <main id="mainContent" class="container page-shell">
+    <section class="welcome-row"><div><p class="eyebrow">THE WORLD. IN CONTEXT.</p><h1>العالم أمامك<span>.</span></h1><p class="welcome-subtitle">أخبار اللحظة، سياق أعمق، وصورة أوضح لما يحدث حول العالم.</p></div><div class="edition-card"><span>نسخة الموقع</span><strong id="editionDate">—</strong><small>تغطية رقمية متعددة المصادر</small></div></section>
+    <section class="section-heading"><div><span class="section-kicker">الآن</span><h2>في واجهة المشهد</h2></div><span class="muted" id="lastUpdated">بانتظار التحديث</span></section>
+    <section id="heroLayout" class="hero-layout" aria-live="polite"><div class="loading-state">جارٍ تحميل الأخبار...</div></section>
+    <section class="content-layout">
+      <div class="feed-column">
+        <div class="section-heading feed-heading"><div><span class="section-kicker">تغطية مستمرة</span><h2 id="feedTitle">أحدث الأخبار</h2></div><div class="feed-controls"><select id="countryFilter" aria-label="تصفية حسب الدولة"><option value="all">كل الدول</option></select><select id="sortFilter" aria-label="ترتيب الأخبار"><option value="newest">الأحدث أولاً</option><option value="oldest">الأقدم أولاً</option></select></div></div>
+        <div class="category-chips" id="categoryChips"><button class="chip active" data-category="all">الكل</button><button class="chip" data-category="politics">سياسة</button><button class="chip" data-category="economy">اقتصاد</button><button class="chip" data-category="tech">تقنية</button><button class="chip" data-category="sports">رياضة</button><button class="chip" data-category="world">عالم</button></div>
+        <div id="newsGrid" class="news-grid"><div class="loading-state">جارٍ تجهيز غرفة الأخبار...</div></div>
+        <div class="load-more-wrap"><button class="primary-button" id="loadMoreButton" type="button">عرض المزيد من الأخبار</button></div>
+      </div>
+      <aside class="sidebar">
+        <section class="sidebar-panel"><div class="panel-heading"><span class="section-kicker">مختاراتك</span><h3>غرفة المتابعة</h3></div><p class="panel-copy">احفظ القصص التي تهمك وارجع إليها في أي وقت من هذا الجهاز.</p><button class="outline-button" id="openSaved" type="button">عرض الأخبار المحفوظة <span>←</span></button></section>
+        <section class="sidebar-panel"><div class="panel-heading"><span class="section-kicker">الأقسام</span><h3>استكشف التغطية</h3></div><div class="topic-list"><button data-category="politics">السياسة والدبلوماسية <span>↗</span></button><button data-category="economy">الاقتصاد والأعمال <span>↗</span></button><button data-category="security">الأمن والدفاع <span>↗</span></button><button data-category="tech">العلوم والتكنولوجيا <span>↗</span></button><button data-category="sports">الرياضة <span>↗</span></button><button data-category="culture">الثقافة والمجتمع <span>↗</span></button></div></section>
+        <section class="sidebar-note"><span class="note-icon">◎</span><h3>اقرأ الخبر من مصدره</h3><p>نعرض بيانات الخبر المتاحة ونوفر رابط المصدر الأصلي للتحقق وقراءة التفاصيل الكاملة.</p></section>
+      </aside>
+    </section>
+  </main>
+  <footer class="site-footer"><div class="container footer-main"><a class="brand footer-brand" href="#"><span class="brand-mark">W</span><span class="brand-copy"><strong>WRLDLINE</strong><small>GLOBAL NEWS NETWORK</small></span></a><p>منصة إخبارية رقمية تضع العالم في سياقه.</p><div class="footer-links"><a href="mailto:news@wrldline-news.com">اتصل بنا</a><a href="#mainContent">العودة للأعلى ↑</a></div></div><div class="container footer-bottom"><span>© <span id="year"></span> WRLDLINE NEWS</span><span>المحتوى الإخباري يُنسب إلى مصادره الأصلية.</span></div></footer>
+  <div class="search-overlay" id="searchOverlay" aria-hidden="true"><div class="search-dialog" role="dialog" aria-modal="true" aria-label="البحث في الأخبار"><div class="search-top"><label for="searchInput">ابحث في التغطية</label><button class="icon-button" id="closeSearch" aria-label="إغلاق البحث">×</button></div><input id="searchInput" type="search" placeholder="عنوان، موضوع، دولة أو مصدر..." autocomplete="off"><div id="searchResults" class="search-results"><p class="muted">اكتب كلمة للبدء.</p></div></div></div>
+  <div class="modal-overlay" id="articleModal" aria-hidden="true"><article class="article-dialog" id="modalContent"></article></div>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script src="script.js" defer></script>
 </body>
 </html>
