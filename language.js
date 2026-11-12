@@ -203,6 +203,13 @@ AR_EN["تم نشر الخبر."]="Story published.";
 AR_EN["هل تريد حذف هذا الخبر نهائياً؟"]="Delete this story permanently?";
 AR_EN["فشل الحذف:"]="Delete failed:";
 AR_EN["تم حذف الخبر."]="Story deleted.";
+AR_EN["موسوعة تفاعلية تروي تاريخ الدول والحضارات والثقافات عبر العصور، وتربط السياسة بالمجتمع والاقتصاد والفكر والفنون."]="An interactive encyclopedia tracing countries, civilisations, and cultures through the ages—connecting politics with society, economics, ideas, and the arts.";
+AR_EN["الخط الزمني الكبير"]="The grand timeline";
+AR_EN["التاريخ ليس صفحة واحدة."]="History is not a single page.";
+AR_EN["إنه حكاية حضارات."]="It is the story of civilisations.";
+AR_EN["موسوعة التاريخ"]="History encyclopedia";
+AR_EN["WRLDLINE / NEWS"]="WRLDLINE / NEWS";
+AR_EN["الأخبار"]="News";
 Object.assign(AR_EN,window.WRLDLINE_HISTORY_EN||{});
 const original=new WeakMap();
 function translateValue(value,lang){const trimmed=String(value??"").trim();if(!trimmed)return value;if(lang==="en"){if(AR_EN[trimmed])return AR_EN[trimmed];const keys=Object.keys(AR_EN).filter(k=>trimmed.startsWith(k)&&k.length>2).sort((a,b)=>b.length-a.length);if(keys.length){const k=keys[0];return String(value).replace(trimmed,AR_EN[k]+trimmed.slice(k.length));}return value;}if(/[\u0600-\u06FF]/.test(trimmed))return value;const reverse=reverseMap[trimmed];return reverse?String(value).replace(trimmed,reverse):value;}
