@@ -166,7 +166,7 @@ function initVerificationRealtime(){
    article.verificationFieldCount=Number(row.verification_field_count||0);
    article.verificationOfficialCount=Number(row.verification_official_count||0);
    article.verificationConflictCount=Number(row.verification_conflict_count||0);
-   article.verificationCorrectionCount=Number(row.verification_correction_count||0);article.verificationRetractionCount=Number(row.verification_retraction_count||0);
+   article.verificationCorrectionCount=Number(row.verification_correction_count||0);article.verificationRetractionCount=Number(row.verification_retraction_count||0);article.verificationRetractionCount=Number(row.verification_retraction_count||0);
    article.verificationUpdatedAt=row.verification_updated_at||null;
    renderHero();renderFeed();
    if(document.getElementById("articleModal")?.classList.contains("visible")&&new URLSearchParams(location.search).get("article")===article.id)openArticle(article.id,false);
