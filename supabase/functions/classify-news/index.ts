@@ -54,11 +54,16 @@ Deno.serve(async (req: Request) => {
   const token = authHeader.replace(/^Bearer\s+/i, "");
   if (!token) return json({ error: "Authentication required." }, 401);
 
-  const authClient = createClient(supabaseUrl, anonKey, { auth: { persistSession: false, autoRefreshToken: false } });
-  const { data: userData, error: userError } = await authClient.auth.getUser(token);
-  if (userError || !userData.user) return json({ error: "Invalid session." }, 401);
-  const role = userData.user.app_metadata?.role;
-  if (!["editor","admin"].includes(role)) return json({ error: "Editorial access required." }, 403);
+  // Background workers authenticate with the exact server-side service-role key.
+  // Browser/editor requests still require a real user session with trusted app_metadata.
+  const isTrustedWorker = token === serviceKey;
+  if (!isTrustedWorker) {
+    const authClient = createClient(supabaseUrl, anonKey, { auth: { persistSession: false, autoRefreshToken: false } });
+    const { data: userData, error: userError } = await authClient.auth.getUser(token);
+    if (userError || !userData.user) return json({ error: "Invalid session." }, 401);
+    const role = userData.user.app_metadata?.role;
+    if (!["editor","admin"].includes(role)) return json({ error: "Editorial access required." }, 403);
+  }
 
   let body: any;
   try { body = await req.json(); } catch { return json({ error: "Invalid JSON body." }, 400); }
