@@ -1,5 +1,10 @@
 name: WRLDLINE Breaking News Desk
 on:
+  push:
+    branches: [main]
+    paths:
+      - 'bot-breaking.js'
+      - '.github/workflows/breaking.yml'
   schedule:
     - cron: '*/5 * * * *'
   workflow_dispatch:
