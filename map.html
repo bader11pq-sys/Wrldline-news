@@ -1,142 +1,46 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ar" dir="rtl">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
-<title>خريطة الأحداث | وكالة الغيب</title>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#101b2d"><meta name="robots" content="index,follow">
+<title>مرصد العالم | WRLDLINE NEWS</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Manrope:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <style>
-    :root { --bg: #09090b; --surface: #18181b; --text: #f4f4f5; --brand: #ef4444; }
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body, html { height: 100%; font-family: 'IBM Plex Sans Arabic', sans-serif; background: var(--bg); color: var(--text); overflow: hidden; }
-    
-    .header { height: 60px; background: var(--surface); display: flex; align-items: center; justify-content: space-between; padding: 0 20px; border-bottom: 1px solid #27272a; position: relative; z-index: 1000; }
-    .header h1 { font-size: 1.2rem; color: var(--brand); }
-    .btn-back { color: var(--text); text-decoration: none; font-weight: 600; font-size: 0.9rem; background: #27272a; padding: 8px 16px; border-radius: 8px; transition: 0.2s; }
-    .btn-back:hover { background: var(--brand); }
-
-    #map { height: calc(100vh - 60px); width: 100%; background: #000; }
-
-    /* تخصيص شكل النوافذ المنبثقة */
-    .leaflet-popup-content-wrapper { background: var(--surface); color: var(--text); border-radius: 12px; padding: 0; overflow: hidden; border: 1px solid #3f3f46; }
-    .leaflet-popup-content { margin: 0; width: 280px !important; }
-    .leaflet-popup-tip { background: var(--surface); }
-    .popup-img { width: 100%; height: 120px; object-fit: cover; }
-    .popup-body { padding: 16px; }
-    .popup-title { font-size: 1rem; font-weight: 700; margin-bottom: 8px; color: var(--brand); }
-    .popup-desc { font-size: 0.85rem; color: #a1a1aa; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
-</style>
-</head>
+:root{font-family:"IBM Plex Sans Arabic",sans-serif;color-scheme:light;--bg:#f3f5f8;--panel:#fff;--text:#142238;--muted:#64748b;--line:#dce2e9;--navy:#101b2d;--gold:#c89e5b}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text)}a{color:inherit}.top{background:var(--navy);color:#fff;padding:15px max(18px,calc((100% - 1440px)/2));display:flex;align-items:center;justify-content:space-between;gap:18px}.brand{font:800 18px Manrope,sans-serif;letter-spacing:.06em}.brand span{color:var(--gold)}.top a{color:#e8d4b3;text-decoration:none;font-size:13px}.wrap{max-width:1440px;margin:auto;padding:28px 22px}.eyebrow{color:#a17a40;font-size:11px;font-weight:700;letter-spacing:.14em}.heading{display:flex;justify-content:space-between;align-items:end;gap:20px;margin-bottom:20px}.heading h1{font-size:clamp(25px,4vw,38px);margin:5px 0}.heading p{color:var(--muted);margin:0;max-width:750px;font-size:13px}.updated{font-size:11px;color:var(--muted);white-space:nowrap}.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:20px 0}.stat,.panel{background:var(--panel);border:1px solid var(--line);border-radius:14px}.stat{padding:14px 17px}.stat small{color:var(--muted);display:block;font-size:11px}.stat strong{font:800 25px Manrope,sans-serif}.workspace{display:grid;grid-template-columns:minmax(0,1.7fr) minmax(300px,.8fr);gap:16px;align-items:stretch}.map-panel{overflow:hidden}.map-toolbar{padding:14px 16px;display:flex;align-items:center;justify-content:space-between;gap:9px;border-bottom:1px solid var(--line);flex-wrap:wrap}.map-toolbar strong{font-size:14px}.map-toolbar select{border:1px solid var(--line);border-radius:8px;padding:8px 10px;background:white;font:inherit;font-size:12px}#worldMap{height:590px;width:100%;background:#eaf0f5}.legend{display:flex;flex-wrap:wrap;gap:12px;padding:12px 16px;border-top:1px solid var(--line)}.legend span{display:flex;align-items:center;gap:6px;font-size:10px;color:var(--muted)}.swatch{width:10px;height:10px;border-radius:50%}.panel{padding:17px}.side-title{display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--line);padding-bottom:11px;margin-bottom:12px}.side-title h2{font-size:16px;margin:0}.side-title small{color:var(--muted)}.notice{font-size:11px;color:#72582f;background:#fbf5e9;border:1px solid #ead8b8;border-radius:9px;padding:10px 12px;line-height:1.7;margin-bottom:14px}.country-summary{padding:13px;border-radius:10px;background:#f5f7fa;margin-bottom:14px}.country-summary strong{font-size:15px}.country-summary p{font-size:11px;color:var(--muted);margin:5px 0}.event-list{display:flex;flex-direction:column;gap:10px;max-height:490px;overflow:auto}.event{padding:11px 0;border-bottom:1px solid var(--line)}.event:last-child{border:0}.event-top{display:flex;justify-content:space-between;gap:8px;align-items:center}.event h3{font-size:12px;line-height:1.6;margin:5px 0}.event p{font-size:11px;color:var(--muted);margin:0;line-height:1.6}.event a{font-size:10px;color:#98703a;text-decoration:none}.risk{font-size:10px;font-weight:700;padding:3px 8px;border-radius:20px;background:#eef1f4;color:#536170}.risk-critical{background:#541522;color:#fff}.risk-high{background:#f8d6d5;color:#8d2020}.risk-elevated{background:#ffe7ca;color:#8a4d0d}.risk-guarded{background:#fff3c4;color:#725800}.risk-low{background:#d9f1e4;color:#16613a}.risk-unknown{background:#eef1f4;color:#536170}.empty{padding:30px 12px;text-align:center;color:var(--muted);font-size:12px}.footnote{font-size:10px;color:var(--muted);line-height:1.7;margin:18px 0 0}.leaflet-popup-content{font-family:"IBM Plex Sans Arabic",sans-serif;direction:rtl;text-align:right}.leaflet-container{font-family:inherit}
+@media(max-width:900px){.workspace{grid-template-columns:1fr}#worldMap{height:480px}.event-list{max-height:360px}}
+@media(max-width:560px){.wrap{padding:20px 12px}.top{padding:13px 14px}.heading{align-items:flex-start;flex-direction:column}.stats{grid-template-columns:repeat(2,1fr)}#worldMap{height:390px}.updated{white-space:normal}}
+</style></head>
 <body>
-
-<div class="header">
-    <h1>خريطة الأحداث العالمية</h1>
-    <a href="index.html" class="btn-back">&larr; العودة للرئيسية</a>
+<header class="top"><a class="brand" href="index.html">WRLD<span>LINE</span> / INTELLIGENCE</a><a href="index.html">العودة إلى غرفة الأخبار ←</a></header>
+<main class="wrap">
+<div class="heading"><div><div class="eyebrow">GLOBAL EVENT & RISK MONITOR</div><h1>مرصد العالم</h1><p>خريطة تفاعلية تربط الأحداث بمواقعها وتعرض إشارات المخاطر التي استخلصها الذكاء الاصطناعي من الأخبار المنشورة حديثاً.</p></div><div class="updated" id="updatedAt">جارٍ تحميل بيانات المرصد…</div></div>
+<div class="stats">
+ <div class="stat"><small>أحداث مصنّفة</small><strong id="statEvents">—</strong></div>
+ <div class="stat"><small>دول ذات إشارات مرصودة</small><strong id="statCountries">—</strong></div>
+ <div class="stat"><small>أحداث عالية الخطورة</small><strong id="statHigh">—</strong></div>
+ <div class="stat"><small>مواقع جغرافية محددة</small><strong id="statLocations">—</strong></div>
 </div>
-
-<div id="map"></div>
-
-<script>
-    const SUPABASE_URL = "https://vmaxbnogmmfyrcucapnq.supabase.co";
-    const SUPABASE_ANON_KEY = "sb_publishable_D3c88u75_LcEN460Y3Jcpw__EfqUnBx";
-
-    // ربط أسماء الدول العربية بالرموز العالمية (ISO Codes) التي تفهمها الخريطة
-    const countryMap = {
-        'السعودية': 'SAU', 'فلسطين': 'PSE', 'أوكرانيا': 'UKR', 'الولايات المتحدة': 'USA',
-        'روسيا': 'RUS', 'إيران': 'IRN', 'تركيا': 'TUR', 'مصر': 'EGY',
-        'اليمن': 'YEM', 'الإمارات': 'ARE', 'الصين': 'CHN', 'فرنسا': 'FRA',
-        'ألمانيا': 'DEU', 'بريطانيا': 'GBR', 'سوريا': 'SYR', 'العراق': 'IRQ',
-        'لبنان': 'LBN', 'الأردن': 'JOR', 'الكويت': 'KWT', 'قطر': 'QAT'
-    };
-
-    // 1. تهيئة الخريطة
-    const map = L.map('map', { zoomControl: false }).setView([25, 20], 2);
-    L.control.zoom({ position: 'topright' }).addTo(map);
-
-    // خلفية الخريطة الداكنة (Esri)
-    L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}', {
-        attribution: 'Tiles &copy; Esri', maxZoom: 16
-    }).addTo(map);
-
-    let countryLayers = {}; // لحفظ طبقات الدول لكي نلونها لاحقاً
-
-    // 2. تحميل خرائط العالم (GeoJSON)
-    fetch('https://raw.githubusercontent.com/johan/world.geo.json/master/countries.geo.json')
-        .then(res => res.json())
-        .then(data => {
-            L.geoJSON(data, {
-                style: function(feature) {
-                    return {
-                        fillColor: 'transparent',
-                        weight: 1,
-                        opacity: 1,
-                        color: '#3f3f46', // لون حدود الدول
-                        fillOpacity: 0.1
-                    };
-                },
-                onEachFeature: function(feature, layer) {
-                    // حفظ الطبقة باسم الدولة
-                    countryLayers[feature.id] = layer;
-                    
-                    layer.on('mouseover', function() {
-                        this.setStyle({ weight: 2, color: '#fff' });
-                    });
-                    layer.on('mouseout', function() {
-                        this.setStyle({ weight: 1, color: '#3f3f46' });
-                    });
-                }
-            }).addTo(map);
-            
-            // بعد رسم الخريطة، نبدأ بجلب الأخبار الحقيقية
-            loadMapNews();
-        });
-
-    // 3. جلب الأخبار وتلوين الدول
-    async function loadMapNews() {
-        try {
-            // جلب الأخبار التي لها "دولة" محددة فقط
-            const res = await fetch(`${SUPABASE_URL}/rest/v1/articles?select=*&country=not.is.null&order=published_at.desc&limit=50`, {
-                headers: { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${SUPABASE_ANON_KEY}` }
-            });
-            const data = await res.json();
-
-            data.forEach(article => {
-                const isoCode = countryMap[article.country];
-                const layer = countryLayers[isoCode];
-
-                if (layer) {
-                    // تحديد اللون بناءً على القسم
-                    let fillColor = '#3b82f6'; // أزرق (سياسة وعالم)
-                    if (article.category === 'security') fillColor = '#ef4444'; // أحمر (أمن وحروب)
-                    if (article.category === 'economy') fillColor = '#f59e0b'; // برتقالي (اقتصاد)
-
-                    // تلوين الدولة بالكامل
-                    layer.setStyle({
-                        fillColor: fillColor,
-                        fillOpacity: 0.6, // شفافية اللون
-                        color: fillColor,
-                        weight: 2
-                    });
-
-                    // إضافة النافذة المنبثقة
-                    const popupContent = `
-                        <img src="${article.image_url || 'https://picsum.photos/300/200'}" class="popup-img">
-                        <div class="popup-body">
-                            <div class="popup-title">${article.country}: ${article.title}</div>
-                            <div class="popup-desc">${article.summary}</div>
-                        </div>
-                    `;
-                    layer.bindPopup(popupContent);
-                }
-            });
-
-        } catch (error) {
-            console.error("خطأ:", error);
-        }
-    }
-</script>
-</body>
-</html>
+<div class="workspace">
+ <section class="panel map-panel">
+  <div class="map-toolbar"><strong>مستوى الإشارات حسب الدولة والمنطقة</strong>
+   <select id="timeFilter" aria-label="الفترة الزمنية"><option value="7">آخر 7 أيام</option><option value="3">آخر 72 ساعة</option><option value="1">آخر 24 ساعة</option></select>
+   <select id="eventTypeFilter" aria-label="نوع الحدث"><option value="all">كل أنواع الأحداث</option></select>
+   <select id="riskFilter" aria-label="تصفية مستوى المخاطر"><option value="all">كل المستويات</option><option value="critical">حرج</option><option value="high">مرتفع</option><option value="elevated">متصاعد</option><option value="guarded">مراقبة</option><option value="low">منخفض</option></select>
+  </div>
+  <div id="worldMap" role="application" aria-label="خريطة العالم التفاعلية"></div>
+  <div class="legend"><span><i class="swatch" style="background:#541522"></i> حرج</span><span><i class="swatch" style="background:#d94b4b"></i> مرتفع</span><span><i class="swatch" style="background:#e9953e"></i> متصاعد</span><span><i class="swatch" style="background:#e6c84f"></i> مراقبة</span><span><i class="swatch" style="background:#42a875"></i> منخفض</span><span><i class="swatch" style="background:#cbd3dc"></i> لا توجد بيانات كافية</span></div>
+ </section>
+ <aside class="panel">
+  <div class="side-title"><h2 id="panelTitle">أبرز الأحداث</h2><small id="eventCount">—</small></div>
+  <div class="notice">هذه مؤشرات رصد مستخلصة آلياً من التغطية الإخبارية، وليست تصنيفاً رسمياً لسلامة الدول أو تحذيراً للسفر. قد تتغير مع ورود معلومات جديدة، والأحداث منخفضة الثقة لا تُلوّن الخريطة.</div>
+  <div id="countrySummary" class="country-summary"><strong>اختر دولة من الخريطة</strong><p>ستظهر هنا أبرز الأحداث وإشارات المخاطر المرتبطة بها.</p></div>
+  <div id="eventList" class="event-list"><div class="empty">جارٍ تحميل الأحداث…</div></div>
+ </aside>
+</div>
+<p class="footnote">المنهجية: تُعرض الأخبار المصنّفة بثقة كافية خلال آخر 7 أيام. لون الدولة يعكس أعلى مستوى خطر في الأحداث المنشورة عنها، ولا يعني أن الدولة بأكملها خطرة. الإحداثيات لا تُعرض إلا عند تحديد موقع الحدث بوضوح. البيانات تعتمد على المصادر المنشورة في WRLDLINE، وليست بديلاً عن المصادر الرسمية.</p>
+</main>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script><script src="map.js" defer></script>
+</body></html>
