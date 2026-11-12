@@ -1,15 +1,30 @@
-// بوت تيليجرام: يجلب الأخبار من القنوات العامة ويصنفها بالذكاء الاصطناعي
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_KEY = process.env.SUPABASE_KEY;
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 
-// قنوات تيليجرام المطلوبة
 const TELEGRAM_CHANNELS = [
     { username: 'Alibk3', name: 'قناة علي' },
     { username: 'GhaybIntel', name: 'قناة الغيب' }
 ];
 
-// دالة تحويل القناة إلى RSS عبر purfled
+// دالة تنظيف النص من وسوم HTML والروابط
+function cleanHTML(html) {
+    if (!html) return "";
+    return html
+        .replace(/<script[\s\S]*?<\/script>/gi, '') 
+        .replace(/<style[\s\S]*?<\/style>/gi, '')   
+        .replace(/<[^>]+>/g, ' ') // إزالة جميع الوسوم
+        .replace(/&nbsp;/g, ' ')
+        .replace(/&amp;/g, '&')
+        .replace(/&lt;/g, '<')
+        .replace(/&gt;/g, '>')
+        .replace(/&quot;/g, '"')
+        .replace(/&#39;/g, "'")
+        .replace(/https?:\/\/\S+/g, '') // إزالة الروابط الطويلة
+        .replace(/\s+/g, ' ') // إزالة المسافات الزائدة
+        .trim();
+}
+
 function getRssUrl(channelUsername) {
     return `https://purfled.com/rss/telegram/${channelUsername}`;
 }
@@ -23,7 +38,6 @@ function extractImage(item) {
     return match ? match[1] : null;
 }
 
-// تصنيف الخبر بالذكاء الاصطناعي (نفس طريقة البوتات الأخرى)
 async function analyzeWithAI(title, summary) {
     const prompt = `صنف هذا الخبر وأعد JSON فقط بمفتاحين:
     "category": واحدة من (politics, economy, security, sports, tech, culture, health, world)
@@ -53,25 +67,34 @@ async function fetchTelegramChannel(channel) {
 
         const xml = await response.text();
         const items = xml.match(/<item>([\s\S]*?)<\/item>/g);
-        if (!items) {
-            console.log(`⚠️ لا توجد عناصر في قناة ${channel.name}`);
-            return;
-        }
+        if (!items) return;
 
-        // نأخذ آخر 3 منشورات فقط
         for (const item of items.slice(0, 3)) {
             const titleMatch = item.match(/<title>(?:<!\[CDATA\[)?([\s\S]*?)(?:\]\]>)?<\/title>/);
             const linkMatch = item.match(/<link>([\s\S]*?)<\/link>/);
             const descMatch = item.match(/<description>(?:<!\[CDATA\[)?([\s\S]*?)(?:\]\]>)?<\/description>/);
             const pubDateMatch = item.match(/<pubDate>(.*?)<\/pubDate>/);
 
-            let title = titleMatch ? titleMatch[1].replace(/<[^>]+>/g, "").trim() : "";
-            let description = descMatch ? descMatch[1].replace(/<[^>]+>/g, "").trim() : "";
-            const link = linkMatch ? linkMatch[1].trim() : "";
-            const pubDate = pubDateMatch ? pubDateMatch[1] : new Date().toISOString();
+            // 1. استخراج الصورة أولاً قبل التنظيف
             const imageUrl = extractImage(item);
 
-            if (!title || !link) continue;
+            // 2. تنظيف النص
+            let title = titleMatch ? cleanHTML(titleMatch[1]) : "";
+            let description = descMatch ? cleanHTML(descMatch[1]) : "";
+            const link = linkMatch ? linkMatch[1].trim() : "";
+            const pubDate = pubDateMatch ? pubDateMatch[1] : new Date().toISOString();
+
+            if (!title && !description) continue; // تخطي إذا كان فارغاً
+
+            // إذا لم يوجد عنوان، نأخذ أول 50 حرف من الوصف كعنوان
+            if (!title) {
+                title = description.substring(0, 50) + "...";
+            }
+
+            // إذا كان الوصف يحتوي على نفس نص العنوان، نفرغه
+            if (description === title) {
+                description = "";
+            }
 
             console.log(`🧠 تحليل تيليجرام: ${title.substring(0, 30)}...`);
             const aiResult = await analyzeWithAI(title, description);
@@ -82,7 +105,7 @@ async function fetchTelegramChannel(channel) {
             const articleData = {
                 url: link,
                 title: title,
-                summary: description.substring(0, 500),
+                summary: description.substring(0, 500), // سيتم حفظ النص النظيف فقط
                 image_url: imageUrl,
                 category: aiResult.category,
                 country: aiResult.country,
@@ -103,7 +126,6 @@ async function fetchTelegramChannel(channel) {
                 },
                 body: JSON.stringify(articleData)
             });
-            // تأخير لتجنب الحظر
             await new Promise(r => setTimeout(r, 2000));
         }
     } catch (error) {
