@@ -31,7 +31,7 @@ const db=window.supabase.createClient(URL,KEY,{auth:{persistSession:true,autoRef
 const $=id=>document.getElementById(id);
 const currentLang=()=>window.wrldlineLang||localStorage.getItem("wrldline:language")||"ar";
 const t=(ar,en)=>currentLang()==="ar"?ar:en;
-const verificationText=value=>({unconfirmed:t("غير مؤكد","Unverified"),single:t("مصدر واحد","Single source"),multi:t("أكدته مصادر مستقلة","Multiple independent sources"),confirmed:t("مؤكد من مصادر مستقلة","Corroborated by independent sources"),official_confirmed:t("تأكيد رسمي + مصادر مستقلة","Official + independent confirmation"),field_confirmed:t("تأكيد ميداني + مصادر مستقلة","Field + independent confirmation"),disputed:t("متنازع عليه","Disputed"),retracted:t("مسحوب","Retracted")}[value]||t("غير مؤكد","Unverified"));
+const verificationText=value=>({unconfirmed:t("غير مؤكد","Unverified"),single:t("مصدر واحد","Single source"),multi:t("أكدته مصادر مستقلة","Multiple independent sources"),confirmed:t("مؤكد من مصادر مستقلة","Corroborated by independent sources"),official_confirmed:t("تأكيد رسمي + مصادر مستقلة","Official + independent confirmation"),field_confirmed:t("تأكيد ميداني + مصادر مستقلة","Field + independent confirmation"),disputed:t("متنازع عليه","Disputed"),corrected:t("صُحّح","Corrected"),retracted:t("مسحوب","Retracted")}[value]||t("غير مؤكد","Unverified"));
 let cachedArticles=[];
 function message(text){$("status").textContent=text;}
 function resetForm(){$("articleForm").reset();$("articleId").value="";$("source").value="هيئة التحرير";$("editorialStatus").value="published";$("verification").value="unconfirmed";$("isBreaking").checked=false;$("saveButton").textContent="حفظ الخبر";}
