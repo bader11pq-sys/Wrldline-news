@@ -7,7 +7,38 @@ const state = { articles:[], filtered:[], category:"all", country:"all", lang:"a
 
 document.addEventListener("DOMContentLoaded", () => {
   initPreferences(); bindEvents(); updateClock(); fetchNews(); setInterval(fetchNews, 180000);
+  registerServiceWorker(); setupAppInstall();
 });
+
+async function registerServiceWorker(){
+ if(!("serviceWorker" in navigator))return;
+ try{
+  const registration=await navigator.serviceWorker.register("/sw.js",{scope:"/"});
+  registration.update().catch(()=>{});
+  registration.addEventListener("updatefound",()=>{
+   const worker=registration.installing;if(!worker)return;
+   worker.addEventListener("statechange",()=>{
+    if(worker.state==="installed"&&navigator.serviceWorker.controller)showToast("يتوفر تحديث جديد؛ أعد تحميل الصفحة لتطبيقه.");
+   });
+  });
+ }catch(error){console.warn("WRLDLINE PWA registration:",error);}
+}
+
+function setupAppInstall(){
+ let installPrompt=null;
+ const host=document.querySelector(".header-tools");if(!host)return;
+ const button=document.createElement("button");button.type="button";button.className="tool-button";button.textContent="تثبيت التطبيق";button.hidden=true;button.setAttribute("aria-label","تثبيت WRLDLINE NEWS على الجهاز");
+ host.insertBefore(button,host.firstChild);
+ window.addEventListener("beforeinstallprompt",event=>{event.preventDefault();installPrompt=event;button.hidden=false;});
+ button.addEventListener("click",async()=>{
+  if(!installPrompt)return;
+  button.disabled=true;
+  try{await installPrompt.prompt();await installPrompt.userChoice;installPrompt=null;button.hidden=true;}
+  catch(error){console.warn("WRLDLINE install prompt:",error);}
+  finally{button.disabled=false;}
+ });
+ window.addEventListener("appinstalled",()=>{installPrompt=null;button.hidden=true;showToast("تم تثبيت WRLDLINE NEWS على جهازك.");});
+}
 
 function readSaved(){ try{return JSON.parse(localStorage.getItem("wrldline:saved")||"[]");}catch{return [];} }
 function persistSaved(){ localStorage.setItem("wrldline:saved",JSON.stringify([...state.saved])); }
