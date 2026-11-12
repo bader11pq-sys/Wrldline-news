@@ -40,7 +40,7 @@ Deno.serve(async(req:Request)=>{
      "Translate the supplied headline, summary, and AI context summary faithfully into "+(target==="ar"?"Modern Standard Arabic":"clear international English")+". If the AI context summary is already in the target language, preserve it faithfully.",
      "Preserve all names, numbers, dates, quotations, attribution, uncertainty, allegations, and caveats exactly. Never add facts, omit important qualifications, or strengthen a claim.",
      "Do not translate publisher/brand names, URLs, or official product names unless there is a standard localized form.",
-     "If the source is ambiguous, preserve its ambiguity. Return only the translated title and summary."
+     "If the source is ambiguous, preserve its ambiguity. Return only the translated title, summary, and AI context summary."
     ].join("\n"),
     input:[{role:"user",content:"Original language: "+(target==="ar"?"English or other non-Arabic":"Arabic or other non-English")+"\nPublisher: "+(article.source_name||"Unknown")+"\nOriginal URL: "+(article.url||"")+"\nTITLE:\n"+(article.title||"")+"\nSUMMARY:\n"+(article.summary||"")+"\nAI CONTEXT SUMMARY:\n"+(article.ai_summary||"")}],
     text:{format:{type:"json_schema",name:"wrldline_translation",strict:true,schema}}
