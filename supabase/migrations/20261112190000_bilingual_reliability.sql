@@ -89,5 +89,5 @@ grant select on public.telegram_breaking_translations to anon,authenticated;
 revoke insert,update,delete on public.telegram_breaking_translations from anon,authenticated;
 drop policy if exists "Public read ticker translations" on public.telegram_breaking_translations;
 create policy "Public read ticker translations" on public.telegram_breaking_translations for select to anon,authenticated
-using(exists(select 1 from public.telegram_breaking_items t where t.article_id=article_id));
+using(exists(select 1 from public.telegram_breaking_items t where t.article_id=public.telegram_breaking_translations.article_id));
 do $$ begin alter publication supabase_realtime add table public.articles; exception when duplicate_object then null; end $$;
