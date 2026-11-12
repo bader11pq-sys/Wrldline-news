@@ -154,7 +154,7 @@ async function toggleSaved(id){
   const result=wasSaved?await state.db.from("user_saved_articles").delete().eq("user_id",state.user.id).eq("article_id",id):await state.db.from("user_saved_articles").upsert({user_id:state.user.id,article_id:id},{onConflict:"user_id,article_id"});
   if(result.error){showToast("تعذر مزامنة المكتبة: "+result.error.message);return;}
  }
- wasSaved?state.saved.delete(id):state.saved.add(id);persistSaved();renderFeed();
+ wasSaved?state.saved.delete(id):state.saved.add(id);if(!state.user){wasSaved?state.pendingLocalSaved.delete(id):state.pendingLocalSaved.add(id);}persistSaved();renderFeed();
  showToast(wasSaved?"أُزيل الخبر من مكتبتك":"أُضيف الخبر إلى مكتبتك");
 }
 async function showSaved(){
