@@ -22,7 +22,7 @@ async function loadData(){
   const res=await fetch(url,{headers:{apikey:KEY,Authorization:"Bearer "+KEY}});
   if(!res.ok)throw new Error("تعذر تحميل التحليلات ("+res.status+")");
   const data=await res.json(),since=Date.now()-7*86400000;
-  articles=(Array.isArray(data)?data:[]).filter(a=>a.ai_confidence>=0.68&&a.ai_country_code&&new Date(a.published_at||0).getTime()>=since).map(a=>{const tr=(a.article_translations||[]).find(x=>x.lang===lang);return {...a,title:tr?.title||a.title,summary:tr?.summary||a.summary};});
+  articles=(Array.isArray(data)?data:[]).filter(a=>a.ai_confidence>=0.68&&a.ai_country_code&&new Date(a.published_at||0).getTime()>=since).map(a=>{const tr=(a.article_translations||[]).find(x=>x.lang===lang);return {...a,title:tr?.title||a.title,summary:tr?.summary||a.summary,ai_summary:tr?.ai_summary||a.ai_summary};});
   countryEvents=new Map();for(const a of articles){const code=a.ai_country_code.toUpperCase();if(!countryEvents.has(code))countryEvents.set(code,[]);countryEvents.get(code).push(a);}
   $("statEvents").textContent=articles.length;$("statCountries").textContent=countryEvents.size;
   $("statHigh").textContent=articles.filter(a=>["high","critical"].includes(a.ai_risk_level)).length;
