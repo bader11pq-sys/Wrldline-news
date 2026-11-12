@@ -1,4 +1,4 @@
-const CACHE_NAME = "wrldline-shell-v10";
+const CACHE_NAME = "wrldline-shell-v11";
 const NEWS_CACHE = "wrldline-public-news-v1";
 const APP_SHELL = ["/", "/index.html", "/account.html", "/style.css", "/language.js", "/history-en.js", "/script.js", "/manifest.json", "/map.html", "/map.js", "/history.html"];
 
