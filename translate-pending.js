@@ -7,7 +7,7 @@ async function main(){
  const res=await fetch(SUPABASE_URL+"/rest/v1/articles?"+q,{headers});
  if(!res.ok)throw new Error("Could not load articles: "+res.status+" "+(await res.text()).slice(0,200));
  const rows=await res.json();
- const pending=rows.filter(a=>{const target=/^en$/i.test(a.lang||"")||(!/[\u0600-\u06FF]/.test(a.title||"")&&/[A-Za-z]/.test(a.title||""))?"ar":"en";const translation=(a.article_translations||[]).find(t=>t.lang===target);const tickerOnly=/t\.me|telegram\.me|telegram/i.test([a.url,a.source_url,a.source_name].filter(Boolean).join(" "));return tickerOnly||!translation||!translation.title||!translation.summary||(!!a.ai_summary&&!translation.ai_summary);}).slice(0,30);
+ const pending=rows.filter(a=>{if(/t\\.me|telegram\\.me|telegram/i.test([a.url,a.source_url,a.source_name].filter(Boolean).join(" ")))return false;const target=/^en$/i.test(a.lang||"")||(!/[\\u0600-\\u06FF]/.test(a.title||"")&&/[A-Za-z]/.test(a.title||""))?"ar":"en";const translation=(a.article_translations||[]).find(t=>t.lang===target);return !translation||!translation.title||!translation.summary||(!!a.ai_summary&&!translation.ai_summary);}).slice(0,30);
  if(!pending.length){console.log("All recent published articles already have their counterpart translation.");return;}
  let total=0;
  for(let i=0;i<pending.length;i+=10){
