@@ -33,3 +33,9 @@
 
 .story-meta .verification-badge{font-size:9px;color:var(--muted);border:1px solid var(--line);padding:2px 7px;border-radius:20px}
 .story-meta .breaking-badge{font-size:9px;background:#b83f49;color:#fff;padding:2px 8px;border-radius:20px;font-weight:700}
+
+/* Intelligence map entry point */
+.map-nav-link{color:var(--accent)!important;font-weight:700}
+.map-teaser{display:flex;align-items:center;justify-content:space-between;gap:20px;padding:22px 24px;margin:0 0 30px;border:1px solid var(--line);border-radius:14px;background:linear-gradient(110deg,var(--surface-2),var(--surface));}
+.map-teaser h2{margin:4px 0;font-size:19px}.map-teaser p{margin:0;color:var(--muted);font-size:12px}
+@media(max-width:650px){.map-teaser{align-items:flex-start;flex-direction:column;padding:17px}.map-teaser h2{font-size:16px}}
