@@ -20,24 +20,31 @@ document.addEventListener('DOMContentLoaded', () => {
 // جلب الأخبار من Supabase
 async function fetchNews() {
     try {
-        const res = await fetch(`${SUPABASE_URL}/rest/v1/articles?select=*&order=published_at.desc&limit=100`, {
+        // جلب الأخبار مع جدول الترجمات المرتبط بها
+        const res = await fetch(`${SUPABASE_URL}/rest/v1/articles?select=*,article_translations(*)&order=published_at.desc&limit=100`, {
             headers: { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${SUPABASE_ANON_KEY}` }
         });
         const data = await res.json();
         
         if (data && data.length > 0) {
-            state.articles = data.map(a => ({
-                id: a.id,
-                title: a.title,
-                summary: a.summary,
-                img: a.image_url && a.image_url.startsWith('http') ? a.image_url : `https://picsum.photos/seed/${a.id}/800/500`,
-                cat: a.category || 'world',
-                country: a.country || 'دولي',
-                src: a.source_name,
-                time: new Date(a.published_at).toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' })
-            }));
+            state.articles = data.map(a => {
+                // البحث عن ترجمة باللغة المطلوبة
+                const trans = a.article_translations?.find(t => t.lang === state.lang);
+
+                return {
+                    id: a.id,
+                    // إذا وجدنا ترجمة نستخدمها، وإلا نستخدم النص الأصلي
+                    title: trans ? trans.title : a.title,
+                    summary: trans ? trans.summary : a.summary,
+                    img: a.image_url && a.image_url.startsWith('http') ? a.image_url : `https://picsum.photos/seed/${a.id}/800/500`,
+                    cat: a.category || 'world',
+                    country: a.country || 'دولي',
+                    src: a.source_name,
+                    time: new Date(a.published_at).toLocaleTimeString(state.lang === 'ar' ? 'ar-EG' : 'en-US', { hour: '2-digit', minute: '2-digit' })
+                };
+            });
         } else {
-            state.articles = []; // لا توجد أخبار
+            state.articles = []; 
         }
     } catch (e) {
         state.articles = [];
