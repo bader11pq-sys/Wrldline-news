@@ -38,7 +38,7 @@ $("logoutButton").addEventListener("click",async()=>{await db.auth.signOut();mes
 $("resetButton").addEventListener("click",resetForm);$("refreshButton").addEventListener("click",loadArticles);$("classifyButton").addEventListener("click",classifyPending);$("articleSearch").addEventListener("input",renderArticleList);$("statusFilter").addEventListener("change",renderArticleList);
 async function loadArticles(){const {data,error}=await db.from("articles").select("id,title,summary,category,country,source_name,published_at,url,image_url,editorial_status,is_breaking,verification,ai_classification_status,ai_risk_level,ai_confidence").order("published_at",{ascending:false}).limit(200);if(error){$("articleList").textContent="تعذر تحميل الأخبار: "+error.message;return;}cachedArticles=data||[];renderArticleList();}
 async function classifyPending(){
- const pending=cachedArticles.filter(a=>a.editorial_status==="published"&&a.ai_classification_status!=="classified"&&a.ai_classification_status!=="telegram_ticker_only").slice(0,10);
+ const pending=cachedArticles.filter(a=>a.editorial_status==="published"&&a.ai_classification_status!=="classified"&&!/t\\.me|telegram\\.me|telegram/i.test([a.url,a.source_url,a.source_name].join(" "))).slice(0,10);
  if(!pending.length){message("لا توجد أخبار منشورة تنتظر التصنيف حالياً.");return;}
  const button=$("classifyButton");button.disabled=true;button.textContent="جارٍ تحليل الأخبار...";
  const {data,error}=await db.functions.invoke("classify-news",{body:{article_ids:pending.map(a=>a.id)}});
