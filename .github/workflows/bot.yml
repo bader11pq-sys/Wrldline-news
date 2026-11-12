@@ -1,14 +1,15 @@
-name: Fetch News Automatically
+name: WRLDLINE Multi-source News Ingestion
 on:
   schedule:
     - cron: '*/10 * * * *'
   workflow_dispatch:
 concurrency:
-  group: wrldline-background-jobs
+  group: wrldline-news-ingestion
   cancel-in-progress: false
 jobs:
   update-news:
     runs-on: ubuntu-latest
+    timeout-minutes: 12
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -16,36 +17,11 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-      - name: Fetch Gulf news sources
-        env:
-          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
-          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-        run: node bot-gulf.js
-      - name: Fetch Levant news sources
-        env:
-          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
-          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-        run: node bot-levant.js
-      - name: Fetch Maghreb news sources
-        env:
-          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
-          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-        run: node bot-maghreb.js
-      - name: Fetch international news sources
-        env:
-          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
-          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-        run: node bot-world.js
-      - name: Fetch dedicated breaking-news alerts only
-        continue-on-error: true
+      - name: Fetch Arabic and international news sources in parallel
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
-        run: node bot-breaking.js
+        run: node bot-ingest.js
       - name: Classify newly fetched news
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}

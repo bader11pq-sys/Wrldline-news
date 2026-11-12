@@ -180,7 +180,7 @@ function evidenceMarkup(a){
 function verificationLabel(value){const labels={ar:{confirmed:"مؤكد من مصادر مستقلة",multi:"أكدته مصادر مستقلة",single:"مصدر واحد",official_confirmed:"تأكيد رسمي + مصادر مستقلة",field_confirmed:"تأكيد ميداني + مصادر مستقلة",disputed:"متنازع عليه",retracted:"مسحوب",corrected:"صُحّح",unconfirmed:"غير مؤكد",preliminary:"أولي"},en:{confirmed:"Corroborated",multi:"Multiple independent sources",single:"Single source",official_confirmed:"Official + independent confirmation",field_confirmed:"Field + independent confirmation",disputed:"Disputed",retracted:"Retracted",corrected:"Corrected",unconfirmed:"Unverified",preliminary:"Preliminary"}};return labels[state.lang]?.[value]||labels[state.lang].unconfirmed;}
 function isDedicatedBreakingSource(name){
  const source=String(name||"").trim().toLocaleLowerCase();
- return /breaking news|breaking desk|news alert|عاجل فقط|الأخبار العاجلة|غرفة الأخبار العاجلة/.test(source);
+ return /breaking desk|news alert|غرفة الأخبار العاجلة|مصادر العاجل/.test(source);
 }
 function breakingItems(){
  return state.articles.filter(a=>a.isBreaking===true&&isDedicatedBreakingSource(a.src))
@@ -193,10 +193,14 @@ function rotateBreaking(){
 function updateBreaking(){
  const items=breakingItems();
  const item=items.length?items[state.breakingTickerIndex%items.length]:null;
+ const strip=document.getElementById("breakingStrip");
  const title=document.getElementById("breakingText");
- title.textContent=item?item.title:ui("لا توجد تنبيهات عاجلة من مصادر العاجل المعتمدة حالياً","No alerts from approved breaking-news desks right now.");
- title.title=item?ui("تنبيه من مصدر متخصص بالعاجل","Alert from a dedicated breaking-news desk"):ui("لا تُعرض المقالات العادية في هذا الشريط","Regular articles are never shown in this ticker");
- document.getElementById("breakingTime").textContent=item?ui("عاجل · ","Breaking · ")+timeAgo(item.published_at):"LIVE";
+ const time=document.getElementById("breakingTime");
+ if(!item){strip.hidden=true;title.textContent="";title.removeAttribute("title");time.textContent="";return;}
+ strip.hidden=false;
+ title.textContent=item.title;
+ title.title=ui("تنبيه عاجل من مصدر إخباري متخصص","Breaking alert from a dedicated news desk");
+ time.textContent=ui("عاجل · ","Breaking · ")+timeAgo(item.published_at);
 }
 function openArticle(id,updateUrl=true){
  const a=state.articles.find(x=>x.id===id);if(!a)return;
