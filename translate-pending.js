@@ -16,6 +16,7 @@ async function main(){
   if(!response.ok)throw new Error("Translator failed HTTP "+response.status+": "+JSON.stringify(body).slice(0,400));
   const ok=(body.results||[]).filter(x=>x.status==="translated"||x.status==="already_translated").length;total+=ok;
   console.log("Translation batch "+(i/10+1)+": "+ok+" ready, "+((body.results||[]).filter(x=>x.status==="failed").length)+" failed.");
+  for(const item of (body.results||[]).filter(x=>x.status==="failed"))console.error("Translation failed for "+item.id+": "+(item.error||"No error detail returned."));
  }
  console.log("Translated "+total+" articles this run.");
 }
