@@ -1,7 +1,7 @@
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
-const MAX_PER_RUN = 10;
-const MAX_PER_TARGET = 5;
+const MAX_PER_RUN = 20;
+const MAX_PER_TARGET = 10;
 if (!SUPABASE_URL || !SERVICE_KEY) { console.log("Translation worker skipped: configure Supabase URL and service role key."); process.exit(0); }
 const headers = { apikey: SERVICE_KEY, Authorization: "Bearer " + SERVICE_KEY };
 const languageOf = article => {
