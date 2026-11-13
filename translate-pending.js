@@ -5,11 +5,10 @@ const MAX_PER_TARGET = 2;
 if (!SUPABASE_URL || !SERVICE_KEY) { console.log("Translation worker skipped: configure Supabase URL and service role key."); process.exit(0); }
 const headers = { apikey: SERVICE_KEY, Authorization: "Bearer " + SERVICE_KEY };
 const languageOf = article => {
-  const title = String(article.title || "");
-  if (/[\\u0600-\\u06FF]/.test(title)) return "ar";
   const declared = String(article.lang || "").toLowerCase();
   if (declared.startsWith("ar")) return "ar";
-  return "en";
+  if (declared.startsWith("en")) return "en";
+  return /[\\u0600-\\u06FF]/.test(String(article.title || "")) ? "ar" : "en";
 };
 
 async function main() {
