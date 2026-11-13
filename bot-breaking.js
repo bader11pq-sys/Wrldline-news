@@ -56,7 +56,7 @@ function telegramRows(html,f){
   const text=(b.match(/<div class="tgme_widget_message_text[^"]*"[^>]*>([\s\S]*?)<\/div>/i)||[])[1]||"";
   const date=(b.match(/<time[^>]*datetime=["']([^"']+)["']/i)||[])[1];
   const post=(b.match(/href=["'](https?:\/\/t\.me\/[^/"']+\/\d+)["']/i)||[])[1];
-  const clean=dec(text);if(!clean||!date||!post||!urgent.test(clean))continue;
+  const clean=dec(text);if(!clean||!date||!post)continue;
   const title=clean.split(/\n|\s{2,}/)[0].slice(0,500)||clean.slice(0,500);
   const item=row(title,post,clean,date,f);if(item){item.summary=clean.slice(0,3000);out.push(item);}
  }
