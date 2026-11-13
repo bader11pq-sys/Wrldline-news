@@ -116,7 +116,7 @@
   document.getElementById("labSearch").addEventListener("input",e=>renderDossiers(e.target.value));
   ideasHost.innerHTML=ideas.map(d=>`<article class="lab-card"><small>${escapeHTML(d[1])} · ${escapeHTML(d[2])}</small><h3>${escapeHTML(d[0])}</h3><p>${escapeHTML(d[3])}</p></article>`).join("");
   const compareRows=[
-    ["الإطار الزمني",2],["المجال",1],["مركز أو مدن بارزة",4],["مصادر القوة",5],["ملمح حضاري",6]
+    ["الإطار الزمني",2],["النطاق الجغرافي",6],["مدن ومراكز بارزة",4],["أبرز ملامح الإرث",5]
   ];
   const a=document.getElementById("labA"),b=document.getElementById("labB");
   const opts=dossiers.map((d,i)=>`<option value="${i}">${escapeHTML(d[0])}</option>`).join("");
