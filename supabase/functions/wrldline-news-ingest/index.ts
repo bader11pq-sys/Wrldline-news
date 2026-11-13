@@ -273,7 +273,7 @@ async function runTranslation() {
   const perTarget={ar:0,en:0};
   const pageSize=500;
   let scanned=0;
-  for(let offset=0;offset<20000 && pending.length<10;offset+=pageSize) {
+  for(let offset=0;offset<20000 && pending.length<20;offset+=pageSize) {
    const params=new URLSearchParams({
     select:"id,title,summary,ai_summary,lang,url,source_name,article_translations(lang,title,summary,ai_summary)",
     editorial_status:"eq.published",order:"published_at.desc",limit:String(pageSize),offset:String(offset)
@@ -289,13 +289,13 @@ async function runTranslation() {
     const target=sourceLang==="ar"?"en":"ar";
     const existing=(article.article_translations||[]).find((item:any)=>item.lang===target);
     const complete=!!(existing?.title&&existing?.summary&&(!article.ai_summary||existing?.ai_summary));
-    if(!complete && perTarget[target as "ar"|"en"]<5) {
+    if(!complete && perTarget[target as "ar"|"en"]<10) {
      pending.push({id:article.id,target,sourceLang,title:String(article.title).slice(0,100)});
      perTarget[target as "ar"|"en"]++;
     }
-    if(pending.length>=10) break;
+    if(pending.length>=20) break;
    }
-   if(pending.length>=10 || rows.length<pageSize) break;
+   if(pending.length>=20 || rows.length<pageSize) break;
   }
   if(!pending.length) {
    await updateRun(runId,{source_count:0,successful_sources:0,failed_sources:0,parsed_items:0,error_summary:null});
