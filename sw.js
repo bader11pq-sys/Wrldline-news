@@ -1,7 +1,12 @@
-const CACHE_NAME = "wrldline-shell-v28";
+const CACHE_NAME = "wrldline-shell-v29";
 const NEWS_CACHE = "wrldline-public-news-v1";
+const BRIEFING_CACHE = "wrldline-daily-briefing-v1";
+const SHELL_URLS = ["/index.html", "/daily-briefing.html", "/daily-briefing.css", "/daily-briefing.js"];
 self.addEventListener("install", event => {
-  event.waitUntil(self.skipWaiting());
+  event.waitUntil((async () => {
+    await caches.open(CACHE_NAME).then(cache => cache.addAll(SHELL_URLS).catch(() => {}));
+    await self.skipWaiting();
+  })());
 });
 self.addEventListener("activate", event => {
   event.waitUntil((async () => {
@@ -28,6 +33,12 @@ self.addEventListener("fetch", event => {
   const url = new URL(request.url);
   if (url.hostname === "vmaxbnogmmfyrcucapnq.supabase.co" && url.pathname === "/rest/v1/articles") {
     event.respondWith(networkFirst(request, NEWS_CACHE).catch(() =>
+      new Response("[]", { headers: { "Content-Type": "application/json", "X-WRLDLINE-Offline": "1" } })
+    ));
+    return;
+  }
+  if (url.hostname === "vmaxbnogmmfyrcucapnq.supabase.co" && url.pathname === "/rest/v1/daily_news_briefings") {
+    event.respondWith(networkFirst(request, BRIEFING_CACHE).catch(() =>
       new Response("[]", { headers: { "Content-Type": "application/json", "X-WRLDLINE-Offline": "1" } })
     ));
     return;
