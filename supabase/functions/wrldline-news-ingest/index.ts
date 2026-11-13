@@ -328,7 +328,7 @@ async function runTranslation() {
    parsed_items:pending.length,
    error_summary:[...results.filter((item:any)=>item.status==="failed"||item.status==="deferred").map((item:any)=>String(item.id)+": "+String(item.error||item.status)),...missing.map((item:any)=>String(item.id)+": not returned by translator")].slice(0,8).join(" | ")||null
   });
-  return {pipeline:"translation",scanned,selected:pending.length,translated,already_translated:already,failed,deferred,targets:pending.map(item=>item.target),providers:body.providers_configured||null,concurrency:body.concurrency||null};
+  return {pipeline:"translation",scanned,selected:pending.length,translated,already_translated:already,failed,deferred,targets:pending.map(item=>item.target),providers:body.providers_configured||null,deepl_quota_exhausted:body.deepl_quota_exhausted||false,deepl_disabled_until:body.deepl_disabled_until||null,translation_priority:body.translation_priority||null,concurrency:body.concurrency||null};
  } finally {
   await dbRequest("rpc/release_translation_worker",{method:"POST",headers:{"Content-Type":"application/json"},body:"{}"}).catch(()=>null);
  }
