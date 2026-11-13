@@ -29,8 +29,10 @@ async function callOpenRouter(key:string){const r=await fetch("https://openroute
 async function callGonka(key:string){
  const headers={"Authorization":"Bearer "+key,"Content-Type":"application/json"};
  const auth=await fetch("https://proxy.gonkabroker.com/v1/test-auth",{headers,signal:AbortSignal.timeout(12000)});
- if(!auth.ok)throw new Error("Gonka test-auth HTTP "+auth.status);
- const authData=await auth.json();
+ let authStatus="passed";
+ if(auth.status===404){authStatus="endpoint_unavailable_404; will verify through authenticated inference";}
+ else if(!auth.ok)throw new Error("Gonka test-auth HTTP "+auth.status);
+ else await auth.json();
  const mr=await fetch("https://proxy.gonkabroker.com/v1/models",{headers,signal:AbortSignal.timeout(12000)});
  if(!mr.ok)throw new Error("Gonka models HTTP "+mr.status);
  const mp=await mr.json(),ids=(mp.data||[]).map((m:any)=>m.id).filter((x:any)=>typeof x==="string");
@@ -46,7 +48,7 @@ async function callGonka(key:string){
  let data:any;
  try{data=JSON.parse(raw)}catch{const a=raw.indexOf("{"),b=raw.lastIndexOf("}");if(a<0||b<=a)throw new Error("Gonka generation did not return JSON");data=JSON.parse(raw.slice(a,b+1))}
  if(!valid(data))throw new Error("Gonka generation did not match the classification/translation schema");
- return {ok:true,model,auth_status:authData.status||"authenticated",models_available:ids.length,generation:"passed"};
+ return {ok:true,model,auth_status:authStatus,models_available:ids.length,generation:"passed"};
 }
 async function run(name:string,key:string|null,fn:(key:string)=>Promise<any>){if(!key)return {provider:name,status:"not_configured"};try{return {provider:name,status:"passed",...(await fn(key))};}catch(e){return {provider:name,status:"failed",error:String(e).slice(0,300)};}}
 Deno.serve(async(req:Request)=>{
