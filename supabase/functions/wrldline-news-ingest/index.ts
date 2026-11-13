@@ -194,7 +194,8 @@ const FEEDS=[
  {publisher:"The Guardian",url:GOOGLE("theguardian.com","en"),lang:"en"}
 ];
 function urgentRow(title: string,url: string,summary: string,date: string,feed: any) {
- if(!title||!/^https?:\/\//i.test(url)||!URGENT.test(title.trim())) return null;
+ const normalizedTitle=String(title||"").replace(/[\u061C\u200E\u200F\u202A-\u202E\u2066-\u2069]/g,"").replace(/^["'“”‘’(]+/,"").trim();
+ if(!normalizedTitle||!/^https?:\/\//i.test(url)||!URGENT.test(normalizedTitle)) return null;
  const dt=new Date(date||Date.now());
  if(Number.isNaN(dt.getTime())||Date.now()-dt.getTime()>2*60*60*1000||dt.getTime()>Date.now()+5*60*1000) return null;
  return {url,title:title.slice(0,500),summary:(summary||"").slice(0,3000),source_name:feed.publisher+" Breaking Desk",source_url:feed.type==="telegram"?"https://t.me/"+feed.handle:feed.url,category:"uncategorized",country:"غير محدد",lang:feed.lang,verification:"unconfirmed",published_at:dt.toISOString(),editorial_status:"published",ai_classification_status:"pending",is_breaking:true};
@@ -289,7 +290,7 @@ async function runTranslation() {
     if(!Number.isFinite(published)||age < -300000||age > 3600000) continue;
     if(article.translation_retry_after && Date.parse(article.translation_retry_after)>Date.now()) continue;
     const declared=String(article.lang||"").toLowerCase();
-    const sourceLang=declared.startsWith("ar")?"ar":(declared.startsWith("en")?"en":(/[\\u0600-\\u06FF]/.test(article.title)?"ar":"en"));
+    const sourceLang=declared.startsWith("ar")?"ar":(declared.startsWith("en")?"en":(/[\u0600-\u06FF]/.test(article.title)?"ar":"en"));
     const target=sourceLang==="ar"?"en":"ar";
     const existing=(article.article_translations||[]).find((item:any)=>item.lang===target);
     const complete=!!(existing?.title&&existing?.summary&&(!article.ai_summary||existing?.ai_summary));
