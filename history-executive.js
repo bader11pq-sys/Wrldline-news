@@ -5,7 +5,7 @@ if(!mount||document.getElementById("historyExecutiveSummary"))return;
 const section=document.createElement("section");
 section.id="historyExecutiveSummary";
 section.setAttribute("aria-labelledby","historyExecutiveTitle");
-section.innerHTML=\`
+section.innerHTML=`
 <style>
 #historyExecutiveSummary{margin:0 0 30px;padding:clamp(17px,3vw,28px);border:1px solid var(--line);border-radius:19px;background:linear-gradient(145deg,#1a3049,#102035 78%);box-shadow:0 16px 42px #0002}
 #historyExecutiveSummary .hx-kicker{font:700 10px Manrope,sans-serif;letter-spacing:.14em;color:var(--gold)}
@@ -80,7 +80,7 @@ section.innerHTML=\`
 </div>
 <div class="hx-actions"><a href="#grid">استكشف ملفات الدول</a><a href="#historyDeepArchive">افتح الأطلس الزمني</a><a href="#historyLab">ابدأ مسار التعلم</a></div>
 <p class="hx-note">الأرقام المتغيرة تُقرأ من بيانات الصفحة عند التحميل. عدد الملفات الجديدة ثابت لهذه الدفعة، ولا يعني اكتمال التغطية التاريخية لكل دولة.</p>
-\`;
+`;
 const hero=mount.querySelector(".hero");
 if(hero)hero.insertAdjacentElement("afterend",section);else mount.prepend(section);
 const count=section.querySelector("#hxCountryCount");
