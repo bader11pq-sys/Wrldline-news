@@ -1,9 +1,10 @@
-name: Groq API Healthcheck
+name: AI Provider Healthcheck
 on:
   push:
     branches: [main]
     paths:
       - 'groq-healthcheck.js'
+      - 'ai-provider-healthcheck.js'
   workflow_dispatch:
 jobs:
   verify-groq:
@@ -14,8 +15,8 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '24'
-      - name: Verify Groq key and JSON response
+      - name: Verify Gemini, Groq classification and translation responses
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
-        run: node groq-healthcheck.js
+        run: node ai-provider-healthcheck.js
