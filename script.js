@@ -304,7 +304,7 @@ function openArticle(id,updateUrl=true){
  showModal("articleModal");
 }
 function closeArticle(updateUrl=true){hideModal("articleModal");if(updateUrl&&new URLSearchParams(location.search).has("article")){const url=new URL(location.href);url.searchParams.delete("article");history.replaceState(null,"",url);}}
-async function shareArticle(article){const url=new URL("/",location.origin);url.searchParams.set("article",article.id);const data={title:article.title,text:article.summary||"خبر من WRLDLINE NEWS",url:url.href};try{if(navigator.share){await navigator.share(data);return;}if(navigator.clipboard?.writeText){await navigator.clipboard.writeText(url.href);showToast("تم نسخ رابط الخبر");return;}showToast("المشاركة غير مدعومة في هذا المتصفح");}catch(error){if(error?.name!=="AbortError")showToast("تعذرت مشاركة الخبر حالياً");}}
+async function shareArticle(article){const url=new URL("/",location.origin);url.searchParams.set("article",article.id);const data={title:article.title,text:article.summary||"خبر من WRLDLINE NEWS",url:url.href};try{if(navigator.share){await navigator.share(data);return;}if(navigator.clipboard?.writeText){await navigator.clipboard.writeText(url.href);showToast("تم نسخ رابط الخبر");return;}window.prompt(ui("انسخ رابط الخبر لمشاركته","Copy the story link to share it"),url.href);}catch(error){if(error?.name!=="AbortError")showToast(ui("تعذرت مشاركة الخبر حالياً","Could not share this story right now"));}}
 async function toggleSaved(id){
  const wasSaved=state.saved.has(id);
  if(state.user&&state.db){
@@ -317,7 +317,7 @@ async function toggleSaved(id){
 async function showSaved(){
  let list=state.articles.filter(a=>state.saved.has(a.id));
  if(state.user&&state.db){
-  const {data,error}=await state.db.from("user_saved_articles").select("article_id, article:articles(*, article_translations(*))").eq("user_id",state.user.id).order("created_at",{ascending:false});
+  const {data,error}=await state.db.from("user_saved_articles").select("article_id, article:articles(id,title,summary,category,lang,url,source_url,source_name,published_at,created_at,image_url,media_type,article_translations(lang,title,summary))").eq("user_id",state.user.id).order("created_at",{ascending:false});
   if(!error){list=(data||[]).map(row=>row.article).filter(row=>row&&!isTelegramArticle(row)).map(normalizeArticle);for(const a of list)if(!state.articles.some(x=>x.id===a.id))state.articles.push(a);}
   else showToast("تعذر تحميل المكتبة المتزامنة حالياً");
  }
