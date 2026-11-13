@@ -95,7 +95,7 @@ async function fetchNews(){
 function isTelegramArticle(a){return /t\.me|telegram\.me|telegram/i.test([a?.url,a?.source_url,a?.source_name].filter(Boolean).join(" "));}
 function normalizeArticle(a){
  const sourceTitle=String(a.title||"");
- const titleIsArabic=/[\\u0600-\\u06FF]/.test(sourceTitle);
+ const titleIsArabic=/[\u0600-\u06FF]/.test(sourceTitle);
  const declaredLang=String(a.lang||"").toLowerCase();
  const sourceLang=declaredLang.startsWith("ar")?"ar":(declaredLang.startsWith("en")?"en":(titleIsArabic?"ar":"en"));
  const translation=(a.article_translations||[]).find(t=>t.lang===state.lang&&t.title&&t.summary);
