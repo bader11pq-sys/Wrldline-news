@@ -44,8 +44,8 @@ function rssRows(xml,f){
   return row(title,link,summary,date,f);
  }).filter(Boolean);
 }
-function row(title,url,summary,date,f){
- if(!title||!/^https?:\/\//i.test(url)||!urgent.test(title))return null;
+function row(title,url,summary,date,f,force=false){
+ if(!title||!/^https?:\/\//i.test(url)||(!force&&!urgent.test(title)))return null;
  const dt=new Date(date||Date.now());if(Number.isNaN(dt.getTime())||Date.now()-dt.getTime()>2*60*60*1000||dt.getTime()>Date.now()+5*60*1000)return null;
  return {url,title:title.slice(0,500),summary:(summary||"").slice(0,3000),source_name:f.publisher+" Breaking Desk",source_url:f.type==="telegram"?"https://t.me/"+f.handle:f.url,category:"world",country:"دولي",lang:f.lang,verification:"unconfirmed",published_at:dt.toISOString(),editorial_status:"published",ai_classification_status:"pending",is_breaking:true};
 }
