@@ -42,15 +42,15 @@ Deno.serve(async (req: Request) => {
     .order("published_at", { ascending: false })
     .limit(50);
 
-  const [pendingResult, deferredResult] = await Promise.all([
-    baseQuery().in("ai_classification_status", ["pending", "failed"]),
-    baseQuery().eq("ai_classification_status", "deferred").lt("ai_classified_at", retryCutoff),
+  const [pendingResult, failedResult] = await Promise.all([
+    baseQuery().eq("ai_classification_status", "pending"),
+    baseQuery().eq("ai_classification_status", "failed").or("ai_classified_at.is.null,ai_classified_at.lt." + retryCutoff),
   ]);
-  if (pendingResult.error || deferredResult.error) {
-    return json({ error: "Could not load classification queue", detail: pendingResult.error?.message || deferredResult.error?.message }, 500);
+  if (pendingResult.error || failedResult.error) {
+    return json({ error: "Could not load classification queue", detail: pendingResult.error?.message || failedResult.error?.message }, 500);
   }
 
-  const rows = [...(pendingResult.data || []), ...(deferredResult.data || [])];
+  const rows = [...(pendingResult.data || []), ...(failedResult.data || [])];
   const unique = [...new Map(rows.map((article: any) => [article.id, article])).values()];
   const candidates = unique
     .filter((article: any) => !isTelegram(article))
