@@ -183,12 +183,19 @@ function isDedicatedBreakingSource(name){
  return /breaking desk|news alert|غرفة الأخبار العاجلة|مصادر العاجل/.test(source);
 }
 function breakingItems(){
- return state.articles.filter(a=>a.isBreaking===true&&isDedicatedBreakingSource(a.src))
-  .sort((a,b)=>new Date(b.published_at)-new Date(a.published_at));
+ const now=Date.now(),maxAge=6*60*1000;
+ return state.articles.filter(a=>{
+  if(a.isBreaking!==true||!isDedicatedBreakingSource(a.src))return false;
+  const published=Date.parse(a.published_at||"");
+  const age=now-published;
+  return Number.isFinite(published)&&age>=-60*1000&&age<=maxAge;
+ }).sort((a,b)=>new Date(b.published_at)-new Date(a.published_at));
 }
 function rotateBreaking(){
  const items=breakingItems();
- if(items.length>1){state.breakingTickerIndex=(state.breakingTickerIndex+1)%items.length;updateBreaking();}
+ if(!items.length){state.breakingTickerIndex=0;updateBreaking();return;}
+ state.breakingTickerIndex=items.length>1?(state.breakingTickerIndex+1)%items.length:0;
+ updateBreaking();
 }
 function updateBreaking(){
  const items=breakingItems();
