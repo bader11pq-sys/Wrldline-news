@@ -3,7 +3,7 @@
  const lang=localStorage.getItem("wrldline:language")==="en"?"en":"ar";
  const now=new Date();
  $("#marketYear").textContent=now.getFullYear();
- $("#marketDate").textContent=new Intl.DateTimeFormat(lang==="ar"?"ar-SA":"en-US",{weekday:"long",year:"numeric",month:"long",day:"numeric"}).format(now);
+ $("#marketDate").textContent=new Intl.DateTimeFormat(lang==="ar"?"ar-SA-u-ca-gregory":"en-US-u-ca-gregory",{weekday:"long",year:"numeric",month:"long",day:"numeric",calendar:"gregory"}).format(now);
  if(lang==="en"){document.documentElement.lang="en";document.documentElement.dir="ltr";$("#marketLanguage").textContent="العربية";document.querySelector(".markets-hero h1").innerHTML='Global Markets<span>.</span>';document.querySelector(".welcome-subtitle").textContent="Energy, metals, currencies, equities and funds in one dashboard.";}
  $("#marketLanguage").addEventListener("click",()=>{localStorage.setItem("wrldline:language",lang==="ar"?"en":"ar");location.reload();});
  const theme=localStorage.getItem("wrldline:theme")||"light";document.documentElement.dataset.theme=theme;$("#marketThemeButton").textContent=theme==="dark"?"☀":"☾";
