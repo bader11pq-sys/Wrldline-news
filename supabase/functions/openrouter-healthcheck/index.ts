@@ -14,7 +14,7 @@ Deno.serve(async (req: Request) => {
 
   const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ||
     (() => { try { return JSON.parse(Deno.env.get("SUPABASE_SECRET_KEYS") || "{}").default; } catch { return null; } })();
-  const token = (req.headers.get("Authorization") || "").replace(/^Bearer\\s+/i, "");
+  const token = (req.headers.get("Authorization") || "").replace(/^Bearer\s+/i, "");
   if (!serviceKey || token !== serviceKey) return json({ ok: false, error: "Service authorization required" }, 401);
 
   const apiKey = Deno.env.get("OPENROUTER_API_KEY");
