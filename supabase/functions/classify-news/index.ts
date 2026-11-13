@@ -130,7 +130,6 @@ Deno.serve(async (req: Request) => {
     (() => { try { return JSON.parse(Deno.env.get("SUPABASE_SECRET_KEYS") || "{}").default; } catch { return null; } })();
   const geminiKey = Deno.env.get("GEMINI_API_KEY") || null;
   const groqKey = Deno.env.get("GROQ_API_KEY") || null;
-  const groqKey = Deno.env.get("GROQ_API_KEY") || null;
   const openRouterKey = Deno.env.get("OPENROUTER_API_KEY") || null;
   if (!supabaseUrl || !anonKey || !serviceKey) return json({ error: "Supabase server configuration is incomplete." }, 500);
   if (!geminiKey && !groqKey && !openRouterKey) return json({ error: "Configure GEMINI_API_KEY, GROQ_API_KEY, or OPENROUTER_API_KEY." }, 503);
