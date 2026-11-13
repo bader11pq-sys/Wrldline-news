@@ -310,16 +310,18 @@ async function runTranslation() {
   const body=await response.json().catch(()=>({}));
   if(!response.ok) throw new Error("Translator HTTP "+response.status+": "+JSON.stringify(body).slice(0,350));
   const results=Array.isArray(body.results)?body.results:[];
+  const returnedIds=new Set(results.map((item:any)=>String(item.id)));
+  const missing=pending.filter(item=>!returnedIds.has(String(item.id)));
   const translated=results.filter((item:any)=>item.status==="translated").length;
   const already=results.filter((item:any)=>item.status==="already_translated").length;
   const failed=results.filter((item:any)=>item.status==="failed").length;
-  const deferred=results.filter((item:any)=>item.status==="deferred").length;
+  const deferred=results.filter((item:any)=>item.status==="deferred").length+missing.length;
   await updateRun(runId,{
    source_count:pending.length,
    successful_sources:translated+already,
    failed_sources:failed+deferred,
    parsed_items:pending.length,
-   error_summary:results.filter((item:any)=>item.status==="failed"||item.status==="deferred").slice(0,8).map((item:any)=>String(item.id)+": "+String(item.error||item.status)).join(" | ")||null
+   error_summary:[...results.filter((item:any)=>item.status==="failed"||item.status==="deferred").map((item:any)=>String(item.id)+": "+String(item.error||item.status)),...missing.map((item:any)=>String(item.id)+": not returned by translator")].slice(0,8).join(" | ")||null
   });
   return {pipeline:"translation",scanned,selected:pending.length,translated,already_translated:already,failed,deferred,targets:pending.map(item=>item.target),providers:body.providers_configured||null,concurrency:body.concurrency||null};
  } finally {
