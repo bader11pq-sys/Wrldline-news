@@ -42,7 +42,7 @@ async function callGonka(key:string){
  const model=configured||ids.find((id:string)=>/MiniMaxAI\/MiniMax-M2\.7/i.test(id))||ids.find((id:string)=>!/(bge|embed)/i.test(id))||ids[0];
  const testPrompt='Return exactly this JSON object and nothing else: {"classification":{"category":"economy","country":"غير محدد","risk_level":"unknown","risk_score":0,"confidence":0.99,"summary":"اختبار تصنيف"},"translation":{"title":"اختبار Gonka","summary":"تم التحقق من التوليد.","ai_summary":"اختبار ناجح"}}';
  const gen=await fetch("https://proxy.gonkabroker.com/v1/chat/completions",{method:"POST",headers,signal:AbortSignal.timeout(30000),body:JSON.stringify({model,messages:[{role:"system",content:"Follow the output format exactly. Return valid JSON only."},{role:"user",content:testPrompt}],temperature:0,max_tokens:300})});
- if(!gen.ok)throw new Error("Gonka generation HTTP "+gen.status);
+ if(!gen.ok)throw new Error("Gonka generation HTTP "+gen.status+"; key_prefix_valid="+String(key.startsWith("gnk-prx-"))+"; model_count="+ids.length);
  const payload=await gen.json(),raw=payload.choices?.[0]?.message?.content;
  if(typeof raw!=="string"||!raw.trim())throw new Error("Gonka generation returned empty content");
  let data:any;
