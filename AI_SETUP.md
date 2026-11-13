@@ -34,13 +34,13 @@ Each story uses one successful model request; failed providers fall through to t
 - Supabase Cron invokes the `wrldline-news-ingest` Edge Function in `translation` mode every minute. Translation no longer waits for the GitHub Actions ingestion workflow to finish.
 - The worker scans published stories newest-first in pages of 500, continuing through the backlog as needed. Each run selects up to 20 untranslated stories, balanced to a maximum of ten per direction.
 - The `translate-articles` Edge Function processes up to two stories concurrently within a run, while a database lease prevents overlapping cron workers. A failure is isolated to its story; provider backoff pauses the remaining batch so those stories can be retried on the next scheduled run.
-- Gemini quota cooldown is persisted in `gemini_rate_limits` and respected on subsequent runs. Groq and OpenRouter remain fallback providers when configured.
+- Gemini quota cooldown is persisted in `gemini_rate_limits` and respected on subsequent runs. Groq, NVIDIA Nemotron 3.5, and OpenRouter remain fallback providers when configured.
 - Each completed translation is upserted independently into `article_translations`. The table is published to Supabase Realtime, and the frontend refreshes when a translation is inserted or updated.
 - The public cron endpoint validates its header against the existing secret stored in Supabase Vault; the service-role key remains server-side.
 
 Required configuration:
 - Supabase Vault: existing project URL, publishable key, and `wrldline_news_cron_secret_20261113` entries.
-- Supabase Edge Function secrets: at least one of `GEMINI_API_KEY` or `GROQ_API_KEY`. To enable OpenRouter as an additional fallback, set both `OPENROUTER_API_KEY` and `OPENROUTER_MODEL` to a paid model your account can use; `openrouter/free` and `:free` models are skipped for this high-volume queue.
+- Supabase Edge Function secrets: at least one of `GEMINI_API_KEY`, `GROQ_API_KEY`, or `NVIDIA_API_KEY`. To enable OpenRouter as an additional fallback, set both `OPENROUTER_API_KEY` and `OPENROUTER_MODEL` to a paid model your account can use; `openrouter/free` and `:free` models are skipped for this high-volume queue.
 - Keep `SUPABASE_SERVICE_ROLE_KEY` only in the Edge Function environment. Never place it in browser code or GitHub-tracked files.
 - The GitHub Actions news-ingestion workflow is no longer the translation scheduler; Supabase Cron owns the one-minute translation cadence.
 
