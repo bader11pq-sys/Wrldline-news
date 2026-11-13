@@ -7,7 +7,8 @@ The repository includes a background worker (`classify-pending.js`) and GitHub A
 ### Required secrets — never commit or paste keys into chat
 
 **Supabase Dashboard → Project Settings → Edge Functions → Secrets**
-- `NVIDIA_API_KEY` — NVIDIA API Catalog key. This is read only by the server-side classification and provider-healthcheck functions.
+- `NVIDIA_API_KEY` — NVIDIA API Catalog key.
+- `GONKA_BROKER_API_KEY` — Gonka Broker key (starts with `gnk-prx-`), read only by server-side classification, translation, and provider-healthcheck functions. Optional `GONKA_MODEL` pins an exact model ID returned by Gonka `/v1/models`; otherwise the function selects the first currently available model.
 - At least one fallback provider key: `GOOGLE_API_KEY` or `GEMINI_API_KEY`, `GROQ_API_KEY`, and/or `OPENROUTER_API_KEY`.
 - The integration uses the tested model `nvidia/nemotron-3.5-lightning-30b-a3b`.
 
@@ -21,7 +22,7 @@ The Edge Function reads provider keys from the Supabase Edge Function environmen
 
 Supabase Cron invokes the classification worker. It selects only published, non-Telegram articles from the last hour and sends up to ten IDs per run. The worker authenticates server-to-server and calls `classify-news`.
 
-Provider fallback order: Gemini → Groq → NVIDIA → OpenRouter. NVIDIA requests use the OpenAI-compatible `/v1/chat/completions` endpoint with JSON output and disabled reasoning mode for predictable structured classification. The provider-healthcheck tests classification/translation-shaped JSON and reports the overall service healthy when at least one configured provider passes.
+Provider fallback order: Gemini → Groq → NVIDIA → Gonka → OpenRouter. Gonka uses `https://proxy.gonkabroker.com/v1`, discovers available models through `/models`, and sends JSON-only prompts because Gonka Broker does not currently support JSON mode / structured outputs. Healthcheck validates `/test-auth`, discovers models, and performs a real small classification+translation generation. NVIDIA requests use the OpenAI-compatible `/v1/chat/completions` endpoint with JSON output and disabled reasoning mode for predictable structured classification. The provider-healthcheck tests classification/translation-shaped JSON and reports the overall service healthy when at least one configured provider passes.
 
 ## Risk map
 
@@ -34,7 +35,7 @@ Each story uses one successful model request; failed providers fall through to t
 - Supabase Cron invokes the `wrldline-news-ingest` Edge Function in `translation` mode every minute. Translation no longer waits for the GitHub Actions ingestion workflow to finish.
 - The worker scans published stories newest-first in pages of 500, continuing through the backlog as needed. Each run selects up to 20 untranslated stories, balanced to a maximum of ten per direction.
 - The `translate-articles` Edge Function processes up to two stories concurrently within a run, while a database lease prevents overlapping cron workers. A failure is isolated to its story; provider backoff pauses the remaining batch so those stories can be retried on the next scheduled run.
-- Gemini quota cooldown is persisted in `gemini_rate_limits` and respected on subsequent runs. Groq, NVIDIA Nemotron 3.5, and OpenRouter remain fallback providers when configured.
+- Gemini quota cooldown is persisted in `gemini_rate_limits` and respected on subsequent runs. Groq, NVIDIA Nemotron 3.5, Gonka, and OpenRouter remain fallback providers when configured. Gonka is inserted after NVIDIA and before OpenRouter.
 - Each completed translation is upserted independently into `article_translations`. The table is published to Supabase Realtime, and the frontend refreshes when a translation is inserted or updated.
 - The public cron endpoint validates its header against the existing secret stored in Supabase Vault; the service-role key remains server-side.
 
