@@ -24,14 +24,18 @@ Each story uses one model request. Monitor OpenAI usage and set a budget limit. 
 
 ## Automatic Arabic/English translation
 
-The `translate-articles` Edge Function uses the Responses API with strict structured output to translate story headlines, summaries, and AI context summaries. `translate-pending.js` checks published stories every ten minutes and runs after each regional/world ingestion workflow. It fills the opposite language in `article_translations`; Telegram ticker-only items also receive a separate public-safe ticker translation row. Source URLs and publisher names remain original.
+- Supabase Cron invokes the `wrldline-news-ingest` Edge Function in `translation` mode every minute. Translation no longer waits for the GitHub Actions ingestion workflow to finish.
+- The worker scans published stories newest-first in pages of 500, continuing through the backlog as needed. Each run selects up to 10 untranslated stories, balanced to a maximum of five per direction.
+- The `translate-articles` Edge Function translates up to three stories concurrently. A failure is isolated to its story; a provider-wide backoff pauses the remaining batch so those stories can be retried on the next scheduled run.
+- Gemini quota cooldown is persisted in `gemini_rate_limits` and respected on subsequent runs. Groq and OpenRouter remain fallback providers when configured.
+- Each completed translation is upserted independently into `article_translations`. The table is published to Supabase Realtime, and the frontend refreshes when a translation is inserted or updated.
+- The public cron endpoint validates its header against the existing secret stored in Supabase Vault; the service-role key remains server-side.
 
-Required secrets:
-- Supabase Edge Function secret: `OPENAI_API_KEY`.
-- GitHub Actions secrets: `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY`.
-The service key is used only by GitHub Actions and server-side Edge Functions. It must never be added to browser JavaScript.
-
-The site language selector persists the reader's Arabic/English choice across pages. If a translation has not completed yet, the interface explicitly labels the original-language fallback.
+Required configuration:
+- Supabase Vault: existing project URL, publishable key, and `wrldline_news_cron_secret_20261113` entries.
+- Supabase Edge Function secrets: at least one of `GEMINI_API_KEY`, `GROQ_API_KEY`, or `OPENROUTER_API_KEY`.
+- Keep `SUPABASE_SERVICE_ROLE_KEY` only in the Edge Function environment. Never place it in browser code or GitHub-tracked files.
+- The GitHub Actions news-ingestion workflow is no longer the translation scheduler; Supabase Cron owns the one-minute translation cadence.
 
 ## Evidence-based story reliability
 
