@@ -1,0 +1,130 @@
+/* WRLDLINE 2026 — shared visual language for the World Monitor and History Encyclopedia */
+:root{--wl-ink:#102039;--wl-navy:#0b192b;--wl-navy2:#172d48;--wl-gold:#c99b55;--wl-gold-soft:#e8d3ad;--wl-muted:#718096;--wl-line:#e3e8ef;--wl-paper:#f4f6f9;--wl-card:#fff;--wl-shadow:0 18px 48px rgba(12,28,48,.075)}
+.map-page,.history-page{font-family:"IBM Plex Sans Arabic",sans-serif;letter-spacing:-.012em}
+.map-page{background:var(--wl-paper);color:var(--wl-ink)}
+.map-page .top,.history-page .top{position:sticky;top:0;z-index:1000;background:rgba(9,22,38,.94);border-bottom:1px solid rgba(255,255,255,.09);box-shadow:0 8px 28px rgba(7,18,32,.12);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)}
+.map-page .top{min-height:70px;padding:12px max(20px,calc((100% - 1320px)/2))}
+.map-page .brand,.history-page .brand{display:inline-flex;align-items:center;gap:4px;color:#f5f7fa;font:800 17px Manrope,sans-serif;letter-spacing:.075em}
+.map-page .brand span{color:var(--wl-gold)}
+.map-page .top a,.history-page .links a{color:#dce5ef;text-decoration:none;font-size:12px;transition:color .18s}
+.map-page .top a:hover,.history-page .links a:hover{color:#e5c58f}
+.map-page .wrap{max-width:1320px;padding:34px 24px 64px}
+.map-page .heading{align-items:flex-end;margin-bottom:23px}
+.map-page .eyebrow,.history-page .eyebrow{color:var(--wl-gold);font-size:10px;letter-spacing:.17em;font-weight:800}
+.map-page .heading h1{font-size:clamp(32px,4.5vw,48px);letter-spacing:-.04em;margin:7px 0 9px}
+.map-page .heading p{font-size:14px;line-height:1.9;max-width:760px}
+.map-page .updated{padding:8px 12px;border:1px solid var(--wl-line);border-radius:30px;background:#fff;font-size:11px}
+.map-page .stats{gap:13px;margin:24px 0}
+.map-page .stat,.map-page .panel{border:1px solid var(--wl-line);border-radius:19px;background:var(--wl-card);box-shadow:var(--wl-shadow)}
+.map-page .stat{padding:16px 19px}
+.map-page .stat small{font-size:11px;color:#78869a}
+.map-page .stat strong{font-size:29px;color:var(--wl-ink)}
+.map-page .workspace{gap:18px;grid-template-columns:minmax(0,1.75fr) minmax(310px,.82fr)}
+.map-page .map-panel{overflow:hidden}
+.map-page .map-toolbar{padding:17px 18px;background:linear-gradient(180deg,#fff,#fafbfd);border-bottom:1px solid var(--wl-line)}
+.map-page .map-toolbar strong{font-size:14px;color:var(--wl-ink)}
+.map-page .map-toolbar select{min-height:40px;padding:8px 12px;border:1px solid #dce3ec;border-radius:11px;background:#fff;color:var(--wl-ink);font:inherit;font-size:12px}
+.map-page #worldMap{height:620px;background:#e8eef4}
+.map-page .legend{padding:14px 18px;background:#fbfcfd}
+.map-page .legend span{font-size:11px;color:#64748b}
+.map-page .swatch{width:11px;height:11px}
+.map-page .panel:not(.map-panel){padding:19px}
+.map-page .side-title{padding-bottom:14px;margin-bottom:14px}
+.map-page .side-title h2{font-size:18px}
+.map-page .side-title small{font-size:11px}
+.map-page .notice{padding:13px 14px;border-radius:12px;background:#fff8eb;border-color:#efdfc2;color:#795b2b;font-size:11px}
+.map-page .country-summary{padding:15px;border:1px solid #e8edf3;border-radius:13px;background:#f6f8fb}
+.map-page .country-summary strong{font-size:15px}
+.map-page .country-summary p{font-size:12px;line-height:1.8}
+.map-page .event-list{gap:0;max-height:510px}
+.map-page .event{padding:14px 2px;border-bottom:1px solid #edf0f4}
+.map-page .event h3{font-size:13px;line-height:1.7}
+.map-page .event p{font-size:11px;line-height:1.8}
+.map-page .event a{font-size:11px;color:#9a713b}
+.map-page .risk{padding:4px 9px}
+.map-page .footnote{font-size:11px;line-height:1.9;margin:20px 4px 0}
+.map-page .leaflet-container{font-family:inherit}
+.map-page .leaflet-popup-content-wrapper,.map-page .leaflet-popup-tip{border-radius:12px}
+.map-page :where(a,button,select,[tabindex]):focus-visible,.history-page :where(a,button,input,select,summary,[tabindex]):focus-visible{outline:3px solid #c99b55;outline-offset:3px}
+.history-page{--bg:#0b1421;--panel:#142238;--panel2:#192b43;--line:#2b3d55;--text:#f2f5f9;--muted:#a9b6c7;--gold:#d5ad69;--blue:#8fb8d9;background:radial-gradient(ellipse at 82% -8%,#1b3552 0,transparent 38%),#0b1421;color:#f2f5f9}
+.history-page .container{width:min(1240px,calc(100% - 44px))}
+.history-page .topin{min-height:72px}
+.history-page .brand{gap:11px;font-size:16px}
+.history-page .mark{width:39px;height:39px;border-radius:12px;background:linear-gradient(145deg,#e4c58e,#bd8c48);box-shadow:0 5px 18px #c99b5528}
+.history-page .links{gap:9px}
+.history-page .links a{padding:9px 13px;border:1px solid rgba(255,255,255,.12);border-radius:10px}
+.history-page .links a:hover{background:#ffffff0c;border-color:#c99b55}
+.history-page .hero{position:relative;overflow:hidden;padding:58px 0 34px}
+.history-page .hero:after{content:"W";position:absolute;inset-inline-end:7%;top:-65px;font:800 270px Manrope,sans-serif;color:#fff;opacity:.025;pointer-events:none}
+.history-page .hero h1{position:relative;font-size:clamp(36px,5.2vw,62px);letter-spacing:-.045em;line-height:1.22;margin:12px 0 15px}
+.history-page .hero h1 span{color:#d5ad69!important}
+.history-page .hero p{font-size:14px;line-height:2;max-width:850px}
+.history-page .stats{gap:9px;margin-top:24px}
+.history-page .stat{padding:8px 13px;border:1px solid #344963;border-radius:11px;background:#142238;color:#c2cedc}
+.history-page .stat b{color:#e0bd82}
+.history-page .toolbar{align-items:center;margin:18px 0 20px}
+.history-page .search{min-height:46px;border-radius:13px;background:#122239;border-color:#354a64;font-size:13px}
+.history-page .filters{gap:8px}
+.history-page .filter{min-height:38px;padding:7px 15px;border-radius:24px;background:#122239;border-color:#354a64;font-size:11px}
+.history-page .filter.active{background:#d5ad69;border-color:#d5ad69;color:#132238}
+.history-page .grid{gap:15px;margin-bottom:38px}
+.history-page .country{position:relative;overflow:hidden;min-height:190px;padding:21px;border-radius:18px;background:linear-gradient(145deg,#1a3049,#112136);box-shadow:0 12px 30px #0002;transition:transform .2s,border-color .2s,box-shadow .2s}
+.history-page .country:hover,.history-page .country.active{transform:translateY(-3px);border-color:#d5ad69;box-shadow:0 18px 40px #0004}
+.history-page .country h2{font-size:20px}
+.history-page .country p{font-size:12px;line-height:1.8}
+.history-page .detail{margin:30px 0 65px}
+.history-page .head{padding:clamp(20px,3vw,32px);border-radius:20px;background:radial-gradient(ellipse at 90% 0%,#d5ad691c,transparent 42%),linear-gradient(120deg,#1b314a,#142238);box-shadow:0 16px 42px #0002}
+.history-page .head h2{font-size:clamp(28px,4vw,42px);letter-spacing:-.03em}
+.history-page .facts{gap:11px;margin:15px 0 28px}
+.history-page .fact,.history-page .point,.history-page .chapter,.history-page .culture{border-radius:14px;background:#142238;border-color:#2b3d55}
+.history-page .fact{padding:15px}
+.history-page .fact small{font-size:11px}
+.history-page .fact b{font-size:13px}
+.history-page .sect{margin:32px 0 14px}
+.history-page .sect h3{font-size:22px}
+.history-page .sect p{font-size:11px}
+.history-page .timeline{gap:10px}
+.history-page .point{padding:14px}
+.history-page .eras{gap:12px}
+.history-page .era{border-radius:15px;background:#111f32;border-color:#2b3d55;box-shadow:0 8px 24px #0002}
+.history-page .era summary{padding:17px 19px;grid-template-columns:130px 1fr 20px}
+.history-page .era-title{font-size:15px}
+.history-page .era-sub{font-size:11px}
+.history-page .era-body{padding:20px}
+.history-page .chapters,.history-page .cultures{gap:11px}
+.history-page .chapter,.history-page .culture{padding:15px}
+.history-page .chapter h4,.history-page .culture h4{font-size:13px}
+.history-page .chapter p,.history-page .culture p{font-size:12px;line-height:2}
+.history-page .history-gallery{gap:13px}
+.history-page .history-photo{border-radius:15px;border-color:#2b3d55;background:#142238}
+.history-page .history-photo img{height:190px}
+.history-page .history-photo p{font-size:11px;padding:10px 12px}
+.history-page .history-map{height:440px;border-radius:16px;border-color:#2b3d55;box-shadow:0 12px 34px #0002}
+.history-page .map-era-filter select{min-height:40px;border-radius:10px}
+.history-page .sources{border-radius:15px;background:#101e30;border-color:#2b3d55}
+.history-page .note,.history-page .map-disclaimer{font-size:11px;line-height:1.9}
+.history-page .world-atlas{margin:12px 0 42px;padding:clamp(17px,2.7vw,30px);border-radius:22px;background:radial-gradient(ellipse at 95% 0%,#d5ad6914,transparent 40%),linear-gradient(145deg,#162b43,#0d1929);box-shadow:0 20px 55px #0003}
+.history-page .atlas-heading h2{font-size:clamp(25px,3vw,36px)}
+.history-page .atlas-heading p{font-size:13px;line-height:1.9}
+.history-page .atlas-controls{gap:14px;margin:25px 0}
+.history-page .atlas-controls label{font-size:11px}
+.history-page .atlas-controls select,.history-page .atlas-controls .search{min-height:44px;border-radius:11px}
+.history-page .atlas-year{padding:19px;border-radius:15px;background:#0b1727}
+.history-page .atlas-year strong{font-size:22px}
+.history-page .atlas-shortcuts{gap:8px;padding:14px 0 20px}
+.history-page .atlas-shortcuts button{min-height:38px;padding:8px 14px;border-radius:24px;background:#13243a;font-size:11px}
+.history-page .atlas-layout{gap:18px}
+.history-page .atlas-results-head h3{font-size:18px}
+.history-page .atlas-events{gap:10px;max-height:490px}
+.history-page .atlas-event{grid-template-columns:82px 1fr;gap:13px;padding:14px;border-radius:13px;background:#172a40;border-color:#30445c}
+.history-page .atlas-event h4{font-size:13px}
+.history-page .atlas-event p{font-size:11px;line-height:1.9}
+.history-page .atlas-map-wrap{border-radius:16px;background:#0d1a2b;border-color:#30445c}
+.history-page .atlas-map{height:460px}
+.history-page .europeana-archive,.history-page #historyLab,.history-page #historyDeepArchive{border-radius:21px;box-shadow:0 18px 45px #0002}
+.history-page footer{border-color:#2b3d55;padding:26px 0;margin-top:54px;font-size:11px}
+@media(max-width:900px){.map-page .workspace{grid-template-columns:1fr}.map-page #worldMap{height:520px}.map-page .event-list{max-height:420px}}
+@media(max-width:760px){.history-page .container{width:calc(100% - 30px)}.history-page .hero{padding:40px 0 25px}.history-page .hero:after{font-size:190px;top:-30px}.history-page .world-atlas{padding:17px}.history-page .atlas-layout{grid-template-columns:1fr}.history-page .atlas-events{max-height:380px}.history-page .atlas-map{height:340px}}
+@media(max-width:600px){.map-page .top{min-height:62px;padding:10px 14px}.map-page .brand{font-size:13px}.map-page .top a:last-child{font-size:10px}.map-page .wrap{padding:24px 13px 48px}.map-page .heading{gap:12px}.map-page .heading h1{font-size:34px}.map-page .stats{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.map-page .stat{padding:12px}.map-page .stat strong{font-size:24px}.map-page .map-toolbar{align-items:stretch}.map-page .map-toolbar strong{width:100%}.map-page .map-toolbar select{flex:1;min-width:0}.map-page #worldMap{height:410px}.map-page .panel:not(.map-panel){padding:15px}.history-page .links{gap:5px}.history-page .links a{padding:8px 9px;font-size:10px}.history-page .topin{min-height:64px}.history-page .brand{font-size:13px}.history-page .mark{width:34px;height:34px}.history-page .hero h1{font-size:36px}.history-page .stats{gap:7px}.history-page .stat{font-size:10px}.history-page .grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.history-page .country{min-height:170px;padding:15px}.history-page .country h2{font-size:16px}.history-page .country p{font-size:10px}.history-page .facts{gap:8px}.history-page .fact{padding:11px}.history-page .era summary{grid-template-columns:75px 1fr 16px;padding:14px 12px;gap:8px}.history-page .era-title{font-size:12px}.history-page .era-sub{font-size:9px}.history-page .era-body{padding:14px}.history-page .history-map{height:330px}.history-page .history-gallery{gap:8px}.history-page .history-photo img{height:130px}.history-page .atlas-event{grid-template-columns:65px 1fr;gap:9px;padding:11px}.history-page .atlas-map{height:300px}}
+@media(max-width:390px){.history-page .grid{grid-template-columns:1fr}.history-page .country{min-height:145px}.map-page .brand{font-size:11px}.map-page .top a:last-child{font-size:9px}}
+@media(prefers-reduced-motion:reduce){.map-page *,.history-page *{scroll-behavior:auto!important;transition:none!important;animation:none!important}}
