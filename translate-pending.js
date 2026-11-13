@@ -35,7 +35,7 @@ async function main() {
       method: "POST", headers: { ...headers, "Content-Type": "application/json" }, body: JSON.stringify({ article_ids: [pending[i].id] })
     });
     const body = await response.json().catch(() => ({}));
-    if (response.status === 429 || response.status === 503 || body.rate_limited) { console.warn("Gemini translation rate-limited; stopping this run."); deferred = true; break; }
+    if (response.status === 429 || response.status === 503 || body.rate_limited) { console.warn("An AI provider is rate-limited; stopping this run."); deferred = true; break; }
     if (!response.ok) throw new Error("Translator failed HTTP " + response.status + ": " + JSON.stringify(body).slice(0, 400));
     for (const item of body.results || []) {
       if (item.provider && Object.prototype.hasOwnProperty.call(providers, item.provider)) providers[item.provider]++;
