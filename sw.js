@@ -1,7 +1,7 @@
-const CACHE_NAME = "wrldline-shell-v39";
+const CACHE_NAME = "wrldline-shell-v40";
 const NEWS_CACHE = "wrldline-public-news-v1";
 const BRIEFING_CACHE = "wrldline-daily-briefing-v1";
-const SHELL_URLS = ["/index.html", "/history.html", "/history-world-expansion.js", "/history-expansion.js", "/history-lab.js", "/design.css", "/daily-briefing.html", "/daily-briefing.css", "/daily-briefing.js"];
+const SHELL_URLS = ["/index.html", "/history.html", "/history-world-expansion.js", "/history-executive.js", "/history-expansion.js", "/history-lab.js", "/design.css", "/daily-briefing.html", "/daily-briefing.css", "/daily-briefing.js"];
 self.addEventListener("install", event => {
   event.waitUntil((async () => {
     await caches.open(CACHE_NAME).then(cache => cache.addAll(SHELL_URLS).catch(() => {}));
