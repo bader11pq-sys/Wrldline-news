@@ -118,7 +118,7 @@ async function geminiGenerateTranslation(prompt: string, apiKey: string, maxOutp
       const hardQuota = /quota|resource_exhausted|billing|limit:\s*generate_content/i.test(detail);
       const transient = response.status === 429 || response.status === 503 || response.status >= 500;
       if (response.status === 429 && hardQuota) {
-        throw Object.assign(new Error(lastError), { deferred: true, quotaExceeded: true, retryAfter: 21600 });
+        throw Object.assign(new Error(lastError), { deferred: true, quotaExceeded: true, retryAfter: 300 });
       }
       if (!transient) throw new Error(lastError);
       if (attempt === 2) throw Object.assign(new Error(lastError), { deferred: true, retryAfter: response.status === 429 ? 300 : 60 });
@@ -203,8 +203,8 @@ Deno.serve(async(req:Request)=>{
    if((error as any)?.deferred) {
     if((error as any)?.quotaExceeded) {
      await db.from("gemini_rate_limits").upsert({
-      singleton:true,cooldown_until:new Date(Date.now()+6*60*60*1000).toISOString(),
-      reason:"Gemini quota exceeded",updated_at:new Date().toISOString()
+      singleton:true,cooldown_until:new Date(Date.now()+5*60*1000).toISOString(),
+      reason:"Gemini provider backoff",updated_at:new Date().toISOString()
      },{onConflict:"singleton"});
     }
     return {id:article.id,status:"deferred",retry_after_seconds:(error as any).retryAfter||60,error:String(error).slice(0,180)};
