@@ -32,7 +32,7 @@ const FEEDS = [
   {url:"https://www.libyaakhbar.com/feed/",name:"ليبيا أخبار",country:"ليبيا",fallbackUrl:googleNewsUrl("libyaakhbar.com")},
   // Global
   {url:"https://feeds.bbci.co.uk/news/rss.xml",name:"BBC Top Stories",country:"دولي"},
-  {url:"https://www.cbc.ca/webfeed/rss/rss-world",name:"CBC World",country:"دولي"},
+  {url:"https://www.cbc.ca/webfeed/rss/rss-world",name:"CBC World",country:"دولي",fallbackUrl:googleNewsUrl("cbc.ca")},
   {url:"https://feeds.bbci.co.uk/news/world/rss.xml",name:"BBC World",country:"دولي"},
   {url:"https://www.aljazeera.com/xml/rss/all.xml",name:"Al Jazeera English",country:"دولي"},
   {url:"https://www.theguardian.com/world/rss",name:"The Guardian",country:"دولي"},
