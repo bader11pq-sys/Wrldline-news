@@ -25,7 +25,19 @@ async function loadByStatus(status, limit) {
 }
 const eligible = article => !/t\.me|telegram\.me|telegram/i.test([article.url, article.source_url, article.source_name].filter(Boolean).join(" "));
 
+async function quotaCooldownActive() {
+  const response = await fetch(SUPABASE_URL + "/rest/v1/gemini_rate_limits?select=cooldown_until&singleton=eq.true", { headers });
+  if (!response.ok) throw new Error("Could not read Gemini cooldown: HTTP " + response.status);
+  const rows = await response.json();
+  const until = rows[0]?.cooldown_until ? Date.parse(rows[0].cooldown_until) : 0;
+  if (until > Date.now()) {
+    console.log("Gemini quota cooldown active until " + new Date(until).toISOString() + "; skipping model calls.");
+    return true;
+  }
+  return false;
+}
 async function main() {
+  if (await quotaCooldownActive()) return;
   const fresh = (await loadByStatus("pending", MAX_PENDING_PER_RUN)).filter(eligible);
   const retries = (await loadByStatus("failed", MAX_FAILED_PER_RUN)).filter(eligible);
   const articles = fresh.concat(retries).slice(0, MAX_PENDING_PER_RUN + MAX_FAILED_PER_RUN);
