@@ -25,8 +25,8 @@ Each story uses one model request. Monitor OpenAI usage and set a budget limit. 
 ## Automatic Arabic/English translation
 
 - Supabase Cron invokes the `wrldline-news-ingest` Edge Function in `translation` mode every minute. Translation no longer waits for the GitHub Actions ingestion workflow to finish.
-- The worker scans published stories newest-first in pages of 500, continuing through the backlog as needed. Each run selects up to 10 untranslated stories, balanced to a maximum of five per direction.
-- The `translate-articles` Edge Function processes one story at a time within a run, while a database lease prevents overlapping cron workers. A failure is isolated to its story; provider backoff pauses the remaining batch so those stories can be retried on the next scheduled run.
+- The worker scans published stories newest-first in pages of 500, continuing through the backlog as needed. Each run selects up to 20 untranslated stories, balanced to a maximum of ten per direction.
+- The `translate-articles` Edge Function processes up to two stories concurrently within a run, while a database lease prevents overlapping cron workers. A failure is isolated to its story; provider backoff pauses the remaining batch so those stories can be retried on the next scheduled run.
 - Gemini quota cooldown is persisted in `gemini_rate_limits` and respected on subsequent runs. Groq and OpenRouter remain fallback providers when configured.
 - Each completed translation is upserted independently into `article_translations`. The table is published to Supabase Realtime, and the frontend refreshes when a translation is inserted or updated.
 - The public cron endpoint validates its header against the existing secret stored in Supabase Vault; the service-role key remains server-side.
