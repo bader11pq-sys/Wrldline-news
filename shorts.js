@@ -1,0 +1,32 @@
+(() => {
+  const feed=document.getElementById("shortsFeed"),counter=document.getElementById("shortsCounter");
+  const langButton=document.getElementById("shortsLanguage"),themeButton=document.getElementById("shortsTheme"),hint=document.getElementById("shortsHint");
+  let lang=localStorage.getItem("wrldline:language")==="en"?"en":"ar",stories=[],active=0,apiUrl="",apiKey="";
+  const labels={ar:{politics:"سياسة",economy:"اقتصاد",security:"أمن ودفاع",tech:"تكنولوجيا",sports:"رياضة",culture:"ثقافة",health:"صحة",world:"حول العالم"},en:{politics:"Politics",economy:"Economy",security:"Security & Defence",tech:"Technology",sports:"Sports",culture:"Culture",health:"Health",world:"Around the world"}};
+  const t=(ar,en)=>lang==="ar"?ar:en;
+  const esc=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+  const safe=v=>{try{const u=new URL(v);return ["https:","http:"].includes(u.protocol)?u.href:"";}catch{return "";}};
+  const date=v=>{const d=new Date(v);return Number.isNaN(d.getTime())?"":new Intl.DateTimeFormat(lang==="ar"?"ar-SA":"en-US",{dateStyle:"medium",timeStyle:"short"}).format(d);};
+  function setLanguage(){document.documentElement.lang=lang;document.documentElement.dir=lang==="ar"?"rtl":"ltr";langButton.textContent=lang==="ar"?"English":"العربية";}
+  function updateCounter(){const slides=[...feed.querySelectorAll(".shorts-slide")];if(!slides.length){counter.textContent="— / —";return;}const top=feed.getBoundingClientRect().top;let best=0,dist=Infinity;slides.forEach((s,i)=>{const d=Math.abs(s.getBoundingClientRect().top-top);if(d<dist){dist=d;best=i;}});active=best;counter.textContent=(best+1)+" / "+slides.length;}
+  function render(){
+    if(!stories.length){feed.innerHTML='<div class="shorts-state"><strong>'+t("لا توجد أخبار منشورة حاليًا","No published stories right now")+'</strong><span>'+t("ارجع لاحقًا للاطلاع على أحدث التغطيات.","Check back for the latest coverage.")+'</span><button id="shortsRetry">'+t("إعادة المحاولة","Retry")+'</button></div>';document.getElementById("shortsRetry").onclick=load;updateCounter();return;}
+    feed.innerHTML=stories.map((a,i)=>{const tr=(a.article_translations||[]).find(x=>x.lang===lang),title=tr?.title||a.title||"",summary=tr?.summary||a.summary||"",img=safe(a.image_url),src=safe(a.url||a.source_url);return '<article class="shorts-slide" data-index="'+i+'">'+(img?'<img class="shorts-photo" src="'+esc(img)+'" alt="" loading="'+(i<2?"eager":"lazy")+'">':'<div class="shorts-no-photo"></div>')+'<div class="shorts-copy"><div class="shorts-meta"><span class="shorts-category">'+esc(labels[lang][a.category]||t("حول العالم","Around the world"))+'</span>'+(a.is_breaking?'<span class="shorts-category shorts-breaking">'+t("عاجل","BREAKING")+'</span>':"")+'<time>'+esc(date(a.published_at||a.created_at))+'</time></div><h1>'+esc(title)+'</h1><p class="shorts-summary">'+esc(summary||t("لا يتوفر ملخص لهذا الخبر.","No summary is available."))+'</p><div class="shorts-footer"><span>'+esc(a.source_name||t("مصدر إخباري","News source"))+'</span>'+(src?'<a class="shorts-source" href="'+esc(src)+'" target="_blank" rel="noopener noreferrer">'+t("قراءة المصدر الأصلي ↗","Read original source ↗")+'</a>':"")+'</div></div></article>';}).join("");
+    updateCounter();
+    if("IntersectionObserver" in window){const observer=new IntersectionObserver(entries=>entries.forEach(e=>{if(e.isIntersecting&&e.intersectionRatio>=.6){active=Number(e.target.dataset.index||0);counter.textContent=(active+1)+" / "+stories.length;}}),{root:feed,threshold:[.6]});feed.querySelectorAll(".shorts-slide").forEach(s=>observer.observe(s));}
+  }
+  async function load(){
+    feed.innerHTML='<div class="shorts-state"><strong>'+t("جارٍ تحميل الأخبار...","Loading stories...")+'</strong><span>'+t("نجهز لك أحدث التغطيات","Preparing the latest coverage")+'</span></div>';
+    try{
+      if(!apiKey){const source=await fetch("/script.js",{cache:"no-store"});if(!source.ok)throw new Error("Could not read public API configuration");const code=await source.text();apiUrl=code.match(/const SUPABASE_URL = "([^"]+)"/)?.[1]||"";apiKey=code.match(/const SUPABASE_ANON_KEY = "([^"]+)"/)?.[1]||"";if(!apiUrl||!apiKey)throw new Error("Public API configuration not found");}
+      const query=apiUrl+"/rest/v1/articles?select=id,title,summary,image_url,url,source_url,source_name,category,published_at,created_at,is_breaking,article_translations(lang,title,summary)&editorial_status=eq.published&order=published_at.desc&limit=100";
+      const response=await fetch(query,{headers:{apikey:apiKey,Authorization:"Bearer "+apiKey},signal:AbortSignal.timeout(18000)});if(!response.ok)throw new Error("HTTP "+response.status);
+      const rows=await response.json();stories=Array.isArray(rows)?rows.filter(a=>a.title&&!/t\.me|telegram\.me|telegram/i.test([a.url,a.source_url,a.source_name].filter(Boolean).join(" "))):[];render();
+    }catch(error){console.error("WRLDLINE Shorts:",error);feed.innerHTML='<div class="shorts-state"><strong>'+t("تعذر تحميل الأخبار","Could not load stories")+'</strong><span>'+t("تحقق من اتصال الإنترنت ثم حاول مرة أخرى.","Check your connection and try again.")+'</span><button id="shortsRetry">'+t("إعادة المحاولة","Retry")+'</button></div>';document.getElementById("shortsRetry").onclick=load;}
+  }
+  langButton.addEventListener("click",()=>{lang=lang==="ar"?"en":"ar";localStorage.setItem("wrldline:language",lang);setLanguage();render();});
+  themeButton.addEventListener("click",()=>{const next=document.documentElement.dataset.theme==="dark"?"light":"dark";document.documentElement.dataset.theme=next;localStorage.setItem("wrldline:theme",next);themeButton.textContent=next==="dark"?"☀":"☾";});
+  document.addEventListener("keydown",e=>{if(!["ArrowDown","ArrowUp"].includes(e.key))return;const slides=feed.querySelectorAll(".shorts-slide");if(!slides.length)return;e.preventDefault();const next=Math.max(0,Math.min(slides.length-1,active+(e.key==="ArrowDown"?1:-1)));slides[next]?.scrollIntoView({behavior:"smooth",block:"start"});});
+  feed.addEventListener("scroll",()=>hint.classList.add("is-hidden"),{passive:true});
+  setLanguage();const theme=localStorage.getItem("wrldline:theme")||"light";document.documentElement.dataset.theme=theme;themeButton.textContent=theme==="dark"?"☀":"☾";setTimeout(()=>hint.classList.add("is-hidden"),5000);load();
+})();

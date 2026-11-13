@@ -18,7 +18,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 async function registerServiceWorker(){
  if(!("serviceWorker" in navigator))return;
- const workerBuild="v16";
+ const workerBuild="v17";
  navigator.serviceWorker.addEventListener("controllerchange",()=>{
   if(sessionStorage.getItem("wrldline:sw-build")!==workerBuild){
    sessionStorage.setItem("wrldline:sw-build",workerBuild);
@@ -234,7 +234,7 @@ function updateBreaking(){
  const currentId=marquee.dataset.articleId||"";
  const item=items.find(a=>a.id===currentId)||items[state.breakingTickerIndex%Math.max(items.length,1)];
  if(!item){
-  strip.hidden=true;marquee.textContent="";marquee.classList.remove("is-moving","is-ltr");
+  strip.hidden=true;marquee.textContent="";marquee.classList.remove("is-moving");
   delete marquee.dataset.articleId;delete marquee.dataset.articleTitle;
   title.removeAttribute("title");time.textContent="";return;
  }
@@ -244,10 +244,12 @@ function updateBreaking(){
   marquee.textContent=cleanTitle;
   marquee.dataset.articleId=item.id;
   marquee.dataset.articleTitle=String(item.title||"");
-  marquee.classList.remove("is-moving","is-ltr");
+  marquee.classList.remove("is-moving");
+  // Let the browser determine the text direction from its first strong character.
+  // The isolated inline direction prevents RTL/LTR text from reordering its words.
   marquee.setAttribute("dir","auto");
-  marquee.style.direction="ltr";
-  marquee.style.unicodeBidi="plaintext";
+  marquee.style.removeProperty("direction");
+  marquee.style.unicodeBidi="isolate";
   marquee.style.removeProperty("--breaking-duration");
   marquee.style.removeProperty("--breaking-start");
   requestAnimationFrame(()=>{

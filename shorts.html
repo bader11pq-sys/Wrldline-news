@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#101b2d">
+  <meta name="description" content="WRLDLINE Shorts — تصفح الأخبار عمودياً، خبرًا بعد خبر.">
+  <title>WRLDLINE Shorts | ورلدلاين نيوز</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css?v=20261113-11">
+  <link rel="stylesheet" href="shorts.css?v=1">
+</head>
+<body class="shorts-body">
+  <header class="shorts-topbar">
+    <a class="shorts-back" href="index.html" aria-label="العودة إلى الرئيسية">←</a>
+    <a class="shorts-brand" href="index.html"><span class="brand-mark">W</span><span><strong>WRLDLINE</strong><small>SHORTS</small></span></a>
+    <div class="shorts-tools">
+      <button id="shortsLanguage" type="button" class="shorts-tool">English</button>
+      <button id="shortsTheme" type="button" class="shorts-icon" aria-label="تغيير المظهر">☾</button>
+    </div>
+  </header>
+  <main id="shortsFeed" class="shorts-feed" aria-label="موجز الأخبار العمودي">
+    <div class="shorts-state"><strong>جارٍ تحميل الأخبار...</strong><span>نجهز لك أحدث التغطيات</span></div>
+  </main>
+  <div class="shorts-counter" id="shortsCounter" aria-live="polite">— / —</div>
+  <div class="shorts-hint" id="shortsHint">اسحب للأعلى للخبر التالي ↑</div>
+  <script src="shorts.js?v=1" defer></script>
+</body>
+</html>
