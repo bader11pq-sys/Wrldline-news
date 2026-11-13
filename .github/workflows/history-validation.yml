@@ -6,6 +6,7 @@ on:
       - 'history.html'
       - 'history-lab.js'
       - 'history-expansion.js'
+      - 'history-people.js'
       - '.github/workflows/history-validation.yml'
 jobs:
   validate:
@@ -16,6 +17,6 @@ jobs:
         with:
           node-version: '24'
       - name: Check history module syntax
-        run: node --check history-lab.js && node --check history-expansion.js
+        run: node --check history-lab.js && node --check history-expansion.js && node --check history-people.js
       - name: Verify page loads the module
-        run: node -e "const fs=require('node:fs'); const h=fs.readFileSync('history.html','utf8'); if(!h.includes('history-expansion.js')) process.exit(1); console.log('Expanded history module is linked.');"
+        run: node -e "const fs=require('node:fs'); const h=fs.readFileSync('history.html','utf8'); if(!h.includes('history-expansion.js') || !h.includes('history-people.js')) process.exit(1); console.log('Expanded history and people modules are linked.');"
