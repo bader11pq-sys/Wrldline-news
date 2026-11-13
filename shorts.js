@@ -1,7 +1,7 @@
 (() => {
   const feed=document.getElementById("shortsFeed"),counter=document.getElementById("shortsCounter");
   const langButton=document.getElementById("shortsLanguage"),themeButton=document.getElementById("shortsTheme"),hint=document.getElementById("shortsHint");
-  let lang=localStorage.getItem("wrldline:language")==="en"?"en":"ar",stories=[],active=0,apiUrl="",apiKey="",loading=false,nextOffset=0,hasMore=false,loadingMore=false;
+  let lang=localStorage.getItem("wrldline:language")==="en"?"en":"ar",stories=[],active=0,apiUrl="https://vmaxbnogmmfyrcucapnq.supabase.co",apiKey="sb_publishable_D3c88u75_LcEN460Y3Jcpw__EfqUnBx",loading=false,nextOffset=0,hasMore=false,loadingMore=false;
   const labels={ar:{politics:"سياسة",economy:"اقتصاد",security:"أمن ودفاع",tech:"تكنولوجيا",sports:"رياضة",culture:"ثقافة",health:"صحة",world:"حول العالم"},en:{politics:"Politics",economy:"Economy",security:"Security & Defence",tech:"Technology",sports:"Sports",culture:"Culture",health:"Health",world:"Around the world"}};
   const t=(ar,en)=>lang==="ar"?ar:en;
   const esc=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -39,12 +39,7 @@
     updateCounter();appendMoreButton();
     if("IntersectionObserver" in window){const observer=new IntersectionObserver(entries=>entries.forEach(e=>{if(e.isIntersecting&&e.intersectionRatio>=.6){active=Number(e.target.dataset.index||0);counter.textContent=(active+1)+" / "+stories.length;}}),{root:feed,threshold:[.6]});feed.querySelectorAll(".shorts-slide").forEach(s=>observer.observe(s));}
   }
-  async function configure(){
-    if(apiKey)return;
-    const source=await fetch("/script.js",{cache:"no-store"});if(!source.ok)throw new Error("Could not read public API configuration");
-    const code=await source.text();apiUrl=code.match(/const SUPABASE_URL = "([^"]+)"/)?.[1]||"";apiKey=code.match(/const SUPABASE_ANON_KEY = "([^"]+)"/)?.[1]||"";
-    if(!apiUrl||!apiKey)throw new Error("Public API configuration not found");
-  }
+  async function configure(){if(!apiUrl||!apiKey)throw new Error("Public API configuration not found");}
   async function fetchPage(offset,limit){
     const query=apiUrl+"/rest/v1/articles?select=id,title,summary,category,lang,image_url,media_type,url,source_url,source_name,is_breaking,published_at,created_at,article_translations(lang,title,summary)&editorial_status=eq.published&order=published_at.desc&limit="+limit+"&offset="+offset;
     const response=await fetch(query,{headers:{apikey:apiKey,Authorization:"Bearer "+apiKey},signal:AbortSignal.timeout(20000)});
