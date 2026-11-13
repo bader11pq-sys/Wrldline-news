@@ -72,7 +72,7 @@ async function share(data){
   console.error("WRLDLINE share:",error);toast(tr("تعذر تجهيز بطاقة المشاركة. حاول مرة أخرى.","Could not prepare the share card. Please try again."));return false;
  }finally{if(button){button.disabled=false;delete button.dataset.busy;}}
 }
-const selectors=[".lead-story",".rail-story",".news-card",".breaking-news-card",".event",".country-summary",".briefing-story",".briefing-list-item",".atlas-event",".eu-card",".country",".chapter",".culture",".lab-card",".hd-event",".hd-card",".history-photo",".market-card",".market-tape-panel",".market-widget-shell",".markets-hero",".shorts-slide",".leaflet-popup-content",".era",".fact",".point",".briefing-category",".market-disclosure",".stat",".sources"];
+const selectors=[".lead-story",".rail-story",".news-card",".breaking-news-card",".event",".country-summary",".detail",".briefing-story",".briefing-list-item",".atlas-event",".eu-card",".chapter",".culture",".lab-card",".hd-event",".hd-card",".history-photo",".market-card",".market-tape-panel",".market-widget-shell",".markets-hero",".shorts-slide",".leaflet-popup-content",".era",".fact",".point",".briefing-category",".market-disclosure",".stat",".sources"];
 function attach(root=document){
  if(root.nodeType===1&&root.matches?.(selectors.join(",")))add(root);
  root.querySelectorAll?.(selectors.join(",")).forEach(add);
@@ -83,7 +83,7 @@ function add(el){
  el.dataset.wrldlineShareReady="1";
  const b=document.createElement("button");b.type="button";b.className="wrldline-share-button";b.textContent=tr("مشاركة الصورة","Share image");b.setAttribute("aria-label",tr("إنشاء بطاقة ومشاركة المحتوى","Create a share card"));
  b.addEventListener("click",e=>{e.preventDefault();e.stopPropagation();share({...payloadFrom(el),button:b});});
- if(el.matches("button,a,[role=button]"))el.insertAdjacentElement("afterend",b);else el.appendChild(b);
+ if(el.matches("button,a"))el.insertAdjacentElement("afterend",b);else if(el.matches("[role=button]")){el.style.position=el.style.position||"relative";b.classList.add("wrldline-share-overlay");el.appendChild(b);}else el.appendChild(b);
 }
 function pageShare(){
  if(document.getElementById("wrldlinePageShare"))return;
@@ -93,7 +93,7 @@ function pageShare(){
 window.WRLDLINE_SHARE={share,attach,payloadFrom};
 const style=document.createElement("style");style.textContent=`
 .wrldline-share-button{display:inline-flex;align-items:center;justify-content:center;gap:7px;margin:10px 0 2px;padding:8px 13px;border:1px solid rgba(216,180,117,.55);border-radius:9px;background:rgba(216,180,117,.10);color:inherit;font:600 12px system-ui,sans-serif;cursor:pointer;position:relative;z-index:2}
-.wrldline-share-button:hover{background:rgba(216,180,117,.2);border-color:#d8b475}
+.wrldline-share-button:hover{background:rgba(216,180,117,.2);border-color:#d8b475}.wrldline-share-overlay{position:absolute;inset-inline-end:12px;bottom:12px}
 .wrldline-share-button:disabled{opacity:.6;cursor:wait}
 #wrldlinePageShare{position:fixed;z-index:9998;bottom:calc(18px + env(safe-area-inset-bottom));inset-inline-end:16px;padding:11px 16px;border:1px solid #e2bd7b;border-radius:30px;background:#14283f;color:#fff;font:700 12px system-ui,sans-serif;box-shadow:0 8px 28px #0005;cursor:pointer}
 #wrldlineShareToast{position:fixed;z-index:10000;left:50%;bottom:calc(78px + env(safe-area-inset-bottom));transform:translate(-50%,12px);max-width:min(92vw,520px);padding:12px 16px;border:1px solid #d8b475;border-radius:12px;background:#102238;color:#f5f7fa;font:500 12px/1.7 system-ui,sans-serif;text-align:center;box-shadow:0 12px 36px #0006;opacity:0;pointer-events:none;transition:.2s}
