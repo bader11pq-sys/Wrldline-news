@@ -17,7 +17,7 @@ const AR_EN={
 "الآن":"Just now","قبل ":"","دولي":"International","وقت غير محدد":"Time unavailable",
 "حسابك واشتراكك | WRLDLINE NEWS":"Your account & subscription | WRLDLINE NEWS","← العودة إلى الأخبار":"← Back to news","حسابك. عالمك.":"Your account. Your world.","أنشئ حسابك، نظّم قراءتك، واحصل على تجربة إخبارية أوسع مع عضوية WRLDLINE PLUS.":"Create an account, organize your reading, and unlock more with WRLDLINE PLUS.",
 "ابدأ حسابك":"Get started","سجّل الدخول أو أنشئ حساباً مجاناً خلال لحظات.":"Sign in or create a free account in moments.","تسجيل الدخول":"Sign in","حساب جديد":"Create account","الاسم الظاهر":"Display name","البريد الإلكتروني":"Email address","كلمة المرور":"Password","نسيت كلمة المرور؟":"Forgot password?","إنشاء حساب":"Create account","الاشتراك":"Subscribe","شهري":"Monthly","سنوي":"Yearly","إدارة الاشتراك":"Manage subscription","تسجيل الخروج":"Sign out",
-"لوحة التحرير | WRLDLINE NEWS":"Editorial desk | WRLDLINE NEWS","لوحة التحرير":"Editorial desk","عرض الموقع ↗":"View site ↗","تسجيل دخول المحرر":"Editor sign in","استخدم حساب محرر مصرحاً به. لا توجد كلمة مرور مشتركة أو مخزنة داخل ملفات الموقع.":"Use an authorized editor account. No shared password is stored in the site files.","الحساب غير مخوّل للتحرير":"This account is not authorized to edit","إدارة الأخبار":"News management","حالة النشر":"Publication status","حالة التحقق":"Verification status","عنوان الخبر":"Story headline","ملخص / نص الخبر":"Summary / story text","القسم":"Category","الدولة":"Country","اسم المصدر":"Source name","رابط المصدر الأصلي":"Original source URL","مسودة":"Draft","قيد المراجعة":"In review","منشور":"Published","مرفوض":"Rejected","حفظ التعديلات":"Save changes","نشر الخبر":"Publish story","حذف الخبر":"Delete story","تحليل 10 أخبار بالذكاء الاصطناعي":"AI-classify 10 stories",
+"لوحة التحرير | WRLDLINE NEWS":"Editorial desk | WRLDLINE NEWS","لوحة التحرير":"Editorial desk","عرض الموقع ↗":"View site ↗","تسجيل دخول المحرر":"Editor sign in","استخدم حساب محرر مصرحاً به. لا توجد كلمة مرور مشتركة أو مخزنة داخل ملفات الموقع.":"Use an authorized editor account. No shared password is stored in the site files.","الحساب غير مخوّل للتحرير":"This account is not authorized to edit","إدارة الأخبار":"News management","حالة النشر":"Publication status","عنوان الخبر":"Story headline","ملخص / نص الخبر":"Summary / story text","القسم":"Category","الدولة":"Country","اسم المصدر":"Source name","رابط المصدر الأصلي":"Original source URL","مسودة":"Draft","قيد المراجعة":"In review","منشور":"Published","مرفوض":"Rejected","حفظ التعديلات":"Save changes","نشر الخبر":"Publish story","حذف الخبر":"Delete story","تحليل 10 أخبار بالذكاء الاصطناعي":"AI-classify 10 stories",
 "مرصد العالم":"World Monitor","العودة إلى غرفة الأخبار ←":"← Back to newsroom","خريطة تفاعلية تربط الأحداث بمواقعها وتعرض إشارات المخاطر المستخرجة من التغطية الإخبارية الحديثة.":"An interactive map linking events to locations and risk signals derived from recent news coverage.","الأحداث":"Events","مستوى المخاطر":"Risk level","آخر 24 ساعة":"Last 24 hours","آخر 72 ساعة":"Last 72 hours","آخر 7 أيام":"Last 7 days","كل الأنواع":"All event types","كل المستويات":"All levels","لا توجد بيانات كافية لعرض الخريطة حالياً.":"There is not enough data to display the map yet.",
 "موسوعة التاريخ":"History Encyclopedia","التاريخ ليس صفحة واحدة.":"History is not a single page.","إنه حكاية حضارات.":"It is the story of civilizations.","اختر دولة، ثم تنقّل بين العصور والفصول كأنك تقرأ كتاباً منظماً، لا كتلة نصية طويلة.":"Choose a country, then explore eras and chapters like a well-organized book—not a wall of text.","كل المناطق":"All regions","آسيا":"Asia","أفريقيا":"Africa","اكتشف التاريخ ←":"Explore history ←","رحلة عبر العصور":"Journey through the ages","الثقافة والحياة":"Culture & daily life","مصادر للقراءة والتوسع":"Further reading & sources","الخط الزمني الكبير":"The grand timeline","محطات سريعة قبل الدخول في التفاصيل":"Key milestones before the deep dive","افتح أي عصر لتقرأ فصوله وموضوعاته":"Open any era to explore its chapters and themes"
 };
@@ -87,7 +87,6 @@ AR_EN["مسودة"]="Draft";
 AR_EN["قيد المراجعة"]="In review";
 AR_EN["منشور"]="Published";
 AR_EN["مرفوض"]="Rejected";
-AR_EN["حالة التحقق"]="Verification status";
 AR_EN["مؤكد"]="Confirmed";
 AR_EN["متعدد المصادر"]="Multiple sources";
 AR_EN["أولي"]="Preliminary";
@@ -99,7 +98,7 @@ AR_EN["تفريغ الحقول"]="Clear fields";
 AR_EN["غرفة المراجعة"]="Review room";
 AR_EN["إعادة محاولة تصنيف 10 أخبار"]="Retry classification for 10 stories";
 AR_EN["تحديث القائمة"]="Refresh list";
-AR_EN["يعمل التصنيف الذكي تلقائياً في الخلفية بعد وصول الأخبار. هذا الزر مخصص لإعادة محاولة الأخبار المتعثرة أو المعلقة فقط. يتطلب ذلك ضبط مفاتيح الخدمة الموضحة في AI_SETUP.md. النتائج منخفضة الثقة تظهر للمراجعة ولا تُعد تحققاً من صحة الخبر."]="AI classification runs automatically in the background as news arrives. This button is only for retrying failed or pending stories. Configure the service keys described in AI_SETUP.md. Low-confidence results are sent for review and do not constitute fact verification.";
+AR_EN["يعمل التصنيف الذكي تلقائياً في الخلفية بعد وصول الأخبار. هذا الزر مخصص لإعادة محاولة الأخبار المتعثرة أو المعلقة فقط. يتطلب ذلك ضبط مفاتيح الخدمة الموضحة في AI_SETUP.md. تُحال النتائج منخفضة الثقة للمراجعة التحريرية."]="AI classification runs automatically in the background as news arrives. This button only retries failed or pending stories. Configure the service keys described in AI_SETUP.md. Low-confidence results are sent for editorial review.";
 AR_EN["بحث في الأخبار"]="Search news";
 AR_EN["تصفية الحالة"]="Filter by status";
 AR_EN["كل الحالات"]="All statuses";
@@ -193,7 +192,6 @@ AR_EN[" خبر · من أصل "]=" stories · of ";
 AR_EN["لا توجد أخبار مطابقة."]="No matching stories.";
 AR_EN["🔴 عاجل · "]="🔴 Breaking · ";
 AR_EN["بلا عنوان"]="Untitled";
-AR_EN["التحقق:"]="Verification:";
 AR_EN["الخطر:"]="Risk:";
 AR_EN["تعديل"]="Edit";
 AR_EN["نشر"]="Publish";
@@ -237,7 +235,6 @@ AR_EN["WRLDLINE NEWS · حسابات آمنة عبر Supabase Auth · مدفوع
 AR_EN["لوحة التحرير"]="Editorial desk";
 AR_EN["عرض الموقع ↗"]="View site ↗";
 AR_EN["تسجيل دخول المحرر"]="Editor sign in";
-AR_EN["موثوقية الخبر"]="Story reliability";
 AR_EN["تُحتسب الموثوقية تلقائياً من الأدلة المسجلة. أضف مصادر مستقلة أو بيانات رسمية أو تقارير ميدانية من نافذة الخبر؛ لا يمكن رفع الحالة يدوياً."]="Reliability is calculated automatically from recorded evidence. Add independent sources, official statements, or field reports from the story window; the status cannot be raised manually.";
 AR_EN["مسودات"]="Drafts";
 AR_EN["، ثم تسجيل الخروج والدخول مجدداً. لا تستخدم User Metadata لهذا الغرض."]=", then sign out and sign in again. Do not use User Metadata for this purpose.";
@@ -300,7 +297,6 @@ AR_EN["يلزم منح حساب المحرر دوراً موثوقاً من Supa
 AR_EN["، ثم تسجيل الخروج والدخول مجدداً. لا تستخدم User Metadata لهذا الغرض."]=", then sign out and sign in again. Do not use User Metadata for this purpose.";
 AR_EN["تخضع عمليات النشر والتعديل والحذف لسياسات Row Level Security في Supabase. لا تمنح صلاحيات الكتابة للمستخدمين المجهولين."]="Publishing, editing, and deletion are governed by Supabase Row Level Security. Never grant write access to anonymous users.";
 AR_EN["العالم"]="World";
-AR_EN["موثوقية الخبر"]="Story reliability";
 AR_EN["تُحتسب الموثوقية تلقائياً من الأدلة المسجلة. أضف مصادر مستقلة أو بيانات رسمية أو تقارير ميدانية من نافذة الخبر؛ لا يمكن رفع الحالة يدوياً."]="Reliability is calculated automatically from recorded evidence. Add independent sources, official statements, or field reports from the story window; the status cannot be raised manually.";
 AR_EN["خبر عاجل"]="Breaking news";
 AR_EN["رابط الصورة (اختياري)"]="Image URL (optional)";
@@ -308,7 +304,7 @@ AR_EN["تفريغ الحقول"]="Clear fields";
 AR_EN["غرفة المراجعة"]="Review room";
 AR_EN["إعادة محاولة تصنيف 10 أخبار"]="Retry classification for 10 stories";
 AR_EN["تحديث القائمة"]="Refresh list";
-AR_EN["يعمل التصنيف الذكي تلقائياً في الخلفية بعد وصول الأخبار. هذا الزر مخصص لإعادة محاولة الأخبار المتعثرة أو المعلقة فقط. يتطلب ذلك ضبط مفاتيح الخدمة الموضحة في AI_SETUP.md. النتائج منخفضة الثقة تظهر للمراجعة ولا تُعد تحققاً من صحة الخبر."]="AI classification runs automatically in the background as news arrives. This button only retries failed or pending stories. Configure the service keys described in AI_SETUP.md. Low-confidence results go to editorial review and are not fact verification.";
+AR_EN["يعمل التصنيف الذكي تلقائياً في الخلفية بعد وصول الأخبار. هذا الزر مخصص لإعادة محاولة الأخبار المتعثرة أو المعلقة فقط. يتطلب ذلك ضبط مفاتيح الخدمة الموضحة في AI_SETUP.md. تُحال النتائج منخفضة الثقة للمراجعة التحريرية."]="AI classification runs automatically in the background as news arrives. This button only retries failed or pending stories. Configure the service keys described in AI_SETUP.md. Low-confidence results are sent for editorial review.";
 AR_EN["بحث في الأخبار"]="Search news";
 AR_EN["تصفية الحالة"]="Filter by status";
 AR_EN["كل الحالات"]="All statuses";
