@@ -177,20 +177,21 @@ Deno.serve(async(req:Request)=>{
    const declaredLang=String(article.lang||"").toLowerCase();
    const sourceLang=declaredLang.startsWith("ar")?"ar":(declaredLang.startsWith("en")?"en":(/[\\u0600-\\u06FF]/.test(article.title||"")?"ar":"en"));
    const target=sourceLang==="ar"?"en":"ar";
+   const sourceSummary=String(article.summary||article.ai_summary||article.title||"").trim();
    const existing=await db.from("article_translations").select("id,ai_summary,title,summary").eq("article_id",article.id).eq("lang",target).maybeSingle();
    if(existing.error) throw existing.error;
    if(existing.data?.title&&existing.data?.summary&&(!article.ai_summary||existing.data?.ai_summary)) return {id:article.id,status:"already_translated",lang:target};
    const prompt=[
     "You are a professional news translator for a bilingual international newsroom.",
-    "Translate the supplied headline, summary, and AI context summary faithfully into "+(target==="ar"?"Modern Standard Arabic":"clear international English")+". If the AI context summary is already in the target language, preserve it faithfully.",
+    "Translate the supplied headline, summary, and AI context summary faithfully into "+(target==="ar"?"Modern Standard Arabic":"clear international English")+". Never return an empty title or summary. If the source summary is missing, write a concise factual summary using only the available title and AI context summary. If the AI context summary is already in the target language, preserve it faithfully.",
     "Preserve all names, numbers, dates, quotations, attribution, uncertainty, allegations, and caveats exactly. Never add facts, omit important qualifications, or strengthen a claim.",
     "Do not translate publisher/brand names, URLs, or official product names unless there is a standard localized form.",
     "If the source is ambiguous, preserve its ambiguity. Return only the translated title, summary, and AI context summary as JSON.",
     "Publisher: "+(article.source_name||"Unknown"),
     "Original URL: "+(article.url||""),
     "TITLE:\n"+(article.title||""),
-    "SUMMARY:\n"+(article.summary||""),
-    "AI CONTEXT SUMMARY:\n"+(article.ai_summary||"")
+    "SUMMARY:\n"+sourceSummary,
+    "AI CONTEXT SUMMARY:\n"+(article.ai_summary||sourceSummary)
    ].join("\n");
    const generated=await generateWithFallback(prompt,geminiForBatch,groqKey,openRouterKey,1800);
    const translated=generated.data;
