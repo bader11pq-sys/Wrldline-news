@@ -1,7 +1,7 @@
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
-const MAX_PER_RUN = 4;
-const MAX_PER_TARGET = 2;
+const MAX_PER_RUN = 10;
+const MAX_PER_TARGET = 5;
 if (!SUPABASE_URL || !SERVICE_KEY) { console.log("Translation worker skipped: configure Supabase URL and service role key."); process.exit(0); }
 const headers = { apikey: SERVICE_KEY, Authorization: "Bearer " + SERVICE_KEY };
 const languageOf = article => {
@@ -41,7 +41,7 @@ async function main() {
     method: "POST",
     headers: { ...headers, "Content-Type": "application/json" },
     body: JSON.stringify({ article_ids: pending.map(item => item.id) }),
-    signal: AbortSignal.timeout(180000)
+    signal: AbortSignal.timeout(200000)
   });
   const body = await response.json().catch(() => ({}));
   if (response.status === 429 || response.status === 503 || body.rate_limited) {
