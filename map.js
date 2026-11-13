@@ -5,7 +5,7 @@ let lang=localStorage.getItem("wrldline:language")==="en"?"en":"ar";
 const labels={ar:{critical:"حرج",high:"مرتفع",elevated:"متصاعد",guarded:"مراقبة",low:"منخفض",unknown:"غير محدد"},en:{critical:"Critical",high:"High",elevated:"Elevated",guarded:"Guarded",low:"Low",unknown:"Unknown"}};
 const t=(ar,en)=>lang==="ar"?ar:en;const label=r=>labels[lang][r]||labels[lang].unknown;
 const colors={critical:"#541522",high:"#d94b4b",elevated:"#e9953e",guarded:"#e6c84f",low:"#42a875",unknown:"#cbd3dc"};
-let map,geoLayer,markerLayer,geoCache=null,articles=[],countryEvents=new Map(),activeCountry=null,activeCountryName="",dataLoading=false;
+let map,geoLayer,geoCache=null,articles=[],countryEvents=new Map(),activeCountry=null,activeCountryName="",dataLoading=false;
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const riskClass=r=>"risk-"+(labels[lang][r]?r:"unknown");
 function riskOf(items){return items.reduce((best,a)=>((a.ai_risk_score||0)>(best?.ai_risk_score||0)?a:best),null);}
