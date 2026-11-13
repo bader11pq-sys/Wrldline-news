@@ -23,6 +23,17 @@ jobs:
             echo "Checking $file"
             node --check "$file"
           done < <(git ls-files '*.js')
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+      - name: Type-check Supabase Edge Functions
+        shell: bash
+        run: |
+          set -euo pipefail
+          for file in supabase/functions/*/index.ts; do
+            echo "Checking $file"
+            deno check --no-lock "$file"
+          done
       - name: Validate JSON configuration
         run: node -e "JSON.parse(require('node:fs').readFileSync('manifest.json','utf8')); console.log('manifest.json is valid JSON')"
       - name: Verify local HTML assets exist
