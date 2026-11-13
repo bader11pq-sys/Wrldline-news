@@ -239,15 +239,21 @@ function updateBreaking(){
  }
  strip.hidden=false;
  if(currentId!==item.id){
-  marquee.textContent=String(item.title||"").replace(/[\u202A-\u202E\u2066-\u2069]/g,"").normalize("NFC");
+  const cleanTitle=String(item.title||"").replace(/[\u202A-\u202E\u2066-\u2069]/g,"").normalize("NFC").trim();
+  const firstStrong=cleanTitle.match(/[A-Za-z\u0600-\u06FF]/);
+  const isEnglish=!!firstStrong&&/[A-Za-z]/.test(firstStrong[0]);
+  marquee.replaceChildren();
+  cleanTitle.split(/(\s+)/).filter(Boolean).forEach(part=>{
+   if(/^\s+$/.test(part))marquee.appendChild(document.createTextNode(part));
+   else{const word=document.createElement("span");word.className="breaking-word";word.textContent=part;marquee.appendChild(word);}
+  });
   marquee.dataset.articleId=item.id;
   marquee.classList.remove("is-moving");
+  marquee.classList.toggle("is-ltr",isEnglish);
   marquee.style.removeProperty("--breaking-duration");
-  marquee.setAttribute("dir","auto");
-  const firstStrong=String(item.title||"").match(/[A-Za-z\u0600-\u06FF]/);
-  marquee.classList.toggle("is-ltr",!!firstStrong&&/[A-Za-z]/.test(firstStrong[0]));
-  marquee.style.removeProperty("direction");
-  marquee.style.removeProperty("unicode-bidi");
+  marquee.setAttribute("dir",isEnglish?"ltr":"rtl");
+  marquee.style.direction=isEnglish?"ltr":"rtl";
+  marquee.style.unicodeBidi="isolate";
   requestAnimationFrame(()=>{
    const viewportWidth=title.clientWidth;const distance=(viewportWidth*2)+marquee.scrollWidth;marquee.style.setProperty("--breaking-start",viewportWidth+"px");
    const duration=Math.max(12,distance/55);
