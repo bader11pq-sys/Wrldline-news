@@ -1,3 +1,0 @@
-name: Fetch Maghreb News
-on:
-  workflow_dispatch:

@@ -1,3 +1,0 @@
-name: Translate News
-on:
-  workflow_dispatch:

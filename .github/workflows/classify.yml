@@ -1,3 +1,0 @@
-name: Automatic AI News Classification
-on:
-  workflow_dispatch:

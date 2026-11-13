@@ -1,3 +1,0 @@
-name: Fetch Gulf News
-on:
-  workflow_dispatch:

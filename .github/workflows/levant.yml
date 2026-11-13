@@ -1,3 +1,0 @@
-name: Fetch Levant News
-on:
-  workflow_dispatch:

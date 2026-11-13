@@ -1,3 +1,0 @@
-name: Fetch World News
-on:
-  workflow_dispatch:
