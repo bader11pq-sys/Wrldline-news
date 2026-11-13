@@ -40,12 +40,12 @@ Deno.serve(async (req: Request) => {
     .eq("editorial_status", "published")
     .gte("published_at", cutoff)
     .in("ai_classification_status", ["pending", "failed"])
-    .order("published_at", { ascending: true })
+    .order("published_at", { ascending: false })
     .limit(50);
 
   if (error) return json({ error: "Could not load pending articles", detail: error.message }, 500);
 
-  const candidates = (rows || []).filter((article: any) => !isTelegram(article)).slice(0, 5);
+  const candidates = (rows || []).filter((article: any) => !isTelegram(article)).slice(0, 10);
   if (!candidates.length) return json({ ok: true, selected: 0, processed: 0, message: "No eligible recent articles" });
 
   const response = await fetch(url + "/functions/v1/classify-news", {
