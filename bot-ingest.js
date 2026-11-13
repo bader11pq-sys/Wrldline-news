@@ -1,5 +1,6 @@
 // WRLDLINE ingestion with bounded retries, publisher fallbacks and source-health tracking.
 function googleNewsUrl(domain){return "https://news.google.com/rss/search?q="+encodeURIComponent("site:"+domain+" when:1d")+"&hl=ar&gl=SA&ceid=SA:ar";}
+function googleNewsUrlEn(domain){return "https://news.google.com/rss/search?q="+encodeURIComponent("site:"+domain+" when:1d")+"&hl=en-US&gl=US&ceid=US:en";}
 const FEEDS = [
   // Arabic - Gulf and pan-Arab
   {url:"https://www.aljazeera.net/aljazeerarss/a7c186be-1baa-4bd4-9d80-a84db769f779/73d0e1b4-532f-45ef-b135-bfdff8b8cab9",name:"الجزيرة",country:"دولي"},
@@ -68,11 +69,52 @@ const FEEDS = [
   {url:"https://news.google.com/rss/search?q=site%3Areuters.com+when%3A24h&hl=en-US&gl=US&ceid=US:en",name:"Reuters (Google News)",country:"دولي"},
   {url:"https://news.google.com/rss/search?q=site%3Aapnews.com+when%3A24h&hl=en-US&gl=US&ceid=US:en",name:"Associated Press (Google News)",country:"دولي"},
   {url:"https://news.google.com/rss/search?q=site%3Acnn.com+when%3A24h&hl=en-US&gl=US&ceid=US:en",name:"CNN (Google News)",country:"دولي"}
+  // International wire agencies and global newspapers — added after checking the existing 60-source list
+  {url:"https://www.afp.com/en/rss/all/news",name:"AFP",country:"دولي",lang:"en",fallbackUrl:googleNewsUrlEn("afp.com")},
+  {url:googleNewsUrlEn("efe.com"),name:"EFE",country:"دولي",lang:"en"},
+  {url:googleNewsUrlEn("dpa.com"),name:"dpa",country:"دولي",lang:"en"},
+  {url:googleNewsUrlEn("english.kyodonews.net"),name:"Kyodo News",country:"دولي",lang:"en"},
+  {url:googleNewsUrlEn("jiji.com"),name:"Jiji Press",country:"دولي",lang:"en"},
+  {url:"https://english.news.cn/rss/world.xml",name:"Xinhua",country:"دولي",lang:"en",fallbackUrl:googleNewsUrlEn("news.cn")},
+  {url:"https://tass.com/rss/v2.xml",name:"TASS",country:"دولي",lang:"en",fallbackUrl:googleNewsUrlEn("tass.com")},
+  {url:"https://www.upi.com/rss/TopNews/",name:"UPI",country:"دولي",lang:"en",fallbackUrl:googleNewsUrlEn("upi.com")},
+  {url:"https://en.yna.co.kr/RSS/news.xml",name:"Yonhap News Agency",country:"دولي",lang:"en",fallbackUrl:googleNewsUrlEn("yna.co.kr")},
+  {url:googleNewsUrlEn("nhk.or.jp"),name:"NHK World",country:"دولي",lang:"en"},
+  {url:"https://www.channelnewsasia.com/api/v1/rss-outbound-feed?_format=xml",name:"CNA",country:"دولي",lang:"en",fallbackUrl:googleNewsUrlEn("channelnewsasia.com")},
+  {url:"https://www.bernama.com/en/rss.php",name:"Bernama",country:"دولي",lang:"en",fallbackUrl:googleNewsUrlEn("bernama.com")},
+  {url:"https://www.ansa.it/english/news/english_rss.xml",name:"ANSA",country:"دولي",lang:"en",fallbackUrl:googleNewsUrlEn("ansa.it")},
+  {url:"https://www.thehindu.com/news/international/feeder/default.rss",name:"The Hindu",country:"دولي",lang:"en",fallbackUrl:googleNewsUrlEn("thehindu.com")},
+  {url:"https://timesofindia.indiatimes.com/rssfeeds/296589292.cms",name:"The Times of India",country:"دولي",lang:"en",fallbackUrl:googleNewsUrlEn("timesofindia.indiatimes.com")},
+  {url:"https://indianexpress.com/section/world/feed/",name:"The Indian Express",country:"دولي",lang:"en",fallbackUrl:googleNewsUrlEn("indianexpress.com")},
+  {url:"https://www.hindustantimes.com/feeds/rss/world-news/rssfeed.xml",name:"Hindustan Times",country:"دولي",lang:"en",fallbackUrl:googleNewsUrlEn("hindustantimes.com")},
+  {url:"https://www.dawn.com/feeds/home",name:"Dawn",country:"دولي",lang:"en",fallbackUrl:googleNewsUrlEn("dawn.com")},
+  {url:"https://www.scmp.com/rss/91/feed/",name:"South China Morning Post",country:"دولي",lang:"en",fallbackUrl:googleNewsUrlEn("scmp.com")},
+  {url:"https://www.japantimes.co.jp/feed/",name:"The Japan Times",country:"دولي",lang:"en",fallbackUrl:googleNewsUrlEn("japantimes.co.jp")},
+  {url:googleNewsUrlEn("asia.nikkei.com"),name:"Nikkei Asia",country:"دولي",lang:"en"},
+  {url:googleNewsUrlEn("koreaherald.com"),name:"The Korea Herald",country:"دولي",lang:"en"},
+  {url:"https://www.straitstimes.com/news/world/rss.xml",name:"The Straits Times",country:"دولي",lang:"en",fallbackUrl:googleNewsUrlEn("straitstimes.com")},
+  {url:"https://www.smh.com.au/rss/feed.xml",name:"The Sydney Morning Herald",country:"دولي",lang:"en",fallbackUrl:googleNewsUrlEn("smh.com.au")},
+  {url:"https://www.abc.net.au/news/feed/45910/rss.xml",name:"ABC News Australia",country:"دولي",lang:"en",fallbackUrl:googleNewsUrlEn("abc.net.au")},
+  {url:"https://www.cbc.ca/webfeed/rss/rss-topstories",name:"CBC News",country:"دولي",lang:"en",fallbackUrl:googleNewsUrlEn("cbc.ca")},
+  {url:"https://www.theglobeandmail.com/arc/outboundfeeds/rss/category/world/",name:"The Globe and Mail",country:"دولي",lang:"en",fallbackUrl:googleNewsUrlEn("theglobeandmail.com")},
+  {url:googleNewsUrlEn("thestar.com"),name:"Toronto Star",country:"دولي",lang:"en"},
+  {url:"https://www.lemonde.fr/en/rss/une.xml",name:"Le Monde",country:"دولي",lang:"en",fallbackUrl:googleNewsUrlEn("lemonde.fr")},
+  {url:"https://feeds.elpais.com/mrss-s/pages/ep/site/english.elpais.com/portada",name:"El País",country:"دولي",lang:"en",fallbackUrl:googleNewsUrlEn("english.elpais.com")},
+  {url:"https://www.spiegel.de/international/index.rss",name:"Der Spiegel",country:"دولي",lang:"en",fallbackUrl:googleNewsUrlEn("spiegel.de")},
+  {url:"https://www.politico.eu/feed/",name:"POLITICO Europe",country:"دولي",lang:"en",fallbackUrl:googleNewsUrlEn("politico.eu")},
+  {url:"https://www.independent.co.uk/news/world/rss",name:"The Independent",country:"دولي",lang:"en",fallbackUrl:googleNewsUrlEn("independent.co.uk")},
+  {url:"https://www.telegraph.co.uk/rss.xml",name:"The Telegraph",country:"دولي",lang:"en",fallbackUrl:googleNewsUrlEn("telegraph.co.uk")},
+  {url:"https://feeds.content.dowjones.io/public/rss/RSSWorldNews",name:"The Wall Street Journal",country:"دولي",lang:"en",fallbackUrl:googleNewsUrlEn("wsj.com")},
+  {url:"https://www.ft.com/world?format=rss",name:"Financial Times",country:"دولي",lang:"en",fallbackUrl:googleNewsUrlEn("ft.com")},
+  {url:"https://www.economist.com/the-world-this-week/rss.xml",name:"The Economist",country:"دولي",lang:"en",fallbackUrl:googleNewsUrlEn("economist.com")},
+  {url:"https://feeds.bloomberg.com/politics/news.rss",name:"Bloomberg",country:"دولي",lang:"en",fallbackUrl:googleNewsUrlEn("bloomberg.com")},
+  {url:"https://api.axios.com/feed/",name:"Axios",country:"دولي",lang:"en",fallbackUrl:googleNewsUrlEn("axios.com")},
+  {url:"https://www.newsweek.com/rss",name:"Newsweek",country:"دولي",lang:"en"}
 ];
 const SUPABASE_URL=process.env.SUPABASE_URL;
 const KEY=process.env.SUPABASE_SERVICE_ROLE_KEY||process.env.SUPABASE_KEY;
 const HEADERS={apikey:KEY,Authorization:"Bearer "+KEY,"Content-Type":"application/json"};
-const CONCURRENCY=8;
+const CONCURRENCY=16;
 function decode(s=""){return String(s).replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g,"$1").replace(/&#(\d+);/g,(_,n)=>String.fromCodePoint(Number(n))).replace(/&#x([0-9a-f]+);/gi,(_,n)=>String.fromCodePoint(parseInt(n,16))).replace(/&amp;/g,"&").replace(/&quot;/g,'"').replace(/&apos;|&#39;/g,"'").replace(/&lt;/g,"<").replace(/&gt;/g,">").replace(/<[^>]*>/g," ").replace(/\s+/g," ").trim();}
 function tag(block,names){for(const name of names){const re=new RegExp("<"+name+"(?:\\s[^>]*)?>([\\s\\S]*?)<\\/"+name+">","i");const m=block.match(re);if(m)return decode(m[1]);}return "";}
 function entries(xml){const rss=xml.match(/<item\b[\s\S]*?<\/item>/gi)||[];const atom=xml.match(/<entry\b[\s\S]*?<\/entry>/gi)||[];return rss.length?rss:atom;}
@@ -83,7 +125,7 @@ function parseEntry(block,feed){const title=tag(block,["title"]);const url=getLi
 async function fetchFeed(feed){
  const candidates=[feed.url,feed.fallbackUrl].filter(Boolean);let lastError="unknown";
  for(let candidate=0;candidate<candidates.length;candidate++){const url=candidates[candidate];try{
-  let res=null;for(let attempt=0;attempt<3;attempt++){try{res=await fetch(url,{headers:{"User-Agent":"Mozilla/5.0 (compatible; WRLDLINE-News/2.1; +https://al-ghaib.us.ci)","Accept":"application/rss+xml, application/atom+xml, application/xml, text/xml, application/json, */*"},signal:AbortSignal.timeout(18000)});if(res.ok||![408,425,429,500,502,503,504].includes(res.status))break;lastError="HTTP "+res.status;}catch(err){lastError=String(err).slice(0,180);}if(attempt<2)await new Promise(r=>setTimeout(r,700*(attempt+1)));}
+  let res=null;for(let attempt=0;attempt<3;attempt++){try{res=await fetch(url,{headers:{"User-Agent":"Mozilla/5.0 (compatible; WRLDLINE-News/2.1; +https://al-ghaib.us.ci)","Accept":"application/rss+xml, application/atom+xml, application/xml, text/xml, application/json, */*"},signal:AbortSignal.timeout(12000)});if(res.ok||![408,425,429,500,502,503,504].includes(res.status))break;lastError="HTTP "+res.status;}catch(err){lastError=String(err).slice(0,180);}if(attempt<2)await new Promise(r=>setTimeout(r,700*(attempt+1)));}
   if(!res?.ok)throw new Error(lastError==="unknown"?"HTTP "+(res?.status||"network"):lastError);
   const xml=await res.text(),list=entries(xml).slice(0,25).map(x=>parseEntry(x,feed)).filter(Boolean);if(!list.length)throw new Error("No parseable RSS/Atom entries");
   for(let i=0;i<list.length;i+=50){const saved=await fetch(SUPABASE_URL+"/rest/v1/articles?on_conflict=url",{method:"POST",headers:{...HEADERS,Prefer:"resolution=ignore-duplicates,return=minimal"},body:JSON.stringify(list.slice(i,i+50))});if(!saved.ok)throw new Error("Supabase HTTP "+saved.status+" "+(await saved.text()).slice(0,180));}
@@ -91,6 +133,6 @@ async function fetchFeed(feed){
  }catch(e){lastError=String(e).slice(0,220);if(candidate===0&&feed.fallbackUrl)console.warn("FEED_PRIMARY_FAILED "+feed.name+": "+lastError+"; trying fallback");}}
  console.error("FEED_ERROR "+feed.name+": "+lastError);return {name:feed.name,ok:false,error:lastError};
 }
-async function recordFeedHealth(feed,result){try{const lang=/BBC World|BBC Top Stories|CBC World|NPR|CNN \(|Reuters|Associated Press|Guardian|DW News|France 24|Al Jazeera English|Sky News/i.test(feed.name)?"en":"ar";const payload={name:feed.name,url:feed.url,lang,category:"world",active:true,last_fetched:result.ok?new Date().toISOString():null,last_error:result.ok?null:result.error};const response=await fetch(SUPABASE_URL+"/rest/v1/feeds?on_conflict=url",{method:"POST",headers:{...HEADERS,Prefer:"resolution=merge-duplicates,return=minimal"},body:JSON.stringify(payload),signal:AbortSignal.timeout(8000)});if(!response.ok)console.warn("FEED_HEALTH_WRITE_FAILED "+feed.name+": HTTP "+response.status);}catch(error){console.warn("FEED_HEALTH_WRITE_FAILED "+feed.name+": "+String(error).slice(0,120));}}
+async function recordFeedHealth(feed,result){try{const lang=feed.lang||(/BBC World|BBC Top Stories|CBC World|NPR|CNN \(|Reuters|Associated Press|Guardian|DW News|France 24|Al Jazeera English|Sky News/i.test(feed.name)?"en":"ar");const payload={name:feed.name,url:feed.url,lang,category:"world",active:true,last_fetched:result.ok?new Date().toISOString():null,last_error:result.ok?null:result.error};const response=await fetch(SUPABASE_URL+"/rest/v1/feeds?on_conflict=url",{method:"POST",headers:{...HEADERS,Prefer:"resolution=merge-duplicates,return=minimal"},body:JSON.stringify(payload),signal:AbortSignal.timeout(8000)});if(!response.ok)console.warn("FEED_HEALTH_WRITE_FAILED "+feed.name+": HTTP "+response.status);}catch(error){console.warn("FEED_HEALTH_WRITE_FAILED "+feed.name+": "+String(error).slice(0,120));}}
 async function main(){if(!SUPABASE_URL||!KEY)throw new Error("Missing Supabase URL/service-role key");let next=0,results=[];async function worker(){while(next<FEEDS.length){const index=next++;results[index]=await fetchFeed(FEEDS[index]);}}await Promise.all(Array.from({length:CONCURRENCY},worker));await Promise.all(results.map((result,index)=>recordFeedHealth(FEEDS[index],result)));const ok=results.filter(x=>x.ok).length,failed=results.filter(x=>!x.ok);console.log("INGESTION_SUMMARY "+JSON.stringify({feeds:FEEDS.length,successful:ok,failed:failed.length,fallbacks:results.filter(x=>x.usedFallback).length,checked:results.reduce((n,x)=>n+(x.count||0),0)}));if(!ok)throw new Error("All configured news feeds failed");}
 main().catch(e=>{console.error(e);process.exitCode=1;});
