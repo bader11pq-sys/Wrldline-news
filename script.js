@@ -183,13 +183,21 @@ function isDedicatedBreakingSource(name){
  return /breaking desk|news alert|غرفة الأخبار العاجلة|مصادر العاجل/.test(source);
 }
 function breakingItems(){
- const now=Date.now(),maxAge=6*60*1000;
+ const now=Date.now(),maxAge=24*60*60*1000;
  return state.articles.filter(a=>{
-  if(a.isBreaking!==true||!isDedicatedBreakingSource(a.src))return false;
+  if(a.isBreaking!==true)return false;
   const published=Date.parse(a.published_at||"");
   const age=now-published;
   return Number.isFinite(published)&&age>=-60*1000&&age<=maxAge;
  }).sort((a,b)=>new Date(b.published_at)-new Date(a.published_at));
+}
+function renderBreakingSection(){
+ const host=document.getElementById("breakingNewsGrid");if(!host)return;
+ const items=breakingItems();const count=document.getElementById("breakingCount");
+ count.textContent=state.lang==="ar"?items.length+" أخبار عاجلة خلال آخر 24 ساعة":items.length+" breaking stories in the last 24 hours";
+ if(!items.length){host.innerHTML='<div class="empty-state">'+ui("لا توجد أخبار عاجلة حالياً. ستظهر هنا الأخبار التي يحددها المحرر كعاجلة.","No breaking stories right now. Editor-selected alerts will appear here.")+'</div>';return;}
+ host.innerHTML=items.slice(0,8).map(a=>'<article class="breaking-news-card" data-open="'+escapeHTML(a.id)+'">'+imageMarkup(a,"breaking-news-image")+'<div class="breaking-news-copy"><div class="story-meta"><span class="breaking-badge">'+ui("عاجل","BREAKING")+'</span><span>'+escapeHTML(timeAgo(a.published_at))+'</span><span>'+escapeHTML(categoryName(a.cat))+'</span></div><h3>'+escapeHTML(a.title)+'</h3><p>'+escapeHTML(a.summary)+'</p><small>'+escapeHTML(a.src)+' · '+ui("اقرأ التفاصيل","Read story")+' ←</small></div></article>').join("");
+ host.querySelectorAll("[data-open]").forEach(el=>el.addEventListener("click",()=>openArticle(el.dataset.open)));
 }
 function rotateBreaking(){
  const items=breakingItems();
@@ -199,6 +207,7 @@ function rotateBreaking(){
 }
 function updateBreaking(){
  const items=breakingItems();
+ renderBreakingSection();
  const item=items.length?items[state.breakingTickerIndex%items.length]:null;
  const strip=document.getElementById("breakingStrip");
  const title=document.getElementById("breakingText");
