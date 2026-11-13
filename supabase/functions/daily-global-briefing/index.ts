@@ -360,12 +360,20 @@ ${JSON.stringify(stories)}`;
     return json({ error: "AI output failed editorial validation; no partial briefing was published", article_count: allRows.length, selected_count: stories.length }, 502);
   }
 
+  const citedSources = [...referenced].map((id) => sourceMap.get(id)).filter(Boolean);
+  const hasConfirmedEvidence = citedSources.some((source: any) =>
+    (source.independent_sources || 0) >= 2 ||
+    ["confirmed", "multi", "field_confirmed", "official_confirmed"].includes(source.verification)
+  );
+  const verificationNotice = citedSources.length && !hasConfirmedEvidence
+    ? "تنبيه تحقق: لا يتضمن سجل التحقق الداخلي لهذه النسخة تأكيداً مستقلاً للمواد المشار إليها. لذلك تُعرض التطورات بوصفها تقارير منسوبة إلى مصادرها، ولا ينبغي اعتبارها وقائع محسومة قبل مراجعة الروابط الأصلية.\\n\\n"
+    : "";
   const record = {
     briefing_date: briefingDate,
     window_start: windowStart.toISOString(),
     window_end: windowEnd.toISOString(),
     title: String(result.title || "ملخص الأخبار العالمية").slice(0, 180),
-    executive_summary: String(result.executive_summary).slice(0, 9000),
+    executive_summary: (verificationNotice + String(result.executive_summary)).slice(0, 9000),
     top_developments: topDevelopments,
     sections,
     global_trends: trends,
