@@ -33,3 +33,13 @@
 @media(min-width:900px){.shorts-slide{justify-content:center}.shorts-copy{padding-inline:8vw}.shorts-feed{scroll-snap-type:y mandatory}}
 @media(max-width:600px){.shorts-topbar{height:56px}.shorts-feed{height:calc(100svh - 56px)}.shorts-brand strong{font-size:13px}.shorts-copy{padding:20px;padding-bottom:max(70px,calc(env(safe-area-inset-bottom) + 58px))}.shorts-copy h1{font-size:clamp(23px,7vw,34px)}.shorts-summary{-webkit-line-clamp:4;font-size:13px}.shorts-counter{top:68px}}
 @media(prefers-reduced-motion:reduce){.shorts-feed{scroll-behavior:auto}}
+
+/* Keep video controls above the slide background and provide a reliable play target. */
+.shorts-photo{z-index:0}
+.shorts-slide:after{z-index:1;pointer-events:none}
+.shorts-copy{position:relative;z-index:2;pointer-events:none}
+.shorts-copy a{pointer-events:auto}
+.shorts-video{pointer-events:auto;object-fit:contain;background:#05080d}
+.shorts-video-play{position:absolute;z-index:4;top:50%;left:50%;transform:translate(-50%,-50%);width:76px;height:76px;border:1px solid rgba(255,255,255,.75);border-radius:50%;background:rgba(7,16,29,.78);color:#fff;font-size:30px;display:grid;place-items:center;padding-inline-start:6px;box-shadow:0 8px 30px rgba(0,0,0,.35);cursor:pointer}
+.shorts-video-play[hidden]{display:none}
+.shorts-video-play:focus-visible{outline:3px solid #e9c47e;outline-offset:4px}
