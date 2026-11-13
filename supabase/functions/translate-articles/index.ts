@@ -61,14 +61,16 @@ async function generateWithFallback(prompt: string, geminiKey: string | null, gr
    const payload=await response.json();
    const raw=payload.candidates?.[0]?.content?.parts?.map((part:any)=>part.text||"").join("").trim();
    if(!raw)throw new Error("Gemini returned no structured output.");
-   return {data:extractJsonObject(raw),provider:"gemini"};
+   const data=extractJsonObject(raw);
+   if(!String(data.title||"").trim()||!String(data.summary||"").trim())throw new Error("Gemini returned an empty title or summary.");
+   return {data,provider:"gemini"};
   }catch(error){
    geminiQuotaExceeded=(error as any)?.quotaExceeded===true;
    errors.push("Gemini: "+String(error).slice(0,260));
   }
  }
  if(groqKey){
-  try{return {data:await groqGenerate(prompt,groqKey,maxOutputTokens),provider:"groq"};}
+  try{const data=await groqGenerate(prompt,groqKey,maxOutputTokens);if(!String(data.title||"").trim()||!String(data.summary||"").trim())throw new Error("Groq returned an empty title or summary.");return {data,provider:"groq"};}
   catch(error){errors.push("Groq: "+String(error).slice(0,260));}
  }
  if(openRouterKey){
@@ -89,7 +91,9 @@ async function generateWithFallback(prompt: string, geminiKey: string | null, gr
    if(!response.ok)throw new Error("OpenRouter API "+response.status+": "+(await response.text()).slice(0,400));
    const payload=await response.json(),raw=payload.choices?.[0]?.message?.content;
    if(typeof raw!=="string"||!raw.trim())throw new Error("OpenRouter returned no structured output.");
-   return {data:extractJsonObject(raw),provider:"openrouter"};
+   const data=extractJsonObject(raw);
+   if(!String(data.title||"").trim()||!String(data.summary||"").trim())throw new Error("OpenRouter returned an empty title or summary.");
+   return {data,provider:"openrouter"};
   }catch(error){errors.push("OpenRouter: "+String(error).slice(0,260));}
  }
  const rateLimited=errors.some(x=>/429|quota|resource_exhausted|rate.?limit/i.test(x));
@@ -221,9 +225,9 @@ Deno.serve(async(req:Request)=>{
    if(result.status==="deferred") pauseReason=result.error||"Provider temporarily unavailable";
   }
  }
- await Promise.all(Array.from({length:Math.min(1,queue.length)},()=>worker()));
+ await Promise.all(Array.from({length:Math.min(2,queue.length)},()=>worker()));
  for(const article of queue) {
   if(!results.some(item=>item.id===article.id)) results.push({id:article.id,status:"deferred",error:"Batch paused after provider backoff"});
  }
- return json({processed:results.length,results,concurrency:Math.min(1,queue.length),gemini_cooldown:geminiCoolingDown,providers_configured:{gemini:!!gemini,groq:!!groqKey,openrouter:!!openRouterKey}});
+ return json({processed:results.length,results,concurrency:Math.min(2,queue.length),gemini_cooldown:geminiCoolingDown,providers_configured:{gemini:!!gemini,groq:!!groqKey,openrouter:!!openRouterKey}});
 });
