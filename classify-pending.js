@@ -9,11 +9,16 @@ if (!SUPABASE_URL || !SERVICE_KEY) {
 }
 const headers = { apikey: SERVICE_KEY, Authorization: "Bearer " + SERVICE_KEY, "Content-Type": "application/json" };
 async function main() {
-  const query = new URLSearchParams({ select: "id,url,source_url,source_name,ai_classification_status,editorial_status", editorial_status: "eq.published", order: "published_at.desc", limit: "300" });
-  const response = await fetch(SUPABASE_URL + "/rest/v1/articles?" + query, { headers });
-  if (!response.ok) throw new Error("Could not read pending articles: HTTP " + response.status + " " + (await response.text()).slice(0, 300));
-  const rows = await response.json();
-  const pending = rows.filter(article => (!article.ai_classification_status || ["pending","failed"].includes(article.ai_classification_status)) && !/t\.me|telegram\.me|telegram/i.test([article.url, article.source_url, article.source_name].filter(Boolean).join(" "))).slice(0, MAX_PER_RUN);
+  // Drain never-attempted stories before retrying failures so a large retry backlog cannot starve fresh news.
+  async function loadByStatus(status, limit) {
+    const query = new URLSearchParams({ select: "id,url,source_url,source_name,ai_classification_status,editorial_status", editorial_status: "eq.published", ai_classification_status: "eq." + status, order: "published_at.desc", limit: String(limit) });
+    const response = await fetch(SUPABASE_URL + "/rest/v1/articles?" + query, { headers });
+    if (!response.ok) throw new Error("Could not read " + status + " articles: HTTP " + response.status + " " + (await response.text()).slice(0, 300));
+    return response.json();
+  }
+  const eligible = article => !/t\\.me|telegram\\.me|telegram/i.test([article.url, article.source_url, article.source_name].filter(Boolean).join(" "));
+  const fresh = (await loadByStatus("pending", MAX_PER_RUN)).filter(eligible);
+  const pending = (fresh.length >= MAX_PER_RUN ? fresh : fresh.concat((await loadByStatus("failed", MAX_PER_RUN - fresh.length)).filter(eligible))).slice(0, MAX_PER_RUN);
   if (!pending.length) { console.log("No newly published stories are waiting for AI classification."); return; }
   let completed = 0;
   for (let offset = 0; offset < pending.length; offset += BATCH_SIZE) {
