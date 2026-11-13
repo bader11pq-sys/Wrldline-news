@@ -194,6 +194,10 @@ function initVerificationRealtime(){
    if(articleInsertRefreshTimer)clearTimeout(articleInsertRefreshTimer);
    articleInsertRefreshTimer=setTimeout(()=>{articleInsertRefreshTimer=null;fetchNews();},1200);
   })
+  .on("postgres_changes",{event:"*",schema:"public",table:"article_translations"},()=>{
+   if(articleInsertRefreshTimer)clearTimeout(articleInsertRefreshTimer);
+   articleInsertRefreshTimer=setTimeout(()=>{articleInsertRefreshTimer=null;fetchNews();},500);
+  })
   .on("postgres_changes",{event:"UPDATE",schema:"public",table:"articles"},payload=>{
    const row=payload.new;if(!row?.id)return;
    const article=state.articles.find(item=>item.id===String(row.id));if(!article)return;
