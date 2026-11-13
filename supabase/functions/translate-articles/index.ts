@@ -149,7 +149,8 @@ Deno.serve(async(req:Request)=>{
  const service=Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")||(()=>{try{return JSON.parse(Deno.env.get("SUPABASE_SECRET_KEYS")||"{}").default}catch{return null}})();
  const gemini=Deno.env.get("GEMINI_API_KEY") || null;
  const groqKey=Deno.env.get("GROQ_API_KEY") || null;
- const openRouterKey=Deno.env.get("OPENROUTER_API_KEY") || null;
+ const openRouterModel=Deno.env.get("OPENROUTER_MODEL") || "";
+ const openRouterKey=Deno.env.get("OPENROUTER_API_KEY") && openRouterModel && openRouterModel!=="openrouter/free" && !openRouterModel.endsWith(":free") ? Deno.env.get("OPENROUTER_API_KEY") : null;
  if(!url||!anon||!service)return json({error:"Supabase server configuration is incomplete."},500);
  if(!gemini&&!groqKey&&!openRouterKey)return json({error:"Configure GEMINI_API_KEY, GROQ_API_KEY, or OPENROUTER_API_KEY."},503);
  const token=(req.headers.get("Authorization")||"").replace(/^Bearer\s+/i,"");
