@@ -238,7 +238,7 @@ function updateBreaking(){
   delete marquee.dataset.articleId;title.removeAttribute("title");time.textContent="";return;
  }
  strip.hidden=false;
- if(currentId!==item.id){
+ if(currentId!==item.id||marquee.dataset.articleTitle!==String(item.title||"")){
   const cleanTitle=String(item.title||"").replace(/[\u202A-\u202E\u2066-\u2069]/g,"").normalize("NFC").trim();
   const firstStrong=cleanTitle.match(/[A-Za-z\u0600-\u06FF]/);
   const isEnglish=!!firstStrong&&/[A-Za-z]/.test(firstStrong[0]);
@@ -248,6 +248,7 @@ function updateBreaking(){
    else{const word=document.createElement("span");word.className="breaking-word";word.textContent=part;marquee.appendChild(word);}
   });
   marquee.dataset.articleId=item.id;
+  marquee.dataset.articleTitle=String(item.title||"");
   marquee.classList.remove("is-moving");
   marquee.classList.toggle("is-ltr",isEnglish);
   marquee.style.removeProperty("--breaking-duration");
