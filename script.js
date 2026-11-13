@@ -214,7 +214,7 @@ function renderBreakingSection(){
  const host=document.getElementById("breakingNewsGrid");if(!host)return;
  const items=breakingItems();const count=document.getElementById("breakingCount");
  count.textContent=state.lang==="ar"?items.length+" أخبار عاجلة خلال آخر 10 دقائق":items.length+" breaking stories in the last 10 minutes";
- if(!items.length){host.innerHTML='<div class="empty-state">'+ui("لا توجد أخبار عاجلة خلال آخر 7 دقائق. ستظهر هنا التنبيهات الجديدة التي يحددها المحرر.","No breaking alerts in the last 7 minutes. New editor-selected alerts will appear here.")+'</div>';return;}
+ if(!items.length){host.innerHTML='<div class="empty-state">'+ui("لا توجد أخبار عاجلة خلال آخر 10 دقائق. ستظهر هنا التنبيهات الجديدة التي يحددها المحرر.","No breaking alerts in the last 10 minutes. New editor-selected alerts will appear here.")+'</div>';return;}
  host.innerHTML=items.slice(0,8).map(a=>'<article class="breaking-news-card" data-open="'+escapeHTML(a.id)+'">'+imageMarkup(a,"breaking-news-image")+'<div class="breaking-news-copy"><div class="story-meta"><span class="breaking-badge">'+ui("عاجل","BREAKING")+'</span><span>'+escapeHTML(timeAgo(a.published_at))+'</span><span>'+escapeHTML(categoryName(a.cat))+'</span></div><h3>'+escapeHTML(a.title)+'</h3><p>'+escapeHTML(a.summary)+'</p><small>'+escapeHTML(a.src)+' · '+ui("اقرأ التفاصيل","Read story")+' ←</small></div></article>').join("");
  host.querySelectorAll("[data-open]").forEach(el=>el.addEventListener("click",()=>openArticle(el.dataset.open)));
 }
