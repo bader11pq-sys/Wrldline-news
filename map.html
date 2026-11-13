@@ -26,7 +26,7 @@
 <div class="workspace">
  <section class="panel map-panel">
   <div class="map-toolbar"><strong>مستوى الإشارات حسب الدولة والمنطقة</strong>
-   <select id="timeFilter" aria-label="الفترة الزمنية"><option value="7">آخر 7 أيام</option><option value="3">آخر 72 ساعة</option><option value="1">آخر 24 ساعة</option></select>
+   <select id="timeFilter" aria-label="الفترة الزمنية"><option value="1">آخر ساعة</option><option value="6">آخر 6 ساعات</option><option value="24" selected>آخر 24 ساعة</option></select>
    <select id="eventTypeFilter" aria-label="نوع الحدث"><option value="all">كل أنواع الأحداث</option></select>
    <select id="riskFilter" aria-label="تصفية مستوى المخاطر"><option value="all">كل المستويات</option><option value="critical">حرج</option><option value="high">مرتفع</option><option value="elevated">متصاعد</option><option value="guarded">مراقبة</option><option value="low">منخفض</option></select>
   </div>
@@ -40,7 +40,7 @@
   <div id="eventList" class="event-list"><div class="empty">جارٍ تحميل الأحداث…</div></div>
  </aside>
 </div>
-<p class="footnote">المنهجية: تُعرض الأخبار المصنّفة بثقة كافية خلال آخر 7 أيام. لون الدولة يعكس أعلى مستوى خطر في الأحداث المنشورة عنها، ولا يعني أن الدولة بأكملها خطرة. الإحداثيات لا تُعرض إلا عند تحديد موقع الحدث بوضوح. البيانات تعتمد على المصادر المنشورة في WRLDLINE، وليست بديلاً عن المصادر الرسمية.</p>
+<p class="footnote">المنهجية: تُعرض الأخبار المصنّفة ذات مستوى خطر محدد خلال آخر 24 ساعة افتراضياً، وتتحدث البيانات كل دقيقة. يتغير لون كامل حدود الدولة وفق أعلى مستوى خطر في أخبارها الحديثة؛ ولا تُستخدم النقاط الجغرافية لتحديد لون الدولة. هذا مؤشر للتغطية المنشورة وليس حكماً على سلامة جميع مناطق الدولة، ولا يغني عن المصادر الرسمية.</p>
 </main>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script><script src="map.js" defer></script>
 <script src="language.js?v=20261113-2" defer></script>
