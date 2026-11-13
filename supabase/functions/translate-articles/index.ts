@@ -114,7 +114,10 @@ Deno.serve(async(req:Request)=>{
  const results:any[]=[];
  for(const article of articles||[]){
   try{
-   const target=/^en$/i.test(article.lang||"")||(!/[\u0600-\u06FF]/.test(article.title||"")&&/[A-Za-z]/.test(article.title||""))?"ar":"en";
+   const titleIsArabic=/[\u0600-\u06FF]/.test(article.title||"");
+   const declaredLang=String(article.lang||"").toLowerCase();
+   const sourceLang=titleIsArabic?"ar":(declaredLang.startsWith("ar")?"ar":"en");
+   const target=sourceLang==="ar"?"en":"ar";
    const existing=await db.from("article_translations").select("id,ai_summary,title,summary").eq("article_id",article.id).eq("lang",target).maybeSingle();
    if(existing.data?.title&&existing.data?.summary&&(!article.ai_summary||existing.data?.ai_summary)){results.push({id:article.id,status:"already_translated",lang:target});continue;}
    const prompt=[
