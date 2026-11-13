@@ -62,12 +62,16 @@ function telegramRows(html,f){
  }
  return out.slice(0,20);
 }
+function rawItemCount(body,f){
+ if(f.type==="telegram")return (body.match(/tgme_widget_message\\b/g)||[]).length;
+ return (body.match(/<item\\b/gi)||body.match(/<entry\\b/gi)||[]).length;
+}
 async function collect(f){
  try{
   const url=f.type==="telegram"?"https://t.me/s/"+f.handle:f.url;
   const r=await fetch(url,{headers:{"User-Agent":"Mozilla/5.0 (compatible; WRLDLINE-Breaking/3.0)","Accept":"text/html,application/rss+xml,application/xml,*/*"},signal:AbortSignal.timeout(15000)});
   if(!r.ok)throw new Error("HTTP "+r.status);
-  const body=await r.text(),rows=f.type==="telegram"?telegramRows(body,f):rssRows(body,f);
+  const body=await r.text(),raw=rawItemCount(body,f),rows=f.type==="telegram"?telegramRows(body,f):rssRows(body,f);
   if(rows.length){
    const saved=await fetch(URL+"/rest/v1/articles?on_conflict=url",{method:"POST",headers:{...HEADERS,Prefer:"resolution=merge-duplicates,return=minimal"},body:JSON.stringify(rows)});
    if(!saved.ok)throw new Error("DB "+saved.status+" "+(await saved.text()).slice(0,150));
@@ -79,7 +83,7 @@ async function collect(f){
 async function main(){
  if(!URL||!KEY)throw new Error("Missing Supabase credentials");
  const results=await Promise.all(FEEDS.map(collect));
- const summary={feeds:FEEDS.length,successful:results.filter(x=>x.ok).length,failed:results.filter(x=>!x.ok).length,alerts:results.reduce((n,x)=>n+x.count,0),telegram:FEEDS.filter(x=>x.type==="telegram").length};
+ const summary={feeds:FEEDS.length,successful:results.filter(x=>x.ok).length,failed:results.filter(x=>!x.ok).length,alerts:results.reduce((n,x)=>n+x.count,0),raw_items:results.reduce((n,x)=>n+(x.raw||0),0),empty_sources:results.filter(x=>x.ok&&x.raw===0).map(x=>x.source),telegram:FEEDS.filter(x=>x.type==="telegram").length};
  console.log("BREAKING_SUMMARY "+JSON.stringify(summary));
  if(summary.successful===0)throw new Error("All dedicated breaking sources failed");
 }
