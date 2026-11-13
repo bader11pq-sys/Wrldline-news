@@ -1,7 +1,7 @@
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
-const MAX_PER_RUN = 30;
-const BATCH_SIZE = 3;
+const MAX_PER_RUN = 3;
+const BATCH_SIZE = 1;
 
 if (!SUPABASE_URL || !SERVICE_KEY) {
   console.log("AI background classification skipped: configure SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY in GitHub Actions secrets.");
@@ -9,7 +9,7 @@ if (!SUPABASE_URL || !SERVICE_KEY) {
 }
 const headers = { apikey: SERVICE_KEY, Authorization: "Bearer " + SERVICE_KEY, "Content-Type": "application/json" };
 async function main() {
-  // Retry with Gemini 3.8 Flash, low-latency inference and bounded model requests.
+  // Keep each Gemini invocation isolated to one article to stay within Edge Function compute limits.
   async function loadByStatus(status, limit) {
     const query = new URLSearchParams({ select: "id,url,source_url,source_name,ai_classification_status,editorial_status", editorial_status: "eq.published", ai_classification_status: "eq." + status, order: "published_at.desc", limit: String(limit) });
     const response = await fetch(SUPABASE_URL + "/rest/v1/articles?" + query, { headers });
