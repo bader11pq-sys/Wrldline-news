@@ -30,7 +30,7 @@ const FEEDS=[
  {publisher:"سبوتنيك عربي",url:GOOGLE("sputnikarabic.ae"),lang:"ar"},
  {publisher:"رويترز",url:GOOGLE("reuters.com","en"),lang:"en"},
  {publisher:"Associated Press",url:GOOGLE("apnews.com","en"),lang:"en"},
- {publisher:"BBC News",url:GOOGLE("bbc.com/news","en"),lang:"en"}
+ {publisher:"BBC News",url:GOOGLE("bbc.com/news","en"),lang:"en"},
  {publisher:"AFP",url:GOOGLE("afp.com","en"),lang:"en"},
  {publisher:"EFE",url:GOOGLE("efe.com","en"),lang:"en"},
  {publisher:"dpa",url:GOOGLE("dpa.com","en"),lang:"en"},
