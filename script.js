@@ -18,6 +18,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
 async function registerServiceWorker(){
  if(!("serviceWorker" in navigator))return;
+ const workerBuild="v15";
+ navigator.serviceWorker.addEventListener("controllerchange",()=>{
+  if(sessionStorage.getItem("wrldline:sw-build")!==workerBuild){
+   sessionStorage.setItem("wrldline:sw-build",workerBuild);
+   location.reload();
+  }
+ });
  try{
   const registration=await navigator.serviceWorker.register("/sw.js",{scope:"/"});
   registration.update().catch(()=>{});
