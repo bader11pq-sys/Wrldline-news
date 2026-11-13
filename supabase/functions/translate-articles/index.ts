@@ -223,10 +223,11 @@ Deno.serve(async(req:Request)=>{
  const allArticles=articles||[];
  const queue=allArticles.filter(isWithinAiWindow);
  const results:any[]=allArticles.filter((article:any)=>!isWithinAiWindow(article)).map((article:any)=>({id:article.id,status:"expired_ignored"}));
- const {data:deeplState,error:deeplStateError}=await db.from("translation_provider_state").select("disabled_until").eq("provider","deepl").maybeSingle();
+ const {data:deeplState,error:deeplStateError}=await db.from("translation_provider_state").select("disabled_until,reason").eq("provider","deepl").maybeSingle();
  if(deeplStateError) return json({error:"Could not load translation provider state: "+deeplStateError.message},500);
  let deeplDisabledUntil=deeplState?.disabled_until||null;
- let deeplQuotaExhausted=!!(deeplDisabledUntil&&Date.parse(deeplDisabledUntil)>Date.now());
+ let deeplDisabled=!!(deeplDisabledUntil&&Date.parse(deeplDisabledUntil)>Date.now());
+ let deeplQuotaExhausted=deeplDisabled&&/quota|456/i.test(String(deeplState?.reason||""));
  let cursor=0;
  let pauseReason:string|null=null;
  async function processArticle(article:any) {
@@ -254,23 +255,24 @@ Deno.serve(async(req:Request)=>{
    ].join("\n");
    let translated:any=null;
    let provider="deepl";
-   if(deeplKey&&!deeplQuotaExhausted) {
+   if(deeplKey&&!deeplDisabled) {
     try {
      const values=await deeplTranslate([String(article.title||""),sourceSummary,String(article.ai_summary||sourceSummary)],deeplKey,target);
      translated={title:values[0],summary:values[1],ai_summary:values[2]};
     } catch(error) {
      deeplError=String(error).slice(0,220);
      if((error as any)?.quotaExceeded) {
-      deeplQuotaExhausted=true;
+      deeplDisabled=true;deeplQuotaExhausted=true;
       deeplDisabledUntil=await deeplQuotaResetAt(deeplKey);
-      await db.from("translation_provider_state").upsert({
-       provider:"deepl",disabled_until:deeplDisabledUntil,
-       reason:"DeepL HTTP 456 character quota exhausted",updated_at:new Date().toISOString()
-      },{onConflict:"provider"});
+      await db.from("translation_provider_state").upsert({provider:"deepl",disabled_until:deeplDisabledUntil,reason:"DeepL HTTP 456 character quota exhausted",updated_at:new Date().toISOString()},{onConflict:"provider"});
+     } else if([401,403].includes(Number((error as any)?.status))) {
+      deeplDisabled=true;deeplQuotaExhausted=false;
+      deeplDisabledUntil=new Date(Date.now()+15*60*1000).toISOString();
+      await db.from("translation_provider_state").upsert({provider:"deepl",disabled_until:deeplDisabledUntil,reason:"DeepL authentication failed (HTTP "+Number((error as any)?.status)+"); verify API key and plan",updated_at:new Date().toISOString()},{onConflict:"provider"});
      }
     }
-   } else if(deeplQuotaExhausted) {
-    deeplError="DeepL monthly character quota exhausted; using AI fallback.";
+   } else if(deeplDisabled) {
+    deeplError=deeplQuotaExhausted?"DeepL monthly character quota exhausted; using AI fallback.":"DeepL temporarily disabled after authentication failure; using AI fallback.";
    }
    if(!translated) {
     const generated=await generateWithFallback(prompt,geminiForBatch,groqKey,openRouterKey,openRouterModel,1800);
@@ -320,5 +322,5 @@ Deno.serve(async(req:Request)=>{
  for(const article of queue) {
   if(!results.some(item=>item.id===article.id)) results.push({id:article.id,status:"deferred",error:"Batch paused after provider backoff"});
  }
- return json({processed:results.length,results,concurrency:Math.min(2,queue.length),gemini_cooldown:geminiCoolingDown,deepl_quota_exhausted:deeplQuotaExhausted,deepl_disabled_until:deeplDisabledUntil,providers_configured:{deepl:!!deeplKey,gemini:!!gemini,groq:!!groqKey,openrouter:!!openRouterKey},translation_priority:["deepl","gemini","groq","openrouter"]});
+ return json({processed:results.length,results,concurrency:Math.min(2,queue.length),gemini_cooldown:geminiCoolingDown,deepl_quota_exhausted:deeplQuotaExhausted,deepl_disabled:deeplDisabled,deepl_disabled_until:deeplDisabledUntil,providers_configured:{deepl:!!deeplKey,gemini:!!gemini,groq:!!groqKey,openrouter:!!openRouterKey},translation_priority:["deepl","gemini","groq","openrouter"]});
 });
