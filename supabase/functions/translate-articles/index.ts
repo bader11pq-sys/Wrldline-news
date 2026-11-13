@@ -230,6 +230,7 @@ Deno.serve(async(req:Request)=>{
  let cursor=0;
  let pauseReason:string|null=null;
  async function processArticle(article:any) {
+  let deeplError:string|null=null;
   try {
    if(!isWithinAiWindow(article)) return {id:article.id,status:"expired_ignored"};
    const declaredLang=String(article.lang||"").toLowerCase();
@@ -253,7 +254,6 @@ Deno.serve(async(req:Request)=>{
    ].join("\n");
    let translated:any=null;
    let provider="deepl";
-   let deeplError:string|null=null;
    if(deeplKey&&!deeplQuotaExhausted) {
     try {
      const values=await deeplTranslate([String(article.title||""),sourceSummary,String(article.ai_summary||sourceSummary)],deeplKey,target);
@@ -299,12 +299,12 @@ Deno.serve(async(req:Request)=>{
     const retrySeconds=Math.min(1800,Math.max(Number((error as any).retryAfter)||60,60*Math.pow(2,Math.min(attempts-1,4))));
     const message=String(error).slice(0,180);
     await db.from("articles").update({translation_attempts:attempts,translation_retry_after:new Date(Date.now()+retrySeconds*1000).toISOString(),translation_last_error:message}).eq("id",article.id);
-    return {id:article.id,status:"deferred",retry_after_seconds:retrySeconds,error:message};
+    return {id:article.id,status:"deferred",retry_after_seconds:retrySeconds,error:deeplError?"DeepL: "+deeplError+" | AI fallback: "+message:message};
    }
    const attempts=Number(article.translation_attempts||0)+1;
    const message=String(error).slice(0,180);
    await db.from("articles").update({translation_attempts:attempts,translation_retry_after:new Date(Date.now()+Math.min(1800,300*Math.pow(2,Math.min(attempts-1,2)))*1000).toISOString(),translation_last_error:message}).eq("id",article.id);
-   return {id:article.id,status:"failed",error:message};
+   return {id:article.id,status:"failed",error:deeplError?"DeepL: "+deeplError+" | AI fallback: "+message:message};
   }
  }
  async function worker() {
