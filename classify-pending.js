@@ -39,7 +39,7 @@ async function main() {
     });
     const body = await response.json().catch(() => ({}));
     if (response.status === 429 || response.status === 503 || body.rate_limited) {
-      console.warn("Gemini is rate-limited; stopping this run to protect quota. HTTP " + response.status);
+      console.warn("An AI provider is rate-limited; stopping this run to protect quota. HTTP " + response.status);
       deferred = true; break;
     }
     if (!response.ok) throw new Error("Classifier failed: HTTP " + response.status + " " + JSON.stringify(body).slice(0, 400));
