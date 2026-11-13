@@ -1,5 +1,5 @@
 name: WRLDLINE Multi-source News Ingestion
-# Gemini-powered AI classification and translation; pending stories are prioritized.
+# Gemini → Groq → OpenRouter fallback; quota-safe pending-story processing.
 on:
   push:
     branches: [main]
