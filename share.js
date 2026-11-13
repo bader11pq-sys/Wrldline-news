@@ -90,4 +90,4 @@ window.WRLDLINE_SHARE={share,payloadFrom,attach:attachInline};
 if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",()=>attachInline());else attachInline();
 const inlineObserver=new MutationObserver(records=>records.forEach(r=>r.addedNodes.forEach(n=>{if(n.nodeType===1)attachInline(n);})));
 inlineObserver.observe(document.documentElement,{childList:true,subtree:true});
-
+})();
