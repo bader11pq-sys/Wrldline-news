@@ -1,6 +1,7 @@
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
-const MAX_PER_RUN = 3;
+const MAX_PER_RUN = 4;
+const MAX_PER_TARGET = 2;
 if (!SUPABASE_URL || !SERVICE_KEY) { console.log("Translation worker skipped: configure Supabase URL and service role key."); process.exit(0); }
 const headers = { apikey: SERVICE_KEY, Authorization: "Bearer " + SERVICE_KEY };
 const languageOf = article => {
@@ -13,6 +14,7 @@ const languageOf = article => {
 
 async function main() {
   const pending = [];
+  const perTarget = { ar: 0, en: 0 };
   const pageSize = 500;
   for (let offset = 0; offset < 20000 && pending.length < MAX_PER_RUN; offset += pageSize) {
     const q = new URLSearchParams({
@@ -27,8 +29,9 @@ async function main() {
       const sourceLang = languageOf(a);
       const target = sourceLang === "ar" ? "en" : "ar";
       const translation = (a.article_translations || []).find(t => t.lang === target);
-      if (!translation || !translation.title || !translation.summary || (!!a.ai_summary && !translation.ai_summary)) {
+      if ((!translation || !translation.title || !translation.summary || (!!a.ai_summary && !translation.ai_summary)) && perTarget[target] < MAX_PER_TARGET) {
         pending.push({ id: a.id, target, sourceLang, title: String(a.title).slice(0, 100) });
+        perTarget[target]++;
       }
       if (pending.length >= MAX_PER_RUN) break;
     }
