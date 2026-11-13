@@ -1,4 +1,4 @@
-// WRLDLINE dedicated breaking-news desk. Separate from the 60 general-news feeds.
+// WRLDLINE dedicated breaking-news desk. Separate from the 100 general-news feeds.
 const URL=process.env.SUPABASE_URL,KEY=process.env.SUPABASE_SERVICE_ROLE_KEY;
 const HEADERS={apikey:KEY,Authorization:"Bearer "+KEY,"Content-Type":"application/json"};
 const GOOGLE=(domain,lang="ar")=>{
