@@ -6,21 +6,28 @@ The repository includes a background worker (`classify-pending.js`) and GitHub A
 
 ### Required secrets — never commit or paste keys into chat
 
-1. In Supabase Dashboard → Project Settings → Edge Functions → Secrets, add `OPENAI_API_KEY`.
-2. In GitHub repository Settings → Secrets and variables → Actions, add `SUPABASE_SERVICE_ROLE_KEY` using the project's service-role/secret key. This is used only by the server-side GitHub Actions worker and is never placed in browser code.
-3. Keep the existing `SUPABASE_URL` and `SUPABASE_KEY` secrets for the news ingestion bots. Never place a service key in frontend JavaScript.
+**Supabase Dashboard → Project Settings → Edge Functions → Secrets**
+- `NVIDIA_API_KEY` — NVIDIA API Catalog key. This is read only by the server-side classification and provider-healthcheck functions.
+- At least one fallback provider key: `GOOGLE_API_KEY` or `GEMINI_API_KEY`, `GROQ_API_KEY`, and/or `OPENROUTER_API_KEY`.
+- Optional `NVIDIA_MODEL` to override the default model. The tested default is `nvidia/nemotron-3.5-lightning-30b-a3b`.
 
-The Edge Function accepts either a real authenticated editor/admin session or an exact server-side service-role token. The key is checked server-side and never returned to the browser.
+**GitHub repository → Settings → Secrets and variables → Actions**
+- Store only the server-side credentials required by the relevant workflows, such as `SUPABASE_SERVICE_ROLE_KEY` and `SUPABASE_URL`. GitHub Actions secrets do not automatically become Supabase Edge Function secrets.
+- Never commit provider keys or put service-role keys in browser JavaScript.
+
+The Edge Function reads provider keys from the Supabase Edge Function environment. They are never returned to the browser. The classifier supports editor/admin sessions and its trusted server-side worker.
 
 ## Operation
 
-Each background run processes up to 30 pending stories in batches of ten. Telegram items are excluded from ordinary classification and remain ticker-only. The admin page retains a retry action for pending work; normal operation does not require pressing it.
+Supabase Cron invokes the classification worker. It selects only published, non-Telegram articles from the last hour and sends up to ten IDs per run. The worker authenticates server-to-server and calls `classify-news`.
+
+Provider fallback order: Gemini → Groq → NVIDIA → OpenRouter. NVIDIA requests use the OpenAI-compatible `/v1/chat/completions` endpoint with JSON output and disabled reasoning mode for predictable structured classification. The provider-healthcheck tests classification/translation-shaped JSON and reports the overall service healthy when at least one configured provider passes.
 
 ## Risk map
 
 The map at `/map.html` uses published, AI-classified, non-Telegram stories with confidence >= 0.68 from the last seven days. Country shading reflects the highest event-level risk signal in recent coverage; it is not a country-wide safety rating or official travel advisory.
 
-Each story uses one model request. Monitor OpenAI usage and set a budget limit. GitHub scheduled workflows can start late during platform load; ingestion workflows also trigger classification directly after fetching.
+Each story uses one successful model request; failed providers fall through to the next configured provider. Monitor each provider's quota and usage limits. GitHub scheduled workflows can start late during platform load; ingestion workflows also trigger classification directly after fetching.
 
 ## Automatic Arabic/English translation
 
