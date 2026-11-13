@@ -97,7 +97,7 @@ function normalizeArticle(a){
  const sourceTitle=String(a.title||"");
  const titleIsArabic=/[\\u0600-\\u06FF]/.test(sourceTitle);
  const declaredLang=String(a.lang||"").toLowerCase();
- const sourceLang=titleIsArabic?"ar":(declaredLang.startsWith("ar")?"ar":"en");
+ const sourceLang=declaredLang.startsWith("ar")?"ar":(declaredLang.startsWith("en")?"en":(titleIsArabic?"ar":"en"));
  const translation=(a.article_translations||[]).find(t=>t.lang===state.lang&&t.title&&t.summary);
  const translationPending=sourceLang!==state.lang&&!translation;
  const sameLanguage=sourceLang===state.lang;
