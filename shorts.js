@@ -13,6 +13,18 @@
   function render(preserveId=""){
     if(!stories.length){feed.innerHTML='<div class="shorts-state"><strong>'+t("لا توجد أخبار منشورة حاليًا","No published stories right now")+'</strong><span>'+t("سيظهر هنا كل خبر منشور في أقسام الموقع.","Every published story from every site section will appear here.")+'</span><button id="shortsRetry">'+t("إعادة المحاولة","Retry")+'</button></div>';document.getElementById("shortsRetry").onclick=loadAll;updateCounter();return;}
     feed.innerHTML=stories.map((a,i)=>{const declaredLang=String(a.lang||"").toLowerCase(),sourceLang=declaredLang.startsWith("ar")?"ar":(declaredLang.startsWith("en")?"en":(/[\u0600-\u06FF]/.test(a.title||"")?"ar":"en")),tr=(a.article_translations||[]).find(x=>x.lang===lang&&x.title&&x.summary),sameLanguage=sourceLang===lang,title=tr?.title||(sameLanguage?(a.title||""):t("الترجمة قيد الإعداد","Translation is being prepared")),summary=tr?.summary||(sameLanguage?(a.summary||""):t("نعمل على تجهيز ترجمة هذا الخبر.","A translation of this story is being prepared.")),img=safe(a.image_url),isVideo=a.media_type==="video",src=safe(a.url||a.source_url),category=labels[lang][a.category]||t("حول العالم","Around the world");return '<article class="shorts-slide" data-index="'+i+'" data-id="'+esc(a.id)+'">'+(img?(isVideo?'<video class="shorts-photo shorts-video" src="'+esc(img)+'" playsinline controls preload="metadata"></video><button class="shorts-video-play" type="button" aria-label="'+t("تشغيل الفيديو","Play video")+'">▶</button>':'<img class="shorts-photo" src="'+esc(img)+'" alt="" loading="'+(i<2?"eager":"lazy")+'">'):'<div class="shorts-no-photo"></div>')+'<div class="shorts-copy"><div class="shorts-meta"><span class="shorts-category">'+esc(category)+'</span>'+(a.is_breaking?'<span class="shorts-category shorts-breaking">'+t("عاجل","BREAKING")+'</span>':"")+'<time>'+esc(date(a.published_at||a.created_at))+'</time></div><h1 dir="auto">'+esc(title)+'</h1><p class="shorts-summary" dir="auto">'+esc(summary||t("لا يتوفر ملخص لهذا الخبر.","No summary is available."))+'</p><div class="shorts-footer"><span>'+esc(a.source_name||t("مصدر إخباري","News source"))+'</span>'+(src?'<a class="shorts-source" href="'+esc(src)+'" target="_blank" rel="noopener noreferrer">'+t("قراءة المصدر الأصلي ↗","Read original source ↗")+'</a>':"")+'</div></div></article>';}).join("");
+    feed.querySelectorAll(".shorts-slide").forEach((slide,index)=>{
+      const story=stories[index],footer=slide.querySelector(".shorts-footer");if(!story||!footer)return;
+      const share=document.createElement("button");share.type="button";share.className="shorts-share";share.textContent=t("مشاركة الخبر","Share story");
+      share.addEventListener("click",async()=>{
+        const url=new URL("/",location.origin);url.searchParams.set("article",story.id);
+        try{if(navigator.share){await navigator.share({title:story.title,text:story.summary||"خبر من WRLDLINE NEWS",url:url.href});return;}
+          if(navigator.clipboard?.writeText){await navigator.clipboard.writeText(url.href);share.textContent=t("تم نسخ الرابط ✓","Link copied ✓");return;}
+          window.prompt(t("انسخ رابط الخبر","Copy story link"),url.href);
+        }catch(error){if(error?.name!=="AbortError")console.warn("WRLDLINE Shorts share:",error);}
+      });
+      footer.append(share);
+    });
     if(preserveId){const target=[...feed.querySelectorAll(".shorts-slide")].find(el=>el.dataset.id===preserveId);if(target)target.scrollIntoView({block:"start"});}
     feed.querySelectorAll(".shorts-video-play").forEach(button=>{
       const slide=button.closest(".shorts-slide"),video=slide?.querySelector("video.shorts-video");if(!video)return;
