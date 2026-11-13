@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#101b2d">
+  <meta name="description" content="WRLDLINE MARKETS — متابعة أسواق الطاقة والمعادن والعملات والأسهم والصناديق من مزودي بيانات السوق.">
+  <title>الأسواق العالمية | WRLDLINE MARKETS</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css?v=20261113-16">
+  <link rel="stylesheet" href="markets.css?v=20261113-1">
+  <link rel="manifest" href="manifest.json">
+</head>
+<body>
+  <div class="utility-bar"><div class="container utility-inner"><span id="marketDate">مركز الأسواق العالمية</span><span class="utility-right"><span class="status-dot"></span><span>بيانات من مزودي الأسواق</span><button id="marketLanguage" class="text-button" type="button">English</button></span></div></div>
+  <header class="site-header">
+    <div class="container masthead">
+      <button class="icon-button mobile-menu" id="marketMenuButton" aria-label="فتح القائمة" aria-expanded="false">☰</button>
+      <a class="brand" href="index.html"><span class="brand-mark">W</span><span class="brand-copy"><strong>WRLDLINE</strong><small>GLOBAL NEWS NETWORK</small></span></a>
+      <div class="header-tools"><a class="tool-button" href="index.html">العودة للأخبار</a><button class="icon-button" id="marketThemeButton" type="button" aria-label="تغيير المظهر">☾</button></div>
+    </div>
+    <nav class="main-nav" id="marketNav"><div class="container nav-inner">
+      <a class="nav-link" href="index.html">الرئيسية</a><a class="nav-link" href="index.html#breakingSection">الأخبار العاجلة</a><a class="nav-link" href="index.html#">اقتصاد وأسواق</a><a class="nav-link active" href="markets.html">الأسواق العالمية</a><a class="nav-link" href="map.html">مرصد العالم</a>
+    </div></nav>
+  </header>
+  <main class="container page-shell markets-shell">
+    <section class="markets-hero">
+      <div><p class="eyebrow">WRLDLINE FINANCIAL DESK</p><h1>الأسواق العالمية<span>.</span></h1><p class="welcome-subtitle">الطاقة والمعادن والعملات والأسهم والصناديق في لوحة واحدة.</p></div>
+      <div class="markets-stamp"><span class="market-pulse"></span><strong>MARKET DATA</strong><small>تغذية خارجية من TradingView</small></div>
+    </section>
+    <section class="market-tape-panel"><div class="market-panel-head"><div><span class="section-kicker">LIVE TICKER</span><h2>شريط الأسواق</h2></div><span class="market-source">TradingView</span></div><div class="tradingview-widget-container"><div class="tradingview-widget-container__widget"></div><div class="tradingview-widget-copyright"><a href="https://www.tradingview.com/" rel="noopener nofollow" target="_blank">بيانات ورسوم TradingView</a></div></div></section>
+    <section class="market-section">
+      <div class="section-heading"><div><span class="section-kicker">GLOBAL ASSETS</span><h2>مؤشرات وأصول مختارة</h2></div><span class="muted">تتغير حسب جلسة كل سوق</span></div>
+      <div class="market-cards-grid">
+        <article class="market-card"><span class="market-card-icon">🛢️</span><div><h3>الطاقة</h3><p>خام برنت · خام غرب تكساس · الغاز الطبيعي</p></div><span class="market-card-arrow">↗</span></article>
+        <article class="market-card"><span class="market-card-icon">🥇</span><div><h3>المعادن</h3><p>الذهب · الفضة · النحاس · البلاتين</p></div><span class="market-card-arrow">↗</span></article>
+        <article class="market-card"><span class="market-card-icon">💱</span><div><h3>الفوركس</h3><p>أزواج العملات الرئيسية ومؤشر الدولار</p></div><span class="market-card-arrow">↗</span></article>
+        <article class="market-card"><span class="market-card-icon">₿</span><div><h3>الأصول الرقمية</h3><p>Bitcoin · Ethereum وأبرز العملات الرقمية</p></div><span class="market-card-arrow">↗</span></article>
+        <article class="market-card"><span class="market-card-icon">📈</span><div><h3>الأسهم</h3><p>الأسواق الأمريكية والعالمية والسوق السعودي</p></div><span class="market-card-arrow">↗</span></article>
+        <article class="market-card"><span class="market-card-icon">▦</span><div><h3>الصناديق</h3><p>صناديق المؤشرات المتداولة ETFs</p></div><span class="market-card-arrow">↗</span></article>
+      </div>
+    </section>
+    <section class="market-section">
+      <div class="section-heading"><div><span class="section-kicker">MARKET OVERVIEW</span><h2>مراقبة الأصول حسب الفئة</h2></div></div>
+      <div class="market-widget-shell"><div class="tradingview-widget-container"><div class="tradingview-widget-container__widget"></div></div></div>
+    </section>
+    <section class="market-section heatmap-section">
+      <div class="section-heading"><div><span class="section-kicker">GLOBAL EQUITIES</span><h2>الخريطة الحرارية للأسهم</h2><p class="muted">حجم الشركات وأداء الأسهم ضمن السوق المختار.</p></div></div>
+      <div class="market-widget-shell heatmap-shell"><div class="tradingview-widget-container"><div class="tradingview-widget-container__widget"></div></div></div>
+    </section>
+    <section class="market-disclosure"><strong>ملاحظة حول دقة الأسعار وتوقيتها</strong><p>تعرض هذه الصفحة بيانات يقدمها TradingView ومزودو البيانات المرتبطون به. قد تكون بعض الأسعار فورية، وقد تكون أسعار بعض البورصات متأخرة أو خاضعة لاشتراك وترخيص بيانات. حالة السوق ووقت آخر تحديث يعتمدان على الأصل ومصدره؛ لذلك لا يعني ظهور كلمة «مباشر» أن جميع الأدوات تبث لحظيًا. لا تستخدم البيانات وحدها لاتخاذ قرار استثماري.</p><a href="https://www.tradingview.com/data-coverage/" target="_blank" rel="noopener">تفاصيل تغطية البيانات ومصادرها ↗</a></section>
+  </main>
+  <footer class="site-footer"><div class="container footer-main"><a class="brand footer-brand" href="index.html"><span class="brand-mark">W</span><span class="brand-copy"><strong>WRLDLINE</strong><small>GLOBAL NEWS NETWORK</small></span></a><p>معلومات الأسواق من مزودي البيانات الخارجيين.</p><div class="footer-links"><a href="index.html">العودة إلى الأخبار ↑</a></div></div><div class="container footer-bottom"><span>© <span id="marketYear"></span> WRLDLINE NEWS</span><span>البيانات لأغراض المعلومات العامة.</span></div></footer>
+  <script src="markets.js?v=20261113-1" defer></script>
+</body>
+</html>
