@@ -1,4 +1,5 @@
 name: WRLDLINE Multi-source News Ingestion
+# AI classification queue now drains pending stories before retries.
 on:
   push:
     branches: [main]
