@@ -9,7 +9,7 @@ function countryName(value,code){const iso3={SAU:"SA",EGY:"EG",CHN:"CN",ARE:"AE"
 function riskLabel(value){const labels={ar:{critical:"حرج",high:"مرتفع",elevated:"متصاعد",guarded:"مراقبة",low:"منخفض",unknown:"غير محدد"},en:{critical:"Critical",high:"High",elevated:"Elevated",guarded:"Guarded",low:"Low",unknown:"Unknown"}};return labels[state.lang]?.[value]||labels[state.lang].unknown;}
 function translationBadge(a){return ui("الترجمة قيد الانتظار · النص الأصلي","Translation pending · original text");}
 function verificationCounts(a){const n=a.verificationIndependentCount||0,f=a.verificationFieldCount||0,o=a.verificationOfficialCount||0,c=a.verificationConflictCount||0,r=a.verificationCorrectionCount||0;return ui(n+" مصدر مستقل · "+f+" ميداني · "+o+" رسمي · "+c+" تعارض · "+r+" تصحيح",n+" independent · "+f+" field · "+o+" official · "+c+" conflicts · "+r+" corrections");}
-const state = { articles:[], filtered:[], category:"all", country:"all", lang:localStorage.getItem("wrldline:language")==="en"?"en":"ar", limit:PAGE_SIZE, saved:new Set(readSaved()), query:"", sort:"newest", loading:false, db:null, user:null, follows:{category:[],country:[]}, followOnly:false, realtime:null, verificationChannel:null, pendingLocalSaved:new Set(readSaved()), breakingTickerIndex:0 };
+const state = { articles:[], filtered:[], category:"all", country:"all", lang:localStorage.getItem("wrldline:language")==="en"?"en":"ar", limit:PAGE_SIZE, saved:new Set(readSaved()), query:"", sort:"newest", loading:false, db:null, user:null, follows:{category:[],country:[]}, followOnly:false, realtime:null, verificationChannel:null, pendingLocalSaved:new Set(readSaved()), breakingTickerIndex:0, breakingTickerCurrentId:null };
 
 document.addEventListener("DOMContentLoaded", () => {
   initPreferences(); bindEvents(); updateClock(); fetchNews(); initPersonalization(); setInterval(fetchNews, 180000); setInterval(updateBreaking, 15000);
@@ -202,26 +202,28 @@ function isDedicatedBreakingSource(name){
  return /breaking desk|news alert|غرفة الأخبار العاجلة|مصادر العاجل/.test(source);
 }
 function breakingItems(){
- const now=Date.now(),maxAge=7*60*1000;
+ const now=Date.now(),maxAge=10*60*1000;
  return state.articles.filter(a=>{
   if(a.isBreaking!==true)return false;
   const published=Date.parse(a.published_at||"");
   const age=now-published;
   return Number.isFinite(published)&&age>=-60*1000&&age<=maxAge;
- }).sort((a,b)=>new Date(b.published_at)-new Date(a.published_at));
+ }).sort((a,b)=>new Date(a.published_at)-new Date(b.published_at));
 }
 function renderBreakingSection(){
  const host=document.getElementById("breakingNewsGrid");if(!host)return;
  const items=breakingItems();const count=document.getElementById("breakingCount");
- count.textContent=state.lang==="ar"?items.length+" أخبار عاجلة خلال آخر 7 دقائق":items.length+" breaking stories in the last 7 minutes";
+ count.textContent=state.lang==="ar"?items.length+" أخبار عاجلة خلال آخر 10 دقائق":items.length+" breaking stories in the last 10 minutes";
  if(!items.length){host.innerHTML='<div class="empty-state">'+ui("لا توجد أخبار عاجلة خلال آخر 7 دقائق. ستظهر هنا التنبيهات الجديدة التي يحددها المحرر.","No breaking alerts in the last 7 minutes. New editor-selected alerts will appear here.")+'</div>';return;}
  host.innerHTML=items.slice(0,8).map(a=>'<article class="breaking-news-card" data-open="'+escapeHTML(a.id)+'">'+imageMarkup(a,"breaking-news-image")+'<div class="breaking-news-copy"><div class="story-meta"><span class="breaking-badge">'+ui("عاجل","BREAKING")+'</span><span>'+escapeHTML(timeAgo(a.published_at))+'</span><span>'+escapeHTML(categoryName(a.cat))+'</span></div><h3>'+escapeHTML(a.title)+'</h3><p>'+escapeHTML(a.summary)+'</p><small>'+escapeHTML(a.src)+' · '+ui("اقرأ التفاصيل","Read story")+' ←</small></div></article>').join("");
  host.querySelectorAll("[data-open]").forEach(el=>el.addEventListener("click",()=>openArticle(el.dataset.open)));
 }
 function rotateBreaking(){
  const items=breakingItems();
- if(!items.length){state.breakingTickerIndex=0;updateBreaking();return;}
- state.breakingTickerIndex=(state.breakingTickerIndex+1)%items.length;
+ if(!items.length){state.breakingTickerIndex=0;state.breakingTickerCurrentId=null;updateBreaking();return;}
+ const currentIndex=items.findIndex(a=>a.id===state.breakingTickerCurrentId);
+ state.breakingTickerIndex=currentIndex<0?0:(currentIndex+1)%items.length;
+ state.breakingTickerCurrentId=items[state.breakingTickerIndex]?.id||items[0].id;
  updateBreaking();
 }
 function updateBreaking(){
@@ -231,25 +233,31 @@ function updateBreaking(){
  const title=document.getElementById("breakingText");
  const time=document.getElementById("breakingTime");
  const marquee=title.querySelector(".breaking-marquee")||title;
- const currentId=marquee.dataset.articleId||"";
- const item=items.find(a=>a.id===currentId)||items[state.breakingTickerIndex%Math.max(items.length,1)];
- if(!item){
-  strip.hidden=true;marquee.textContent="";marquee.classList.remove("is-moving");
+ if(!items.length){
+  state.breakingTickerIndex=0;state.breakingTickerCurrentId=null;
+  strip.hidden=true;marquee.textContent="";marquee.classList.remove("is-moving","is-ltr");
   delete marquee.dataset.articleId;delete marquee.dataset.articleTitle;
   title.removeAttribute("title");time.textContent="";return;
  }
+ let item=items.find(a=>a.id===state.breakingTickerCurrentId);
+ if(!item){
+  state.breakingTickerIndex=0;item=items[0];state.breakingTickerCurrentId=item.id;
+ }
+ state.breakingTickerIndex=Math.max(0,items.findIndex(a=>a.id===item.id));
  strip.hidden=false;
- if(currentId!==item.id||marquee.dataset.articleTitle!==String(item.title||"")){
-  const cleanTitle=String(item.title||"").replace(/[\u202A-\u202E\u2066-\u2069]/g,"").normalize("NFC").trim();
+ if(marquee.dataset.articleId!==item.id||marquee.dataset.articleTitle!==String(item.title||"")){
+  // Remove all Unicode bidirectional formatting controls that may have been
+  // copied into source headlines, then explicitly set direction per headline.
+  const cleanTitle=String(item.title||"").replace(/[\u061C\u200E\u200F\u202A-\u202E\u2066-\u2069]/g,"").normalize("NFC").trim();
+  const isRTL=/[\u0590-\u08FF]/.test(cleanTitle);
   marquee.textContent=cleanTitle;
   marquee.dataset.articleId=item.id;
   marquee.dataset.articleTitle=String(item.title||"");
-  marquee.classList.remove("is-moving");
-  // Let the browser determine the text direction from its first strong character.
-  // The isolated inline direction prevents RTL/LTR text from reordering its words.
-  marquee.setAttribute("dir","auto");
-  marquee.style.removeProperty("direction");
+  marquee.classList.remove("is-moving","is-ltr");
+  marquee.setAttribute("dir",isRTL?"rtl":"ltr");
+  marquee.style.direction=isRTL?"rtl":"ltr";
   marquee.style.unicodeBidi="isolate";
+  if(!isRTL)marquee.classList.add("is-ltr");
   marquee.style.removeProperty("--breaking-duration");
   marquee.style.removeProperty("--breaking-start");
   requestAnimationFrame(()=>{
@@ -259,7 +267,10 @@ function updateBreaking(){
    marquee.style.setProperty("--breaking-duration",Math.max(12,distance/55)+"s");
    marquee.classList.add("is-moving");
   });
-  marquee.onanimationend=()=>{if(breakingItems().length>1)rotateBreaking();else{marquee.classList.remove("is-moving");requestAnimationFrame(()=>marquee.classList.add("is-moving"));}};
+  marquee.onanimationend=()=>{
+   if(breakingItems().length>1)rotateBreaking();
+   else{marquee.classList.remove("is-moving");requestAnimationFrame(()=>marquee.classList.add("is-moving"));}
+  };
  }
  title.title=ui("تنبيه عاجل اختاره محرر WRLDLINE","Breaking alert selected by a WRLDLINE editor");
  time.textContent=ui("عاجل · ","Breaking · ")+timeAgo(item.published_at);
