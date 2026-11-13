@@ -46,7 +46,7 @@
    const response=await fetch(apiBase+"?mode=fx",{cache:"no-store",signal:AbortSignal.timeout(18000)});
    const payload=await response.json();
    if(!response.ok||!payload.quote?.ok)throw new Error(payload.error||"FX feed unavailable");
-   const q=payload.quote,asOf=q.asOf||"";
+   const q=payload.quote,asOf=[q.asOf,q.timeZone].filter(Boolean).join(" · ")||"";
    fxGrid.innerHTML='<article class="direct-market-card"><div class="direct-market-top"><span>الدولار الأمريكي / الريال السعودي</span><small>FX</small></div><strong class="direct-market-price">'+money(Number(q.price),"SAR")+'</strong><div class="direct-market-change">'+(lang==="ar"?"سعر الصرف المرجعي":"Reference exchange rate")+'</div><div class="direct-market-foot"><span>'+q.provider+'</span><time>'+asOf+'</time></div><button class="direct-market-share" type="button" id="directFxShare">↗ '+(lang==="ar"?"مشاركة السعر":"Share rate")+'</button></article>';
    fxStatus.textContent=(lang==="ar"?"آخر تحديث لدى المزود: ":"Provider update: ")+asOf;
    $("#directFxShare")?.addEventListener("click",()=>{
