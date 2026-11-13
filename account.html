@@ -46,5 +46,5 @@ $("portalButton").addEventListener("click",async()=>{const {data:{session:curren
 db.auth.onAuthStateChange((event,newSession)=>{session=newSession;if(event==="PASSWORD_RECOVERY"){recovering=true;$("authPanel").classList.remove("hidden");$("profilePanel").classList.add("hidden");$("passwordRecoveryForm").classList.remove("hidden");status("authStatus","أدخل كلمة مرور جديدة لحسابك.");}if(event==="SIGNED_OUT")recovering=false;setTimeout(()=>renderAccount(),0);});
 renderAccount().then(()=>{const result=new URLSearchParams(location.search).get("checkout");if(result==="success")status("profileStatus","تم الرجوع من صفحة الدفع. نتحقق من تأكيد الاشتراك؛ قد يستغرق تحديث العضوية لحظات.","ok");else if(result==="cancelled")status("profileStatus","تم إلغاء عملية الدفع، ولم يتم إنشاء اشتراك مدفوع.");});
 </script><script src="language.js?v=20261113-2" defer></script>
-<script src="share.js?v=20261113-1" defer></script>
+<script src="share.js?v=20261113-2" defer></script>
 </body></html>
