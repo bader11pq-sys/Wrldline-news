@@ -65,7 +65,7 @@ async function geminiGenerateTranslation(prompt: string, apiKey: string, maxOutp
       if (response.ok) return response;
       const detail = (await response.text()).slice(0, 500);
       lastError = "Gemini API " + response.status + ": " + detail;
-      const hardQuota = /quota|resource_exhausted|billing|limit:\\s*generate_content/i.test(detail);
+      const hardQuota = /quota|resource_exhausted|billing|limit:\s*generate_content/i.test(detail);
       const transient = response.status === 429 || response.status === 503 || response.status >= 500;
       if (response.status === 429 && hardQuota) {
         throw Object.assign(new Error(lastError), { deferred: true, quotaExceeded: true, retryAfter: 21600 });
@@ -109,16 +109,23 @@ Deno.serve(async(req:Request)=>{
  const ids=Array.isArray(body.article_ids)?[...new Set(body.article_ids.filter((x:unknown)=>typeof x==="string"))].slice(0,10):[];
  if(!ids.length)return json({error:"Send 1 to 10 article_ids."},400);
  const db=createClient(url,service,{auth:{persistSession:false,autoRefreshToken:false}});
+ const {data:rateLimit}=await db.from("gemini_rate_limits").select("cooldown_until").eq("singleton",true).maybeSingle();
+ const geminiCoolingDown=!!(rateLimit?.cooldown_until && Date.parse(rateLimit.cooldown_until)>Date.now());
+ const geminiForBatch=geminiCoolingDown?null:gemini;
  const {data:articles,error}=await db.from("articles").select("id,title,summary,ai_summary,lang,url,source_url,source_name").in("id",ids);
  if(error)return json({error:"Could not load articles."},500);
+ const queue=articles||[];
  const results:any[]=[];
- for(const article of articles||[]){
-  try{
+ let cursor=0;
+ let pauseReason:string|null=null;
+ async function processArticle(article:any) {
+  try {
    const declaredLang=String(article.lang||"").toLowerCase();
-   const sourceLang=declaredLang.startsWith("ar")?"ar":(declaredLang.startsWith("en")?"en":(/[\u0600-\u06FF]/.test(article.title||"")?"ar":"en"));
+   const sourceLang=declaredLang.startsWith("ar")?"ar":(declaredLang.startsWith("en")?"en":(/[\\u0600-\\u06FF]/.test(article.title||"")?"ar":"en"));
    const target=sourceLang==="ar"?"en":"ar";
    const existing=await db.from("article_translations").select("id,ai_summary,title,summary").eq("article_id",article.id).eq("lang",target).maybeSingle();
-   if(existing.data?.title&&existing.data?.summary&&(!article.ai_summary||existing.data?.ai_summary)){results.push({id:article.id,status:"already_translated",lang:target});continue;}
+   if(existing.error) throw existing.error;
+   if(existing.data?.title&&existing.data?.summary&&(!article.ai_summary||existing.data?.ai_summary)) return {id:article.id,status:"already_translated",lang:target};
    const prompt=[
     "You are a professional news translator for a bilingual international newsroom.",
     "Translate the supplied headline, summary, and AI context summary faithfully into "+(target==="ar"?"Modern Standard Arabic":"clear international English")+". If the AI context summary is already in the target language, preserve it faithfully.",
@@ -127,27 +134,46 @@ Deno.serve(async(req:Request)=>{
     "If the source is ambiguous, preserve its ambiguity. Return only the translated title, summary, and AI context summary as JSON.",
     "Publisher: "+(article.source_name||"Unknown"),
     "Original URL: "+(article.url||""),
-    "TITLE:\\n"+(article.title||""),
-    "SUMMARY:\\n"+(article.summary||""),
-    "AI CONTEXT SUMMARY:\\n"+(article.ai_summary||"")
-   ].join("\\n");
-   const generated=await generateWithFallback(prompt,gemini,groqKey,openRouterKey,1800);
+    "TITLE:\n"+(article.title||""),
+    "SUMMARY:\n"+(article.summary||""),
+    "AI CONTEXT SUMMARY:\n"+(article.ai_summary||"")
+   ].join("\n");
+   const generated=await generateWithFallback(prompt,geminiForBatch,groqKey,openRouterKey,1800);
    const translated=generated.data;
-   const {error:upsertError}=await db.from("article_translations").upsert({article_id:article.id,lang:target,title:String(translated.title||"").slice(0,500),summary:String(translated.summary||"").slice(0,4000),ai_summary:String(translated.ai_summary||"").slice(0,2000)},{onConflict:"article_id,lang"});
-   if(upsertError)throw upsertError;
-   results.push({id:article.id,status:"translated",lang:target,provider:generated.provider});
-  }catch(error){
-   if((error as any)?.deferred){
-    if((error as any)?.quotaExceeded){
+   const title=String(translated.title||"").trim();
+   const summary=String(translated.summary||"").trim();
+   if(!title||!summary) throw new Error("AI returned an empty translated title or summary.");
+   const {error:upsertError}=await db.from("article_translations").upsert({
+    article_id:article.id,lang:target,title:title.slice(0,500),summary:summary.slice(0,4000),
+    ai_summary:String(translated.ai_summary||"").slice(0,2000)
+   },{onConflict:"article_id,lang"});
+   if(upsertError) throw upsertError;
+   return {id:article.id,status:"translated",lang:target,provider:generated.provider};
+  } catch(error) {
+   if((error as any)?.deferred) {
+    if((error as any)?.quotaExceeded) {
      await db.from("gemini_rate_limits").upsert({
       singleton:true,cooldown_until:new Date(Date.now()+6*60*60*1000).toISOString(),
       reason:"Gemini quota exceeded",updated_at:new Date().toISOString()
      },{onConflict:"singleton"});
     }
-    results.push({id:article.id,status:"deferred",retry_after_seconds:(error as any).retryAfter||60,error:String(error).slice(0,180)});break;
+    return {id:article.id,status:"deferred",retry_after_seconds:(error as any).retryAfter||60,error:String(error).slice(0,180)};
    }
-   results.push({id:article.id,status:"failed",error:String(error).slice(0,180)});
+   return {id:article.id,status:"failed",error:String(error).slice(0,180)};
   }
  }
- return json({processed:results.length,results});
+ async function worker() {
+  while(!pauseReason) {
+   const index=cursor++;
+   if(index>=queue.length) return;
+   const result=await processArticle(queue[index]);
+   results.push(result);
+   if(result.status==="deferred") pauseReason=result.error||"Provider temporarily unavailable";
+  }
+ }
+ await Promise.all(Array.from({length:Math.min(3,queue.length)},()=>worker()));
+ for(const article of queue) {
+  if(!results.some(item=>item.id===article.id)) results.push({id:article.id,status:"deferred",error:"Batch paused after provider backoff"});
+ }
+ return json({processed:results.length,results,concurrency:Math.min(3,queue.length),gemini_cooldown:geminiCoolingDown});
 });
