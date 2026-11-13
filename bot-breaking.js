@@ -69,7 +69,7 @@ async function collect(f){
   if(!r.ok)throw new Error("HTTP "+r.status);
   const body=await r.text(),rows=f.type==="telegram"?telegramRows(body,f):rssRows(body,f);
   if(rows.length){
-   const saved=await fetch(URL+"/rest/v1/articles?on_conflict=url",{method:"POST",headers:{...HEADERS,Prefer:"resolution=ignore-duplicates,return=minimal"},body:JSON.stringify(rows)});
+   const saved=await fetch(URL+"/rest/v1/articles?on_conflict=url",{method:"POST",headers:{...HEADERS,Prefer:"resolution=merge-duplicates,return=minimal"},body:JSON.stringify(rows)});
    if(!saved.ok)throw new Error("DB "+saved.status+" "+(await saved.text()).slice(0,150));
   }
   console.log("BREAKING_SOURCE "+f.publisher+": "+rows.length);
