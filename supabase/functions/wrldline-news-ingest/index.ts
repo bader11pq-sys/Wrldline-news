@@ -251,62 +251,69 @@ async function runBreaking() {
 
 
 async function runTranslation() {
- const runId=await beginRun("translation");
- const pending:any[]=[];
- const perTarget={ar:0,en:0};
- const pageSize=500;
- let scanned=0;
- for(let offset=0;offset<20000 && pending.length<10;offset+=pageSize) {
-  const params=new URLSearchParams({
-   select:"id,title,summary,ai_summary,lang,url,source_name,article_translations(lang,title,summary,ai_summary)",
-   editorial_status:"eq.published",order:"published_at.desc",limit:String(pageSize),offset:String(offset)
-  });
-  const response=await dbRequest("articles?"+params.toString());
-  if(!response.ok) throw new Error("Translation scan failed at offset "+offset+": "+response.status+" "+(await response.text()).slice(0,180));
-  const rows=await response.json();
-  scanned+=rows.length;
-  for(const article of rows) {
-   if(!article.title) continue;
-   const declared=String(article.lang||"").toLowerCase();
-   const sourceLang=declared.startsWith("ar")?"ar":(declared.startsWith("en")?"en":(/[\\u0600-\\u06FF]/.test(article.title)?"ar":"en"));
-   const target=sourceLang==="ar"?"en":"ar";
-   const existing=(article.article_translations||[]).find((item:any)=>item.lang===target);
-   const complete=!!(existing?.title&&existing?.summary&&(!article.ai_summary||existing?.ai_summary));
-   if(!complete && perTarget[target as "ar"|"en"]<5) {
-    pending.push({id:article.id,target,sourceLang,title:String(article.title).slice(0,100)});
-    perTarget[target as "ar"|"en"]++;
+ const lockResponse=await dbRequest("rpc/claim_translation_worker",{method:"POST",headers:{"Content-Type":"application/json"},body:"{}"});
+ if(!lockResponse.ok) throw new Error("Could not acquire translation worker lock: "+lockResponse.status+" "+(await lockResponse.text()).slice(0,180));
+ const claimed=await lockResponse.json();
+ if(claimed!==true) return {pipeline:"translation",skipped:"worker_busy"};
+ try {
+  const runId=await beginRun("translation");
+  const pending:any[]=[];
+  const perTarget={ar:0,en:0};
+  const pageSize=500;
+  let scanned=0;
+  for(let offset=0;offset<20000 && pending.length<10;offset+=pageSize) {
+   const params=new URLSearchParams({
+    select:"id,title,summary,ai_summary,lang,url,source_name,article_translations(lang,title,summary,ai_summary)",
+    editorial_status:"eq.published",order:"published_at.desc",limit:String(pageSize),offset:String(offset)
+   });
+   const response=await dbRequest("articles?"+params.toString());
+   if(!response.ok) throw new Error("Translation scan failed at offset "+offset+": "+response.status+" "+(await response.text()).slice(0,180));
+   const rows=await response.json();
+   scanned+=rows.length;
+   for(const article of rows) {
+    if(!article.title) continue;
+    const declared=String(article.lang||"").toLowerCase();
+    const sourceLang=declared.startsWith("ar")?"ar":(declared.startsWith("en")?"en":(/[\\u0600-\\u06FF]/.test(article.title)?"ar":"en"));
+    const target=sourceLang==="ar"?"en":"ar";
+    const existing=(article.article_translations||[]).find((item:any)=>item.lang===target);
+    const complete=!!(existing?.title&&existing?.summary&&(!article.ai_summary||existing?.ai_summary));
+    if(!complete && perTarget[target as "ar"|"en"]<5) {
+     pending.push({id:article.id,target,sourceLang,title:String(article.title).slice(0,100)});
+     perTarget[target as "ar"|"en"]++;
+    }
+    if(pending.length>=10) break;
    }
-   if(pending.length>=10) break;
+   if(pending.length>=10 || rows.length<pageSize) break;
   }
-  if(pending.length>=10 || rows.length<pageSize) break;
+  if(!pending.length) {
+   await updateRun(runId,{source_count:0,successful_sources:0,failed_sources:0,parsed_items:0,error_summary:null});
+   return {pipeline:"translation",scanned,selected:0,translated:0,already_translated:0,failed:0,deferred:0};
+  }
+  const response=await fetch(SUPABASE_URL+"/functions/v1/translate-articles",{
+   method:"POST",
+   headers:{...DB_HEADERS,"Content-Type":"application/json"},
+   body:JSON.stringify({article_ids:pending.map(item=>item.id)}),
+   signal:AbortSignal.timeout(155000)
+  });
+  const body=await response.json().catch(()=>({}));
+  if(!response.ok) throw new Error("Translator HTTP "+response.status+": "+JSON.stringify(body).slice(0,350));
+  const results=Array.isArray(body.results)?body.results:[];
+  const translated=results.filter((item:any)=>item.status==="translated").length;
+  const already=results.filter((item:any)=>item.status==="already_translated").length;
+  const failed=results.filter((item:any)=>item.status==="failed").length;
+  const deferred=results.filter((item:any)=>item.status==="deferred").length;
+  await updateRun(runId,{
+   source_count:pending.length,
+   successful_sources:translated+already,
+   failed_sources:failed+deferred,
+   parsed_items:pending.length,
+   error_summary:results.filter((item:any)=>item.status==="failed"||item.status==="deferred").slice(0,8).map((item:any)=>String(item.id)+": "+String(item.error||item.status)).join(" | ")||null
+  });
+  return {pipeline:"translation",scanned,selected:pending.length,translated,already_translated:already,failed,deferred,targets:pending.map(item=>item.target),providers:body.providers_configured||null,concurrency:body.concurrency||null};
+ } finally {
+  await dbRequest("rpc/release_translation_worker",{method:"POST",headers:{"Content-Type":"application/json"},body:"{}"}).catch(()=>null);
  }
- if(!pending.length) {
-  await updateRun(runId,{source_count:0,successful_sources:0,failed_sources:0,parsed_items:0,error_summary:null});
-  return {pipeline:"translation",scanned,selected:0,translated:0,already_translated:0,failed:0,deferred:0};
- }
- const response=await fetch(SUPABASE_URL+"/functions/v1/translate-articles",{
-  method:"POST",
-  headers:{...DB_HEADERS,"Content-Type":"application/json"},
-  body:JSON.stringify({article_ids:pending.map(item=>item.id)}),
-  signal:AbortSignal.timeout(155000)
- });
- const body=await response.json().catch(()=>({}));
- if(!response.ok) throw new Error("Translator HTTP "+response.status+": "+JSON.stringify(body).slice(0,350));
- const results=Array.isArray(body.results)?body.results:[];
- const translated=results.filter((item:any)=>item.status==="translated").length;
- const already=results.filter((item:any)=>item.status==="already_translated").length;
- const failed=results.filter((item:any)=>item.status==="failed").length;
- const deferred=results.filter((item:any)=>item.status==="deferred").length;
- await updateRun(runId,{
-  source_count:pending.length,
-  successful_sources:translated+already,
-  failed_sources:failed+deferred,
-  parsed_items:pending.length,
-  error_summary:results.filter((item:any)=>item.status==="failed"||item.status==="deferred").slice(0,8).map((item:any)=>String(item.id)+": "+String(item.error||item.status)).join(" | ")||null
- });
- return {pipeline:"translation",scanned,selected:pending.length,translated,already_translated:already,failed,deferred,targets:pending.map(item=>item.target)};
 }
-
 Deno.serve(async (req) => {
  if(req.method!=="POST") return Response.json({error:"POST required"},{status:405});
  if(!SERVICE_KEY) return Response.json({error:"Missing service key"},{status:500});
