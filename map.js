@@ -5,7 +5,7 @@ let lang=localStorage.getItem("wrldline:language")==="en"?"en":"ar";
 const labels={ar:{critical:"حرج",high:"مرتفع",elevated:"متصاعد",guarded:"مراقبة",low:"منخفض",unknown:"غير محدد"},en:{critical:"Critical",high:"High",elevated:"Elevated",guarded:"Guarded",low:"Low",unknown:"Unknown"}};
 const t=(ar,en)=>lang==="ar"?ar:en;const label=r=>labels[lang][r]||labels[lang].unknown;
 const colors={critical:"#541522",high:"#d94b4b",elevated:"#e9953e",guarded:"#e6c84f",low:"#42a875",unknown:"#cbd3dc"};
-let map,geoLayer,markerLayer,geoCache=null,articles=[],countryEvents=new Map(),activeCountry=null,activeCountryName="";
+let map,geoLayer,markerLayer,geoCache=null,articles=[],countryEvents=new Map(),activeCountry=null,activeCountryName="",dataLoading=false;
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const riskClass=r=>"risk-"+(labels[lang][r]?r:"unknown");
 function riskOf(items){return items.reduce((best,a)=>((a.ai_risk_score||0)>(best?.ai_risk_score||0)?a:best),null);}
@@ -17,8 +17,9 @@ function filteredItems(items){
  return items.filter(a=>(risk==="all"||a.ai_risk_level===risk)&&(type==="all"||a.ai_event_type===type)&&new Date(a.published_at||0).getTime()>=since);
 }
 async function loadData(){
+ if(dataLoading)return;dataLoading=true;
  try{
-  const url=API+"/rest/v1/articles?select=id,title,summary,category,country,source_name,url,published_at,article_translations(*),ai_country_code,ai_region,ai_event_type,ai_risk_level,ai_risk_score,ai_confidence,ai_summary,ai_location_name,ai_latitude,ai_longitude,ai_classification_status&editorial_status=eq.published&ai_classification_status=eq.classified&ai_country_code=not.is.null&not.or=(url.ilike.*t.me*,source_url.ilike.*t.me*,source_name.ilike.*telegram*)&order=published_at.desc&limit=1000";
+  const url=API+"/rest/v1/articles?select=id,title,summary,category,country,source_name,url,published_at,article_translations(lang,title,summary,ai_summary),ai_country_code,ai_region,ai_event_type,ai_risk_level,ai_risk_score,ai_confidence,ai_summary,ai_location_name,ai_latitude,ai_longitude,ai_classification_status&editorial_status=eq.published&ai_classification_status=eq.classified&ai_country_code=not.is.null&not.or=(url.ilike.*t.me*,source_url.ilike.*t.me*,source_name.ilike.*telegram*)&order=published_at.desc&limit=500";
   const res=await fetch(url,{headers:{apikey:KEY,Authorization:"Bearer "+KEY}});
   if(!res.ok)throw new Error(t("تعذر تحميل التحليلات (","Could not load analysis (")+res.status+")");
   const data=await res.json(),since=Date.now()-7*86400000;
@@ -31,10 +32,10 @@ async function loadData(){
   const types=[...new Set(articles.map(a=>a.ai_event_type).filter(Boolean))].sort();
   $("eventTypeFilter").innerHTML='<option value="all">'+t("كل أنواع الأحداث","All event types")+"</option>"+types.map(x=>'<option value="'+esc(x)+'">'+esc(x)+'</option>').join("");
   renderEvents(filteredItems(articles),t("أبرز الأحداث","Top events"));
-  const geo=await fetch("https://raw.githubusercontent.com/datasets/geo-countries/master/data/countries.geojson");
-  if(!geo.ok)throw new Error(t("تعذر تحميل حدود الدول الجغرافية","Could not load country boundaries"));
-  geoCache=await geo.json();drawCountries(geoCache);addEventMarkers();
+  if(!geoCache){const geo=await fetch("https://raw.githubusercontent.com/datasets/geo-countries/master/data/countries.geojson");if(!geo.ok)throw new Error(t("تعذر تحميل حدود الدول الجغرافية","Could not load country boundaries"));geoCache=await geo.json();}
+  drawCountries(geoCache);addEventMarkers();
  }catch(err){$("eventList").innerHTML='<div class="empty">'+esc(err.message)+'</div>';$("updatedAt").textContent=t("تعذر تحديث المرصد","Monitor update failed");console.error(err);}
+ finally{dataLoading=false;}
 }
 function countryCode(feature){const p=feature.properties||{};return String(p.ISO_A3||p.ADM0_A3||p.iso_a3||feature.id||"").toUpperCase();}
 function countryName(feature){const p=feature.properties||{};const code=String(p.ISO_A2||p.iso_a2||"").toUpperCase();try{if(code&&code!=="-")return new Intl.DisplayNames([lang==="ar"?"ar":"en"],{type:"region"}).of(code);}catch{}return p.ADMIN||p.name||p.NAME||t("دولة","Country");}
