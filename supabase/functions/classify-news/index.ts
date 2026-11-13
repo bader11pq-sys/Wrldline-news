@@ -221,13 +221,13 @@ Deno.serve(async (req: Request) => {
           }, { onConflict: "singleton" });
         }
         await db.from("articles").update({
-          ai_classification_status: "deferred",
+          ai_classification_status: "failed",
           ai_classified_at: new Date().toISOString()
         }).eq("id", article.id);
         results.push({ id: article.id, status: "deferred", retry_after_seconds: (error as any).retryAfter || 60, error: String(error).slice(0, 220) });
         break;
       }
-      await db.from("articles").update({ ai_classification_status: "failed" }).eq("id", article.id);
+      await db.from("articles").update({ ai_classification_status: "failed", ai_classified_at: new Date().toISOString() }).eq("id", article.id);
       results.push({ id: article.id, status: "failed", error: String(error).slice(0, 220) });
     }
   }
