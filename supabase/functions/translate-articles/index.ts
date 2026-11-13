@@ -39,14 +39,15 @@ async function groqGenerate(prompt: string, apiKey: string, maxOutputTokens: num
     }
     const detail = (await response.text()).slice(0, 500);
     lastError = "Groq API " + response.status + ": " + detail;
-    const transient = response.status === 429 || response.status === 503 || response.status >= 500;
+    const invalidStructuredOutput = response.status === 400 && /Failed to validate JSON|invalid.*json/i.test(detail);
+    const transient = response.status === 429 || response.status === 503 || response.status >= 500 || invalidStructuredOutput;
     if (!transient) throw new Error(lastError);
     if (attempt === 2) throw Object.assign(new Error(lastError), { deferred: true, retryAfter: response.status === 429 ? 60 : 30 });
     const retryHeader = response.headers.get("retry-after");
     const retrySeconds = retryHeader ? Number(retryHeader) : NaN;
-    const delay = Number.isFinite(retrySeconds)
+    const delay = invalidStructuredOutput ? 1000 + Math.floor(Math.random() * 500) : (Number.isFinite(retrySeconds)
       ? Math.min(12000, Math.max(1500, retrySeconds * 1000))
-      : (2500 * (attempt + 1) + Math.floor(Math.random() * 500));
+      : (2500 * (attempt + 1) + Math.floor(Math.random() * 500)));
     await new Promise(resolve => setTimeout(resolve, delay));
   }
   throw Object.assign(new Error(lastError || "Groq temporarily unavailable"), { deferred: true, retryAfter: 60 });
@@ -224,5 +225,5 @@ Deno.serve(async(req:Request)=>{
  for(const article of queue) {
   if(!results.some(item=>item.id===article.id)) results.push({id:article.id,status:"deferred",error:"Batch paused after provider backoff"});
  }
- return json({processed:results.length,results,concurrency:Math.min(3,queue.length),gemini_cooldown:geminiCoolingDown});
+ return json({processed:results.length,results,concurrency:Math.min(1,queue.length),gemini_cooldown:geminiCoolingDown,providers_configured:{gemini:!!gemini,groq:!!groqKey,openrouter:!!openRouterKey}});
 });
