@@ -1,7 +1,7 @@
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 const MAX_PER_RUN = 30;
-const BATCH_SIZE = 10;
+const BATCH_SIZE = 3;
 
 if (!SUPABASE_URL || !SERVICE_KEY) {
   console.log("AI background classification skipped: configure SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY in GitHub Actions secrets.");
