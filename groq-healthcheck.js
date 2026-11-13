@@ -1,3 +1,4 @@
+// Trigger a fresh server-side probe after Edge Function redeployment.
 const SUPABASE_URL=process.env.SUPABASE_URL,KEY=process.env.SUPABASE_SERVICE_ROLE_KEY;
 if(!SUPABASE_URL||!KEY)throw new Error("Missing Supabase workflow secrets.");
 const response=await fetch(SUPABASE_URL+"/functions/v1/groq-healthcheck",{method:"POST",headers:{apikey:KEY,Authorization:"Bearer "+KEY,"Content-Type":"application/json"},body:"{}"});
