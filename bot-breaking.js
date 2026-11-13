@@ -31,8 +31,54 @@ const FEEDS=[
  {publisher:"رويترز",url:GOOGLE("reuters.com","en"),lang:"en"},
  {publisher:"Associated Press",url:GOOGLE("apnews.com","en"),lang:"en"},
  {publisher:"BBC News",url:GOOGLE("bbc.com/news","en"),lang:"en"}
+ {publisher:"AFP",url:GOOGLE("afp.com","en"),lang:"en"},
+ {publisher:"EFE",url:GOOGLE("efe.com","en"),lang:"en"},
+ {publisher:"dpa",url:GOOGLE("dpa.com","en"),lang:"en"},
+ {publisher:"Kyodo News",url:GOOGLE("english.kyodonews.net","en"),lang:"en"},
+ {publisher:"Jiji Press",url:GOOGLE("jiji.com","en"),lang:"en"},
+ {publisher:"Xinhua",url:GOOGLE("news.cn","en"),lang:"en"},
+ {publisher:"TASS",url:GOOGLE("tass.com","en"),lang:"en"},
+ {publisher:"UPI",url:GOOGLE("upi.com","en"),lang:"en"},
+ {publisher:"Yonhap News Agency",url:GOOGLE("yna.co.kr","en"),lang:"en"},
+ {publisher:"NHK World",url:GOOGLE("nhk.or.jp","en"),lang:"en"},
+ {publisher:"CNA",url:GOOGLE("channelnewsasia.com","en"),lang:"en"},
+ {publisher:"Bernama",url:GOOGLE("bernama.com","en"),lang:"en"},
+ {publisher:"ANSA",url:GOOGLE("ansa.it","en"),lang:"en"},
+ {publisher:"The Hindu",url:GOOGLE("thehindu.com","en"),lang:"en"},
+ {publisher:"The Times of India",url:GOOGLE("timesofindia.indiatimes.com","en"),lang:"en"},
+ {publisher:"The Indian Express",url:GOOGLE("indianexpress.com","en"),lang:"en"},
+ {publisher:"Hindustan Times",url:GOOGLE("hindustantimes.com","en"),lang:"en"},
+ {publisher:"Dawn",url:GOOGLE("dawn.com","en"),lang:"en"},
+ {publisher:"South China Morning Post",url:GOOGLE("scmp.com","en"),lang:"en"},
+ {publisher:"The Japan Times",url:GOOGLE("japantimes.co.jp","en"),lang:"en"},
+ {publisher:"Nikkei Asia",url:GOOGLE("asia.nikkei.com","en"),lang:"en"},
+ {publisher:"The Korea Herald",url:GOOGLE("koreaherald.com","en"),lang:"en"},
+ {publisher:"The Straits Times",url:GOOGLE("straitstimes.com","en"),lang:"en"},
+ {publisher:"The Sydney Morning Herald",url:GOOGLE("smh.com.au","en"),lang:"en"},
+ {publisher:"ABC News Australia",url:GOOGLE("abc.net.au","en"),lang:"en"},
+ {publisher:"CBC News",url:GOOGLE("cbc.ca","en"),lang:"en"},
+ {publisher:"The Globe and Mail",url:GOOGLE("theglobeandmail.com","en"),lang:"en"},
+ {publisher:"Toronto Star",url:GOOGLE("thestar.com","en"),lang:"en"},
+ {publisher:"Le Monde",url:GOOGLE("lemonde.fr","en"),lang:"en"},
+ {publisher:"El País",url:GOOGLE("english.elpais.com","en"),lang:"en"},
+ {publisher:"Der Spiegel",url:GOOGLE("spiegel.de","en"),lang:"en"},
+ {publisher:"POLITICO Europe",url:GOOGLE("politico.eu","en"),lang:"en"},
+ {publisher:"The Independent",url:GOOGLE("independent.co.uk","en"),lang:"en"},
+ {publisher:"The Telegraph",url:GOOGLE("telegraph.co.uk","en"),lang:"en"},
+ {publisher:"The Wall Street Journal",url:GOOGLE("wsj.com","en"),lang:"en"},
+ {publisher:"Financial Times",url:GOOGLE("ft.com","en"),lang:"en"},
+ {publisher:"The Economist",url:GOOGLE("economist.com","en"),lang:"en"},
+ {publisher:"Bloomberg",url:GOOGLE("bloomberg.com","en"),lang:"en"},
+ {publisher:"Axios",url:GOOGLE("axios.com","en"),lang:"en"},
+ {publisher:"Newsweek",url:GOOGLE("newsweek.com","en"),lang:"en"},
+ {publisher:"The Atlantic",url:GOOGLE("theatlantic.com","en"),lang:"en"},
+ {publisher:"Semafor",url:GOOGLE("semafor.com","en"),lang:"en"},
+ {publisher:"The Kyiv Independent",url:GOOGLE("kyivindependent.com","en"),lang:"en"},
+ {publisher:"Ukrainska Pravda",url:GOOGLE("pravda.com.ua","en"),lang:"en"},
+ {publisher:"The Washington Post",url:GOOGLE("washingtonpost.com","en"),lang:"en"},
+ {publisher:"The Guardian",url:GOOGLE("theguardian.com","en"),lang:"en"}
 ];
-const urgent=/\bBREAKING\b|\bJUST IN\b|\bLIVE\b|عاجل|الآن|قبل قليل|تطور عاجل|نبأ عاجل/i;
+const urgent=//\bBREAKING\b|\bJUST IN\b|\bLIVE\b|عاجل|الآن|قبل قليل|تطور عاجل|نبأ عاجل/i;
 function dec(s=""){return String(s).replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g,"$1").replace(/&amp;/g,"&").replace(/&quot;/g,'"').replace(/&#39;|&#x27;/g,"'").replace(/&lt;/g,"<").replace(/&gt;/g,">").replace(/&#(\d+);/g,(_,n)=>String.fromCodePoint(+n)).replace(/&#x([0-9a-f]+);/gi,(_,n)=>String.fromCodePoint(parseInt(n,16))).replace(/<br\s*\/?\s*>/gi," ").replace(/<[^>]*>/g," ").replace(/\s+/g," ").trim();}
 function tag(b,n){const m=b.match(new RegExp("<"+n+"(?:\\s[^>]*)?>([\\s\\S]*?)</"+n+">","i"));return m?dec(m[1]):"";}
 function rssRows(xml,f){
@@ -69,7 +115,7 @@ function rawItemCount(body,f){
 async function collect(f){
  try{
   const url=f.type==="telegram"?"https://t.me/s/"+f.handle:f.url;
-  const r=await fetch(url,{headers:{"User-Agent":"Mozilla/5.0 (compatible; WRLDLINE-Breaking/3.0)","Accept":"text/html,application/rss+xml,application/xml,*/*"},signal:AbortSignal.timeout(15000)});
+  const r=await fetch(url,{headers:{"User-Agent":"Mozilla/5.0 (compatible; WRLDLINE-Breaking/3.0)","Accept":"text/html,application/rss+xml,application/xml,*/*"},signal:AbortSignal.timeout(10000)});
   if(!r.ok)throw new Error("HTTP "+r.status);
   const body=await r.text(),raw=rawItemCount(body,f),rows=f.type==="telegram"?telegramRows(body,f):rssRows(body,f);
   if(rows.length){
@@ -82,7 +128,7 @@ async function collect(f){
 }
 async function main(){
  if(!URL||!KEY)throw new Error("Missing Supabase credentials");
- const results=await Promise.all(FEEDS.map(collect));
+ let next=0;const results=new Array(FEEDS.length);async function worker(){while(next<FEEDS.length){const i=next++;results[i]=await collect(FEEDS[i]);}}await Promise.all(Array.from({length:18},worker));
  const summary={feeds:FEEDS.length,successful:results.filter(x=>x.ok).length,failed:results.filter(x=>!x.ok).length,alerts:results.reduce((n,x)=>n+x.count,0),raw_items:results.reduce((n,x)=>n+(x.raw||0),0),empty_sources:results.filter(x=>x.ok&&x.raw===0).map(x=>x.source),telegram:FEEDS.filter(x=>x.type==="telegram").length};
  console.log("BREAKING_SUMMARY "+JSON.stringify(summary));
  if(summary.successful===0)throw new Error("All dedicated breaking sources failed");
