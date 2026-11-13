@@ -6,19 +6,7 @@ if (!SUPABASE_URL || !SERVICE_KEY) { console.log("Translation worker skipped: co
 const headers = { apikey: SERVICE_KEY, Authorization: "Bearer " + SERVICE_KEY };
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 
-async function quotaCooldownActive() {
-  const response = await fetch(SUPABASE_URL + "/rest/v1/gemini_rate_limits?select=cooldown_until&singleton=eq.true", { headers });
-  if (!response.ok) throw new Error("Could not read Gemini cooldown: HTTP " + response.status);
-  const rows = await response.json();
-  const until = rows[0]?.cooldown_until ? Date.parse(rows[0].cooldown_until) : 0;
-  if (until > Date.now()) {
-    console.log("Gemini quota cooldown active until " + new Date(until).toISOString() + "; skipping model calls.");
-    return true;
-  }
-  return false;
-}
 async function main() {
-  if (await quotaCooldownActive()) return;
   const q = new URLSearchParams({
     select: "id,title,summary,ai_summary,lang,url,source_url,source_name,article_translations(lang,ai_summary,title,summary)",
     editorial_status: "eq.published", order: "published_at.asc", limit: "500"
