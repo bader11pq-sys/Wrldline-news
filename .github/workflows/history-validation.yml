@@ -6,6 +6,7 @@ on:
       - 'history.html'
       - 'history-lab.js'
       - 'history-expansion.js'
+      - '.github/workflows/history-validation.yml'
 jobs:
   validate:
     runs-on: ubuntu-latest
