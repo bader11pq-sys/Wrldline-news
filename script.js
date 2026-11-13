@@ -244,6 +244,8 @@ function updateBreaking(){
   marquee.classList.remove("is-moving");
   marquee.style.removeProperty("--breaking-duration");
   marquee.setAttribute("dir","auto");
+  const firstStrong=String(item.title||"").match(/[A-Za-z\u0600-\u06FF]/);
+  marquee.classList.toggle("is-ltr",!!firstStrong&&/[A-Za-z]/.test(firstStrong[0]));
   marquee.style.removeProperty("direction");
   marquee.style.removeProperty("unicode-bidi");
   requestAnimationFrame(()=>{
