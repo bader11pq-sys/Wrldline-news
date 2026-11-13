@@ -1,0 +1,21 @@
+name: Groq API Healthcheck
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'groq-healthcheck.js'
+  workflow_dispatch:
+jobs:
+  verify-groq:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Verify Groq key and JSON response
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: node groq-healthcheck.js
