@@ -17,11 +17,8 @@
       const story=stories[index],footer=slide.querySelector(".shorts-footer");if(!story||!footer)return;
       const share=document.createElement("button");share.type="button";share.className="shorts-share";share.textContent=t("مشاركة الخبر","Share story");
       share.addEventListener("click",async()=>{
-        const url=new URL("/",location.origin);url.searchParams.set("article",story.id);
-        try{if(navigator.share){await navigator.share({title:story.title,text:story.summary||"خبر من WRLDLINE NEWS",url:url.href});return;}
-          if(navigator.clipboard?.writeText){await navigator.clipboard.writeText(url.href);share.textContent=t("تم نسخ الرابط ✓","Link copied ✓");return;}
-          window.prompt(t("انسخ رابط الخبر","Copy story link"),url.href);
-        }catch(error){if(error?.name!=="AbortError")console.warn("WRLDLINE Shorts share:",error);}
+        if(window.WRLDLINE_SHARE){await window.WRLDLINE_SHARE.share({title:story.title,description:story.summary||"",category:category,source:story.source_name||"WRLDLINE NEWS",image:story.image_url||"",button:share});return;}
+        share.textContent=t("جارٍ تجهيز الصورة…","Preparing image…");
       });
       footer.append(share);
     });
