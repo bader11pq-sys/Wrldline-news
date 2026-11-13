@@ -91,7 +91,7 @@ function bindEvents(){
  window.addEventListener("popstate",()=>{if(!new URLSearchParams(location.search).has("article"))closeArticle(false);});
 }
 async function fetchNews(manual=false){
- if(state.loading){state.refetchAfterCurrent=true;return;}state.loading=true;const refresh=document.getElementById("refreshButton");if(refresh){refresh.disabled=true;refresh.classList.add("is-loading");refresh.setAttribute("aria-busy","true");}document.getElementById("connectionLabel").textContent=ui("جارٍ تحديث الأخبار","Updating newsroom");document.getElementById("newsStatus")?.classList.add("is-updating");
+ if(state.loading){state.refetchAfterCurrent=true;return;}state.loading=true;const refresh=document.getElementById("refreshButton");if(refresh){refresh.disabled=true;refresh.classList.add("is-loading");refresh.setAttribute("aria-busy","true");}document.getElementById("connectionLabel").textContent=ui("جارٍ تحديث الأخبار","Updating newsroom");document.getElementById("newsStatus")?.classList.remove("is-error");document.getElementById("newsStatus")?.classList.add("is-updating");
  try{
   const headers={apikey:SUPABASE_ANON_KEY,Authorization:"Bearer "+SUPABASE_ANON_KEY};
   const res=await fetch(SUPABASE_URL+"/rest/v1/articles?select=id,title,summary,category,country,source_name,url,source_url,published_at,received_at,lang,media_type,image_url,is_breaking,editorial_status,ai_country_code,ai_summary,ai_risk_level,ai_risk_score,ai_confidence,article_translations(lang,title,summary,ai_summary)&editorial_status=eq.published&order=published_at.desc&limit=1000",{headers,signal:AbortSignal.timeout(18000)});
