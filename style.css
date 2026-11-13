@@ -108,3 +108,9 @@ button:disabled{opacity:.58;cursor:wait}
  .modal-image{max-height:240px}
 }
 @media(prefers-reduced-motion:reduce){.back-to-top{transition:none}}
+
+.saved-row-wrap{display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--line)}
+.saved-row-wrap .saved-row{flex:1;min-width:0;border:0}
+.saved-remove{flex:0 0 auto;border:1px solid var(--line);border-radius:8px;padding:7px 10px;background:transparent;color:var(--muted);font:inherit;font-size:11px;cursor:pointer}
+.saved-remove:hover{border-color:var(--red);color:var(--red)}
+.saved-row-wrap :focus-visible{outline:2px solid var(--accent);outline-offset:2px}
