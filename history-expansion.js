@@ -163,8 +163,8 @@ a.innerHTML=opts;b.innerHTML=opts;b.value="1";
 function renderComparison(){
 const x=comparisons[Number(a.value)],y=comparisons[Number(b.value)];
 const rows=["التنظيم السياسي","الاقتصاد والاتصال","أنواع الأدلة","سؤال التحليل"];
-const ix=[2,3,4,6];
-$("hdComparison").innerHTML='<table><thead><tr><th>محور المقارنة</th><th>'+esc(x[0])+'</th><th>'+esc(x[1])+'</th><th>'+esc(y[0])+'</th><th>'+esc(y[1])+'</th></tr></thead><tbody>'+ix.map((f,i)=>'<tr><th>'+rows[i]+'</th><td>'+esc(x[f])+'</td><td>'+esc(x[f])+'</td><td>'+esc(y[f])+'</td><td>'+esc(y[f])+'</td></tr>').join("")+'</tbody></table>';
+const values=[[x[2],x[3],y[2],y[3]],[x[2],x[3],y[2],y[3]],[x[4],x[5],y[4],y[5]],[x[6],x[6],y[6],y[6]]];
+$("hdComparison").innerHTML='<table><thead><tr><th>محور المقارنة</th><th>'+esc(x[0])+'</th><th>'+esc(x[1])+'</th><th>'+esc(y[0])+'</th><th>'+esc(y[1])+'</th></tr></thead><tbody>'+rows.map((label,i)=>'<tr><th>'+label+'</th>'+values[i].map(v=>'<td>'+esc(v)+'</td>').join("")+'</tr>').join("")+'</tbody></table>';
 }
 a.addEventListener("change",renderComparison);b.addEventListener("change",renderComparison);renderComparison();
 $("hdSources").innerHTML=sources.map(s=>'<article class="hd-source"><a href="'+esc(s[2])+'" target="_blank" rel="noopener noreferrer">'+esc(s[0])+' ↗</a><p>'+esc(s[1])+'</p></article>').join("");
