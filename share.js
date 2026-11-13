@@ -72,4 +72,22 @@ async function share(data){
   console.error("WRLDLINE share:",error);toast(tr("تعذر تجهيز بطاقة المشاركة. حاول مرة أخرى.","Could not prepare the share card. Please try again."));return false;
  }finally{if(button){button.disabled=false;delete button.dataset.busy;}}
 }
-window.WRLDLINE_SHARE={share,payloadFrom};
+
+const inlineSelectors=[".country-summary",".detail",".briefing-story",".briefing-list-item",".atlas-event",".eu-card",".chapter",".culture",".lab-card",".hd-event",".hd-card",".history-photo",".market-card",".market-tape-panel",".market-widget-shell",".markets-hero",".shorts-slide",".leaflet-popup-content",".era",".fact",".point",".briefing-category",".market-disclosure",".stat",".sources"];
+function attachInline(root=document){
+ if(root.nodeType===1&&root.matches?.(inlineSelectors.join(",")))addInline(root);
+ root.querySelectorAll?.(inlineSelectors.join(",")).forEach(addInline);
+}
+function addInline(el){
+ if(el.dataset.wrldlineShareReady==="1"||el.closest("#wrldlineShareToast")||el.querySelector(".shorts-share,.wrldline-share-button"))return;
+ el.dataset.wrldlineShareReady="1";
+ const b=document.createElement("button");b.type="button";b.className="wrldline-share-button";b.textContent=tr("مشاركة","Share");b.setAttribute("aria-label",tr("مشاركة هذا المحتوى","Share this content"));
+ b.addEventListener("click",e=>{e.preventDefault();e.stopPropagation();share({...payloadFrom(el),button:b});});
+ if(el.matches("[role=button]")){el.style.position=el.style.position||"relative";b.classList.add("wrldline-share-overlay");el.appendChild(b);}else el.appendChild(b);
+}
+const shareStyle=document.createElement("style");shareStyle.textContent=".wrldline-share-button{display:inline-flex;align-items:center;justify-content:center;margin:8px 0 0;padding:7px 11px;border:1px solid rgba(216,180,117,.5);border-radius:8px;background:rgba(216,180,117,.09);color:inherit;font:600 11px system-ui,sans-serif;cursor:pointer;position:relative;z-index:2}.wrldline-share-button:hover{background:rgba(216,180,117,.18)}.wrldline-share-overlay{position:absolute;inset-inline-end:12px;bottom:12px}.wrldline-share-button:disabled{opacity:.6;cursor:wait}";document.head.appendChild(shareStyle);
+window.WRLDLINE_SHARE={share,payloadFrom,attach:attachInline};
+if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",()=>attachInline());else attachInline();
+const inlineObserver=new MutationObserver(records=>records.forEach(r=>r.addedNodes.forEach(n=>{if(n.nodeType===1)attachInline(n);})));
+inlineObserver.observe(document.documentElement,{childList:true,subtree:true});
+
