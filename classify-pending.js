@@ -1,6 +1,6 @@
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
-const MAX_PER_RUN = 3;
+const MAX_PER_RUN = 15;
 const BATCH_SIZE = 1;
 
 if (!SUPABASE_URL || !SERVICE_KEY) {
