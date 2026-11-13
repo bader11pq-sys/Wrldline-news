@@ -17,4 +17,4 @@ jobs:
       - name: Check history module syntax
         run: node --check history-lab.js && node --check history-expansion.js
       - name: Verify page loads the module
-        run: node -e "const fs=require('node:fs'); const h=fs.readFileSync('history.html','utf8'); if(!h.includes('src=\"history-lab.js\"')) process.exit(1); console.log('History module is linked.');"
+        run: node -e "const fs=require('node:fs'); const h=fs.readFileSync('history.html','utf8'); if(!h.includes('history-expansion.js')) process.exit(1); console.log('Expanded history module is linked.');"
