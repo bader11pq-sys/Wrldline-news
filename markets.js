@@ -39,4 +39,22 @@
   }catch(error){feedStatus.textContent=lang==="ar"?"تعذر الاتصال":"Connection failed";feedGrid.innerHTML='<div class="market-loading">'+(lang==="ar"?"تعذر جلب الأسعار: ":"Could not load provider quotes: ")+String(error.message||error)+'</div>';console.error("WRLDLINE market feed:",error);}
  };
  loadDirectQuotes();setInterval(loadDirectQuotes,60000);
+ const fxGrid=$("#directFxGrid"),fxStatus=$("#directFxStatus");
+ const loadFxRate=async()=>{
+  if(!fxGrid)return;
+  try{
+   const response=await fetch(apiBase+"?mode=fx",{cache:"no-store",signal:AbortSignal.timeout(18000)});
+   const payload=await response.json();
+   if(!response.ok||!payload.quote?.ok)throw new Error(payload.error||"FX feed unavailable");
+   const q=payload.quote,asOf=q.asOf||"";
+   fxGrid.innerHTML='<article class="direct-market-card"><div class="direct-market-top"><span>الدولار الأمريكي / الريال السعودي</span><small>FX</small></div><strong class="direct-market-price">'+money(Number(q.price),"SAR")+'</strong><div class="direct-market-change">'+(lang==="ar"?"سعر الصرف المرجعي":"Reference exchange rate")+'</div><div class="direct-market-foot"><span>'+q.provider+'</span><time>'+asOf+'</time></div><button class="direct-market-share" type="button" id="directFxShare">↗ '+(lang==="ar"?"مشاركة السعر":"Share rate")+'</button></article>';
+   fxStatus.textContent=(lang==="ar"?"آخر تحديث لدى المزود: ":"Provider update: ")+asOf;
+   $("#directFxShare")?.addEventListener("click",()=>{
+    if(!window.WRLDLINE_SHARE)return;
+    window.WRLDLINE_SHARE.share({title:"الدولار الأمريكي مقابل الريال السعودي",description:"1 USD = "+Number(q.price).toFixed(5)+" SAR",category:"أسعار صرف العملات",source:"Alpha Vantage"});
+   });
+  }catch(error){fxStatus.textContent=lang==="ar"?"تعذر تحديث الصرف":"FX update failed";fxGrid.innerHTML='<div class="market-loading">'+(lang==="ar"?"تعذر جلب سعر الصرف: ":"Could not load FX rate: ")+String(error.message||error)+'</div>';console.error("WRLDLINE FX:",error);}
+ };
+ loadFxRate();setInterval(loadFxRate,3600000);
+
 })();
