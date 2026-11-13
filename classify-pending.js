@@ -9,7 +9,7 @@ if (!SUPABASE_URL || !SERVICE_KEY) {
 }
 const headers = { apikey: SERVICE_KEY, Authorization: "Bearer " + SERVICE_KEY, "Content-Type": "application/json" };
 async function main() {
-  // Use current Gemini 3.8 Flash model; prioritize fresh pending stories.
+  // Retry with Gemini 3.8 Flash, low-latency inference and bounded model requests.
   async function loadByStatus(status, limit) {
     const query = new URLSearchParams({ select: "id,url,source_url,source_name,ai_classification_status,editorial_status", editorial_status: "eq.published", ai_classification_status: "eq." + status, order: "published_at.desc", limit: String(limit) });
     const response = await fetch(SUPABASE_URL + "/rest/v1/articles?" + query, { headers });
