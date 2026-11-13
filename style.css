@@ -64,3 +64,10 @@
 @keyframes breaking-flow-rtl{from{transform:translateX(var(--breaking-start,100%))}to{transform:translateX(calc(-100% - var(--breaking-start,100%)))}}
 @keyframes breaking-flow-ltr{from{transform:translateX(calc(-100% - var(--breaking-start,100%)))}to{transform:translateX(var(--breaking-start,100%))}}
 .modal-image{display:block;width:100%;max-height:520px;object-fit:contain;background:#080f19}
+
+/* Breaking ticker: keep bidi reading direction, reverse only travel direction. */
+.breaking-inner p{direction:rtl;text-align:start}
+.breaking-marquee.is-moving.is-rtl{animation-name:breaking-flow-ltr}
+.breaking-marquee.is-moving.is-ltr{animation-name:breaking-flow-rtl}
+@keyframes breaking-flow-ltr{from{transform:translateX(calc(-100% - var(--breaking-start,100%)))}to{transform:translateX(var(--breaking-start,100%))}}
+@keyframes breaking-flow-rtl{from{transform:translateX(var(--breaking-start,100%))}to{transform:translateX(calc(-100% - var(--breaking-start,100%)))}}
