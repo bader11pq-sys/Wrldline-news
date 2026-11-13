@@ -182,7 +182,7 @@ Deno.serve(async(req:Request)=>{
  if(req.method!=="POST")return json({error:"Method not allowed"},405);
  const url=Deno.env.get("SUPABASE_URL"),anon=Deno.env.get("SUPABASE_ANON_KEY")||(()=>{try{return JSON.parse(Deno.env.get("SUPABASE_PUBLISHABLE_KEYS")||"{}").default}catch{return null}})();
  const service=Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")||(()=>{try{return JSON.parse(Deno.env.get("SUPABASE_SECRET_KEYS")||"{}").default}catch{return null}})();
- const deeplKey=Deno.env.get("DEEPL_API_KEY") || null;
+ const deeplKey=Deno.env.get("DEEPL_API_KEY") || Deno.env.get("deepl_API_KEY") || null;
  const gemini=Deno.env.get("GEMINI_API_KEY") || null;
  const groqKey=Deno.env.get("GROQ_API_KEY") || null;
  const openRouterModel=Deno.env.get("OPENROUTER_MODEL") || "";
