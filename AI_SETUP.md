@@ -9,7 +9,7 @@ The repository includes a background worker (`classify-pending.js`) and GitHub A
 **Supabase Dashboard → Project Settings → Edge Functions → Secrets**
 - `NVIDIA_API_KEY` — NVIDIA API Catalog key. This is read only by the server-side classification and provider-healthcheck functions.
 - At least one fallback provider key: `GOOGLE_API_KEY` or `GEMINI_API_KEY`, `GROQ_API_KEY`, and/or `OPENROUTER_API_KEY`.
-- Optional `NVIDIA_MODEL` to override the default model. The tested default is `nvidia/nemotron-3.5-lightning-30b-a3b`.
+- The integration uses the tested model `nvidia/nemotron-3.5-lightning-30b-a3b`.
 
 **GitHub repository → Settings → Secrets and variables → Actions**
 - Store only the server-side credentials required by the relevant workflows, such as `SUPABASE_SERVICE_ROLE_KEY` and `SUPABASE_URL`. GitHub Actions secrets do not automatically become Supabase Edge Function secrets.
