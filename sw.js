@@ -1,4 +1,4 @@
-const CACHE_NAME = "wrldline-shell-v22";
+const CACHE_NAME = "wrldline-shell-v23";
 const NEWS_CACHE = "wrldline-public-news-v1";
 self.addEventListener("install", event => {
   event.waitUntil(self.skipWaiting());
