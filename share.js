@@ -7,8 +7,10 @@ const clean=s=>String(s||"").replace(/[\\u0000-\\u001f\\u007f]/g," ").replace(/\
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 function toast(message){let n=document.getElementById("wrldlineShareToast");if(!n){n=document.createElement("div");n.id="wrldlineShareToast";n.setAttribute("role","status");document.body.appendChild(n);}n.textContent=message;n.classList.add("show");clearTimeout(n._timer);n._timer=setTimeout(()=>n.classList.remove("show"),3600);}
 function payloadFrom(el){
- const title=clean(el.dataset.shareTitle||el.querySelector("h1,h2,h3,h4,.era-title,strong")?.textContent||document.querySelector("main h1,h1")?.textContent||document.title);
- const desc=clean(el.dataset.shareText||el.dataset.shareDescription||[...el.querySelectorAll("p")].map(p=>p.textContent).filter(Boolean).join(" ").slice(0,500));
+ const title=clean(el.dataset.shareTitle||el.querySelector("h1,h2,h3,h4,.era-title,strong")?.textContent||el.closest("section")?.querySelector("h1,h2,h3,h4")?.textContent||document.querySelector("main h1,h1")?.textContent||document.title);
+ const paragraphs=[...el.querySelectorAll("p")].map(p=>p.textContent).filter(Boolean).join(" ");
+ const raw=clean(el.innerText||el.textContent).replace(/مشاركة الصورة|Share image/g,"");
+ const desc=clean(el.dataset.shareText||el.dataset.shareDescription||paragraphs||raw.replace(title,"").slice(0,500));
  const meta=clean(el.dataset.shareMeta||el.querySelector(".risk,.category-label,.briefing-tag,.eu-meta,.event-top,.shorts-category,.eyebrow,.year")?.textContent||document.querySelector("main .eyebrow")?.textContent||"");
  const source=clean(el.dataset.shareSource||el.querySelector(".card-byline,.story-byline,.shorts-footer,.eu-card-foot small,small")?.textContent||"");
  const img=el.dataset.shareImage||el.querySelector("img[src]")?.currentSrc||el.querySelector("img[src]")?.src||"";
@@ -70,7 +72,7 @@ async function share(data){
   console.error("WRLDLINE share:",error);toast(tr("تعذر تجهيز بطاقة المشاركة. حاول مرة أخرى.","Could not prepare the share card. Please try again."));return false;
  }finally{if(button){button.disabled=false;delete button.dataset.busy;}}
 }
-const selectors=[".lead-story",".rail-story",".news-card",".breaking-news-card",".event",".country-summary",".briefing-story",".briefing-list-item",".atlas-event",".eu-card",".country",".chapter",".culture",".lab-card",".hd-event",".hd-card",".history-photo",".market-card",".market-tape-panel",".market-widget-shell",".markets-hero",".shorts-slide",".leaflet-popup-content"];
+const selectors=[".lead-story",".rail-story",".news-card",".breaking-news-card",".event",".country-summary",".briefing-story",".briefing-list-item",".atlas-event",".eu-card",".country",".chapter",".culture",".lab-card",".hd-event",".hd-card",".history-photo",".market-card",".market-tape-panel",".market-widget-shell",".markets-hero",".shorts-slide",".leaflet-popup-content",".era",".fact",".point",".briefing-category",".market-disclosure",".stat",".sources"];
 function attach(root=document){
  if(root.nodeType===1&&root.matches?.(selectors.join(",")))add(root);
  root.querySelectorAll?.(selectors.join(",")).forEach(add);
@@ -96,7 +98,7 @@ const style=document.createElement("style");style.textContent=`
 #wrldlinePageShare{position:fixed;z-index:9998;bottom:calc(18px + env(safe-area-inset-bottom));inset-inline-end:16px;padding:11px 16px;border:1px solid #e2bd7b;border-radius:30px;background:#14283f;color:#fff;font:700 12px inherit;box-shadow:0 8px 28px #0005;cursor:pointer}
 #wrldlineShareToast{position:fixed;z-index:10000;left:50%;bottom:calc(78px + env(safe-area-inset-bottom));transform:translate(-50%,12px);max-width:min(92vw,520px);padding:12px 16px;border:1px solid #d8b475;border-radius:12px;background:#102238;color:#f5f7fa;font:500 12px/1.7 inherit;text-align:center;box-shadow:0 12px 36px #0006;opacity:0;pointer-events:none;transition:.2s}
 #wrldlineShareToast.show{opacity:1;transform:translate(-50%,0)}
-@media(max-width:600px){.wrldline-share-button{font-size:11px;padding:7px 10px}#wrldlinePageShare{bottom:calc(14px + env(safe-area-inset-bottom));inset-inline-end:12px}}
+body:has(.mobile-dock) #wrldlinePageShare{bottom:calc(88px + env(safe-area-inset-bottom))}body:has(.shorts-counter) #wrldlinePageShare{bottom:calc(78px + env(safe-area-inset-bottom))}@media(max-width:600px){.wrldline-share-button{font-size:11px;padding:7px 10px}#wrldlinePageShare{bottom:calc(14px + env(safe-area-inset-bottom));inset-inline-end:12px}}
 `;document.head.appendChild(style);
 if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",()=>{attach();pageShare();});else{attach();pageShare();}
 const observer=new MutationObserver(records=>records.forEach(r=>r.addedNodes.forEach(n=>{if(n.nodeType===1)attach(n);})));
