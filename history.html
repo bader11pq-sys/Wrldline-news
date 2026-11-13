@@ -235,5 +235,5 @@ function openCountry(id){const c=countries.find(x=>x.id===id);if(!c)return;selec
 document.getElementById("filters").addEventListener("click",e=>{const b=e.target.closest("[data-region]");if(!b)return;region=b.dataset.region;document.querySelectorAll(".filter").forEach(x=>x.classList.toggle("active",x===b));renderGrid();});
 search.addEventListener("input",renderGrid);renderGrid();initWorldAtlas();
 document.addEventListener("wrldline:language",()=>{renderGrid();if(selected){const y=detail.getBoundingClientRect().top+window.scrollY;openCountry(selected);window.scrollTo({top:y,behavior:"auto"});}});
-</script><script src="language.js" defer></script>
+</script><script src="history-lab.js" defer></script><script src="language.js" defer></script>
 </body></html>
