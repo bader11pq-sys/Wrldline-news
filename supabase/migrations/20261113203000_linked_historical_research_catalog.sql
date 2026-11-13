@@ -1,4 +1,5 @@
 -- WRLDLINE historical research catalog
+-- Public schema access is granted explicitly; RLS policies below control visible rows.
 -- Normalized event, civilization, geography, source, and comparative-analysis model.
 -- Seed rows are maintained in supabase/seed/history_catalog.sql.
 
@@ -124,7 +125,9 @@ create index if not exists history_regions_parent_idx on public.history_regions(
 create index if not exists history_places_region_idx on public.history_places(region_id);
 create index if not exists history_event_places_place_idx on public.history_event_places(place_id);
 
-do $$
+grant usage on schema public to anon,authenticated;
+
+do $
 declare t text;
 begin
  foreach t in array array[
