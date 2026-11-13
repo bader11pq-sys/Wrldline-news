@@ -12,39 +12,39 @@ function decode(value = "") {
   .replace(/&lt;/g,"<").replace(/&gt;/g,">").replace(/<br\s*\/?\s*>/gi," ")
   .replace(/<[^>]*>/g," ").replace(/\s+/g," ").trim();
 }
-function tag(block,names) {
+function tag(block: string,names: string[]) {
  for (const name of names) {
   const re=new RegExp("<"+name+"(?:\\s[^>]*)?>([\\s\\S]*?)<\\/"+name+">","i");
   const m=block.match(re); if(m) return decode(m[1]);
  }
  return "";
 }
-function xmlEntries(xml) {
+function xmlEntries(xml: string) {
  const rss=xml.match(/<item\b[\s\S]*?<\/item>/gi)||[];
  const atom=xml.match(/<entry\b[\s\S]*?<\/entry>/gi)||[];
  return rss.length?rss:atom;
 }
-function entryLink(block) {
+function entryLink(block: string) {
  const href=(block.match(/<link\b[^>]*href=["']([^"']+)["']/i)||[])[1];
  if(href) return decode(href);
  const link=tag(block,["link"]);
  if(/^https?:\/\//i.test(link)) return link;
  return tag(block,["guid","id"]);
 }
-function entryImage(block) {
+function entryImage(block: string) {
  const m=block.match(/<(?:enclosure|media:content|media:thumbnail)[^>]*(?:url|href)=["']([^"']+)["']/i)||block.match(/<img[^>]+src=["']([^"']+)["']/i);
  return m?decode(m[1]):null;
 }
-function parsedDate(value) {
+function parsedDate(value: string | null | undefined) {
  const d=value?new Date(value):new Date();
  return Number.isNaN(d.getTime())?new Date().toISOString():d.toISOString();
 }
-async function requestText(url,timeout=7000) {
+async function requestText(url: string,timeout=7000) {
  const r=await fetch(url,{headers:{"User-Agent":"Mozilla/5.0 (compatible; WRLDLINE-News/3.0; +https://al-ghaib.us.ci)","Accept":"application/rss+xml, application/atom+xml, application/xml, text/xml, */*"},signal:AbortSignal.timeout(timeout)});
  if(!r.ok) throw new Error("HTTP "+r.status);
  return await r.text();
 }
-function googleFallback(feed) {
+function googleFallback(feed: any) {
  try {
   const u=new URL(feed.url);
   if(u.hostname.includes("news.google.com")) return null;
@@ -54,29 +54,29 @@ function googleFallback(feed) {
   return "https://news.google.com/rss/search?q="+encodeURIComponent(q)+"&hl="+(english?"en-US&gl=US&ceid=US:en":"ar&gl=SA&ceid=SA:ar");
  } catch { return null; }
 }
-function parseGeneral(xml,feed) {
- return xmlEntries(xml).slice(0,25).map(block=>{
+function parseGeneral(xml: string,feed: any) {
+ return xmlEntries(xml).slice(0,25).map((block: string)=>{
   const title=tag(block,["title"]),url=entryLink(block);
   if(!title||!/^https?:\/\//i.test(url)) return null;
   const summary=tag(block,["description","summary","content:encoded","content"]);
   const date=tag(block,["pubDate","published","updated","dc:date"]);
   const arabic=/[\u0600-\u06FF]/.test(title);
-  return {url,title:title.slice(0,500),summary:summary.slice(0,5000),image_url:entryImage(block),category:feed.category||"world",country:COUNTRY_BY_NAME[feed.name]||"دولي",source_name:feed.name,source_url:feed.url,lang:arabic?"ar":(feed.lang||"en"),verification:"unconfirmed",published_at:parsedDate(date),ai_classification_status:"pending",editorial_status:"published"};
+  return {url,title:title.slice(0,500),summary:summary.slice(0,5000),image_url:entryImage(block),category:feed.category||"world",country:COUNTRY_BY_NAME[feed.name as keyof typeof COUNTRY_BY_NAME]||"دولي",source_name:feed.name,source_url:feed.url,lang:arabic?"ar":(feed.lang||"en"),verification:"unconfirmed",published_at:parsedDate(date),ai_classification_status:"pending",editorial_status:"published"};
  }).filter(Boolean);
 }
-async function dbRequest(path,init={}) {
+async function dbRequest(path: string,init: RequestInit & {headers?: Record<string,string>} = {}) {
  return await fetch(SUPABASE_URL+"/rest/v1/"+path,{...init,headers:{...DB_HEADERS,...(init.headers||{})}});
 }
-async function updateRun(id,patch) {
+async function updateRun(id: string | number,patch: Record<string,unknown>) {
  if(!id) return;
  await dbRequest("news_ingestion_runs?id=eq."+id,{method:"PATCH",headers:{"Prefer":"return=minimal"},body:JSON.stringify({...patch,finished_at:new Date().toISOString()})});
 }
-async function beginRun(pipeline) {
+async function beginRun(pipeline: string) {
  const r=await dbRequest("news_ingestion_runs",{method:"POST",headers:{"Prefer":"return=representation"},body:JSON.stringify({pipeline,trigger_source:"supabase_cron"})});
  if(!r.ok) throw new Error("Run log insert failed: "+r.status+" "+(await r.text()).slice(0,180));
  const rows=await r.json(); return rows?.[0]?.id;
 }
-async function processGeneralFeed(feed) {
+async function processGeneralFeed(feed: any) {
  let lastError="No parseable entries";
  const candidates=[feed.url,googleFallback(feed)].filter(Boolean);
  for(let i=0;i<candidates.length;i++) {
@@ -87,11 +87,11 @@ async function processGeneralFeed(feed) {
    const saved=await dbRequest("articles?on_conflict=url",{method:"POST",headers:{"Prefer":"resolution=ignore-duplicates,return=minimal"},body:JSON.stringify(rows)});
    if(!saved.ok) throw new Error("Database HTTP "+saved.status+" "+(await saved.text()).slice(0,160));
    return {ok:true,name:feed.name,parsed:rows.length,usedFallback:i>0};
-  } catch(e) { lastError=String(e?.message||e).slice(0,200); }
+  } catch(e: any) { lastError=String(e?.message||e).slice(0,200); }
  }
  return {ok:false,name:feed.name,parsed:0,error:lastError};
 }
-async function setFeedHealth(feed,result) {
+async function setFeedHealth(feed: any,result: any) {
  const query="feeds?url=eq."+encodeURIComponent(feed.url);
  const patch={last_fetched:result.ok?new Date().toISOString():null,last_error:result.ok?null:result.error,active:true};
  const r=await dbRequest(query,{method:"PATCH",headers:{"Prefer":"return=minimal"},body:JSON.stringify(patch)});
@@ -193,13 +193,13 @@ const FEEDS=[
  {publisher:"The Washington Post",url:GOOGLE("washingtonpost.com","en"),lang:"en"},
  {publisher:"The Guardian",url:GOOGLE("theguardian.com","en"),lang:"en"}
 ];
-function urgentRow(title,url,summary,date,feed,force=false) {
+function urgentRow(title: string,url: string,summary: string,date: string,feed: any,force=false) {
  if(!title||!/^https?:\/\//i.test(url)||(!force&&!URGENT.test(title))) return null;
  const dt=new Date(date||Date.now());
  if(Number.isNaN(dt.getTime())||Date.now()-dt.getTime()>2*60*60*1000||dt.getTime()>Date.now()+5*60*1000) return null;
  return {url,title:title.slice(0,500),summary:(summary||"").slice(0,3000),source_name:feed.publisher+" Breaking Desk",source_url:feed.type==="telegram"?"https://t.me/"+feed.handle:feed.url,category:"world",country:"دولي",lang:feed.lang,verification:"unconfirmed",published_at:dt.toISOString(),editorial_status:"published",ai_classification_status:"pending",is_breaking:true};
 }
-function parseTelegram(html,feed) {
+function parseTelegram(html: string,feed: any) {
  const starts=[...html.matchAll(/<div class="tgme_widget_message\b/g)].map(m=>m.index),out=[];
  for(let i=0;i<starts.length;i++) {
   const block=html.slice(starts[i],starts[i+1]??html.length);
@@ -213,7 +213,7 @@ function parseTelegram(html,feed) {
  }
  return out.slice(0,20);
 }
-function parseBreakingRss(xml,feed) {
+function parseBreakingRss(xml: string,feed: any) {
  const blocks=xmlEntries(xml),isGoogle=String(feed.url||"").includes("news.google.com");
  return blocks.slice(0,20).map(block=>{
   const title=tag(block,["title"]),url=entryLink(block);
@@ -222,7 +222,7 @@ function parseBreakingRss(xml,feed) {
   return urgentRow(title,url,summary,date,feed,isGoogle);
  }).filter(Boolean);
 }
-async function collectBreaking(feed) {
+async function collectBreaking(feed: any) {
  try {
   const url=feed.type==="telegram"?"https://t.me/s/"+feed.handle:feed.url;
   const r=await fetch(url,{headers:{"User-Agent":"Mozilla/5.0 (compatible; WRLDLINE-Breaking/4.0)","Accept":"text/html,application/rss+xml,application/xml,*/*"},signal:AbortSignal.timeout(9000)});
@@ -235,7 +235,7 @@ async function collectBreaking(feed) {
    if(!saved.ok) throw new Error("DB "+saved.status+" "+(await saved.text()).slice(0,160));
   }
   return {ok:true,raw,parsed:rows.length};
- } catch(e) { return {ok:false,raw:0,parsed:0,error:String(e?.message||e).slice(0,180)}; }
+ } catch(e: any) { return {ok:false,raw:0,parsed:0,error:String(e?.message||e).slice(0,180)}; }
 }
 async function runBreaking() {
  const runId=await beginRun("breaking");
@@ -340,7 +340,7 @@ Deno.serve(async (req) => {
   if(!result) return Response.json({error:"mode must be general, breaking, translation, or provider-healthcheck"},{status:400});
   console.log("WRLDLINE_CRON_SUMMARY "+JSON.stringify(result));
   return Response.json({ok:true,...result});
- } catch(e) {
+ } catch(e: any) {
   console.error("WRLDLINE_CRON_ERROR",mode,String(e?.stack||e));
   return Response.json({ok:false,mode,error:String(e?.message||e)},{status:500});
  }
