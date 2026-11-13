@@ -317,7 +317,7 @@ async function toggleSaved(id){
 async function showSaved(){
  let list=state.articles.filter(a=>state.saved.has(a.id));
  if(state.user&&state.db){
-  const {data,error}=await state.db.from("user_saved_articles").select("article_id, article:articles(id,title,summary,category,lang,url,source_url,source_name,published_at,created_at,image_url,media_type,article_translations(lang,title,summary))").eq("user_id",state.user.id).order("created_at",{ascending:false});
+  const {data,error}=await state.db.from("user_saved_articles").select("article_id, article:articles(id,title,summary,category,country,source_name,url,source_url,published_at,created_at,lang,media_type,image_url,is_breaking,editorial_status,verification,verification_source_count,verification_independent_count,verification_field_count,verification_official_count,verification_conflict_count,verification_correction_count,verification_retraction_count,verification_updated_at,ai_country_code,ai_summary,ai_risk_level,ai_risk_score,ai_confidence,article_translations(lang,title,summary,ai_summary),article_evidence(publisher,evidence_url,evidence_type,independent_source,notes,created_at))").eq("user_id",state.user.id).order("created_at",{ascending:false});
   if(!error){list=(data||[]).map(row=>row.article).filter(row=>row&&!isTelegramArticle(row)).map(normalizeArticle);for(const a of list)if(!state.articles.some(x=>x.id===a.id))state.articles.push(a);}
   else showToast("تعذر تحميل المكتبة المتزامنة حالياً");
  }
