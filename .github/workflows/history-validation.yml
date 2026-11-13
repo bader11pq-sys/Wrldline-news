@@ -8,6 +8,8 @@ on:
       - 'history-research.js'
       - 'history-expansion.js'
       - 'history-people.js'
+      - 'supabase/migrations/**'
+      - 'supabase/seed/**'
       - '.github/workflows/history-validation.yml'
 jobs:
   validate:
@@ -21,3 +23,5 @@ jobs:
         run: node --check history-lab.js && node --check history-expansion.js && node --check history-people.js && node --check history-research.js
       - name: Verify page loads the module
         run: node -e "const fs=require('node:fs'); const h=fs.readFileSync('history.html','utf8'); if(!h.includes('history-expansion.js') || !h.includes('history-people.js') || !h.includes('history-research.js')) process.exit(1); console.log('Expanded history and people modules are linked.');"
+      - name: Verify historical database assets and client wiring
+        run: node -e "const fs=require('node:fs'); const h=fs.readFileSync('history.html','utf8'); const m=fs.readFileSync('supabase/migrations/20261113203000_linked_historical_research_catalog.sql','utf8'); const s=fs.readFileSync('supabase/seed/history_catalog.sql','utf8'); if(h.indexOf('supabase-js')>h.indexOf('history-research.js') || !m.includes('history_event_sources') || !m.includes('history_comparison_observations') || !s.includes('history_events')) process.exit(1); console.log('Historical schema, seed, and Supabase client are wired.');"
