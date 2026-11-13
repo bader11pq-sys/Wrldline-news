@@ -1,0 +1,19 @@
+name: Validate interactive history module
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'history.html'
+      - 'history-lab.js'
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Check history module syntax
+        run: node --check history-lab.js
+      - name: Verify page loads the module
+        run: node -e "const fs=require('node:fs'); const h=fs.readFileSync('history.html','utf8'); if(!h.includes('src=\"history-lab.js\"')) process.exit(1); console.log('History module is linked.');"
