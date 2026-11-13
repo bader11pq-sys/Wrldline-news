@@ -184,7 +184,7 @@ Deno.serve(async(req:Request)=>{
   try {
    if(!isWithinAiWindow(article)) return {id:article.id,status:"expired_ignored"};
    const declaredLang=String(article.lang||"").toLowerCase();
-   const sourceLang=declaredLang.startsWith("ar")?"ar":(declaredLang.startsWith("en")?"en":(/[\\u0600-\\u06FF]/.test(article.title||"")?"ar":"en"));
+   const sourceLang=declaredLang.startsWith("ar")?"ar":(declaredLang.startsWith("en")?"en":(/[\u0600-\u06FF]/.test(article.title||"")?"ar":"en"));
    const target=sourceLang==="ar"?"en":"ar";
    const sourceSummary=String(article.summary||article.ai_summary||article.title||"").trim();
    const existing=await db.from("article_translations").select("id,ai_summary,title,summary").eq("article_id",article.id).eq("lang",target).maybeSingle();
