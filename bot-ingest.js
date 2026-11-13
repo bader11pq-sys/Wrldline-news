@@ -68,7 +68,7 @@ const FEEDS = [
   // Reuters, AP and CNN via Google News indexed publisher feeds
   {url:"https://news.google.com/rss/search?q=site%3Areuters.com+when%3A24h&hl=en-US&gl=US&ceid=US:en",name:"Reuters (Google News)",country:"دولي"},
   {url:"https://news.google.com/rss/search?q=site%3Aapnews.com+when%3A24h&hl=en-US&gl=US&ceid=US:en",name:"Associated Press (Google News)",country:"دولي"},
-  {url:"https://news.google.com/rss/search?q=site%3Acnn.com+when%3A24h&hl=en-US&gl=US&ceid=US:en",name:"CNN (Google News)",country:"دولي"}
+  {url:"https://news.google.com/rss/search?q=site%3Acnn.com+when%3A24h&hl=en-US&gl=US&ceid=US:en",name:"CNN (Google News)",country:"دولي"},
   // International wire agencies and global newspapers — added after checking the existing 60-source list
   {url:"https://www.afp.com/en/rss/all/news",name:"AFP",country:"دولي",lang:"en",fallbackUrl:googleNewsUrlEn("afp.com")},
   {url:googleNewsUrlEn("efe.com"),name:"EFE",country:"دولي",lang:"en"},
