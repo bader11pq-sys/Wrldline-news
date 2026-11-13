@@ -53,7 +53,7 @@ async function groqGenerate(prompt: string, apiKey: string, maxOutputTokens: num
   }
   throw Object.assign(new Error(lastError || "Groq temporarily unavailable"), { deferred: true, retryAfter: 60 });
 }
-async function generateWithFallback(prompt: string, geminiKey: string | null, groqKey: string | null, openRouterKey: string | null, maxOutputTokens: number) {
+async function generateWithFallback(prompt: string, geminiKey: string | null, groqKey: string | null, openRouterKey: string | null, openRouterModel: string, maxOutputTokens: number) {
  const errors:string[]=[];
  let geminiQuotaExceeded=false;
  if(geminiKey){
@@ -150,7 +150,7 @@ Deno.serve(async(req:Request)=>{
  const gemini=Deno.env.get("GEMINI_API_KEY") || null;
  const groqKey=Deno.env.get("GROQ_API_KEY") || null;
  const openRouterModel=Deno.env.get("OPENROUTER_MODEL") || "";
- const openRouterKey=Deno.env.get("OPENROUTER_API_KEY") && openRouterModel && openRouterModel!=="openrouter/free" && !openRouterModel.endsWith(":free") ? Deno.env.get("OPENROUTER_API_KEY") : null;
+ const openRouterKey: string | null = Deno.env.get("OPENROUTER_API_KEY") && openRouterModel && openRouterModel!=="openrouter/free" && !openRouterModel.endsWith(":free") ? (Deno.env.get("OPENROUTER_API_KEY") || null) : null;
  if(!url||!anon||!service)return json({error:"Supabase server configuration is incomplete."},500);
  if(!gemini&&!groqKey&&!openRouterKey)return json({error:"Configure GEMINI_API_KEY, GROQ_API_KEY, or OPENROUTER_API_KEY."},503);
  const token=(req.headers.get("Authorization")||"").replace(/^Bearer\s+/i,"");
@@ -195,7 +195,7 @@ Deno.serve(async(req:Request)=>{
     "SUMMARY:\n"+sourceSummary,
     "AI CONTEXT SUMMARY:\n"+(article.ai_summary||sourceSummary)
    ].join("\n");
-   const generated=await generateWithFallback(prompt,geminiForBatch,groqKey,openRouterKey,1800);
+   const generated=await generateWithFallback(prompt,geminiForBatch,groqKey,openRouterKey,openRouterModel,1800);
    const translated=generated.data;
    const title=String(translated.title||"").trim();
    const summary=String(translated.summary||"").trim();
