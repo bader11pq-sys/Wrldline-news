@@ -74,6 +74,39 @@ function resetForm(){
 async function showSession(){await ensureDb();const {data:{session}}=await db.auth.getSession();const role=session?.user?.app_metadata?.role;const allowed=["editor","admin"].includes(role);$("loginPanel").classList.toggle("hidden",!!session);$("accessPanel").classList.toggle("hidden",!session||allowed);$("editorPanel").classList.toggle("hidden",!allowed);if(session&&allowed){$("userLabel").textContent=(session.user.email||"محرر مسجل")+" · "+role;await loadArticles();}else if(session){message("تم تسجيل الدخول، لكن الحساب لا يحمل دوراً تحريرياً موثوقاً.");}}
 $("loginForm").addEventListener("submit",async e=>{e.preventDefault();message("جارٍ التحقق...");try{await ensureDb();const {error}=await db.auth.signInWithPassword({email:$("email").value.trim(),password:$("password").value});if(error){message("تعذر تسجيل الدخول: "+error.message);return;}message("تم تسجيل الدخول.");await showSession();}catch(error){message("حدث خطأ أثناء الاتصال بخدمة الدخول: "+(error?.message||String(error)));}});
 $("logoutButton").addEventListener("click",async()=>{try{await ensureDb();await db.auth.signOut();message("تم تسجيل الخروج.");await showSession();}catch(error){message("تعذر تسجيل الخروج: "+error.message);}});
+async function runProviderHealthcheck(){
+ const button=$("runProviderHealthButton"),summary=$("providerHealthSummary"),host=$("providerHealthResults");
+ button.disabled=true;button.textContent="جارٍ فحص المزودات...";summary.textContent="يتم الآن اختبار المصادقة والاتصال وطلب ترجمة/توليد حقيقي لكل مزود مُعدّ.";host.replaceChildren();
+ try{
+  const {data,error}=await db.functions.invoke("ai-provider-healthcheck",{body:{}});
+  if(error)throw error;
+  const results=Array.isArray(data?.results)?data.results:[];
+  const labels={gemini:"Google Gemini",groq:"Groq",nvidia:"NVIDIA",openrouter:"OpenRouter",gonka:"Gonka",deepl:"DeepL"};
+  const states={passed:"ناجح",failed:"فشل",not_configured:"غير مُعدّ"};
+  const colors={passed:"#1d8b62",failed:"#c64a52",not_configured:"#78879a"};
+  const counts={passed:0,failed:0,not_configured:0};
+  for(const item of results){
+   const status=states[item.status]?item.status:"failed";counts[status]++;
+   const row=document.createElement("div");row.className="item";
+   const title=document.createElement("strong");title.textContent=(labels[item.provider]||item.provider)+" — "+states[status];title.style.color=colors[status];
+   const detail=document.createElement("small");
+   const extras=[];
+   if(item.model)extras.push("النموذج: "+item.model);
+   if(item.operation)extras.push("الاختبار: "+item.operation);
+   if(item.characters_used!==undefined&&item.characters_used!==null)extras.push("الاستهلاك: "+item.characters_used+(item.character_limit!==null?"/"+item.character_limit:""));
+   if(item.models_available!==undefined)extras.push("النماذج المتاحة: "+item.models_available);
+   if(item.error)extras.push("السبب: "+item.error);
+   if(item.key_source)extras.push("مصدر مفتاح Gemini: "+item.key_source);
+   detail.textContent=extras.join(" · ")||(status==="not_configured"?"لم يتم ضبط مفتاح هذا المزود.":status==="passed"?"اكتمل الاختبار بنجاح.":"لم يكتمل الاختبار.");
+   row.append(title,detail);host.append(row);
+  }
+  const stamp=data?.tested_at?new Date(data.tested_at).toLocaleString("ar-SA"):"";
+  summary.textContent="النتيجة: "+counts.passed+" ناجح · "+counts.failed+" فاشل · "+counts.not_configured+" غير مُعدّ"+(stamp?" · آخر فحص: "+stamp:"");
+  if(!results.length)summary.textContent="وصل رد غير متوقع من خدمة الفحص: "+JSON.stringify(data).slice(0,300);
+ }catch(error){summary.textContent="تعذر تنفيذ الفحص: "+(error?.message||String(error))+" — تأكد من تسجيل الدخول بصلاحية محرر أو مدير.";}
+ finally{button.disabled=false;button.textContent="إعادة فحص جميع المزودات";}
+}
+$("runProviderHealthButton").addEventListener("click",runProviderHealthcheck);
 $("resetButton").addEventListener("click",resetForm);$("refreshButton").addEventListener("click",loadArticles);$("classifyButton").addEventListener("click",classifyPending);$("articleSearch").addEventListener("input",renderArticleList);$("statusFilter").addEventListener("change",renderArticleList);
 async function loadArticles(){const {data,error}=await db.from("articles").select("id,title,summary,category,country,source_name,source_url,published_at,url,image_url,media_type,editorial_status,is_breaking,verification,verification_independent_count,verification_field_count,verification_official_count,ai_classification_status,ai_risk_level,ai_confidence,article_translations(*)").order("published_at",{ascending:false}).limit(200);if(error){$("articleList").textContent=t("تعذر تحميل الأخبار: ","Could not load stories: ")+error.message;return;}cachedArticles=data||[];renderArticleList();}
 async function classifyPending(){
