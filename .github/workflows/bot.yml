@@ -1,5 +1,5 @@
 name: WRLDLINE Multi-source News Ingestion
-# AI classification queue now drains pending stories before retries.
+# Gemini-powered AI classification and translation; pending stories are prioritized.
 on:
   push:
     branches: [main]
