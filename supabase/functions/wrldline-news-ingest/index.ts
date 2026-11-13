@@ -250,6 +250,18 @@ async function runBreaking() {
 }
 
 
+async function runProviderHealthcheck() {
+ const response=await fetch(SUPABASE_URL+"/functions/v1/ai-provider-healthcheck",{
+  method:"POST",
+  headers:DB_HEADERS,
+  body:"{}",
+  signal:AbortSignal.timeout(90000)
+ });
+ const body=await response.json().catch(()=>({}));
+ if(!response.ok) throw new Error("Provider healthcheck HTTP "+response.status+": "+JSON.stringify(body).slice(0,350));
+ return {pipeline:"provider-healthcheck",...body};
+}
+
 async function runTranslation() {
  const lockResponse=await dbRequest("rpc/claim_translation_worker",{method:"POST",headers:{"Content-Type":"application/json"},body:"{}"});
  if(!lockResponse.ok) throw new Error("Could not acquire translation worker lock: "+lockResponse.status+" "+(await lockResponse.text()).slice(0,180));
@@ -322,8 +334,8 @@ Deno.serve(async (req) => {
  let mode="unknown";
  try {
   const body=await req.json(); mode=body?.mode;
-  const result=mode==="general"?await runGeneral():mode==="breaking"?await runBreaking():mode==="translation"?await runTranslation():null;
-  if(!result) return Response.json({error:"mode must be general, breaking, or translation"},{status:400});
+  const result=mode==="general"?await runGeneral():mode==="breaking"?await runBreaking():mode==="translation"?await runTranslation():mode==="provider-healthcheck"?await runProviderHealthcheck():null;
+  if(!result) return Response.json({error:"mode must be general, breaking, translation, or provider-healthcheck"},{status:400});
   console.log("WRLDLINE_CRON_SUMMARY "+JSON.stringify(result));
   return Response.json({ok:true,...result});
  } catch(e) {
