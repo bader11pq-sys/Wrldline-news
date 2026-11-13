@@ -8,7 +8,7 @@ const languageOf = article => {
   const declared = String(article.lang || "").toLowerCase();
   if (declared.startsWith("ar")) return "ar";
   if (declared.startsWith("en")) return "en";
-  return /[\\u0600-\\u06FF]/.test(String(article.title || "")) ? "ar" : "en";
+  return /[\u0600-\u06FF]/.test(String(article.title || "")) ? "ar" : "en";
 };
 
 async function main() {
