@@ -95,7 +95,7 @@ async function fetchNews(manual=false){
  if(state.loading){state.refetchAfterCurrent=true;return;}state.loading=true;const refresh=document.getElementById("refreshButton");if(refresh){refresh.disabled=true;refresh.classList.add("is-loading");refresh.setAttribute("aria-busy","true");}document.getElementById("connectionLabel").textContent=ui("جارٍ تحديث الأخبار","Updating newsroom");
  try{
   const headers={apikey:SUPABASE_ANON_KEY,Authorization:"Bearer "+SUPABASE_ANON_KEY};
-  const res=await fetch(SUPABASE_URL+"/rest/v1/articles?select=*,article_translations(*),article_evidence(*)&editorial_status=eq.published&order=published_at.desc&limit=1000",{headers,signal:AbortSignal.timeout(18000)});
+  const res=await fetch(SUPABASE_URL+"/rest/v1/articles?select=id,title,summary,category,country,source_name,url,source_url,published_at,created_at,lang,media_type,image_url,is_breaking,editorial_status,verification,verification_source_count,verification_independent_count,verification_field_count,verification_official_count,verification_conflict_count,verification_correction_count,verification_retraction_count,verification_updated_at,ai_country_code,ai_summary,ai_risk_level,ai_risk_score,ai_confidence,article_translations(lang,title,summary,ai_summary),article_evidence(publisher,evidence_url,evidence_type,independent_source,notes,created_at)&editorial_status=eq.published&order=published_at.desc&limit=1000",{headers,signal:AbortSignal.timeout(18000)});
   if(!res.ok)throw new Error(ui("تعذر جلب الأخبار ("+res.status+")","Could not fetch stories ("+res.status+")"));
   const rows=await res.json();if(!Array.isArray(rows))throw new Error(ui("استجابة الأخبار غير صالحة","Invalid news response"));
   state.lastFetchAt=Date.now();state.articles=rows.map(normalizeArticle).filter(a=>a.title&&(!isTelegramArticle(a.raw)||(a.isBreaking===true&&isDedicatedBreakingSource(a.src)))).sort((a,b)=>new Date(b.published_at)-new Date(a.published_at));
@@ -207,7 +207,7 @@ function initVerificationRealtime(){
   })
   .on("postgres_changes",{event:"*",schema:"public",table:"article_translations"},()=>{
    if(articleInsertRefreshTimer)clearTimeout(articleInsertRefreshTimer);
-   articleInsertRefreshTimer=setTimeout(()=>{articleInsertRefreshTimer=null;fetchNews();},500);
+   articleInsertRefreshTimer=setTimeout(()=>{articleInsertRefreshTimer=null;fetchNews();},1800);
   })
   .on("postgres_changes",{event:"UPDATE",schema:"public",table:"articles"},payload=>{
    const row=payload.new;if(!row?.id)return;
