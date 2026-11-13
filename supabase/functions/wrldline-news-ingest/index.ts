@@ -115,7 +115,7 @@ async function runGeneral() {
  return summary;
 }
 
-const GOOGLE=(domain,lang="ar")=>{
+const GOOGLE=(domain: string,lang: string="ar")=>{
  const q=lang==="ar"?`site:${domain} ("عاجل" OR "الآن" OR "قبل قليل" OR "تطور عاجل") when:1h`:`site:${domain} (BREAKING OR "JUST IN") when:1h`;
  return "https://news.google.com/rss/search?q="+encodeURIComponent(q)+"&hl="+(lang==="ar"?"ar&gl=SA&ceid=SA:ar":"en-US&gl=US&ceid=US:en");
 };
