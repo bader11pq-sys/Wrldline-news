@@ -13,7 +13,7 @@ function json(body: unknown, status = 200) {
 }
 
 function isTelegram(article: any) {
-  return /t\\.me|telegram\\.me|telegram/i.test(
+  return /t\.me|telegram\.me|telegram/i.test(
     [article.url, article.source_url, article.source_name].filter(Boolean).join(" "),
   );
 }
