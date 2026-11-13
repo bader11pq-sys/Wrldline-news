@@ -162,8 +162,8 @@ const opts=comparisons.map((c,i)=>'<option value="'+i+'">'+esc(c[0]+' × '+c[1])
 a.innerHTML=opts;b.innerHTML=opts;b.value="1";
 function renderComparison(){
 const x=comparisons[Number(a.value)],y=comparisons[Number(b.value)];
-const rows=["التنظيم السياسي","الاقتصاد والاتصال","أنواع الأدلة","سؤال التحليل"];
-const values=[[x[2],x[3],y[2],y[3]],[x[2],x[3],y[2],y[3]],[x[4],x[5],y[4],y[5]],[x[6],x[6],y[6],y[6]]];
+const rows=["السياق والبنية","الأدلة المتاحة","سؤال بحثي"];
+const values=[[x[2],x[3],y[2],y[3]],[x[4],x[5],y[4],y[5]],[x[6],x[6],y[6],y[6]]];
 $("hdComparison").innerHTML='<table><thead><tr><th>محور المقارنة</th><th>'+esc(x[0])+'</th><th>'+esc(x[1])+'</th><th>'+esc(y[0])+'</th><th>'+esc(y[1])+'</th></tr></thead><tbody>'+rows.map((label,i)=>'<tr><th>'+label+'</th>'+values[i].map(v=>'<td>'+esc(v)+'</td>').join("")+'</tr>').join("")+'</tbody></table>';
 }
 a.addEventListener("change",renderComparison);b.addEventListener("change",renderComparison);renderComparison();
