@@ -31,6 +31,7 @@ async function main() {
   const articles = fresh.concat(retries).slice(0, MAX_PENDING_PER_RUN + MAX_FAILED_PER_RUN);
   if (!articles.length) { console.log("No published stories waiting for classification."); return; }
   let classified = 0, review = 0, failed = 0, deferred = false;
+  const providers = { gemini: 0, groq: 0, openrouter: 0 };
   for (let i = 0; i < articles.length; i++) {
     if (i) await sleep(REQUEST_GAP_MS);
     const response = await fetch(SUPABASE_URL + "/functions/v1/classify-news", {
@@ -43,6 +44,7 @@ async function main() {
     }
     if (!response.ok) throw new Error("Classifier failed: HTTP " + response.status + " " + JSON.stringify(body).slice(0, 400));
     for (const item of body.results || []) {
+      if (item.provider && Object.prototype.hasOwnProperty.call(providers, item.provider)) providers[item.provider]++;
       if (item.status === "classified") classified++;
       else if (item.status === "needs_review") review++;
       else if (item.status === "failed") { failed++; console.error("Classification failed for " + item.id + ": " + (item.error || "unknown")); }
@@ -50,6 +52,6 @@ async function main() {
     }
     if (deferred) break;
   }
-  console.log(JSON.stringify({ processed: classified + review + failed, classified, needs_review: review, failed, deferred }));
+  console.log(JSON.stringify({ processed: classified + review + failed, classified, needs_review: review, failed, deferred, providers }));
 }
 main().catch(error => { console.error(error); process.exitCode = 1; });

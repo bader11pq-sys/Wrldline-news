@@ -31,6 +31,8 @@ const FEEDS = [
   {url:"https://www.tunisienumerique.com/feed/",name:"تونس الرقمية",country:"تونس",fallbackUrl:googleNewsUrl("tunisienumerique.com")},
   {url:"https://www.libyaakhbar.com/feed/",name:"ليبيا أخبار",country:"ليبيا",fallbackUrl:googleNewsUrl("libyaakhbar.com")},
   // Global
+  {url:"https://feeds.bbci.co.uk/news/rss.xml",name:"BBC Top Stories",country:"دولي"},
+  {url:"https://www.cbc.ca/webfeed/rss/rss-world",name:"CBC World",country:"دولي"},
   {url:"https://feeds.bbci.co.uk/news/world/rss.xml",name:"BBC World",country:"دولي"},
   {url:"https://www.aljazeera.com/xml/rss/all.xml",name:"Al Jazeera English",country:"دولي"},
   {url:"https://www.theguardian.com/world/rss",name:"The Guardian",country:"دولي"},
@@ -66,6 +68,6 @@ async function fetchFeed(feed){
  }catch(e){lastError=String(e).slice(0,220);if(candidate===0&&feed.fallbackUrl)console.warn("FEED_PRIMARY_FAILED "+feed.name+": "+lastError+"; trying fallback");}}
  console.error("FEED_ERROR "+feed.name+": "+lastError);return {name:feed.name,ok:false,error:lastError};
 }
-async function recordFeedHealth(feed,result){try{const lang=/BBC World|NPR|CNN \(|Reuters|Associated Press|Guardian|DW News|France 24|Al Jazeera English|Sky News/i.test(feed.name)?"en":"ar";const payload={name:feed.name,url:feed.url,lang,category:"world",active:true,last_fetched:result.ok?new Date().toISOString():null,last_error:result.ok?null:result.error};const response=await fetch(SUPABASE_URL+"/rest/v1/feeds?on_conflict=url",{method:"POST",headers:{...HEADERS,Prefer:"resolution=merge-duplicates,return=minimal"},body:JSON.stringify(payload)});if(!response.ok)console.warn("FEED_HEALTH_WRITE_FAILED "+feed.name+": HTTP "+response.status);}catch(error){console.warn("FEED_HEALTH_WRITE_FAILED "+feed.name+": "+String(error).slice(0,120));}}
+async function recordFeedHealth(feed,result){try{const lang=/BBC World|BBC Top Stories|CBC World|NPR|CNN \(|Reuters|Associated Press|Guardian|DW News|France 24|Al Jazeera English|Sky News/i.test(feed.name)?"en":"ar";const payload={name:feed.name,url:feed.url,lang,category:"world",active:true,last_fetched:result.ok?new Date().toISOString():null,last_error:result.ok?null:result.error};const response=await fetch(SUPABASE_URL+"/rest/v1/feeds?on_conflict=url",{method:"POST",headers:{...HEADERS,Prefer:"resolution=merge-duplicates,return=minimal"},body:JSON.stringify(payload)});if(!response.ok)console.warn("FEED_HEALTH_WRITE_FAILED "+feed.name+": HTTP "+response.status);}catch(error){console.warn("FEED_HEALTH_WRITE_FAILED "+feed.name+": "+String(error).slice(0,120));}}
 async function main(){if(!SUPABASE_URL||!KEY)throw new Error("Missing Supabase URL/service-role key");let next=0,results=[];async function worker(){while(next<FEEDS.length){const index=next++;results[index]=await fetchFeed(FEEDS[index]);}}await Promise.all(Array.from({length:CONCURRENCY},worker));await Promise.all(results.map((result,index)=>recordFeedHealth(FEEDS[index],result)));const ok=results.filter(x=>x.ok).length,failed=results.filter(x=>!x.ok);console.log("INGESTION_SUMMARY "+JSON.stringify({feeds:FEEDS.length,successful:ok,failed:failed.length,fallbacks:results.filter(x=>x.usedFallback).length,checked:results.reduce((n,x)=>n+(x.count||0),0)}));if(!ok)throw new Error("All configured news feeds failed");}
 main().catch(e=>{console.error(e);process.exitCode=1;});
