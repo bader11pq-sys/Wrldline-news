@@ -249,7 +249,7 @@ function updateBreaking(){
   marquee.style.direction=isEnglish?"ltr":"rtl";
   marquee.style.unicodeBidi="plaintext";
   requestAnimationFrame(()=>{
-   const distance=(title.clientWidth*2)+marquee.scrollWidth;
+   const viewportWidth=title.clientWidth;const distance=(viewportWidth*2)+marquee.scrollWidth;marquee.style.setProperty("--breaking-start",viewportWidth+"px");
    const duration=Math.max(12,distance/55);
    marquee.style.setProperty("--breaking-duration",duration+"s");
    marquee.classList.add("is-moving");
