@@ -4,6 +4,11 @@ import { createClient } from "npm:@supabase/supabase-js@2";
 const cors={"Access-Control-Allow-Origin":"*","Access-Control-Allow-Headers":"authorization, apikey, content-type, x-client-info","Access-Control-Allow-Methods":"POST, OPTIONS","Content-Type":"application/json"};
 const schema={type:"object",additionalProperties:false,properties:{title:{type:"string"},summary:{type:"string"},ai_summary:{type:"string"}},required:["title","summary","ai_summary"]};
 const json=(body:unknown,status=200)=>new Response(JSON.stringify(body),{status,headers:cors});
+function isWithinAiWindow(article:any) {
+ const timestamp=Date.parse(article.published_at||article.received_at||"");
+ const ageMs=Date.now()-timestamp;
+ return Number.isFinite(timestamp)&&ageMs>=-300000&&ageMs<=3600000;
+}
 
 function extractJsonObject(raw: string) {
   const cleaned = raw.replace(/^```(?:json)?/i, "").replace(/```$/i, "").trim();
@@ -168,14 +173,16 @@ Deno.serve(async(req:Request)=>{
  const {data:rateLimit}=await db.from("gemini_rate_limits").select("cooldown_until").eq("singleton",true).maybeSingle();
  const geminiCoolingDown=!!(rateLimit?.cooldown_until && Date.parse(rateLimit.cooldown_until)>Date.now());
  const geminiForBatch=geminiCoolingDown?null:gemini;
- const {data:articles,error}=await db.from("articles").select("id,title,summary,ai_summary,lang,url,source_url,source_name").in("id",ids);
+ const {data:articles,error}=await db.from("articles").select("id,title,summary,ai_summary,lang,url,source_url,source_name,published_at,received_at,translation_attempts,translation_retry_after").in("id",ids);
  if(error)return json({error:"Could not load articles."},500);
- const queue=articles||[];
- const results:any[]=[];
+ const allArticles=articles||[];
+ const queue=allArticles.filter(isWithinAiWindow);
+ const results:any[]=allArticles.filter((article:any)=>!isWithinAiWindow(article)).map((article:any)=>({id:article.id,status:"expired_ignored"}));
  let cursor=0;
  let pauseReason:string|null=null;
  async function processArticle(article:any) {
   try {
+   if(!isWithinAiWindow(article)) return {id:article.id,status:"expired_ignored"};
    const declaredLang=String(article.lang||"").toLowerCase();
    const sourceLang=declaredLang.startsWith("ar")?"ar":(declaredLang.startsWith("en")?"en":(/[\\u0600-\\u06FF]/.test(article.title||"")?"ar":"en"));
    const target=sourceLang==="ar"?"en":"ar";
@@ -205,6 +212,7 @@ Deno.serve(async(req:Request)=>{
     ai_summary:String(translated.ai_summary||"").slice(0,2000)
    },{onConflict:"article_id,lang"});
    if(upsertError) throw upsertError;
+   await db.from("articles").update({translation_attempts:0,translation_retry_after:null,translation_last_error:null}).eq("id",article.id);
    return {id:article.id,status:"translated",lang:target,provider:generated.provider};
   } catch(error) {
    if((error as any)?.deferred) {
@@ -214,9 +222,16 @@ Deno.serve(async(req:Request)=>{
       reason:"Gemini provider backoff",updated_at:new Date().toISOString()
      },{onConflict:"singleton"});
     }
-    return {id:article.id,status:"deferred",retry_after_seconds:(error as any).retryAfter||60,error:String(error).slice(0,180)};
+    const attempts=Number(article.translation_attempts||0)+1;
+    const retrySeconds=Math.min(1800,Math.max(Number((error as any).retryAfter)||60,60*Math.pow(2,Math.min(attempts-1,4))));
+    const message=String(error).slice(0,180);
+    await db.from("articles").update({translation_attempts:attempts,translation_retry_after:new Date(Date.now()+retrySeconds*1000).toISOString(),translation_last_error:message}).eq("id",article.id);
+    return {id:article.id,status:"deferred",retry_after_seconds:retrySeconds,error:message};
    }
-   return {id:article.id,status:"failed",error:String(error).slice(0,180)};
+   const attempts=Number(article.translation_attempts||0)+1;
+   const message=String(error).slice(0,180);
+   await db.from("articles").update({translation_attempts:attempts,translation_retry_after:new Date(Date.now()+Math.min(1800,300*Math.pow(2,Math.min(attempts-1,2)))*1000).toISOString(),translation_last_error:message}).eq("id",article.id);
+   return {id:article.id,status:"failed",error:message};
   }
  }
  async function worker() {

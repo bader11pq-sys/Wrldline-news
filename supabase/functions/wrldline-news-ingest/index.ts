@@ -1,7 +1,7 @@
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL") || "https://vmaxbnogmmfyrcucapnq.supabase.co";
 const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || Deno.env.get("SUPABASE_SECRET_KEY") || "";
 const DB_HEADERS = { apikey: SERVICE_KEY, Authorization: "Bearer " + SERVICE_KEY, "Content-Type": "application/json" };
-const URGENT = /\bBREAKING\b|\bJUST IN\b|\bLIVE\b|عاجل|الآن|قبل قليل|تطور عاجل|نبأ عاجل/i;
+const URGENT = /^(?:\s|[\[({])*?(?:BREAKING(?: NEWS)?|JUST IN)(?=$|[\s:：|—-])|^(?:\s|[\[({])*?(?:عاجل|نبأ عاجل|خبر عاجل|تطور عاجل)(?=$|[\s:：،|—-])/i;
 const COUNTRY_BY_NAME = {"الجزيرة":"دولي","BBC عربي":"دولي","CNN عربية":"دولي","العربية":"دولي","الشرق الأوسط":"دولي","سكاي نيوز عربية":"دولي","فرانس 24 عربي":"دولي","DW عربية":"دولي","وكالة الأنباء السعودية واس":"السعودية","كونا":"الكويت","الخليج":"الإمارات","الاتحاد":"الإمارات","البيان":"الإمارات","الشرق":"قطر","اليوم السابع":"مصر","المصري اليوم":"مصر","الغد":"الأردن","رؤيا":"الأردن","المدن":"لبنان","معاً":"فلسطين","عربي21":"دولي","هسبريس":"المغرب","الشروق":"الجزائر","تونس الرقمية":"تونس","ليبيا أخبار":"ليبيا","آر تي عربي":"دولي","النهار اللبنانية":"لبنان","العربي الجديد":"دولي","وكالة الأناضول العربية":"دولي","القدس العربي":"فلسطين","موزاييك إف إم":"تونس","يورونيوز عربي":"دولي","الصباح المغربية":"المغرب","الحرة":"دولي","عالم التقنية":"السعودية","أخبار الأمم المتحدة":"دولي","اندبندنت عربية":"دولي","نون بوست":"دولي","البوابة العربية للأخبار التقنية":"السعودية","عاجل":"السعودية","الرياض":"السعودية","عكاظ":"السعودية","إل بي سي آي اللبنانية":"لبنان","المدينة":"السعودية","شفق نيوز عربي":"العراق","عنب بلدي":"سوريا","السومرية":"العراق","BBC Top Stories":"دولي","NPR World":"دولي","BBC World":"دولي","Al Jazeera English":"دولي","The Guardian":"دولي","DW News":"دولي","France 24":"دولي","NPR":"دولي","The New York Times":"دولي","Sky News":"دولي","Reuters (Google News)":"دولي","Associated Press (Google News)":"دولي","CNN (Google News)":"دولي","AFP":"دولي","EFE":"دولي","dpa":"دولي","Kyodo News":"دولي","Jiji Press":"دولي","Xinhua":"دولي","TASS":"دولي","UPI":"دولي","Yonhap News Agency":"دولي","NHK World":"دولي","CNA":"دولي","Bernama":"دولي","ANSA":"دولي","The Hindu":"دولي","The Times of India":"دولي","The Indian Express":"دولي","Hindustan Times":"دولي","Dawn":"دولي","South China Morning Post":"دولي","The Japan Times":"دولي","Nikkei Asia":"دولي","The Korea Herald":"دولي","The Straits Times":"دولي","The Sydney Morning Herald":"دولي","ABC News Australia":"دولي","CBC News":"دولي","The Globe and Mail":"دولي","Toronto Star":"دولي","Le Monde":"دولي","El País":"دولي","Der Spiegel":"دولي","POLITICO Europe":"دولي","The Independent":"دولي","The Telegraph":"دولي","The Wall Street Journal":"دولي","Financial Times":"دولي","The Economist":"دولي","Bloomberg":"دولي","Axios":"دولي","Newsweek":"دولي"};
 
 function decode(value = "") {
@@ -193,8 +193,8 @@ const FEEDS=[
  {publisher:"The Washington Post",url:GOOGLE("washingtonpost.com","en"),lang:"en"},
  {publisher:"The Guardian",url:GOOGLE("theguardian.com","en"),lang:"en"}
 ];
-function urgentRow(title: string,url: string,summary: string,date: string,feed: any,force=false) {
- if(!title||!/^https?:\/\//i.test(url)||(!force&&!URGENT.test(title))) return null;
+function urgentRow(title: string,url: string,summary: string,date: string,feed: any) {
+ if(!title||!/^https?:\/\//i.test(url)||!URGENT.test(title.trim())) return null;
  const dt=new Date(date||Date.now());
  if(Number.isNaN(dt.getTime())||Date.now()-dt.getTime()>2*60*60*1000||dt.getTime()>Date.now()+5*60*1000) return null;
  return {url,title:title.slice(0,500),summary:(summary||"").slice(0,3000),source_name:feed.publisher+" Breaking Desk",source_url:feed.type==="telegram"?"https://t.me/"+feed.handle:feed.url,category:"uncategorized",country:"غير محدد",lang:feed.lang,verification:"unconfirmed",published_at:dt.toISOString(),editorial_status:"published",ai_classification_status:"pending",is_breaking:true};
@@ -208,18 +208,18 @@ function parseTelegram(html: string,feed: any) {
   const post=(block.match(/href=["'](https?:\/\/t\.me\/[^/"']+\/\d+)["']/i)||[])[1];
   const clean=decode(body); if(!clean||!date||!post) continue;
   const title=clean.split(/\n|\s{2,}/)[0].slice(0,500)||clean.slice(0,500);
-  const item=urgentRow(title,post,clean,date,feed,true);
+  const item=urgentRow(title,post,clean,date,feed);
   if(item) {item.summary=clean.slice(0,3000);out.push(item);}
  }
  return out.slice(0,20);
 }
 function parseBreakingRss(xml: string,feed: any) {
- const blocks=xmlEntries(xml),isGoogle=String(feed.url||"").includes("news.google.com");
+ const blocks=xmlEntries(xml);
  return blocks.slice(0,20).map(block=>{
   const title=tag(block,["title"]),url=entryLink(block);
   const summary=tag(block,["description","summary","content"]);
   const date=tag(block,["pubDate","published","updated"]);
-  return urgentRow(title,url,summary,date,feed,isGoogle);
+  return urgentRow(title,url,summary,date,feed);
  }).filter(Boolean);
 }
 async function collectBreaking(feed: any) {
@@ -275,8 +275,8 @@ async function runTranslation() {
   let scanned=0;
   for(let offset=0;offset<20000 && pending.length<20;offset+=pageSize) {
    const params=new URLSearchParams({
-    select:"id,title,summary,ai_summary,lang,url,source_name,article_translations(lang,title,summary,ai_summary)",
-    editorial_status:"eq.published",order:"published_at.desc",limit:String(pageSize),offset:String(offset)
+    select:"id,title,summary,ai_summary,lang,url,source_name,is_breaking,published_at,received_at,translation_attempts,translation_retry_after,article_translations(lang,title,summary,ai_summary)",
+    editorial_status:"eq.published",published_at:"gte."+new Date(Date.now()-3600000).toISOString(),order:"is_breaking.desc,published_at.desc",limit:String(pageSize),offset:String(offset)
    });
    const response=await dbRequest("articles?"+params.toString());
    if(!response.ok) throw new Error("Translation scan failed at offset "+offset+": "+response.status+" "+(await response.text()).slice(0,180));
@@ -284,6 +284,10 @@ async function runTranslation() {
    scanned+=rows.length;
    for(const article of rows) {
     if(!article.title) continue;
+    const published=Date.parse(article.published_at||article.received_at||"");
+    const age=Date.now()-published;
+    if(!Number.isFinite(published)||age < -300000||age > 3600000) continue;
+    if(article.translation_retry_after && Date.parse(article.translation_retry_after)>Date.now()) continue;
     const declared=String(article.lang||"").toLowerCase();
     const sourceLang=declared.startsWith("ar")?"ar":(declared.startsWith("en")?"en":(/[\\u0600-\\u06FF]/.test(article.title)?"ar":"en"));
     const target=sourceLang==="ar"?"en":"ar";
