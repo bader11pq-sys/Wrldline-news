@@ -1,9 +1,7 @@
-const CACHE_NAME = "wrldline-shell-v14";
+const CACHE_NAME = "wrldline-shell-v15";
 const NEWS_CACHE = "wrldline-public-news-v1";
-const APP_SHELL = ["/", "/index.html", "/account.html", "/style.css", "/language.js", "/history-en.js", "/script.js", "/manifest.json", "/map.html", "/map.js", "/history.html"];
-
 self.addEventListener("install", event => {
-  event.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(APP_SHELL)).then(() => self.skipWaiting()));
+  event.waitUntil(self.skipWaiting());
 });
 self.addEventListener("activate", event => {
   event.waitUntil((async () => {
@@ -12,48 +10,35 @@ self.addEventListener("activate", event => {
     await self.clients.claim();
   })());
 });
+async function networkFirst(request, cacheName = CACHE_NAME) {
+  const cache = await caches.open(cacheName);
+  try {
+    const response = await fetch(new Request(request, { cache: "no-store" }));
+    if (response.ok) await cache.put(request, response.clone());
+    return response;
+  } catch (error) {
+    const cached = await cache.match(request);
+    if (cached) return cached;
+    throw error;
+  }
+}
 self.addEventListener("fetch", event => {
   const request = event.request;
   if (request.method !== "GET") return;
   const url = new URL(request.url);
-  // Public headlines only: never intercept authentication, profiles, or billing traffic.
   if (url.hostname === "vmaxbnogmmfyrcucapnq.supabase.co" && url.pathname === "/rest/v1/articles") {
-    event.respondWith((async () => {
-      const cache = await caches.open(NEWS_CACHE);
-      try {
-        const response = await fetch(request);
-        if (response.ok) await cache.put(request, response.clone());
-        return response;
-      } catch {
-        return (await cache.match(request)) || new Response("[]", {headers: {"Content-Type":"application/json","X-WRLDLINE-Offline":"1"}});
-      }
-    })());
+    event.respondWith(networkFirst(request, NEWS_CACHE).catch(() =>
+      new Response("[]", { headers: { "Content-Type": "application/json", "X-WRLDLINE-Offline": "1" } })
+    ));
     return;
   }
   if (url.origin !== self.location.origin) return;
-  if (request.mode === "navigate") {
-    event.respondWith((async () => {
-      try {
-        const response = await fetch(request);
-        if (response.ok) await (await caches.open(CACHE_NAME)).put(request, response.clone());
-        return response;
-      } catch {
-        return (await caches.match(request)) || (await caches.match("/index.html"));
-      }
-    })());
-    return;
-  }
-  if (APP_SHELL.includes(url.pathname)) {
-    event.respondWith((async () => {
+  const isPage = request.mode === "navigate";
+  const isAppAsset = ["script", "style", "document", "manifest", "font", "image"].includes(request.destination);
+  if (isPage || isAppAsset) {
+    event.respondWith(networkFirst(request).catch(async () => {
       const cache = await caches.open(CACHE_NAME);
-      const cached = await cache.match(request);
-      if (cached) {
-        fetch(request).then(response => { if (response.ok) cache.put(request, response.clone()); }).catch(() => {});
-        return cached;
-      }
-      const response = await fetch(request);
-      if (response.ok) await cache.put(request, response.clone());
-      return response;
-    })());
+      return (await cache.match(request)) || (isPage ? await cache.match("/index.html") : Response.error());
+    }));
   }
 });
