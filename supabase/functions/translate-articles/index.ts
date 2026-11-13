@@ -104,7 +104,7 @@ async function deeplTranslate(texts:string[], apiKey:string, target:string) {
 
 
 async function nvidiaTranslate(prompt:string, apiKey:string, maxOutputTokens:number) {
- const model=Deno.env.get("NVIDIA_MODEL")||"nvidia/nemotron-3.5-lightning-30b-a3b";
+ const model="nvidia/nemotron-3.5-lightning-30b-a3b";
  const response=await fetch("https://integrate.api.nvidia.com/v1/chat/completions",{
   method:"POST",
   headers:{"Authorization":"Bearer "+apiKey,"Content-Type":"application/json"},
