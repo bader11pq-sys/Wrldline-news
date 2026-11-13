@@ -1,0 +1,33 @@
+name: WRLDLINE AI Backlog Processor
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'classify-pending.js'
+      - 'translate-pending.js'
+      - '.github/workflows/ai-backlog.yml'
+  schedule:
+    - cron: '*/30 * * * *'
+  workflow_dispatch:
+concurrency:
+  group: wrldline-ai-backlog
+  cancel-in-progress: false
+jobs:
+  process-backlog:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Classify one pending and one failed article
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: node classify-pending.js
+      - name: Translate one article
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: node translate-pending.js

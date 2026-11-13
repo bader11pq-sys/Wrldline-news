@@ -1,8 +1,8 @@
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
-const MAX_PENDING_PER_RUN = 4;
-const MAX_FAILED_PER_RUN = 2;
-const REQUEST_GAP_MS = 6500;
+const MAX_PENDING_PER_RUN = 1;
+const MAX_FAILED_PER_RUN = 1;
+const REQUEST_GAP_MS = 10000;
 
 if (!SUPABASE_URL || !SERVICE_KEY) {
   console.log("AI classification skipped: configure Supabase URL and service role key.");
