@@ -243,11 +243,9 @@ function updateBreaking(){
   marquee.dataset.articleId=item.id;
   marquee.classList.remove("is-moving");
   marquee.style.removeProperty("--breaking-duration");
-  const isEnglish=/[A-Za-z]/.test(item.title)&&!/[\u0600-\u06FF]/.test(item.title);
-  marquee.classList.toggle("is-ltr",isEnglish);
-  marquee.setAttribute("dir",isEnglish?"ltr":"rtl");
-  marquee.style.direction=isEnglish?"ltr":"rtl";
-  marquee.style.unicodeBidi="plaintext";
+  marquee.setAttribute("dir","auto");
+  marquee.style.removeProperty("direction");
+  marquee.style.removeProperty("unicode-bidi");
   requestAnimationFrame(()=>{
    const viewportWidth=title.clientWidth;const distance=(viewportWidth*2)+marquee.scrollWidth;marquee.style.setProperty("--breaking-start",viewportWidth+"px");
    const duration=Math.max(12,distance/55);
