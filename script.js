@@ -18,7 +18,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 async function registerServiceWorker(){
  if(!("serviceWorker" in navigator))return;
- const workerBuild="v15";
+ const workerBuild="v16";
  navigator.serviceWorker.addEventListener("controllerchange",()=>{
   if(sessionStorage.getItem("wrldline:sw-build")!==workerBuild){
    sessionStorage.setItem("wrldline:sw-build",workerBuild);
