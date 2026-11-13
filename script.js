@@ -235,30 +235,26 @@ function updateBreaking(){
  const item=items.find(a=>a.id===currentId)||items[state.breakingTickerIndex%Math.max(items.length,1)];
  if(!item){
   strip.hidden=true;marquee.textContent="";marquee.classList.remove("is-moving","is-ltr");
-  delete marquee.dataset.articleId;title.removeAttribute("title");time.textContent="";return;
+  delete marquee.dataset.articleId;delete marquee.dataset.articleTitle;
+  title.removeAttribute("title");time.textContent="";return;
  }
  strip.hidden=false;
  if(currentId!==item.id||marquee.dataset.articleTitle!==String(item.title||"")){
   const cleanTitle=String(item.title||"").replace(/[\u202A-\u202E\u2066-\u2069]/g,"").normalize("NFC").trim();
-  const firstStrong=cleanTitle.match(/[A-Za-z\u0600-\u06FF]/);
-  const isEnglish=!!firstStrong&&/[A-Za-z]/.test(firstStrong[0]);
-  marquee.replaceChildren();
-  cleanTitle.split(/(\s+)/).filter(Boolean).forEach(part=>{
-   if(/^\s+$/.test(part))marquee.appendChild(document.createTextNode(part));
-   else{const word=document.createElement("span");word.className="breaking-word";word.textContent=part;marquee.appendChild(word);}
-  });
+  marquee.textContent=cleanTitle;
   marquee.dataset.articleId=item.id;
   marquee.dataset.articleTitle=String(item.title||"");
-  marquee.classList.remove("is-moving");
-  marquee.classList.toggle("is-ltr",isEnglish);
+  marquee.classList.remove("is-moving","is-ltr");
+  marquee.setAttribute("dir","auto");
+  marquee.style.direction="ltr";
+  marquee.style.unicodeBidi="plaintext";
   marquee.style.removeProperty("--breaking-duration");
-  marquee.setAttribute("dir",isEnglish?"ltr":"rtl");
-  marquee.style.direction=isEnglish?"ltr":"rtl";
-  marquee.style.unicodeBidi="isolate";
+  marquee.style.removeProperty("--breaking-start");
   requestAnimationFrame(()=>{
-   const viewportWidth=title.clientWidth;const distance=(viewportWidth*2)+marquee.scrollWidth;marquee.style.setProperty("--breaking-start",viewportWidth+"px");
-   const duration=Math.max(12,distance/55);
-   marquee.style.setProperty("--breaking-duration",duration+"s");
+   const viewportWidth=title.clientWidth;
+   const distance=(viewportWidth*2)+marquee.scrollWidth;
+   marquee.style.setProperty("--breaking-start",viewportWidth+"px");
+   marquee.style.setProperty("--breaking-duration",Math.max(12,distance/55)+"s");
    marquee.classList.add("is-moving");
   });
   marquee.onanimationend=()=>{if(breakingItems().length>1)rotateBreaking();else{marquee.classList.remove("is-moving");requestAnimationFrame(()=>marquee.classList.add("is-moving"));}};
