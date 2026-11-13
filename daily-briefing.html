@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#101b2d">
+  <meta name="description" content="ملخص يومي شامل لأبرز الأخبار العالمية خلال اليوم السابق بتوقيت UTC، مع تحليل للسياق والتأثير وروابط المصادر الأصلية.">
+  <meta name="robots" content="index,follow">
+  <title>ملخص العالم اليومي | WRLDLINE NEWS</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css?v=20261113-16">
+  <link rel="stylesheet" href="daily-briefing.css?v=20261113-1">
+  <link rel="manifest" href="manifest.json">
+</head>
+<body>
+  <div class="utility-bar"><div class="container utility-inner"><span id="utcDateLabel">النسخة اليومية العالمية</span><span class="utility-right"><span class="status-dot"></span><span>توقيت عالمي موحد UTC</span></span></div></div>
+  <header class="site-header">
+    <div class="container masthead">
+      <a class="brand" href="index.html" aria-label="WRLDLINE NEWS"><span class="brand-mark">W</span><span class="brand-copy"><strong>WRLDLINE</strong><small>GLOBAL NEWS NETWORK</small></span></a>
+      <div class="header-tools"><a class="tool-button" href="index.html">العودة إلى الأخبار</a><button class="icon-button" id="briefingThemeButton" type="button" aria-label="تغيير المظهر">☾</button></div>
+    </div>
+    <nav class="main-nav"><div class="container nav-inner">
+      <a class="nav-link" href="index.html">الرئيسية</a>
+      <a class="nav-link" href="index.html#breakingSection">الأخبار العاجلة</a>
+      <a class="nav-link active" href="daily-briefing.html">ملخص العالم اليومي</a>
+      <a class="nav-link" href="markets.html">الأسواق العالمية</a>
+      <a class="nav-link" href="map.html">مرصد العالم</a>
+    </div></nav>
+  </header>
+  <main class="container page-shell briefing-shell">
+    <section class="briefing-hero">
+      <div class="briefing-hero-copy">
+        <p class="eyebrow">WRLDLINE GLOBAL DAILY INTELLIGENCE</p>
+        <h1>العالم في 24 ساعة<span>.</span></h1>
+        <p class="welcome-subtitle">قراءة تحريرية موسعة لأهم ما جرى حول العالم، وما الذي يعنيه، وما الذي يستحق المتابعة.</p>
+        <div class="briefing-period"><span class="briefing-period-dot"></span><span id="briefingWindow">الفترة: 00:00 UTC — 00:00 UTC</span></div>
+      </div>
+      <div class="briefing-clock">
+        <span>التحديث القادم عند منتصف الليل العالمي</span>
+        <strong id="countdown">--:--:--</strong>
+        <small>00:00 UTC يومياً</small>
+      </div>
+    </section>
+
+    <section class="briefing-status" id="briefingStatus" role="status" aria-live="polite">
+      <span class="briefing-spinner"></span><span>جارٍ تحميل الملخص اليومي...</span>
+    </section>
+
+    <section class="briefing-stats" id="briefingStats" hidden>
+      <article><span>مواد إخبارية في الفترة</span><strong id="statArticles">—</strong></article>
+      <article><span>مواد اختيرت للتحليل</span><strong id="statSelected">—</strong></article>
+      <article><span>مصادر أصلية مرتبطة</span><strong id="statSources">—</strong></article>
+      <article><span>وقت إعداد الملخص</span><strong id="statGenerated">—</strong></article>
+    </section>
+
+    <section class="briefing-section executive-section" id="executiveSection" hidden>
+      <div class="briefing-section-heading"><div><span class="section-kicker">THE BIG PICTURE</span><h2>الصورة الكاملة</h2></div><span class="briefing-section-note">ملخص تنفيذي</span></div>
+      <div class="executive-copy" id="executiveSummary"></div>
+    </section>
+
+    <section class="briefing-section" id="topSection" hidden>
+      <div class="briefing-section-heading"><div><span class="section-kicker">TOP DEVELOPMENTS</span><h2>أبرز التطورات</h2></div><span class="briefing-section-note">الأكثر تأثيراً خلال اليوم</span></div>
+      <div class="briefing-top-grid" id="topDevelopments"></div>
+    </section>
+
+    <section class="briefing-section" id="coverageSection" hidden>
+      <div class="briefing-section-heading"><div><span class="section-kicker">WORLDWIDE COVERAGE</span><h2>تفاصيل المشهد حسب الملفات</h2></div><span class="briefing-section-note">تغطية متعددة المجالات</span></div>
+      <div class="briefing-sections-grid" id="briefingSections"></div>
+    </section>
+
+    <div class="briefing-lower-grid">
+      <section class="briefing-section" id="trendsSection" hidden>
+        <div class="briefing-section-heading"><div><span class="section-kicker">GLOBAL SIGNALS</span><h2>اتجاهات ودلالات</h2></div></div>
+        <div class="briefing-list" id="globalTrends"></div>
+      </section>
+      <section class="briefing-section" id="watchSection" hidden>
+        <div class="briefing-section-heading"><div><span class="section-kicker">WHAT TO WATCH</span><h2>ما الذي نراقبه؟</h2></div></div>
+        <div class="briefing-list" id="watchlist"></div>
+      </section>
+    </div>
+
+    <section class="briefing-methodology">
+      <strong>منهجية الملخص ودقة المعلومات</strong>
+      <p>يُبنى هذا التقرير آلياً من الأخبار المنشورة في WRLDLINE خلال نافذة UTC المحددة. تُدمج التغطيات المتشابهة، وتُرفق روابط المواد الأصلية المتاحة. عدد المصادر لا يعني وحده تأكيد الخبر؛ لذلك تُعرض الأخبار المتطورة أو المنقولة عن مصدر واحد بصفتها كذلك. الملخص أداة إحاطة صحفية وليس بديلاً عن قراءة المصدر الأصلي.</p>
+      <div class="briefing-methodology-meta"><span>نافذة ثابتة: 00:00 إلى 00:00 UTC</span><span>إنشاء آلي يومي عند منتصف الليل العالمي</span></div>
+    </section>
+  </main>
+  <footer class="site-footer"><div class="container footer-main"><a class="brand footer-brand" href="index.html"><span class="brand-mark">W</span><span class="brand-copy"><strong>WRLDLINE</strong><small>GLOBAL NEWS NETWORK</small></span></a><p>منصة إخبارية رقمية تضع العالم في سياقه.</p><div class="footer-links"><a href="index.html">العودة إلى الأخبار ↑</a></div></div><div class="container footer-bottom"><span>© <span id="briefingYear"></span> WRLDLINE NEWS</span><span>المحتوى الإخباري يُنسب إلى مصادره الأصلية.</span></div></footer>
+  <script src="daily-briefing.js?v=20261113-1" defer></script>
+</body>
+</html>
