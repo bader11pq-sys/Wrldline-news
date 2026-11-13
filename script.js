@@ -84,10 +84,10 @@ async function fetchNews(){
  if(state.loading)return;state.loading=true;document.getElementById("connectionLabel").textContent=ui("جارٍ تحديث الأخبار","Updating newsroom");
  try{
   const headers={apikey:SUPABASE_ANON_KEY,Authorization:"Bearer "+SUPABASE_ANON_KEY};
-  const res=await fetch(SUPABASE_URL+"/rest/v1/articles?select=*,article_translations(*),article_evidence(*)&editorial_status=eq.published&order=published_at.desc&limit=300",{headers,signal:AbortSignal.timeout(18000)});
+  const res=await fetch(SUPABASE_URL+"/rest/v1/articles?select=*,article_translations(*),article_evidence(*)&editorial_status=eq.published&order=published_at.desc&limit=1000",{headers,signal:AbortSignal.timeout(18000)});
   if(!res.ok)throw new Error(ui("تعذر جلب الأخبار ("+res.status+")","Could not fetch stories ("+res.status+")"));
   const rows=await res.json();if(!Array.isArray(rows))throw new Error(ui("استجابة الأخبار غير صالحة","Invalid news response"));
-  state.articles=rows.map(normalizeArticle).filter(a=>a.title&&!isTelegramArticle(a.raw)).sort((a,b)=>new Date(b.published_at)-new Date(a.published_at));
+  state.articles=rows.map(normalizeArticle).filter(a=>a.title&&(!isTelegramArticle(a.raw)||(a.isBreaking===true&&isDedicatedBreakingSource(a.src)))).sort((a,b)=>new Date(b.published_at)-new Date(a.published_at));
   populateCountries();applyFilters();renderCoveragePulse();updateBreaking();if(state.user)syncLocalSavedToCloud();const linkedId=new URLSearchParams(location.search).get("article");if(linkedId)openArticle(linkedId,false);document.getElementById("lastUpdated").textContent=ui("آخر تحديث: ","Last updated: ")+formatDate(new Date());document.getElementById("connectionLabel").textContent=ui("تم تحديث غرفة الأخبار","Newsroom updated");
  }catch(err){console.error("WRLDLINE fetch:",err);document.getElementById("connectionLabel").textContent=ui("تعذر الاتصال بمصدر الأخبار","Could not connect to news sources");if(!state.articles.length){document.getElementById("heroLayout").innerHTML='<div class="empty-state"><strong>لم نتمكن من تحميل الأخبار</strong><p>تحقق من الاتصال وحاول التحديث بعد قليل.</p><button class="outline-button" onclick="fetchNews()">إعادة المحاولة</button></div>';document.getElementById("newsGrid").innerHTML="";}}
  finally{state.loading=false;}
