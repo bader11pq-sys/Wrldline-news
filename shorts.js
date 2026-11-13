@@ -1,7 +1,7 @@
 (() => {
   const feed=document.getElementById("shortsFeed"),counter=document.getElementById("shortsCounter");
   const langButton=document.getElementById("shortsLanguage"),themeButton=document.getElementById("shortsTheme"),hint=document.getElementById("shortsHint");
-  let lang=localStorage.getItem("wrldline:language")==="en"?"en":"ar",stories=[],active=0,apiUrl="",apiKey="",loading=false;
+  let lang=localStorage.getItem("wrldline:language")==="en"?"en":"ar",stories=[],active=0,apiUrl="",apiKey="",loading=false,nextOffset=0,hasMore=false,loadingMore=false;
   const labels={ar:{politics:"سياسة",economy:"اقتصاد",security:"أمن ودفاع",tech:"تكنولوجيا",sports:"رياضة",culture:"ثقافة",health:"صحة",world:"حول العالم"},en:{politics:"Politics",economy:"Economy",security:"Security & Defence",tech:"Technology",sports:"Sports",culture:"Culture",health:"Health",world:"Around the world"}};
   const t=(ar,en)=>lang==="ar"?ar:en;
   const esc=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -24,7 +24,7 @@
       video.addEventListener("ended",()=>{button.hidden=false;});
       video.addEventListener("error",()=>{button.textContent=t("تعذر تحميل الفيديو","Video failed to load");button.hidden=false;});
     });
-    updateCounter();
+    updateCounter();appendMoreButton();
     if("IntersectionObserver" in window){const observer=new IntersectionObserver(entries=>entries.forEach(e=>{if(e.isIntersecting&&e.intersectionRatio>=.6){active=Number(e.target.dataset.index||0);counter.textContent=(active+1)+" / "+stories.length;}}),{root:feed,threshold:[.6]});feed.querySelectorAll(".shorts-slide").forEach(s=>observer.observe(s));}
   }
   async function configure(){
@@ -34,7 +34,7 @@
     if(!apiUrl||!apiKey)throw new Error("Public API configuration not found");
   }
   async function fetchPage(offset,limit){
-    const query=apiUrl+"/rest/v1/articles?select=*,article_translations(*)&editorial_status=eq.published&order=published_at.desc&limit="+limit+"&offset="+offset;
+    const query=apiUrl+"/rest/v1/articles?select=id,title,summary,category,lang,image_url,media_type,url,source_url,source_name,is_breaking,published_at,created_at,article_translations(lang,title,summary)&editorial_status=eq.published&order=published_at.desc&limit="+limit+"&offset="+offset;
     const response=await fetch(query,{headers:{apikey:apiKey,Authorization:"Bearer "+apiKey},signal:AbortSignal.timeout(20000)});
     if(!response.ok)throw new Error("News API HTTP "+response.status);
     const rows=await response.json();if(!Array.isArray(rows))throw new Error("Invalid news response");
@@ -53,15 +53,25 @@
   }
   async function loadAll(){
     if(loading)return;loading=true;
-    feed.innerHTML='<div class="shorts-state"><strong>'+t("جارٍ تحميل الأخبار...","Loading all published stories...")+'</strong><span>'+t("نجمع الأخبار من جميع أقسام WRLDLINE","Loading stories from every WRLDLINE section")+'</span></div>';
-    try{await configure();let offset=0,all=[];while(true){const page=await fetchPage(offset,500);all=all.concat(page);if(page.length<500)break;offset+=500;}
-      stories=[];mergeRows(all);render();await refreshLatest();
-    }catch(error){console.error("WRLDLINE Shorts:",error);feed.innerHTML='<div class="shorts-state"><strong>'+t("تعذر تحميل الأخبار","Could not load stories")+'</strong><span>'+t("تحقق من اتصال الإنترنت ثم حاول مرة أخرى.","Check your connection and try again.")+'</span><button id="shortsRetry">'+t("إعادة المحاولة","Retry")+'</button></div>';document.getElementById("shortsRetry").onclick=loadAll;}
+    feed.innerHTML='<div class="shorts-state"><strong>'+t("جارٍ تحميل الأخبار...","Loading latest stories...")+'</strong><span>'+t("نحمّل أحدث الأخبار أولاً لتبدأ القراءة بسرعة","Loading the latest stories first")+'</span></div>';
+    try{await configure();const rows=await fetchPage(0,100);stories=[];mergeRows(rows);nextOffset=rows.length;hasMore=rows.length===100;render();await refreshLatest();}
+    catch(error){console.error("WRLDLINE Shorts:",error);feed.innerHTML='<div class="shorts-state"><strong>'+t("تعذر تحميل الأخبار","Could not load stories")+'</strong><span>'+t("تحقق من اتصال الإنترنت ثم حاول مرة أخرى.","Check your connection and try again.")+'</span><button id="shortsRetry">'+t("إعادة المحاولة","Retry")+'</button></div>';document.getElementById("shortsRetry").onclick=loadAll;}
     finally{loading=false;}
+  }
+  function appendMoreButton(){
+    feed.querySelector("#shortsLoadMore")?.remove();if(!hasMore)return;
+    feed.insertAdjacentHTML("beforeend",'<div class="shorts-more-wrap"><button id="shortsLoadMore" type="button">'+t("تحميل المزيد من الأخبار","Load more stories")+'</button></div>');
+    feed.querySelector("#shortsLoadMore").addEventListener("click",loadMore);
+  }
+  async function loadMore(){
+    if(loadingMore||!hasMore)return;loadingMore=true;const button=feed.querySelector("#shortsLoadMore");if(button){button.disabled=true;button.textContent=t("جارٍ التحميل...","Loading...");}
+    try{const rows=await fetchPage(nextOffset,100);nextOffset+=rows.length;hasMore=rows.length===100;const preserve=currentStoryId();mergeRows(rows);render(preserve);}
+    catch(error){console.warn("WRLDLINE Shorts pagination:",error);if(button){button.disabled=false;button.textContent=t("تعذرت الإضافة — أعد المحاولة","Retry loading more");}}
+    finally{loadingMore=false;}
   }
   async function refreshLatest(){
     if(!apiKey||document.hidden)return;
-    try{const rows=await fetchPage(0,100);const preserve=currentStoryId();if(mergeRows(rows))render(preserve);}
+    try{const rows=await fetchPage(0,50);const preserve=currentStoryId();if(mergeRows(rows))render(preserve);}
     catch(error){console.warn("WRLDLINE Shorts refresh:",error);}
   }
   langButton.addEventListener("click",()=>{const preserve=currentStoryId();lang=lang==="ar"?"en":"ar";localStorage.setItem("wrldline:language",lang);setLanguage();render(preserve);});
@@ -70,5 +80,5 @@
   feed.addEventListener("scroll",()=>hint.classList.add("is-hidden"),{passive:true});
   document.addEventListener("visibilitychange",()=>{if(!document.hidden)refreshLatest();});
   setLanguage();const theme=localStorage.getItem("wrldline:theme")||"light";document.documentElement.dataset.theme=theme;themeButton.textContent=theme==="dark"?"☀":"☾";setTimeout(()=>hint.classList.add("is-hidden"),5000);
-  loadAll();setInterval(refreshLatest,15000);
+  loadAll();setInterval(refreshLatest,60000);
 })();
