@@ -58,7 +58,7 @@ function telegramRows(html,f){
   const post=(b.match(/href=["'](https?:\/\/t\.me\/[^/"']+\/\d+)["']/i)||[])[1];
   const clean=dec(text);if(!clean||!date||!post)continue;
   const title=clean.split(/\n|\s{2,}/)[0].slice(0,500)||clean.slice(0,500);
-  const item=row(title,post,clean,date,f);if(item){item.summary=clean.slice(0,3000);out.push(item);}
+  const item=row(title,post,clean,date,f,true);if(item){item.summary=clean.slice(0,3000);out.push(item);}
  }
  return out.slice(0,20);
 }
