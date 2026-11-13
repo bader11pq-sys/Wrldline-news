@@ -63,8 +63,8 @@ function telegramRows(html,f){
  return out.slice(0,20);
 }
 function rawItemCount(body,f){
- if(f.type==="telegram")return (body.match(/tgme_widget_message\\b/g)||[]).length;
- return (body.match(/<item\\b/gi)||body.match(/<entry\\b/gi)||[]).length;
+ if(f.type==="telegram")return (body.match(/tgme_widget_message\b/g)||[]).length;
+ return (body.match(/<item\b/gi)||body.match(/<entry\b/gi)||[]).length;
 }
 async function collect(f){
  try{
@@ -76,8 +76,8 @@ async function collect(f){
    const saved=await fetch(URL+"/rest/v1/articles?on_conflict=url",{method:"POST",headers:{...HEADERS,Prefer:"resolution=merge-duplicates,return=minimal"},body:JSON.stringify(rows)});
    if(!saved.ok)throw new Error("DB "+saved.status+" "+(await saved.text()).slice(0,150));
   }
-  console.log("BREAKING_SOURCE "+f.publisher+": "+rows.length);
-  return {source:f.publisher,ok:true,count:rows.length};
+  console.log("BREAKING_SOURCE "+f.publisher+": http="+r.status+" raw="+raw+" urgent="+rows.length);
+  return {source:f.publisher,ok:true,http:r.status,raw,count:rows.length};
  }catch(e){console.error("BREAKING_SOURCE_ERROR "+f.publisher+": "+String(e.message||e).slice(0,180));return {source:f.publisher,ok:false,count:0,error:String(e.message||e).slice(0,180)};}
 }
 async function main(){
