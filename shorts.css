@@ -44,7 +44,7 @@
 .shorts-video-play[hidden]{display:none}
 .shorts-video-play:focus-visible{outline:3px solid #e9c47e;outline-offset:4px}
 
-.shorts-share{border:1px solid rgba(255,255,255,.55);border-radius:8px;padding:7px 11px;background:rgba(0,0,0,.3);color:#fff;font:inherit;font-size:11px;cursor:pointer;pointer-events:auto}
+.shorts-share{pointer-events:auto;border:1px solid rgba(255,255,255,.55);border-radius:8px;padding:7px 11px;background:rgba(0,0,0,.3);color:#fff;font:inherit;font-size:11px;cursor:pointer;pointer-events:auto}
 .shorts-share:focus-visible,.shorts-more-wrap button:focus-visible{outline:3px solid #e9c47e;outline-offset:3px}
 .shorts-more-wrap{min-height:100px;display:grid;place-items:center;padding:24px;background:#101b2d}
 .shorts-more-wrap button{border:1px solid #71839a;border-radius:10px;padding:12px 18px;background:#17263a;color:#fff;font:inherit;cursor:pointer}
