@@ -61,7 +61,7 @@ function parseGeneral(xml: string,feed: any) {
   const summary=tag(block,["description","summary","content:encoded","content"]);
   const date=tag(block,["pubDate","published","updated","dc:date"]);
   const arabic=/[\u0600-\u06FF]/.test(title);
-  return {url,title:title.slice(0,500),summary:summary.slice(0,5000),image_url:entryImage(block),category:feed.category||"world",country:COUNTRY_BY_NAME[feed.name as keyof typeof COUNTRY_BY_NAME]||"دولي",source_name:feed.name,source_url:feed.url,lang:arabic?"ar":(feed.lang||"en"),verification:"unconfirmed",published_at:parsedDate(date),ai_classification_status:"pending",editorial_status:"published"};
+  return {url,title:title.slice(0,500),summary:summary.slice(0,5000),image_url:entryImage(block),category:feed.category&&feed.category!=="world"?feed.category:"uncategorized",country:"غير محدد",source_name:feed.name,source_url:feed.url,lang:arabic?"ar":(feed.lang||"en"),verification:"unconfirmed",published_at:parsedDate(date),ai_classification_status:"pending",editorial_status:"published"};
  }).filter(Boolean);
 }
 async function dbRequest(path: string,init: RequestInit & {headers?: Record<string,string>} = {}) {
@@ -197,7 +197,7 @@ function urgentRow(title: string,url: string,summary: string,date: string,feed: 
  if(!title||!/^https?:\/\//i.test(url)||(!force&&!URGENT.test(title))) return null;
  const dt=new Date(date||Date.now());
  if(Number.isNaN(dt.getTime())||Date.now()-dt.getTime()>2*60*60*1000||dt.getTime()>Date.now()+5*60*1000) return null;
- return {url,title:title.slice(0,500),summary:(summary||"").slice(0,3000),source_name:feed.publisher+" Breaking Desk",source_url:feed.type==="telegram"?"https://t.me/"+feed.handle:feed.url,category:"world",country:"دولي",lang:feed.lang,verification:"unconfirmed",published_at:dt.toISOString(),editorial_status:"published",ai_classification_status:"pending",is_breaking:true};
+ return {url,title:title.slice(0,500),summary:(summary||"").slice(0,3000),source_name:feed.publisher+" Breaking Desk",source_url:feed.type==="telegram"?"https://t.me/"+feed.handle:feed.url,category:"uncategorized",country:"غير محدد",lang:feed.lang,verification:"unconfirmed",published_at:dt.toISOString(),editorial_status:"published",ai_classification_status:"pending",is_breaking:true};
 }
 function parseTelegram(html: string,feed: any) {
  const starts=[...html.matchAll(/<div class="tgme_widget_message\b/g)].map(m=>m.index),out=[];
