@@ -25,3 +25,5 @@ console.log("OPENROUTER_HEALTHCHECK_OK " + JSON.stringify({
   model: result.model,
   response: result.response
 }));
+
+// Trigger a fresh one-time healthcheck after the auth-header fix.
