@@ -215,7 +215,7 @@ function renderBreakingSection(){
  const items=breakingItems();const count=document.getElementById("breakingCount");
  count.textContent=state.lang==="ar"?items.length+" أخبار عاجلة خلال آخر 7 دقائق":items.length+" breaking stories in the last 7 minutes";
  if(!items.length){host.innerHTML='<div class="empty-state">'+ui("لا توجد أخبار عاجلة خلال آخر 7 دقائق. ستظهر هنا التنبيهات الجديدة التي يحددها المحرر.","No breaking alerts in the last 7 minutes. New editor-selected alerts will appear here.")+'</div>';return;}
- host.innerHTML=items.slice(0,8).map(a=>'<article class="breaking-news-card" data-open="'+escapeHTML(a.id)+'">'+imageMarkup(a,"breaking-news-image")+'<div class="breaking-news-copy"><div class="story-meta"><span class="breaking-badge">'+ui("عاجل","BREAKING")+'</span><span>'+escapeHTML(timeAgo(a.published_at))+'</span><span>'+escapeHTML(categoryName(a.cat))+'</div><h3>'+escapeHTML(a.title)+'</h3><p>'+escapeHTML(a.summary)+'</p><small>'+escapeHTML(a.src)+' · '+ui("اقرأ التفاصيل","Read story")+' ←</small></div></article>').join("");
+ host.innerHTML=items.slice(0,8).map(a=>'<article class="breaking-news-card" data-open="'+escapeHTML(a.id)+'">'+imageMarkup(a,"breaking-news-image")+'<div class="breaking-news-copy"><div class="story-meta"><span class="breaking-badge">'+ui("عاجل","BREAKING")+'</span><span>'+escapeHTML(timeAgo(a.published_at))+'</span><span>'+escapeHTML(categoryName(a.cat))+'</span></div><h3>'+escapeHTML(a.title)+'</h3><p>'+escapeHTML(a.summary)+'</p><small>'+escapeHTML(a.src)+' · '+ui("اقرأ التفاصيل","Read story")+' ←</small></div></article>').join("");
  host.querySelectorAll("[data-open]").forEach(el=>el.addEventListener("click",()=>openArticle(el.dataset.open)));
 }
 function rotateBreaking(){
@@ -249,7 +249,7 @@ function updateBreaking(){
   marquee.style.direction=isEnglish?"ltr":"rtl";
   marquee.style.unicodeBidi="plaintext";
   requestAnimationFrame(()=>{
-   const distance=title.clientWidth+marquee.scrollWidth;
+   const distance=(title.clientWidth*2)+marquee.scrollWidth;
    const duration=Math.max(12,distance/55);
    marquee.style.setProperty("--breaking-duration",duration+"s");
    marquee.classList.add("is-moving");
