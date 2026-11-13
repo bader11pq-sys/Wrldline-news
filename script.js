@@ -239,7 +239,7 @@ function updateBreaking(){
  }
  strip.hidden=false;
  if(currentId!==item.id){
-  marquee.textContent=item.title;
+  marquee.textContent=String(item.title||"").replace(/[\\u202A-\\u202E\\u2066-\\u2069]/g,"").normalize("NFC");
   marquee.dataset.articleId=item.id;
   marquee.classList.remove("is-moving");
   marquee.style.removeProperty("--breaking-duration");
