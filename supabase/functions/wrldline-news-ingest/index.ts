@@ -194,7 +194,7 @@ const FEEDS=[
  {publisher:"The Guardian",url:GOOGLE("theguardian.com","en"),lang:"en"}
 ];
 function urgentRow(title: string,url: string,summary: string,date: string,feed: any) {
- const normalizedTitle=String(title||"").replace(/[\u061C\u200E\u200F\u202A-\u202E\u2066-\u2069]/g,"").replace(/^[\\s\\"“”‘’()[\]{}]+/,"").trim();
+ const normalizedTitle=String(title||"").replace(/[\u061C\u200E\u200F\u202A-\u202E\u2066-\u2069]/g,"").replace(/^["'“”‘’(]+/,"").trim();
  if(!normalizedTitle||!/^https?:\/\//i.test(url)||!URGENT.test(normalizedTitle)) return null;
  const dt=new Date(date||Date.now());
  if(Number.isNaN(dt.getTime())||Date.now()-dt.getTime()>2*60*60*1000||dt.getTime()>Date.now()+5*60*1000) return null;
