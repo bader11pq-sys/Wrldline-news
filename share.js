@@ -73,7 +73,7 @@ async function share(data){
  }finally{if(button){button.disabled=false;delete button.dataset.busy;}}
 }
 
-const inlineSelectors=[".country-summary",".detail",".briefing-story",".briefing-list-item",".atlas-event",".eu-card",".chapter",".culture",".lab-card",".hd-event",".hd-card",".history-photo",".market-card",".market-tape-panel",".market-widget-shell",".markets-hero",".shorts-slide",".leaflet-popup-content",".era",".fact",".point",".briefing-category",".market-disclosure",".stat",".sources"];
+const inlineSelectors=[".event",".country-summary",".detail",".briefing-story",".briefing-list-item",".atlas-event",".eu-card",".chapter",".culture",".lab-card",".hd-event",".hd-card",".history-photo",".market-card",".market-tape-panel",".market-widget-shell",".markets-hero",".shorts-slide",".leaflet-popup-content",".era",".fact",".point",".briefing-category",".market-disclosure",".stat",".sources"];
 function attachInline(root=document){
  if(root.nodeType===1&&root.matches?.(inlineSelectors.join(",")))addInline(root);
  root.querySelectorAll?.(inlineSelectors.join(",")).forEach(addInline);
