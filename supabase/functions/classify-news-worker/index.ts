@@ -41,11 +41,11 @@ Deno.serve(async (req: Request) => {
     .gte("published_at", cutoff)
     .in("ai_classification_status", ["pending", "failed"])
     .order("published_at", { ascending: true })
-    .limit(5);
+    .limit(50);
 
   if (error) return json({ error: "Could not load pending articles", detail: error.message }, 500);
 
-  const candidates = (rows || []).filter((article: any) => !isTelegram(article));
+  const candidates = (rows || []).filter((article: any) => !isTelegram(article)).slice(0, 5);
   if (!candidates.length) return json({ ok: true, selected: 0, processed: 0, message: "No eligible recent articles" });
 
   const response = await fetch(url + "/functions/v1/classify-news", {
