@@ -58,6 +58,36 @@ async function groqGenerate(prompt: string, apiKey: string, maxOutputTokens: num
   }
   throw Object.assign(new Error(lastError || "Groq temporarily unavailable"), { deferred: true, retryAfter: 60 });
 }
+
+async function deeplTranslate(texts:string[], apiKey:string, target:string) {
+ const key=apiKey.trim();
+ const endpoint=key.endsWith(":fx")?"https://api-free.deepl.com/v2/translate":"https://api.deepl.com/v2/translate";
+ const response=await fetch(endpoint,{
+  method:"POST",
+  headers:{"Authorization":"DeepL-Auth-Key "+key,"Content-Type":"application/json"},
+  signal:AbortSignal.timeout(18000),
+  body:JSON.stringify({
+   text:texts.map(value=>String(value||"").slice(0,4000)),
+   target_lang:target==="ar"?"AR":"EN-US",
+   preserve_formatting:true,
+   split_sentences:"1"
+  })
+ });
+ if(!response.ok) {
+  const detail=(await response.text()).slice(0,350);
+  throw Object.assign(new Error("DeepL API "+response.status+": "+detail),{
+   provider:"deepl",status:response.status,quotaExceeded:response.status===456,
+   deferred:response.status===429||response.status===500||response.status===502||response.status===503||response.status===504||response.status===529
+  });
+ }
+ const payload=await response.json();
+ const translated=payload.translations;
+ if(!Array.isArray(translated)||translated.length!==texts.length||translated.some((item:any)=>!String(item?.text||"").trim())) {
+  throw new Error("DeepL returned incomplete translation data.");
+ }
+ return translated.map((item:any)=>String(item.text).trim());
+}
+
 async function generateWithFallback(prompt: string, geminiKey: string | null, groqKey: string | null, openRouterKey: string | null, openRouterModel: string, maxOutputTokens: number) {
  const errors:string[]=[];
  let geminiQuotaExceeded=false;
@@ -152,12 +182,13 @@ Deno.serve(async(req:Request)=>{
  if(req.method!=="POST")return json({error:"Method not allowed"},405);
  const url=Deno.env.get("SUPABASE_URL"),anon=Deno.env.get("SUPABASE_ANON_KEY")||(()=>{try{return JSON.parse(Deno.env.get("SUPABASE_PUBLISHABLE_KEYS")||"{}").default}catch{return null}})();
  const service=Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")||(()=>{try{return JSON.parse(Deno.env.get("SUPABASE_SECRET_KEYS")||"{}").default}catch{return null}})();
+ const deeplKey=Deno.env.get("DEEPL_API_KEY") || null;
  const gemini=Deno.env.get("GEMINI_API_KEY") || null;
  const groqKey=Deno.env.get("GROQ_API_KEY") || null;
  const openRouterModel=Deno.env.get("OPENROUTER_MODEL") || "";
  const openRouterKey: string | null = Deno.env.get("OPENROUTER_API_KEY") && openRouterModel && openRouterModel!=="openrouter/free" && !openRouterModel.endsWith(":free") ? (Deno.env.get("OPENROUTER_API_KEY") || null) : null;
  if(!url||!anon||!service)return json({error:"Supabase server configuration is incomplete."},500);
- if(!gemini&&!groqKey&&!openRouterKey)return json({error:"Configure GEMINI_API_KEY, GROQ_API_KEY, or OPENROUTER_API_KEY."},503);
+ if(!deeplKey&&!gemini&&!groqKey&&!openRouterKey)return json({error:"Configure DEEPL_API_KEY or an AI translation provider."},503);
  const token=(req.headers.get("Authorization")||"").replace(/^Bearer\s+/i,"");
  if(token!==service){
   if(!token)return json({error:"Authentication required."},401);
@@ -180,6 +211,7 @@ Deno.serve(async(req:Request)=>{
  const results:any[]=allArticles.filter((article:any)=>!isWithinAiWindow(article)).map((article:any)=>({id:article.id,status:"expired_ignored"}));
  let cursor=0;
  let pauseReason:string|null=null;
+ let deeplQuotaExhausted=false;
  async function processArticle(article:any) {
   try {
    if(!isWithinAiWindow(article)) return {id:article.id,status:"expired_ignored"};
@@ -202,8 +234,25 @@ Deno.serve(async(req:Request)=>{
     "SUMMARY:\n"+sourceSummary,
     "AI CONTEXT SUMMARY:\n"+(article.ai_summary||sourceSummary)
    ].join("\n");
-   const generated=await generateWithFallback(prompt,geminiForBatch,groqKey,openRouterKey,openRouterModel,1800);
-   const translated=generated.data;
+   let translated:any=null;
+   let provider="deepl";
+   let deeplError:string|null=null;
+   if(deeplKey&&!deeplQuotaExhausted) {
+    try {
+     const values=await deeplTranslate([String(article.title||""),sourceSummary,String(article.ai_summary||sourceSummary)],deeplKey,target);
+     translated={title:values[0],summary:values[1],ai_summary:values[2]};
+    } catch(error) {
+     deeplError=String(error).slice(0,220);
+     if((error as any)?.quotaExceeded) deeplQuotaExhausted=true;
+    }
+   } else if(deeplQuotaExhausted) {
+    deeplError="DeepL monthly character quota exhausted; using AI fallback.";
+   }
+   if(!translated) {
+    const generated=await generateWithFallback(prompt,geminiForBatch,groqKey,openRouterKey,openRouterModel,1800);
+    translated=generated.data;
+    provider=generated.provider;
+   }
    const title=String(translated.title||"").trim();
    const summary=String(translated.summary||"").trim();
    if(!title||!summary) throw new Error("AI returned an empty translated title or summary.");
@@ -213,7 +262,7 @@ Deno.serve(async(req:Request)=>{
    },{onConflict:"article_id,lang"});
    if(upsertError) throw upsertError;
    await db.from("articles").update({translation_attempts:0,translation_retry_after:null,translation_last_error:null}).eq("id",article.id);
-   return {id:article.id,status:"translated",lang:target,provider:generated.provider};
+   return {id:article.id,status:"translated",lang:target,provider,deepl_fallback_reason:provider==="deepl"?undefined:deeplError};
   } catch(error) {
    if((error as any)?.deferred) {
     if((error as any)?.quotaExceeded) {
@@ -247,5 +296,5 @@ Deno.serve(async(req:Request)=>{
  for(const article of queue) {
   if(!results.some(item=>item.id===article.id)) results.push({id:article.id,status:"deferred",error:"Batch paused after provider backoff"});
  }
- return json({processed:results.length,results,concurrency:Math.min(2,queue.length),gemini_cooldown:geminiCoolingDown,providers_configured:{gemini:!!gemini,groq:!!groqKey,openrouter:!!openRouterKey}});
+ return json({processed:results.length,results,concurrency:Math.min(2,queue.length),gemini_cooldown:geminiCoolingDown,deepl_quota_exhausted:deeplQuotaExhausted,providers_configured:{deepl:!!deeplKey,gemini:!!gemini,groq:!!groqKey,openrouter:!!openRouterKey},translation_priority:["deepl","gemini","groq","openrouter"]});
 });
