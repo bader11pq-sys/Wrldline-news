@@ -289,10 +289,11 @@ function openArticle(id,updateUrl=true){
  if(updateUrl){const url=new URL(location.href);url.searchParams.set("article",id);history.pushState({article:id},"",url);}
  const host=document.getElementById("modalContent");
  const evidence=evidenceMarkup(a);
- host.innerHTML='<button class="modal-close" id="modalClose" aria-label="'+ui("إغلاق","Close")+'">×</button>'+articleMediaMarkup(a)+'<div class="modal-article-body"><div class="story-meta"><span class="category-label">'+escapeHTML(categoryName(a.cat))+'</span><span>'+escapeHTML(countryName(a.country,a.aiCountryCode))+'</span><time>'+escapeHTML(formatDate(a.published_at))+'</time></div><h1>'+escapeHTML(a.title)+'</h1><p class="modal-summary">'+escapeHTML(a.summary)+'</p>'+evidence+(a.aiSummary?'<section class="ai-insight"><strong>'+ui("تحليل WRLDLINE AI","WRLDLINE AI analysis")+'</strong><p>'+escapeHTML(a.aiSummary)+'</p><small>'+ui("مؤشر الحدث: ","Event risk: ")+escapeHTML(riskLabel(a.aiRiskLevel))+' · '+escapeHTML(a.aiRiskScore)+'/100</small></section>':'')+(a.src==="WRLDLINE NEWS"?'<div class="source-box"><span>'+ui("نوع المحتوى","Content type")+'</span><strong>WRLDLINE NEWS</strong><small>'+ui("مقال تحريري منشور من غرفة أخبار WRLDLINE.","Editorial article published by the WRLDLINE newsroom.")+'</small></div>':'<div class="source-box"><span>'+ui("المصدر الأصلي","Original source")+'</span><strong>'+escapeHTML(a.src)+'</strong><a href="'+escapeHTML(a.sourceURL)+'" target="_blank" rel="noopener noreferrer">'+ui("قراءة الخبر لدى المصدر الأصلي ↗","Read at original source ↗")+'</a></div>')+'<p class="disclaimer">'+ui("هذه ترجمة/خلاصة تحريرية للخبر وليست بديلاً عن النص الأصلي. قد تكون التفاصيل الكاملة أو التحديثات منشورة لدى المصدر.","This is an editorial translation/summary, not a replacement for the original report. Full details and updates may be available at the source.")+'</p><div class="article-actions"><button class="outline-button" id="modalSave">'+(state.saved.has(a.id)?ui("★ إزالة من المحفوظات","★ Remove saved"):ui("☆ حفظ الخبر","☆ Save story"))+'</button><button class="outline-button" id="modalShare" type="button">'+ui("مشاركة الخبر ↗","Share story ↗")+'</button></div></div>';
+ host.innerHTML='<button class="modal-close" id="modalClose" aria-label="'+ui("إغلاق","Close")+'">×</button>'+articleMediaMarkup(a)+'<div class="modal-article-body"><div class="story-meta"><span class="category-label">'+escapeHTML(categoryName(a.cat))+'</span><span>'+escapeHTML(countryName(a.country,a.aiCountryCode))+'</span><time>'+escapeHTML(formatDate(a.published_at))+'</time></div><h1>'+escapeHTML(a.title)+'</h1><p class="modal-summary">'+escapeHTML(a.summary)+'</p>'+evidence+(a.aiSummary?'<section class="ai-insight"><strong>'+ui("تحليل WRLDLINE AI","WRLDLINE AI analysis")+'</strong><p>'+escapeHTML(a.aiSummary)+'</p><small>'+ui("مؤشر الحدث: ","Event risk: ")+escapeHTML(riskLabel(a.aiRiskLevel))+' · '+escapeHTML(a.aiRiskScore)+'/100</small></section>':'')+(a.src==="WRLDLINE NEWS"?'<div class="source-box"><span>'+ui("نوع المحتوى","Content type")+'</span><strong>WRLDLINE NEWS</strong><small>'+ui("مقال تحريري منشور من غرفة أخبار WRLDLINE.","Editorial article published by the WRLDLINE newsroom.")+'</small></div>':'<div class="source-box"><span>'+ui("المصدر الأصلي","Original source")+'</span><strong>'+escapeHTML(a.src)+'</strong><a href="'+escapeHTML(a.sourceURL)+'" target="_blank" rel="noopener noreferrer">'+ui("قراءة الخبر لدى المصدر الأصلي ↗","Read at original source ↗")+'</a></div>')+'<p class="disclaimer">'+ui("هذه ترجمة/خلاصة تحريرية للخبر وليست بديلاً عن النص الأصلي. قد تكون التفاصيل الكاملة أو التحديثات منشورة لدى المصدر.","This is an editorial translation/summary, not a replacement for the original report. Full details and updates may be available at the source.")+'</p><div class="article-actions"><button class="outline-button" id="modalListen" type="button">♫ ${ui("استمع للخبر","Listen to story")}</button><button class="outline-button" id="modalSave">'+(state.saved.has(a.id)?ui("★ إزالة من المحفوظات","★ Remove saved"):ui("☆ حفظ الخبر","☆ Save story"))+'</button><button class="outline-button" id="modalShare" type="button">'+ui("مشاركة الخبر ↗","Share story ↗")+'</button></div></div>';
  document.getElementById("modalClose").addEventListener("click",closeArticle);
  document.getElementById("modalSave").addEventListener("click",()=>{toggleSaved(a.id);document.getElementById("modalSave").textContent=state.saved.has(a.id)?ui("★ إزالة من المحفوظات","★ Remove saved"):ui("☆ حفظ الخبر","☆ Save story");});
  document.getElementById("modalShare").addEventListener("click",()=>shareArticle(a));
+ document.getElementById("modalListen").addEventListener("click",()=>playArticleAudio(a));
  const evidenceForm=document.getElementById("evidenceForm");
  if(evidenceForm)evidenceForm.addEventListener("submit",async event=>{
   event.preventDefault();if(!state.db||!["admin","editor"].includes(state.user?.app_metadata?.role))return;
@@ -304,6 +305,33 @@ function openArticle(id,updateUrl=true){
   a.evidence=rows||[];showToast(ui("تم حفظ الدليل وتحديث مؤشر الموثوقية","Evidence saved and reliability updated"));openArticle(a.id,false);
  });
  showModal("articleModal");
+}
+let currentArticleAudioUrl = null;
+async function playArticleAudio(article){
+ const button=document.getElementById("modalListen");if(!button)return;
+ if(!state.db){showToast(ui("خدمة الصوت تتطلب تسجيل الدخول أولاً.","Sign in to use article audio."));return;}
+ const {data:{session}}=await state.db.auth.getSession();
+ if(!session?.access_token){showToast(ui("سجّل الدخول للاستماع إلى الأخبار بصوت ElevenLabs.","Sign in to listen with ElevenLabs."));return;}
+ const text=[article.title,article.summary,article.aiSummary].filter(Boolean).join(". ").slice(0,3200);
+ const original=ui("♫ استمع للخبر","♫ Listen to story");
+ button.disabled=true;button.textContent=ui("جارٍ إنشاء الصوت...","Generating audio...");
+ const previous=button.parentElement.querySelector(".article-audio-player");if(previous)previous.remove();
+ try{
+  const response=await fetch(SUPABASE_URL+"/functions/v1/elevenlabs-tts",{
+   method:"POST",
+   headers:{apikey:SUPABASE_ANON_KEY,Authorization:"Bearer "+session.access_token,"Content-Type":"application/json"},
+   body:JSON.stringify({text,language:state.lang}),
+   signal:AbortSignal.timeout(50000)
+  });
+  if(!response.ok){const payload=await response.json().catch(()=>({}));throw new Error(payload.error||("HTTP "+response.status));}
+  const blob=await response.blob();if(!blob.type.includes("audio"))throw new Error(ui("استجابة الصوت غير صالحة.","Invalid audio response."));
+  if(currentArticleAudioUrl)URL.revokeObjectURL(currentArticleAudioUrl);
+  currentArticleAudioUrl=URL.createObjectURL(blob);
+  const audio=document.createElement("audio");audio.className="article-audio-player";audio.controls=true;audio.preload="metadata";audio.src=currentArticleAudioUrl;
+  button.insertAdjacentElement("afterend",audio);
+  await audio.play().catch(()=>{});
+ }catch(error){showToast(ui("تعذر إنشاء الصوت: ","Could not generate audio: ")+String(error.message||error));}
+ finally{if(button.isConnected){button.disabled=false;button.textContent=original;}}
 }
 function closeArticle(updateUrl=true){hideModal("articleModal");if(updateUrl&&new URLSearchParams(location.search).has("article")){const url=new URL(location.href);url.searchParams.delete("article");history.replaceState(null,"",url);}}
 async function shareArticle(article){const url=new URL("/",location.origin);url.searchParams.set("article",article.id);const data={title:article.title,text:article.summary||"خبر من WRLDLINE NEWS",url:url.href};try{if(navigator.share){await navigator.share(data);return;}if(navigator.clipboard?.writeText){await navigator.clipboard.writeText(url.href);showToast("تم نسخ رابط الخبر");return;}window.prompt(ui("انسخ رابط الخبر لمشاركته","Copy the story link to share it"),url.href);}catch(error){if(error?.name!=="AbortError")showToast(ui("تعذرت مشاركة الخبر حالياً","Could not share this story right now"));}}
