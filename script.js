@@ -213,7 +213,7 @@ function isDedicatedBreakingSource(name){
 function breakingItems(){
  const now=Date.now(),maxAge=10*60*1000;
  return state.articles.filter(a=>{
-  if(a.isBreaking!==true)return false;
+  if(a.isBreaking!==true||!isDedicatedBreakingSource(a.src))return false;
   const published=Date.parse(a.published_at||"");
   const age=now-published;
   return Number.isFinite(published)&&age>=-60*1000&&age<=maxAge;
