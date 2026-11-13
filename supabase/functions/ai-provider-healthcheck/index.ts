@@ -54,5 +54,5 @@ Deno.serve(async(req:Request)=>{
  ]);
  const configured=results.filter(x=>x.status!=="not_configured");
  results[0].key_source=Deno.env.get("GOOGLE_API_KEY")?"GOOGLE_API_KEY":(Deno.env.get("GEMINI_API_KEY")?"GEMINI_API_KEY":null);
- return json({ok:configured.length>0&&configured.every(x=>x.status==="passed"),tested_at:new Date().toISOString(),results});
+ return json({ok:configured.some(x=>x.status==="passed"),all_configured_passed:configured.length>0&&configured.every(x=>x.status==="passed"),tested_at:new Date().toISOString(),results});
 });
