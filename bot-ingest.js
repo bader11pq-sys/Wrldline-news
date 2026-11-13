@@ -109,7 +109,7 @@ const FEEDS = [
   {url:"https://www.economist.com/the-world-this-week/rss.xml",name:"The Economist",country:"دولي",lang:"en",fallbackUrl:googleNewsUrlEn("economist.com")},
   {url:"https://feeds.bloomberg.com/politics/news.rss",name:"Bloomberg",country:"دولي",lang:"en",fallbackUrl:googleNewsUrlEn("bloomberg.com")},
   {url:"https://api.axios.com/feed/",name:"Axios",country:"دولي",lang:"en",fallbackUrl:googleNewsUrlEn("axios.com")},
-  {url:"https://www.newsweek.com/rss",name:"Newsweek",country:"دولي",lang:"en"}
+  {url:"https://www.newsweek.com/rss",name:"Newsweek",country:"دولي",lang:"en",fallbackUrl:googleNewsUrlEn("newsweek.com")}
 ];
 const SUPABASE_URL=process.env.SUPABASE_URL;
 const KEY=process.env.SUPABASE_SERVICE_ROLE_KEY||process.env.SUPABASE_KEY;
