@@ -17,15 +17,14 @@ async function callGemini(key:string){
 async function callGroq(key:string){const r=await fetch("https://api.groq.com/openai/v1/chat/completions",{method:"POST",headers:{"Authorization":"Bearer "+key,"Content-Type":"application/json"},signal:AbortSignal.timeout(25000),body:JSON.stringify({model:"openai/gpt-oss-20b",messages:[{role:"system",content:"Return exactly one valid JSON object, no Markdown."},{role:"user",content:prompt}],response_format:{type:"json_object"},temperature:0,max_completion_tokens:1800,reasoning_effort:"low"})});if(!r.ok)throw new Error("Groq HTTP "+r.status+": "+(await r.text()).slice(0,220));const p=await r.json(),raw=p.choices?.[0]?.message?.content;if(typeof raw!=="string"||!raw.trim())throw new Error("Groq returned empty content; finish_reason="+(p.choices?.[0]?.finish_reason||"unknown"));const data=JSON.parse(raw);if(!valid(data))throw new Error("Groq response did not match classification/translation schema");return {ok:true,model:p.model||"openai/gpt-oss-20b"};}
 
 async function callNvidia(key:string){
- const model=Deno.env.get("NVIDIA_MODEL")||"nvidia/nemotron-3-super-120b-a12b";
- const r=await fetch("https://integrate.api.nvidia.com/v1/chat/completions",{method:"POST",headers:{"Authorization":"Bearer "+key,"Content-Type":"application/json"},signal:AbortSignal.timeout(25000),body:JSON.stringify({model,messages:[{role:"system",content:"Return exactly one valid JSON object, no Markdown."},{role:"user",content:prompt}],response_format:{type:"json_object"},temperature:0,max_tokens:1600})});
- if(!r.ok)throw new Error("NVIDIA HTTP "+r.status+": "+(await r.text()).slice(0,220));
- const p=await r.json(),raw=p.choices?.[0]?.message?.content;
- if(typeof raw!=="string"||!raw.trim())throw new Error("NVIDIA returned empty content");
+ const model="nvidia/nemotron-3.5-lightning-30b-a3b";
+ const r=await fetch("https://integrate.api.nvidia.com/v1/chat/completions",{method:"POST",headers:{"Authorization":"Bearer "+key,"Content-Type":"application/json"},signal:AbortSignal.timeout(25000),body:JSON.stringify({model,messages:[{role:"system",content:"Return exactly one valid JSON object, no Markdown."},{role:"user",content:prompt}],chat_template_kwargs:{enable_thinking:false},temperature:0,max_tokens:1800})});
+ if(!r.ok)throw new Error("NVIDIA model "+model+" HTTP "+r.status+": "+(await r.text()).slice(0,250));
+ const p=await r.json(),choice=p.choices?.[0],raw=choice?.message?.content;
+ if(typeof raw!=="string"||!raw.trim())throw new Error("NVIDIA returned empty content (finish_reason="+(choice?.finish_reason||"unknown")+", message_fields="+Object.keys(choice?.message||{}).join(",")+")");
  const data=JSON.parse(raw);if(!valid(data))throw new Error("NVIDIA response did not match classification/translation schema");
  return {ok:true,model:p.model||model};
 }
-
 async function callOpenRouter(key:string){const r=await fetch("https://openrouter.ai/api/v1/chat/completions",{method:"POST",headers:{"Authorization":"Bearer "+key,"Content-Type":"application/json","HTTP-Referer":"https://al-ghaib.us.ci","X-Title":"WRLDLINE NEWS"},signal:AbortSignal.timeout(25000),body:JSON.stringify({model:"openrouter/free",messages:[{role:"system",content:"Return exactly one valid JSON object, no Markdown."},{role:"user",content:prompt}],response_format:{type:"json_object"},temperature:0,max_tokens:1200})});if(!r.ok)throw new Error("OpenRouter HTTP "+r.status+": "+(await r.text()).slice(0,220));const p=await r.json(),raw=p.choices?.[0]?.message?.content;if(typeof raw!=="string"||!raw.trim())throw new Error("OpenRouter returned empty content");const data=JSON.parse(raw);if(!valid(data))throw new Error("OpenRouter response did not match classification/translation schema");return {ok:true,model:p.model||"openrouter/free"};}
 async function run(name:string,key:string|null,fn:(key:string)=>Promise<any>){if(!key)return {provider:name,status:"not_configured"};try{return {provider:name,status:"passed",...(await fn(key))};}catch(e){return {provider:name,status:"failed",error:String(e).slice(0,300)};}}
 Deno.serve(async(req:Request)=>{
