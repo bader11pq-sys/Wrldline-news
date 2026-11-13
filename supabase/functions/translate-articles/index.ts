@@ -160,8 +160,8 @@ Deno.serve(async(req:Request)=>{
   if(!["admin","editor"].includes(data.user.app_metadata?.role))return json({error:"Editorial access required."},403);
  }
  let body:any;try{body=await req.json()}catch{return json({error:"Invalid JSON"},400)}
- const ids=Array.isArray(body.article_ids)?[...new Set(body.article_ids.filter((x:unknown)=>typeof x==="string"))].slice(0,10):[];
- if(!ids.length)return json({error:"Send 1 to 10 article_ids."},400);
+ const ids=Array.isArray(body.article_ids)?[...new Set(body.article_ids.filter((x:unknown)=>typeof x==="string"))].slice(0,20):[];
+ if(!ids.length)return json({error:"Send 1 to 20 article_ids."},400);
  const db=createClient(url,service,{auth:{persistSession:false,autoRefreshToken:false}});
  const {data:rateLimit}=await db.from("gemini_rate_limits").select("cooldown_until").eq("singleton",true).maybeSingle();
  const geminiCoolingDown=!!(rateLimit?.cooldown_until && Date.parse(rateLimit.cooldown_until)>Date.now());
