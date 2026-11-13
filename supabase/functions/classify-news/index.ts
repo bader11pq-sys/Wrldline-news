@@ -220,6 +220,10 @@ Deno.serve(async (req: Request) => {
             reason: "Gemini quota exceeded", updated_at: new Date().toISOString()
           }, { onConflict: "singleton" });
         }
+        await db.from("articles").update({
+          ai_classification_status: "deferred",
+          ai_classified_at: new Date().toISOString()
+        }).eq("id", article.id);
         results.push({ id: article.id, status: "deferred", retry_after_seconds: (error as any).retryAfter || 60, error: String(error).slice(0, 220) });
         break;
       }
