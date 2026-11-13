@@ -268,7 +268,7 @@ Deno.serve(async(req:Request)=>{
      } else if([401,403].includes(Number((error as any)?.status))) {
       deeplDisabled=true;deeplQuotaExhausted=false;
       deeplDisabledUntil=new Date(Date.now()+15*60*1000).toISOString();
-      await db.from("translation_provider_state").upsert({provider:"deepl",disabled_until:deeplDisabledUntil,reason:"DeepL authentication failed (HTTP "+Number((error as any)?.status+"); verify API key and plan",updated_at:new Date().toISOString()},{onConflict:"provider"});
+      await db.from("translation_provider_state").upsert({provider:"deepl",disabled_until:deeplDisabledUntil,reason:"DeepL authentication failed (HTTP "+Number((error as any)?.status)+"); verify API key and plan",updated_at:new Date().toISOString()},{onConflict:"provider"});
      }
     }
    } else if(deeplDisabled) {
