@@ -11,7 +11,8 @@
 </style></head>
 <body><main class="wrap">
 <header class="panel row"><div><h1>WRLDLINE <span style="color:var(--gold)">/</span> لوحة التحرير</h1><small>إدارة المحتوى — وصول محمي بحساب Supabase</small></div><a href="index.html" style="color:var(--gold)">عرض الموقع ↗</a></header>
-<section class="panel" id="loginPanel"><h2>تسجيل دخول المحرر</h2><p class="muted">استخدم حساب محرر مصرحاً به. لا توجد كلمة مرور مشتركة أو مخزنة داخل ملفات الموقع.</p><form id="loginForm"><label for="email">البريد الإلكتروني</label><input id="email" type="email" autocomplete="username" required><label for="password">كلمة المرور</label><input id="password" type="password" autocomplete="current-password" required><button class="btn" type="submit">تسجيل الدخول</button></form></section>
+<section class="panel" id="loginPanel"><h2>تسجيل دخول المحرر</h2><p class="muted">استخدم حساب محرر مصرحاً به. لا توجد كلمة مرور مشتركة أو مخزنة داخل ملفات الموقع.</p><form id="loginForm"><label for="email">البريد الإلكتروني</label><input id="email" type="email" autocomplete="username" required><label for="password">كلمة المرور</label><input id="password" type="password" autocomplete="current-password" required><button class="btn" type="submit">تسجيل الدخول</button></form><button class="btn secondary" type="button" id="forgotPasswordButton">نسيت كلمة المرور؟ أرسل رابط استعادة</button></section>
+<section class="panel hidden" id="recoveryPanel"><h2>تعيين كلمة مرور جديدة</h2><p class="muted">أدخل كلمة مرور جديدة لحسابك. ستبقى داخل موقع WRLDLINE ولن يتم تحويلك إلى localhost.</p><form id="recoveryForm"><label for="newPassword">كلمة المرور الجديدة</label><input id="newPassword" type="password" minlength="8" autocomplete="new-password" required><button class="btn" type="submit">حفظ كلمة المرور</button></form></section>
 <section class="panel hidden" id="accessPanel"><h2>الحساب غير مخوّل للتحرير</h2><p class="muted">يلزم منح حساب المحرر دوراً موثوقاً من Supabase Dashboard عبر Authentication → Users → المستخدم → Raw App Metadata وإضافة <code>{"role":"admin"}</code>، ثم تسجيل الخروج والدخول مجدداً. لا تستخدم User Metadata لهذا الغرض.</p></section>
 <section class="panel hidden" id="editorPanel"><div class="row"><div><h2>إدارة الأخبار</h2><small id="userLabel"></small></div><button class="btn secondary" id="logoutButton">تسجيل الخروج</button></div>
 <div class="notice">تخضع عمليات النشر والتعديل والحذف لسياسات Row Level Security في Supabase. لا تمنح صلاحيات الكتابة للمستخدمين المجهولين.</div>
@@ -36,6 +37,31 @@ let cachedArticles=[];
 const countryLabel=value=>{const map={"السعودية":"Saudi Arabia","المملكة العربية السعودية":"Saudi Arabia","مصر":"Egypt","الصين":"China","دولي":"International","الإمارات":"United Arab Emirates","قطر":"Qatar","الكويت":"Kuwait","البحرين":"Bahrain","عمان":"Oman","اليمن":"Yemen","الأردن":"Jordan","لبنان":"Lebanon","فلسطين":"Palestine","سوريا":"Syria","العراق":"Iraq","المغرب":"Morocco","الجزائر":"Algeria","تونس":"Tunisia","ليبيا":"Libya","السودان":"Sudan"};return currentLang()==="en"?(map[value]||value):value;};
 const editorialLabel=value=>{const map={published:t("منشور","Published"),draft:t("مسودة","Draft"),review:t("قيد المراجعة","In review"),rejected:t("مرفوض","Rejected")};return map[value]||value;};
 function message(text){$("status").textContent=text;}
+const ADMIN_REDIRECT="https://al-ghaib.us.ci/admin.html";
+$("forgotPasswordButton").addEventListener("click",async()=>{
+ const email=$("email").value.trim();
+ if(!email){message("اكتب بريد حساب المدير أولاً ثم اضغط استعادة كلمة المرور.");$("email").focus();return;}
+ const button=$("forgotPasswordButton");button.disabled=true;
+ const {error}=await db.auth.resetPasswordForEmail(email,{redirectTo:ADMIN_REDIRECT});
+ button.disabled=false;
+ message(error?"تعذر إرسال رابط الاستعادة: "+error.message:"إذا كان البريد مسجلاً، ستصلك رسالة استعادة. افتحها على نفس الجهاز للعودة إلى لوحة التحرير.");
+});
+$("recoveryForm").addEventListener("submit",async e=>{
+ e.preventDefault();const password=$("newPassword").value;
+ if(password.length<8){message("كلمة المرور يجب ألا تقل عن 8 أحرف.");return;}
+ const {error}=await db.auth.updateUser({password});
+ if(error){message("تعذر تحديث كلمة المرور: "+error.message);return;}
+ $("recoveryPanel").classList.add("hidden");$("loginPanel").classList.remove("hidden");
+ $("password").value="";$("newPassword").value="";
+ message("تم تحديث كلمة المرور. سجّل الدخول الآن.");
+ await db.auth.signOut();
+});
+db.auth.onAuthStateChange((event)=>{
+ if(event==="PASSWORD_RECOVERY"){
+  $("loginPanel").classList.add("hidden");$("recoveryPanel").classList.remove("hidden");
+  message("أدخل كلمة المرور الجديدة لإكمال الاستعادة.");
+ }
+});
 function resetForm(){$("articleForm").reset();$("articleId").value="";$("source").value="هيئة التحرير";$("editorialStatus").value="published";$("verification").value="unconfirmed";$("isBreaking").checked=false;$("saveButton").textContent=t("حفظ الخبر","Save story");}
 async function showSession(){const {data:{session}}=await db.auth.getSession();const role=session?.user?.app_metadata?.role;const allowed=["editor","admin"].includes(role);$("loginPanel").classList.toggle("hidden",!!session);$("accessPanel").classList.toggle("hidden",!session||allowed);$("editorPanel").classList.toggle("hidden",!allowed);if(session&&allowed){$("userLabel").textContent=(session.user.email||"محرر مسجل")+" · "+role;await loadArticles();}else if(session){message("تم تسجيل الدخول، لكن الحساب لا يحمل دوراً تحريرياً موثوقاً.");}}
 $("loginForm").addEventListener("submit",async e=>{e.preventDefault();message("جارٍ التحقق...");const {error}=await db.auth.signInWithPassword({email:$("email").value.trim(),password:$("password").value});if(error){message("تعذر تسجيل الدخول: "+error.message);return;}message("تم تسجيل الدخول.");await showSession();});
