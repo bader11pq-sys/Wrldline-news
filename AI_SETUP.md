@@ -33,7 +33,7 @@ Each story uses one model request. Monitor OpenAI usage and set a budget limit. 
 
 Required configuration:
 - Supabase Vault: existing project URL, publishable key, and `wrldline_news_cron_secret_20261113` entries.
-- Supabase Edge Function secrets: at least one of `GEMINI_API_KEY` or `GROQ_API_KEY`. To enable OpenRouter as an additional fallback, set both `OPENROUTER_API_KEY` and `OPENROUTER_MODEL` to a model your account can use; the free router is not enabled by default for this high-volume queue.
+- Supabase Edge Function secrets: at least one of `GEMINI_API_KEY` or `GROQ_API_KEY`. To enable OpenRouter as an additional fallback, set both `OPENROUTER_API_KEY` and `OPENROUTER_MODEL` to a paid model your account can use; `openrouter/free` and `:free` models are skipped for this high-volume queue.
 - Keep `SUPABASE_SERVICE_ROLE_KEY` only in the Edge Function environment. Never place it in browser code or GitHub-tracked files.
 - The GitHub Actions news-ingestion workflow is no longer the translation scheduler; Supabase Cron owns the one-minute translation cadence.
 
