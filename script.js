@@ -300,7 +300,7 @@ async function playArticleAudio(article){
  finally{if(button.isConnected){button.disabled=false;button.textContent=original;}}
 }
 function closeArticle(updateUrl=true){hideModal("articleModal");if(updateUrl&&new URLSearchParams(location.search).has("article")){const url=new URL(location.href);url.searchParams.delete("article");history.replaceState(null,"",url);}}
-async function shareArticle(article){const url=new URL("/",location.origin);url.searchParams.set("article",article.id);const data={title:article.title,text:article.summary||"خبر من WRLDLINE NEWS",url:url.href};try{if(navigator.share){await navigator.share(data);return;}if(navigator.clipboard?.writeText){await navigator.clipboard.writeText(url.href);showToast("تم نسخ رابط الخبر");return;}window.prompt(ui("انسخ رابط الخبر لمشاركته","Copy the story link to share it"),url.href);}catch(error){if(error?.name!=="AbortError")showToast(ui("تعذرت مشاركة الخبر حالياً","Could not share this story right now"));}}
+async function shareArticle(article){if(window.WRLDLINE_SHARE){return window.WRLDLINE_SHARE.share({title:article.title,description:article.summary||article.aiSummary||"",category:categoryName(article.cat)+" · "+countryName(article.country,article.aiCountryCode),source:article.src,image:article.img||""});}showToast(ui("أداة المشاركة لم تجهز بعد. أعد المحاولة بعد لحظة.","Sharing is still loading. Please try again."));}
 async function toggleSaved(id){
  const wasSaved=state.saved.has(id);
  if(state.user&&state.db){
