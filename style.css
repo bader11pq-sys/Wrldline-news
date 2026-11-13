@@ -57,3 +57,10 @@
 
 /* WRLDLINE Shorts — full-screen vertical editorial feed */
 .shorts-nav-link{color:var(--accent)!important;font-weight:800}
+
+.breaking-inner p{direction:rtl;text-align:start}
+.breaking-marquee.is-moving{animation-name:breaking-flow-rtl}
+.breaking-marquee.is-moving.is-ltr{animation-name:breaking-flow-ltr}
+@keyframes breaking-flow-rtl{from{transform:translateX(var(--breaking-start,100%))}to{transform:translateX(calc(-100% - var(--breaking-start,100%)))}}
+@keyframes breaking-flow-ltr{from{transform:translateX(calc(-100% - var(--breaking-start,100%)))}to{transform:translateX(var(--breaking-start,100%))}}
+.modal-image{display:block;width:100%;max-height:520px;object-fit:contain;background:#080f19}
