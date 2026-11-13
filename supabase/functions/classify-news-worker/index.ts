@@ -34,18 +34,28 @@ Deno.serve(async (req: Request) => {
   if (authError || authorized !== true) return json({ error: "Unauthorized" }, 401);
 
   const cutoff = new Date(Date.now() - 60 * 60 * 1000).toISOString();
-  const { data: rows, error } = await db
-    .from("articles")
+  const retryCutoff = new Date(Date.now() - 10 * 60 * 1000).toISOString();
+  const baseQuery = () => db.from("articles")
     .select("id,url,source_url,source_name,published_at,ai_classification_status")
     .eq("editorial_status", "published")
     .gte("published_at", cutoff)
-    .in("ai_classification_status", ["pending", "failed"])
     .order("published_at", { ascending: false })
     .limit(50);
 
-  if (error) return json({ error: "Could not load pending articles", detail: error.message }, 500);
+  const [pendingResult, deferredResult] = await Promise.all([
+    baseQuery().in("ai_classification_status", ["pending", "failed"]),
+    baseQuery().eq("ai_classification_status", "deferred").lt("ai_classified_at", retryCutoff),
+  ]);
+  if (pendingResult.error || deferredResult.error) {
+    return json({ error: "Could not load classification queue", detail: pendingResult.error?.message || deferredResult.error?.message }, 500);
+  }
 
-  const candidates = (rows || []).filter((article: any) => !isTelegram(article)).slice(0, 10);
+  const rows = [...(pendingResult.data || []), ...(deferredResult.data || [])];
+  const unique = [...new Map(rows.map((article: any) => [article.id, article])).values()];
+  const candidates = unique
+    .filter((article: any) => !isTelegram(article))
+    .sort((a: any, b: any) => Date.parse(b.published_at) - Date.parse(a.published_at))
+    .slice(0, 10);
   if (!candidates.length) return json({ ok: true, selected: 0, processed: 0, message: "No eligible recent articles" });
 
   const response = await fetch(url + "/functions/v1/classify-news", {
