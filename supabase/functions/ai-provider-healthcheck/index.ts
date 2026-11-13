@@ -37,7 +37,7 @@ async function callGonka(key:string){
  if(!ids.length)throw new Error("Gonka returned no available models");
  const configured=Deno.env.get("GONKA_MODEL");
  if(configured&&!ids.includes(configured))throw new Error("Configured GONKA_MODEL is not available");
- const model=configured||ids[0];
+ const model=configured||ids.find((id:string)=>/MiniMaxAI\/MiniMax-M2\.7/i.test(id))||ids.find((id:string)=>!/(bge|embed)/i.test(id))||ids[0];
  const testPrompt='Return exactly this JSON object and nothing else: {"classification":{"category":"economy","country":"غير محدد","risk_level":"unknown","risk_score":0,"confidence":0.99,"summary":"اختبار تصنيف"},"translation":{"title":"اختبار Gonka","summary":"تم التحقق من التوليد.","ai_summary":"اختبار ناجح"}}';
  const gen=await fetch("https://proxy.gonkabroker.com/v1/chat/completions",{method:"POST",headers,signal:AbortSignal.timeout(30000),body:JSON.stringify({model,messages:[{role:"system",content:"Follow the output format exactly. Return valid JSON only."},{role:"user",content:testPrompt}],temperature:0,max_tokens:300})});
  if(!gen.ok)throw new Error("Gonka generation HTTP "+gen.status);
