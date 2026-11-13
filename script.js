@@ -196,9 +196,14 @@ function updateBreaking(){
  const strip=document.getElementById("breakingStrip");
  const title=document.getElementById("breakingText");
  const time=document.getElementById("breakingTime");
- if(!item){strip.hidden=true;title.textContent="";title.removeAttribute("title");time.textContent="";return;}
+ const marquee=title.querySelector(".breaking-marquee")||title;
+ if(!item){strip.hidden=true;marquee.textContent="";marquee.classList.remove("is-moving","is-ltr");title.removeAttribute("title");time.textContent="";return;}
  strip.hidden=false;
- title.textContent=item.title;
+ marquee.textContent=item.title;
+ const isEnglish=/[A-Za-z]/.test(item.title)&&!/[\u0600-\u06FF]/.test(item.title);
+ marquee.classList.toggle("is-ltr",isEnglish);
+ marquee.classList.remove("is-moving");
+ requestAnimationFrame(()=>{const viewport=title.clientWidth;const long=marquee.scrollWidth>viewport+12;marquee.classList.toggle("is-moving",long);});
  title.title=ui("تنبيه عاجل من مصدر إخباري متخصص","Breaking alert from a dedicated news desk");
  time.textContent=ui("عاجل · ","Breaking · ")+timeAgo(item.published_at);
 }
