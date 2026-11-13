@@ -240,7 +240,7 @@ function updateBreaking(){
  }
  strip.hidden=false;
  if(currentId!==item.id||marquee.dataset.articleTitle!==String(item.title||"")){
-  const cleanTitle=String(item.title||"").replace(/[\\u202A-\\u202E\\u2066-\\u2069]/g,"").normalize("NFC").trim();
+  const cleanTitle=String(item.title||"").replace(/[\u202A-\u202E\u2066-\u2069]/g,"").normalize("NFC").trim();
   marquee.textContent=cleanTitle;
   marquee.dataset.articleId=item.id;
   marquee.dataset.articleTitle=String(item.title||"");
