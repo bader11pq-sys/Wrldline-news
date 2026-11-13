@@ -59,6 +59,20 @@ async function groqGenerate(prompt: string, apiKey: string, maxOutputTokens: num
   throw Object.assign(new Error(lastError || "Groq temporarily unavailable"), { deferred: true, retryAfter: 60 });
 }
 
+
+async function deeplQuotaResetAt(apiKey:string) {
+ const base=apiKey.trim().endsWith(":fx")?"https://api-free.deepl.com":"https://api.deepl.com";
+ try {
+  const response=await fetch(base+"/v2/usage",{headers:{"Authorization":"DeepL-Auth-Key "+apiKey.trim()},signal:AbortSignal.timeout(8000)});
+  if(response.ok) {
+   const usage=await response.json();
+   const reset=Date.parse(usage.end_time||"");
+   if(Number.isFinite(reset)&&reset>Date.now()) return new Date(reset).toISOString();
+  }
+ } catch {}
+ return new Date(Date.now()+24*60*60*1000).toISOString();
+}
+
 async function deeplTranslate(texts:string[], apiKey:string, target:string) {
  const key=apiKey.trim();
  const endpoint=key.endsWith(":fx")?"https://api-free.deepl.com/v2/translate":"https://api.deepl.com/v2/translate";
@@ -209,9 +223,12 @@ Deno.serve(async(req:Request)=>{
  const allArticles=articles||[];
  const queue=allArticles.filter(isWithinAiWindow);
  const results:any[]=allArticles.filter((article:any)=>!isWithinAiWindow(article)).map((article:any)=>({id:article.id,status:"expired_ignored"}));
+ const {data:deeplState,error:deeplStateError}=await db.from("translation_provider_state").select("disabled_until").eq("provider","deepl").maybeSingle();
+ if(deeplStateError) return json({error:"Could not load translation provider state: "+deeplStateError.message},500);
+ let deeplDisabledUntil=deeplState?.disabled_until||null;
+ let deeplQuotaExhausted=!!(deeplDisabledUntil&&Date.parse(deeplDisabledUntil)>Date.now());
  let cursor=0;
  let pauseReason:string|null=null;
- let deeplQuotaExhausted=false;
  async function processArticle(article:any) {
   try {
    if(!isWithinAiWindow(article)) return {id:article.id,status:"expired_ignored"};
@@ -243,7 +260,14 @@ Deno.serve(async(req:Request)=>{
      translated={title:values[0],summary:values[1],ai_summary:values[2]};
     } catch(error) {
      deeplError=String(error).slice(0,220);
-     if((error as any)?.quotaExceeded) deeplQuotaExhausted=true;
+     if((error as any)?.quotaExceeded) {
+      deeplQuotaExhausted=true;
+      deeplDisabledUntil=await deeplQuotaResetAt(deeplKey);
+      await db.from("translation_provider_state").upsert({
+       provider:"deepl",disabled_until:deeplDisabledUntil,
+       reason:"DeepL HTTP 456 character quota exhausted",updated_at:new Date().toISOString()
+      },{onConflict:"provider"});
+     }
     }
    } else if(deeplQuotaExhausted) {
     deeplError="DeepL monthly character quota exhausted; using AI fallback.";
@@ -296,5 +320,5 @@ Deno.serve(async(req:Request)=>{
  for(const article of queue) {
   if(!results.some(item=>item.id===article.id)) results.push({id:article.id,status:"deferred",error:"Batch paused after provider backoff"});
  }
- return json({processed:results.length,results,concurrency:Math.min(2,queue.length),gemini_cooldown:geminiCoolingDown,deepl_quota_exhausted:deeplQuotaExhausted,providers_configured:{deepl:!!deeplKey,gemini:!!gemini,groq:!!groqKey,openrouter:!!openRouterKey},translation_priority:["deepl","gemini","groq","openrouter"]});
+ return json({processed:results.length,results,concurrency:Math.min(2,queue.length),gemini_cooldown:geminiCoolingDown,deepl_quota_exhausted:deeplQuotaExhausted,deepl_disabled_until:deeplDisabledUntil,providers_configured:{deepl:!!deeplKey,gemini:!!gemini,groq:!!groqKey,openrouter:!!openRouterKey},translation_priority:["deepl","gemini","groq","openrouter"]});
 });
