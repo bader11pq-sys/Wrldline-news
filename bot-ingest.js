@@ -42,9 +42,9 @@ const FEEDS = [
   {url:"https://rss.nytimes.com/services/xml/rss/nyt/World.xml",name:"The New York Times",country:"دولي"},
   {url:"https://feeds.skynews.com/feeds/rss/world.xml",name:"Sky News",country:"دولي"},
   // Reuters, AP and CNN via Google News indexed publisher feeds
-  {url:"https://news.google.com/rss/search?q=site%3Areuters.com+when%3A1h&hl=en-US&gl=US&ceid=US:en",name:"Reuters (Google News)",country:"دولي"},
-  {url:"https://news.google.com/rss/search?q=site%3Aapnews.com+when%3A1h&hl=en-US&gl=US&ceid=US:en",name:"Associated Press (Google News)",country:"دولي"},
-  {url:"https://news.google.com/rss/search?q=site%3Acnn.com+when%3A1h&hl=en-US&gl=US&ceid=US:en",name:"CNN (Google News)",country:"دولي"}
+  {url:"https://news.google.com/rss/search?q=site%3Areuters.com+when%3A24h&hl=en-US&gl=US&ceid=US:en",name:"Reuters (Google News)",country:"دولي"},
+  {url:"https://news.google.com/rss/search?q=site%3Aapnews.com+when%3A24h&hl=en-US&gl=US&ceid=US:en",name:"Associated Press (Google News)",country:"دولي"},
+  {url:"https://news.google.com/rss/search?q=site%3Acnn.com+when%3A24h&hl=en-US&gl=US&ceid=US:en",name:"CNN (Google News)",country:"دولي"}
 ];
 const SUPABASE_URL=process.env.SUPABASE_URL;
 const KEY=process.env.SUPABASE_SERVICE_ROLE_KEY||process.env.SUPABASE_KEY;
