@@ -254,7 +254,7 @@ function updateBreaking(){
    marquee.style.setProperty("--breaking-duration",duration+"s");
    marquee.classList.add("is-moving");
   });
-  marquee.onanimationend=()=>{if(breakingItems().length>1)rotateBreaking();};
+  marquee.onanimationend=()=>{if(breakingItems().length>1)rotateBreaking();else{marquee.classList.remove("is-moving");requestAnimationFrame(()=>marquee.classList.add("is-moving"));}};
  }
  title.title=ui("تنبيه عاجل اختاره محرر WRLDLINE","Breaking alert selected by a WRLDLINE editor");
  time.textContent=ui("عاجل · ","Breaking · ")+timeAgo(item.published_at);
