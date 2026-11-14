@@ -259,3 +259,6 @@ body{background:var(--bg);letter-spacing:-.01em}
 
 /* NewsData stories are kept in a separate, clearly time-stamped catch-up desk. */
 .missed-news-section{margin:0 0 36px;padding:22px;border:1px solid var(--line);border-radius:18px;background:var(--surface)}.missed-news-intro{font-size:12px;color:var(--muted);margin:5px 0 0}.missed-news-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:15px}.missed-news-card{overflow:hidden}.missed-source-link{padding:0 15px 14px}.missed-source-link a{font-size:11px;color:var(--accent);text-decoration:none}.missed-empty{grid-column:1/-1;padding:20px;border:1px dashed var(--line);border-radius:12px;color:var(--muted);text-align:center;font-size:12px}@media(max-width:900px){.missed-news-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:620px){.missed-news-section{padding:14px}.missed-news-grid{grid-template-columns:1fr}}
+
+/* Missed stories progressive disclosure */
+.missed-load-more-wrap{display:flex;justify-content:center;margin:18px 0 2px}.missed-load-more-wrap button[hidden]{display:none}
