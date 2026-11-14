@@ -6,6 +6,8 @@ on:
       - 'groq-healthcheck.js'
       - 'ai-provider-healthcheck.js'
   workflow_dispatch:
+permissions:
+  contents: read
 jobs:
   verify-groq:
     runs-on: ubuntu-latest

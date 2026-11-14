@@ -1,9 +1,10 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
 
 const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Origin": Deno.env.get("SITE_URL") || "https://al-ghaib.us.ci",
   "Access-Control-Allow-Headers": "content-type, x-wrldline-briefing-secret",
   "Access-Control-Allow-Methods": "POST, OPTIONS",
+  "Vary": "Origin",
 };
 
 const json = (body: unknown, status = 200) =>

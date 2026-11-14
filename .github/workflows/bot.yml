@@ -3,6 +3,8 @@ name: WRLDLINE Multi-source News Ingestion (manual fallback)
 # are the scheduled ingestion path. This workflow is a manual fallback only.
 on:
   workflow_dispatch:
+permissions:
+  contents: read
 concurrency:
   group: wrldline-news-ingestion
   cancel-in-progress: false

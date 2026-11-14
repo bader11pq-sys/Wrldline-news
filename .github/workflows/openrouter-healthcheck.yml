@@ -5,6 +5,8 @@ on:
     paths:
       - 'openrouter-healthcheck.js'
   workflow_dispatch:
+permissions:
+  contents: read
 jobs:
   verify-openrouter:
     runs-on: ubuntu-latest

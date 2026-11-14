@@ -3,10 +3,11 @@ import { createClient } from "npm:@supabase/supabase-js@2";
 import { normalizeCategory, normalizeScope, TAXONOMY_VERSION } from "../_shared/taxonomy.ts";
 
 const cors = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, apikey, content-type, x-client-info",
+  "Access-Control-Allow-Origin": Deno.env.get("SITE_URL") || "https://al-ghaib.us.ci",
+  "Access-Control-Allow-Headers": "authorization, apikey, content-type, x-client-info, x-wrldline-cron-secret",
   "Access-Control-Allow-Methods": "POST, OPTIONS",
   "Content-Type": "application/json",
+  "Vary": "Origin",
 };
 
 const schema = {

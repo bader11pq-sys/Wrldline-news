@@ -3,6 +3,8 @@ name: WRLDLINE AI Backlog Processor (manual fallback)
 # classifier. This workflow is a manual fallback for operators only.
 on:
   workflow_dispatch:
+permissions:
+  contents: read
 concurrency:
   group: wrldline-ai-backlog
   cancel-in-progress: false

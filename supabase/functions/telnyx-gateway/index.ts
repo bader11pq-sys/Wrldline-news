@@ -8,7 +8,7 @@ const VERIFY_PROFILE = Deno.env.get("TELNYX_VERIFY_PROFILE_ID") || "";
 const MESSAGING_PROFILE = Deno.env.get("TELNYX_MESSAGING_PROFILE_ID") || "";
 const FROM_NUMBER = Deno.env.get("TELNYX_FROM_NUMBER") || "";
 const db = createClient(URL, SERVICE, { auth: { persistSession: false, autoRefreshToken: false } });
-const cors = { "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Headers": "authorization, apikey, content-type", "Access-Control-Allow-Methods": "POST, OPTIONS", "Content-Type": "application/json" };
+const cors = { "Access-Control-Allow-Origin": Deno.env.get("SITE_URL") || "https://al-ghaib.us.ci", "Access-Control-Allow-Headers": "authorization, apikey, content-type", "Access-Control-Allow-Methods": "POST, OPTIONS", "Content-Type": "application/json", "Vary": "Origin" };
 const json = (body: unknown, status=200) => new Response(JSON.stringify(body), { status, headers: cors });
 const e164 = (v: unknown) => typeof v === "string" && /^\+[1-9]\d{7,14}$/.test(v);
 async function telnyx(path: string, body: unknown) {
