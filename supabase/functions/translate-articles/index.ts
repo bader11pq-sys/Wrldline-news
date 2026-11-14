@@ -132,7 +132,6 @@ async function groqGenerate(prompt: string, apiKey: string, maxOutputTokens: num
           { role: "user", content: prompt + "\n\nReturn only a valid JSON object matching the requested fields." }
         ],
         response_format: { type: "json_object" },
-        chat_template_kwargs: { enable_thinking: false },
         temperature: 0.1,
         max_completion_tokens: maxOutputTokens
       })
