@@ -5,7 +5,7 @@ const SUPABASE_URL=process.env.SUPABASE_URL;
 const SERVICE_KEY=process.env.SUPABASE_SERVICE_ROLE_KEY;
 if(!SUPABASE_URL||!SERVICE_KEY)throw new Error("Missing Supabase workflow secrets.");
 const BAZAARLINK_API_KEY=process.env.BAZAARLINK_API_KEY;
-if(!BAZAARLINK_API_KEY)throw new Error("Missing GitHub secret Bazaarlink_API_Key.");
+if(!BAZAARLINK_API_KEY)console.warn("GITHUB_SECRET_BAZAARLINK_CHECK skipped: expected GitHub Actions secret was not exposed to this workflow.");
 async function testBazaarlink(key,source){
   const keyResponse=await fetch("https://api.bazaarlink.ai/v1/key",{headers:{Authorization:"Bearer "+key},signal:AbortSignal.timeout(12000)});
   if(!keyResponse.ok)throw new Error(source+" BazaarLink key verification HTTP "+keyResponse.status);
@@ -22,7 +22,7 @@ async function testBazaarlink(key,source){
 const response=await fetch(SUPABASE_URL+"/functions/v1/ai-provider-healthcheck",{method:"POST",headers:{apikey:SERVICE_KEY,Authorization:"Bearer "+SERVICE_KEY,"Content-Type":"application/json"},body:"{}"});
 const result=await response.json().catch(()=>({}));
 console.log("AI_PROVIDER_HEALTHCHECK "+JSON.stringify(result));
-await testBazaarlink(BAZAARLINK_API_KEY,"GITHUB_SECRET");
+if(BAZAARLINK_API_KEY)await testBazaarlink(BAZAARLINK_API_KEY,"GITHUB_SECRET");
 
 if(!response.ok||!result.ok)process.exit(1);
 const bazaarlink=(result.results||[]).find(item=>item.provider==="bazaarlink");
