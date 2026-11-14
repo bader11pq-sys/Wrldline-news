@@ -15,7 +15,7 @@ function newsDataMetaMarkup(a){
  if(!a.newsdataArticleId&&!tags.length&&!sentimentLabel&&!a.newsdataAiSummary)return "";
  return '<div class="newsdata-meta"><span class="newsdata-provider">NewsData.io</span>'+tags.map(t=>'<span class="newsdata-tag">'+escapeHTML(t)+'</span>').join("")+(sentimentLabel?'<span class="newsdata-sentiment sentiment-'+escapeHTML(sentiment)+'">'+ui("المشاعر: ","Sentiment: ")+escapeHTML(sentimentLabel)+'</span>':"")+'</div>';
 }
-const state = { articles:[], filtered:[], category:"all", country:"all", lang:localStorage.getItem("wrldline:language")==="en"?"en":"ar", limit:PAGE_SIZE, saved:new Set(readSaved()), query:"", sort:"newest", loading:false, db:null, user:null, follows:{category:[],country:[]}, followOnly:false, realtime:null,  pendingLocalSaved:new Set(readSaved()), breakingTickerIndex:0, breakingTickerCurrentId:null, refetchAfterCurrent:false,lastFetchAt:0 };
+const state = { articles:[], missedArticles:[], filtered:[], category:"all", country:"all", lang:localStorage.getItem("wrldline:language")==="en"?"en":"ar", limit:PAGE_SIZE, saved:new Set(readSaved()), query:"", sort:"newest", loading:false, db:null, user:null, follows:{category:[],country:[]}, followOnly:false, realtime:null,  pendingLocalSaved:new Set(readSaved()), breakingTickerIndex:0, breakingTickerCurrentId:null, refetchAfterCurrent:false,lastFetchAt:0 };
 
 document.addEventListener("DOMContentLoaded", () => {
   initPreferences(); bindEvents(); updateClock(); fetchNews(); initPersonalization(); setInterval(()=>{if(!document.hidden&&Date.now()-state.lastFetchAt>=90000)fetchNews();},30000); setInterval(updateBreaking, 15000);
@@ -24,7 +24,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 async function registerServiceWorker(){
  if(!("serviceWorker" in navigator))return;
- const workerBuild="v31";
+ const workerBuild="v32";
  navigator.serviceWorker.addEventListener("controllerchange",()=>{
   if(sessionStorage.getItem("wrldline:sw-build")!==workerBuild){
    sessionStorage.setItem("wrldline:sw-build",workerBuild);
@@ -101,10 +101,23 @@ async function fetchNews(manual=false){
  if(state.loading){state.refetchAfterCurrent=true;return;}state.loading=true;const refresh=document.getElementById("refreshButton");if(refresh){refresh.disabled=true;refresh.classList.add("is-loading");refresh.setAttribute("aria-busy","true");}document.getElementById("connectionLabel").textContent=ui("جارٍ تحديث الأخبار","Updating newsroom");document.getElementById("newsStatus")?.classList.remove("is-error");document.getElementById("newsStatus")?.classList.add("is-updating");
  try{
   const headers={apikey:SUPABASE_ANON_KEY,Authorization:"Bearer "+SUPABASE_ANON_KEY};
-  const res=await fetch(SUPABASE_URL+"/rest/v1/articles?select=id,title,summary,category,country,source_name,url,source_url,published_at,received_at,lang,media_type,image_url,is_breaking,editorial_status,ai_country_code,ai_summary,ai_risk_level,ai_risk_score,ai_confidence,is_exclusive,exclusive_type,exclusive_reason,exclusive_confidence,newsdata_article_id,newsdata_categories,newsdata_ai_tags,newsdata_sentiment,newsdata_ai_summary,newsdata_fetched_at,newsdata_only,article_translations(lang,title,summary,ai_summary)&editorial_status=eq.published&order=published_at.desc&limit=1000",{headers,signal:AbortSignal.timeout(18000)});
-  if(!res.ok)throw new Error(ui("تعذر جلب الأخبار ("+res.status+")","Could not fetch stories ("+res.status+")"));
-  const rows=await res.json();if(!Array.isArray(rows))throw new Error(ui("استجابة الأخبار غير صالحة","Invalid news response"));
-  state.lastFetchAt=Date.now();state.articles=rows.map(normalizeArticle).filter(a=>a.title&&(!isTelegramArticle(a.raw)||(a.isBreaking===true&&isDedicatedBreakingSource(a.src)))).sort((a,b)=>new Date(b.published_at)-new Date(a.published_at));
+  const select="select=id,title,summary,category,country,source_name,url,source_url,published_at,received_at,lang,media_type,image_url,is_breaking,editorial_status,ai_country_code,ai_summary,ai_risk_level,ai_risk_score,ai_confidence,is_exclusive,exclusive_type,exclusive_reason,exclusive_confidence,newsdata_article_id,newsdata_categories,newsdata_ai_tags,newsdata_sentiment,newsdata_ai_summary,newsdata_fetched_at,newsdata_only,article_translations(lang,title,summary,ai_summary)";
+  const base=SUPABASE_URL+"/rest/v1/articles?"+select+"&editorial_status=eq.published";
+  const since24h=new Date(Date.now()-24*60*60*1000).toISOString();
+  const getRows=async(url,required=false)=>{
+   try{const response=await fetch(url,{headers,signal:AbortSignal.timeout(18000)});if(!response.ok)throw new Error("HTTP "+response.status);const data=await response.json();if(!Array.isArray(data))throw new Error("Invalid response");return data;}
+   catch(error){if(required)throw error;console.warn("WRLDLINE supplemental section fetch:",url.split("?")[1],error);return [];}
+  };
+  const [mainRows,missedRows,breakingRows,exclusiveRows]=await Promise.all([
+   getRows(base+"&newsdata_only=eq.false&order=published_at.desc&limit=1000",true),
+   getRows(base+"&newsdata_only=eq.true&order=published_at.desc&limit=100"),
+   getRows(base+"&is_breaking=eq.true&published_at=gte."+encodeURIComponent(since24h)+"&order=published_at.desc&limit=200"),
+   getRows(base+"&is_exclusive=eq.true&order=published_at.desc&limit=100")
+  ]);
+  const unique=new Map();[...mainRows,...missedRows,...breakingRows,...exclusiveRows].forEach(row=>{if(row?.id)unique.set(String(row.id),row);});
+  const rows=[...unique.values()];
+  state.lastFetchAt=Date.now();
+  state.articles=rows.map(normalizeArticle).filter(a=>a.title&&(!isTelegramArticle(a.raw)||(a.isBreaking===true&&isDedicatedBreakingSource(a.src)))).sort((a,b)=>new Date(b.published_at)-new Date(a.published_at));
   state.missedArticles=state.articles.filter(a=>a.isNewsDataOnly).sort((a,b)=>new Date(b.published_at)-new Date(a.published_at));
   populateCountries();renderMissedStories();applyFilters();renderCoveragePulse();renderExclusive();updateBreaking();if(state.user)syncLocalSavedToCloud();const linkedId=new URLSearchParams(location.search).get("article");if(linkedId)openArticle(linkedId,false);document.getElementById("lastUpdated").textContent=ui("آخر تحديث: ","Last updated: ")+formatDate(new Date());document.getElementById("connectionLabel").textContent=ui("الأخبار محدثة","News updated");document.getElementById("newsStatus")?.classList.remove("is-updating","is-error");if(manual)showToast(ui("تم تحديث الأخبار","News updated"));
  }catch(err){console.error("WRLDLINE fetch:",err);document.getElementById("connectionLabel").textContent=ui("تعذر الاتصال بمصدر الأخبار","News connection unavailable");document.getElementById("newsStatus")?.classList.remove("is-updating");document.getElementById("newsStatus")?.classList.add("is-error");if(manual)showToast(ui("تعذر تحديث الأخبار. تحقق من الاتصال وحاول مجددًا.","Could not refresh news. Check your connection and try again."));if(!state.articles.length){document.getElementById("heroLayout").innerHTML='<div class="empty-state"><strong>لم نتمكن من تحميل الأخبار</strong><p>تحقق من الاتصال وحاول التحديث بعد قليل.</p><button class="outline-button" onclick="fetchNews()">إعادة المحاولة</button></div>';document.getElementById("newsGrid").innerHTML="";}}
@@ -260,8 +273,8 @@ function isDedicatedBreakingSource(name){
  const source=String(name||"").trim().toLocaleLowerCase();
  return /breaking desk|news alert|غرفة الأخبار العاجلة|مصادر العاجل/.test(source);
 }
-function breakingItems(){
- const now=Date.now(),maxAge=15*60*1000;
+function breakingItems(maxAge=15*60*1000){
+ const now=Date.now();
  return state.articles.filter(a=>{
   if(a.isNewsDataOnly)return false;
   // is_breaking is the editorial signal; do not hide alerts merely because
@@ -274,9 +287,9 @@ function breakingItems(){
 }
 function renderBreakingSection(){
  const host=document.getElementById("breakingNewsGrid");if(!host)return;
- const items=breakingItems();const count=document.getElementById("breakingCount");
- count.textContent=state.lang==="ar"?items.length+" أخبار عاجلة خلال آخر 15 دقيقة":items.length+" breaking stories in the last 15 minutes";
- if(!items.length){host.innerHTML='<div class="empty-state">'+ui("لا توجد أخبار عاجلة خلال آخر 15 دقيقة. ستظهر هنا التنبيهات الجديدة التي يحددها المحرر.","No breaking alerts in the last 15 minutes. New editor-selected alerts will appear here.")+'</div>';return;}
+ const items=breakingItems(24*60*60*1000);const count=document.getElementById("breakingCount");
+ count.textContent=state.lang==="ar"?items.length+" أخبار عاجلة خلال آخر 24 ساعة":items.length+" breaking stories in the last 24 hours";
+ if(!items.length){host.innerHTML='<div class="empty-state">'+ui("لا توجد أخبار عاجلة خلال آخر 24 ساعة. ستظهر هنا التنبيهات الجديدة التي يحددها المحرر.","No breaking alerts in the last 24 hours. New editor-selected alerts will appear here.")+'</div>';return;}
  host.innerHTML=items.slice(0,8).map(a=>'<article class="breaking-news-card" role="button" tabindex="0" data-open="'+escapeHTML(a.id)+'">'+imageMarkup(a,"breaking-news-image")+'<div class="breaking-news-copy"><div class="story-meta"><span class="breaking-badge">'+ui("عاجل","BREAKING")+'</span><span>'+escapeHTML(timeAgo(a.published_at,a.isNewsDataOnly))+'</span><span>'+escapeHTML(categoryName(a.cat))+'</span></div><h3>'+escapeHTML(a.title)+'</h3><p>'+escapeHTML(a.summary)+'</p><small>'+escapeHTML(a.src)+' · '+ui("اقرأ التفاصيل","Read story")+' ←</small></div></article>').join("");
  host.querySelectorAll("[data-open]").forEach(el=>el.addEventListener("click",()=>openArticle(el.dataset.open)));
 }
