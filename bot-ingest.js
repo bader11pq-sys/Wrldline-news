@@ -1,5 +1,6 @@
 // WRLDLINE ingestion with bounded retries, publisher fallbacks and source-health tracking.
 const taxonomy=require("./taxonomy.js");
+const fs=require("fs");
 const INGEST_STATS={languageConflicts:0,categorized:0,uncategorized:0};
 function googleNewsUrl(domain){return "https://news.google.com/rss/search?q="+encodeURIComponent("site:"+domain+" when:1d")+"&hl=ar&gl=SA&ceid=SA:ar";}
 function googleNewsUrlEn(domain){return "https://news.google.com/rss/search?q="+encodeURIComponent("site:"+domain+" when:1d")+"&hl=en-US&gl=US&ceid=US:en";}
@@ -171,7 +172,14 @@ function effectiveFeed(feed,registry){
 async function main(){
  if(!SUPABASE_URL||!KEY)throw new Error("Missing Supabase URL/service-role key");
  const registry=await loadFeedRegistry();
- const feeds=FEEDS.map(feed=>effectiveFeed(feed,registry));
+ let feeds=FEEDS.map(feed=>effectiveFeed(feed,registry));
+ try {
+  const catalog=JSON.parse(fs.readFileSync("./source-catalog.json","utf8"));
+  if(Array.isArray(catalog)&&catalog.length>=1000) feeds=catalog.slice(0,1000).map(feed=>effectiveFeed({...feed,active:true},registry));
+ } catch(error) { console.warn("SOURCE_CATALOG_UNAVAILABLE "+String(error).slice(0,160)); }
+ const batchSize=250;
+ const batchStart=(Math.floor(Date.now()/120000)*batchSize)%feeds.length;
+ feeds=Array.from({length:Math.min(batchSize,feeds.length)},(_,i)=>feeds[(batchStart+i)%feeds.length]);
  let next=0,results=[];
  async function worker(){while(next<feeds.length){const index=next++;results[index]=await fetchFeed(feeds[index]);}}
  await Promise.all(Array.from({length:CONCURRENCY},worker));

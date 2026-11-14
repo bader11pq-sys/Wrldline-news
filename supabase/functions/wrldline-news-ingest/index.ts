@@ -2,6 +2,7 @@ import { normalizeCategory, resolveSourceLanguage, normalizeScope, inferSourceSc
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL") || "https://vmaxbnogmmfyrcucapnq.supabase.co";
 const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || Deno.env.get("SUPABASE_SECRET_KEY") || "";
 const DB_HEADERS = { apikey: SERVICE_KEY, Authorization: "Bearer " + SERVICE_KEY, "Content-Type": "application/json" };
+const SOURCE_CATALOG_URL = "https://raw.githubusercontent.com/bader11pq-sys/Wrldline-news/main/source-catalog.json";
 const URGENT = /\bBREAKING(?: NEWS)?\b|\bJUST IN\b|\bLIVE\b|عاجل|الآن|قبل قليل|تطور عاجل|نبأ عاجل|خبر عاجل/i;
 const COUNTRY_BY_NAME = {"الجزيرة":"دولي","BBC عربي":"دولي","CNN عربية":"دولي","العربية":"دولي","الشرق الأوسط":"دولي","سكاي نيوز عربية":"دولي","فرانس 24 عربي":"دولي","DW عربية":"دولي","وكالة الأنباء السعودية واس":"السعودية","كونا":"الكويت","الخليج":"الإمارات","الاتحاد":"الإمارات","البيان":"الإمارات","الشرق":"قطر","اليوم السابع":"مصر","المصري اليوم":"مصر","الغد":"الأردن","رؤيا":"الأردن","المدن":"لبنان","معاً":"فلسطين","عربي21":"دولي","هسبريس":"المغرب","الشروق":"الجزائر","تونس الرقمية":"تونس","ليبيا أخبار":"ليبيا","آر تي عربي":"دولي","النهار اللبنانية":"لبنان","العربي الجديد":"دولي","وكالة الأناضول العربية":"دولي","القدس العربي":"فلسطين","موزاييك إف إم":"تونس","يورونيوز عربي":"دولي","الصباح المغربية":"المغرب","الحرة":"دولي","عالم التقنية":"السعودية","أخبار الأمم المتحدة":"دولي","اندبندنت عربية":"دولي","نون بوست":"دولي","البوابة العربية للأخبار التقنية":"السعودية","عاجل":"السعودية","الرياض":"السعودية","عكاظ":"السعودية","إل بي سي آي اللبنانية":"لبنان","المدينة":"السعودية","شفق نيوز عربي":"العراق","عنب بلدي":"سوريا","السومرية":"العراق","BBC Top Stories":"دولي","NPR World":"دولي","BBC World":"دولي","Al Jazeera English":"دولي","The Guardian":"دولي","DW News":"دولي","France 24":"دولي","NPR":"دولي","The New York Times":"دولي","Sky News":"دولي","Reuters (Google News)":"دولي","Associated Press (Google News)":"دولي","CNN (Google News)":"دولي","AFP":"دولي","EFE":"دولي","dpa":"دولي","Kyodo News":"دولي","Jiji Press":"دولي","Xinhua":"دولي","TASS":"دولي","UPI":"دولي","Yonhap News Agency":"دولي","NHK World":"دولي","CNA":"دولي","Bernama":"دولي","ANSA":"دولي","The Hindu":"دولي","The Times of India":"دولي","The Indian Express":"دولي","Hindustan Times":"دولي","Dawn":"دولي","South China Morning Post":"دولي","The Japan Times":"دولي","Nikkei Asia":"دولي","The Korea Herald":"دولي","The Straits Times":"دولي","The Sydney Morning Herald":"دولي","ABC News Australia":"دولي","CBC News":"دولي","The Globe and Mail":"دولي","Toronto Star":"دولي","Le Monde":"دولي","El País":"دولي","Der Spiegel":"دولي","POLITICO Europe":"دولي","The Independent":"دولي","The Telegraph":"دولي","The Wall Street Journal":"دولي","Financial Times":"دولي","The Economist":"دولي","Bloomberg":"دولي","Axios":"دولي","Newsweek":"دولي"};
 
@@ -111,8 +112,23 @@ async function setFeedHealth(feed: any,result: any) {
  const r=await dbRequest(query,{method:"PATCH",headers:{"Prefer":"return=minimal"},body:JSON.stringify(patch)});
  return r.ok;
 }
+async function ensureSourceCatalog() {
+ const current=await dbRequest("feeds?select=url&pipeline=eq.general&active=eq.true&limit=1001");
+ if(current.ok && (await current.json()).length>=1000) return;
+ const response=await fetch(SOURCE_CATALOG_URL,{signal:AbortSignal.timeout(15000)});
+ if(!response.ok) throw new Error("Source catalog HTTP "+response.status);
+ const catalog=await response.json();
+ if(!Array.isArray(catalog)||catalog.length<1000) throw new Error("Source catalog is incomplete");
+ const rows=catalog.slice(0,1000).map((feed:any)=>({name:String(feed.name||feed.url).slice(0,180),url:feed.url,lang:feed.lang||"en",category:normalizeCategory(feed.category),country:feed.country||null,active:true,pipeline:"general",source_kind:"publisher_feed"}));
+ for(let offset=0;offset<rows.length;offset+=100) {
+  const saved=await dbRequest("feeds?on_conflict=url",{method:"POST",headers:{"Prefer":"resolution=merge-duplicates,return=minimal"},body:JSON.stringify(rows.slice(offset,offset+100))});
+  if(!saved.ok) throw new Error("Source catalog write HTTP "+saved.status);
+ }
+}
 async function runGeneral() {
- const r=await dbRequest("feeds?select=id,name,url,lang,category,source_scope,active&active=eq.true&order=name.asc");
+ await ensureSourceCatalog();
+ const batchSize=250, offset=(Math.floor(Date.now()/120000)*batchSize)%1000;
+ const r=await dbRequest("feeds?select=id,name,url,lang,category,source_scope,active&pipeline=eq.general&active=eq.true&order=name.asc&limit="+batchSize+"&offset="+offset);
  if(!r.ok) throw new Error("Could not load feeds: "+r.status+" "+(await r.text()).slice(0,160));
  const feeds=await r.json();
  const runId=await beginRun("general");

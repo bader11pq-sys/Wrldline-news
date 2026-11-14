@@ -1,0 +1,8002 @@
+[
+  {
+    "name": "The 6 Figure Developer",
+    "url": "http://6figuredev.com/feed/rss/",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Patrika : India's Leading Hindi News Portal",
+    "url": "http://api.patrika.com/rss/india-news",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Essays - Benedict Evans",
+    "url": "http://ben-evans.com/benedictevans?format=rss",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Eric Jang",
+    "url": "http://blog.evjang.com/feeds/posts/default?alt=rss",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Hubspot",
+    "url": "http://blog.hubspot.com/CMS/UI/Modules/BizBlogger/rss.aspx?tabid=6307&moduleid=8441&maxcount=25",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Boxes and Arrows",
+    "url": "http://boxesandarrows.com/rss/",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Distill",
+    "url": "http://distill.pub/rss.xml",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Grab Tech",
+    "url": "http://engineering.grab.com/feed.xml",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Ars Technica - All content",
+    "url": "http://feeds.arstechnica.com/arstechnica/index",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "BBC News",
+    "url": "http://feeds.bbci.co.uk/news/science_and_environment/rss.xml",
+    "category": "science",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "BBC News - India",
+    "url": "http://feeds.bbci.co.uk/news/world/asia/india/rss.xml",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "BBC News",
+    "url": "http://feeds.bbci.co.uk/news/world/rss.xml",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "BBC Sport",
+    "url": "http://feeds.bbci.co.uk/sport/cricket/rss.xml",
+    "category": "sports",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "BBC Sport",
+    "url": "http://feeds.bbci.co.uk/sport/rss.xml",
+    "category": "sports",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "BBC Sport",
+    "url": "http://feeds.bbci.co.uk/sport/tennis/rss.xml",
+    "category": "sports",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "TalkAndroid",
+    "url": "http://feeds.feedburner.com/AndroidNewsGoogleAndroidForums",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "ArchDaily Global",
+    "url": "http://feeds.feedburner.com/Archdaily",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Cracked: All Posts",
+    "url": "http://feeds.feedburner.com/CrackedRSS",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Scroll.in",
+    "url": "http://feeds.feedburner.com/ScrollinArticles.rss",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Crunch Hype",
+    "url": "http://feeds.feedburner.com/TechCrunch",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Darknet – Hacking Tools, Hacker News & Cyber Security",
+    "url": "http://feeds.feedburner.com/darknethackers",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Fubiz Media",
+    "url": "http://feeds.feedburner.com/fubiz",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "NDTV News Search Records Found 1000",
+    "url": "http://feeds.feedburner.com/ndtvnews-world-news",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "NDTV News Search Records Found 1000",
+    "url": "http://feeds.feedburner.com/ndtvsports-cricket",
+    "category": "sports",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "OS X Daily",
+    "url": "http://feeds.feedburner.com/osxdaily",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "TechGenyz",
+    "url": "http://feeds.feedburner.com/techgenyz",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "TED Talks Daily (SD video)",
+    "url": "http://feeds.feedburner.com/tedtalks_video",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Najnowsze",
+    "url": "http://feeds.feedburner.com/wPolitycepl",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "HBR.org",
+    "url": "http://feeds.harvardbusiness.org/harvardbusiness/",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "HBR IdeaCast",
+    "url": "http://feeds.harvardbusiness.org/harvardbusiness/ideacast",
+    "category": "economy",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "MacRumors: Mac News and Rumors - Mac Blog",
+    "url": "http://feeds.macrumors.com/MacRumors-Mac",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Nature",
+    "url": "http://feeds.nature.com/nature/rss/current?x=1",
+    "category": "science",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "News24 Top Stories",
+    "url": "http://feeds.news24.com/articles/news24/TopStories/rss",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Sports News - Latest Sports and Football News | Sky News",
+    "url": "http://feeds.skynews.com/feeds/rss/sports.xml",
+    "category": "sports",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "The Privacy, Security, & OSINT Show",
+    "url": "http://feeds.soundcloud.com/users/soundcloud:users:261098918/sounds.rss",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "World",
+    "url": "http://feeds.washingtonpost.com/rss/world",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Freakonomics",
+    "url": "http://freakonomics.blogs.nytimes.com/feed/",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Hacker News: Show HN",
+    "url": "http://hnrss.org/show",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Front Page | The Indian Express",
+    "url": "http://indianexpress.com/print/front-page/feed/",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Invest Like the Best with Patrick O'Shaughnessy",
+    "url": "http://investlikethebest.libsyn.com/rss",
+    "category": "economy",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "John Egan",
+    "url": "http://jwegan.com/feed/rss/",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Последние новости на сайте korrespondent.net",
+    "url": "http://k.img.com.ua/rss/ru/all_news2.0.xml",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Myanmar Gazette News Media Forum Network",
+    "url": "http://myanmargazette.net/feed",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Nautilus",
+    "url": "http://nautil.us/rss/all",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Neuroscience News",
+    "url": "http://neurosciencenews.com/feed/",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "MIT News - Artificial intelligence",
+    "url": "http://news.mit.edu/rss/topic/artificial-intelligence2",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Hacker News",
+    "url": "http://news.ycombinator.com/rss",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "ZEIT ONLINE | Nachrichten, Hintergründe und Debatten",
+    "url": "http://newsfeed.zeit.de/index",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Grokking Newsletter",
+    "url": "http://newsletter.grokking.org/?format=rss",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "NLP News",
+    "url": "http://newsletter.ruder.io/?format=rss",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "RSS: News",
+    "url": "http://pitchfork.com/rss/news",
+    "category": "culture",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "朝日新聞デジタル",
+    "url": "http://rss.asahi.com/rss/asahi/newsheadlines.rdf",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "CNN.com - RSS Channel - App Travel Section",
+    "url": "http://rss.cnn.com/rss/cnn_travel.rss",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "CNN.com - RSS Channel - Sport - Football",
+    "url": "http://rss.cnn.com/rss/edition_football.rss",
+    "category": "sports",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "CNN.com - RSS Channel - Sport",
+    "url": "http://rss.cnn.com/rss/edition_sport.rss",
+    "category": "sports",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "CNN.com - RSS Channel - Sport - Tennis",
+    "url": "http://rss.cnn.com/rss/edition_tennis.rss",
+    "category": "sports",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "CNN.com - RSS Channel - World",
+    "url": "http://rss.cnn.com/rss/edition_world.rss",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Dziennik.pl Dziennik - dziennik.pl",
+    "url": "http://rss.dziennik.pl/Dziennik-PL/",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "GazetaPrawna.pl - biznes, podatki, prawo, finanse, wiadomości, praca",
+    "url": "http://rss.gazetaprawna.pl/GazetaPrawna",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "UOL",
+    "url": "http://rss.home.uol.com.br/index.xml",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "IOL section feed for News",
+    "url": "http://rss.iol.io/iol/news",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "MarketingProfs ",
+    "url": "http://rss.marketingprofs.com/marketingprofs/daily",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Scientific American Content: Global",
+    "url": "http://rss.sciam.com/ScientificAmerican-Global",
+    "category": "science",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "60-Second Science",
+    "url": "http://rss.sciam.com/sciam/60secsciencepodcast",
+    "category": "science",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Slashdot",
+    "url": "http://rss.slashdot.org/Slashdot/slashdotMain",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Sebastian Ruder",
+    "url": "http://ruder.io/rss/index.rss",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Scripting News",
+    "url": "http://scripting.com/rss.xml",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Security Affairs",
+    "url": "http://securityaffairs.co/wordpress/feed",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Stratechery by Ben Thompson",
+    "url": "http://stratechery.com/feed/",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "The Daily WTF",
+    "url": "http://syndication.thedailywtf.com/TheDailyWtf",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "The Hacker News",
+    "url": "http://thehackernews.com/feeds/posts/default",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Paul Graham: Essays",
+    "url": "http://www.aaronsw.com/2002/feeds/pgessays.rss",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "DVB Multimedia Group",
+    "url": "http://www.dvb.no/feed",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "eBay Tech Blog",
+    "url": "http://www.ebaytechblog.com/feed/",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Portal EBC - RSS",
+    "url": "http://www.ebc.com.br/rss/feed.xml",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Engadget",
+    "url": "http://www.engadget.com/rss-full.xml",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Cricket news from ESPN Cricinfo.com",
+    "url": "http://www.espncricinfo.com/rss/content/story/feeds/0.xml",
+    "category": "sports",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Fast Company ",
+    "url": "http://www.fastcodesign.com/rss.xml",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Moneycontrol Latest News",
+    "url": "http://www.moneycontrol.com/rss/latestnews.xml",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Nature",
+    "url": "http://www.nature.com/nature/current_issue/rss",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "News On Japan",
+    "url": "http://www.newsonjapan.com/rss/top.xml",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Machine Learning",
+    "url": "http://www.reddit.com/r/MachineLearning/.rss",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Smashing Security",
+    "url": "http://www.smashingsecurity.com/rss",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Social Media Examiner | Social Media Marketing",
+    "url": "http://www.socialmediaexaminer.com/feed/",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Psychology Headlines Around the World",
+    "url": "http://www.socialpsychology.org/headlines.rss",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "tagesschau.de - Die Nachrichten der ARD",
+    "url": "http://www.tagesschau.de/xml/rss2",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "The Verge",
+    "url": "http://www.theverge.com/rss/full.xml",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "THIT HTOO LWIN (Daily News)",
+    "url": "http://www.thithtoolwin.com/feeds/posts/default",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "This Week in Science – The Kickass Science Podcast",
+    "url": "http://www.twis.org/feed/",
+    "category": "science",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "عاجل",
+    "url": "https://ajel.sa/rss.xml",
+    "category": "world",
+    "country": "السعودية",
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Alberto De Bortoli",
+    "url": "https://albertodebortoli.com/rss/",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "أخبار الأمم المتحدة",
+    "url": "https://alikhbariya.net/feeds/sources/4ac5181f-7809-40fe-a6d1-e9bce44aede8.xml",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "وكالة الأناضول العربية",
+    "url": "https://alikhbariya.net/feeds/sources/f65491e4-269b-4356-9f7e-6c92da9121f2.xml",
+    "category": "world",
+    "country": null,
+    "lang": "ar",
+    "pipeline": "general"
+  },
+  {
+    "name": "البوابة العربية للأخبار التقنية",
+    "url": "https://alikhbariya.net/feeds/sources/fb98f343-1c7e-4082-aa66-df9ff9f99242.xml",
+    "category": "world",
+    "country": "السعودية",
+    "lang": "ar",
+    "pipeline": "general"
+  },
+  {
+    "name": "Amjad Masad",
+    "url": "https://amasad.me/rss",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Blind Android Users Podcast",
+    "url": "https://anchor.fm/s/4495abac/podcast/rss",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Stephan Livera Podcast",
+    "url": "https://anchor.fm/s/7d083a4/podcast/rss",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Android Authority Podcast",
+    "url": "https://androidauthority.libsyn.com/rss",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "AppleInsider News",
+    "url": "https://appleinsider.com/rss/news/",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "عربي21",
+    "url": "https://arabi21.com/feed",
+    "category": "world",
+    "country": null,
+    "lang": "ar",
+    "pipeline": "general"
+  },
+  {
+    "name": "CNN عربية",
+    "url": "https://arabic.cnn.com/api/v1/rss/rss.xml",
+    "category": "world",
+    "country": null,
+    "lang": "ar",
+    "pipeline": "general"
+  },
+  {
+    "name": "آر تي عربي",
+    "url": "https://arabic.rt.com/rss/",
+    "category": "world",
+    "country": null,
+    "lang": "ar",
+    "pipeline": "general"
+  },
+  {
+    "name": "Journal",
+    "url": "https://architizer.wpengine.com/feed/",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "The Architect’s Newspaper",
+    "url": "https://archpaper.com/feed",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Accidental Tech Podcast",
+    "url": "https://atp.fm/rss",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "ISF Podcast",
+    "url": "https://audioboom.com/channels/4991893.rss",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "A year of reading the world",
+    "url": "https://ayearofreadingtheworld.com/feed/",
+    "category": "culture",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Bionic Planet: Reversing Climate Change by Restoring Nature",
+    "url": "https://bionicplanet.libsyn.com/rss",
+    "category": "science",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "The Cloudflare Blog",
+    "url": "https://blog.cloudflare.com/rss/",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Dan Lew Codes",
+    "url": "https://blog.danlew.net/rss/",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Android",
+    "url": "https://blog.google/products/android/rss",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "The Pragmatic Engineer",
+    "url": "https://blog.pragmaticengineer.com/rss/",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Twitter Engineering",
+    "url": "https://blog.twitter.com/engineering/en_us/blog.rss",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Web Browser Engineering",
+    "url": "https://browser.engineering/rss.xml",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Overflow - Buffer Resources",
+    "url": "https://buffer.com/resources/overflow/rss/",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Цензор.НЕТ - Новости",
+    "url": "https://censor.net.ua/includes/news_ru.xml",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Chris Keenan Codes",
+    "url": "https://chrynan.codes/rss/",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Facebook Engineering",
+    "url": "https://code.facebook.com/posts/rss",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Cointelegraph.com News",
+    "url": "https://cointelegraph.com/rss",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Commonplace - The Commoncog Blog",
+    "url": "https://commoncog.com/blog/rss/",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "News - Cryptonews",
+    "url": "https://cryptonews.com/news/feed",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "DailyCoin",
+    "url": "https://dailycoin.com/feed/",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "The Ramsey Show",
+    "url": "https://daveramsey.libsyn.com/rss",
+    "category": "economy",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Latest News - Apple Developer",
+    "url": "https://developer.apple.com/news/rss/news.rss",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "SoundCloud Backstage Blog",
+    "url": "https://developers.soundcloud.com/blog/blog.rss",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Dropbox Tech",
+    "url": "https://dropbox.tech/feed",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "The Duct Tape Marketing Podcast",
+    "url": "https://ducttape.libsyn.com/rss",
+    "category": "economy",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Portada // expansion",
+    "url": "https://e00-expansion.uecdn.es/rss/portada.xml",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Economic Times",
+    "url": "https://economictimes.indiatimes.com/rssfeedsdefault.cms",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Chess News",
+    "url": "https://en.chessbase.com/feed",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Yonhap News Agency",
+    "url": "https://en.yna.co.kr/RSS/news.xml",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Canva Engineering Blog - Medium",
+    "url": "https://engineering.canva.com/rss",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Grab Tech",
+    "url": "https://engineering.grab.com/feed.xml",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "All - Kyodo News+",
+    "url": "https://english.kyodonews.net/rss/all.xml",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Xinhua",
+    "url": "https://english.news.cn/rss/world.xml",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Еспресо - український погляд на світ!",
+    "url": "https://espreso.tv/rss",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Eyewitness News | Latest News",
+    "url": "https://ewn.co.za/RSS%20Feeds/Latest%20News",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Fashionista Full",
+    "url": "https://fashionista.com/.rss/excerpt/",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Fashionista Full",
+    "url": "https://fashionista.com/.rss/excerpt/beauty",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Live Hindustan Rss feed",
+    "url": "https://feed.livehindustan.com/rss/3127",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Interviews",
+    "url": "https://feed.podbean.com/nuggetsnews/feed.xml",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "BBC عربي",
+    "url": "https://feeds.bbci.co.uk/arabic/rss.xml",
+    "category": "world",
+    "country": null,
+    "lang": "ar",
+    "pipeline": "general"
+  },
+  {
+    "name": "BBC Top Stories",
+    "url": "https://feeds.bbci.co.uk/news/rss.xml",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "BBC World",
+    "url": "https://feeds.bbci.co.uk/news/world/rss.xml",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "BBC Sport",
+    "url": "https://feeds.bbci.co.uk/sport/football/rss.xml",
+    "category": "sports",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Bloomberg",
+    "url": "https://feeds.bloomberg.com/politics/news.rss",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "All: BreakingNews.ie",
+    "url": "https://feeds.breakingnews.ie/bntopstories",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "The Wall Street Journal",
+    "url": "https://feeds.content.dowjones.io/public/rss/RSSWorldNews",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "EL PAÍS: el periódico global",
+    "url": "https://feeds.elpais.com/mrss-s/pages/ep/site/elpais.com/portada",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "El País",
+    "url": "https://feeds.elpais.com/mrss-s/pages/ep/site/english.elpais.com/portada",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "NDTV News -   Topstories",
+    "url": "https://feeds.feedburner.com/ndtvnews-top-stories",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Software Defined Talk",
+    "url": "https://feeds.fireside.fm/sdt/rss",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Folha de S.Paulo - Em cima da hora - Principal",
+    "url": "https://feeds.folha.uol.com.br/emcimadahora/rss091.xml",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "CyberWire Daily",
+    "url": "https://feeds.megaphone.fm/cyberwire-daily-podcast",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "NPR",
+    "url": "https://feeds.npr.org/1001/rss.xml",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "NPR World",
+    "url": "https://feeds.npr.org/1004/rss.xml",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "NPR Topics: Environment",
+    "url": "https://feeds.npr.org/1025/rss.xml",
+    "category": "science",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Epicenter - Learn about Crypto, Blockchain, Ethereum, Bitcoin and Distributed Technologies",
+    "url": "https://feeds.simplecast.com/lKmQDG9R",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Sky News",
+    "url": "https://feeds.skynews.com/feeds/rss/world.xml",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Today in Web 3",
+    "url": "https://feeds.soundcloud.com/users/soundcloud:users:844321453/sounds.rss",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "The Local",
+    "url": "https://feeds.thelocal.com/rss/es",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "The PIT Show: Reflections and Interviews in the Tech World",
+    "url": "https://feeds.transistor.fm/productivity-in-tech-podcast",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "This Week in Tech (Audio)",
+    "url": "https://feeds.twit.tv/twit.xml",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Tech in Asia",
+    "url": "https://feeds2.feedburner.com/PennOlson",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Small Business Trends",
+    "url": "https://feeds2.feedburner.com/SmallBusinessTrends",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Yahoo Finance",
+    "url": "https://finance.yahoo.com/news/rssindex",
+    "category": "economy",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Focusing on Wildlife",
+    "url": "https://focusingonwildlife.com/news/feed/",
+    "category": "science",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Gazeta.ua",
+    "url": "https://gazeta.ua/rss",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Gizmodo",
+    "url": "https://gizmodo.com/rss",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Science",
+    "url": "https://gizmodo.com/tag/science/rss",
+    "category": "science",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Гордон - Самые популярные материалы",
+    "url": "https://gordonua.com/xml/rss_category/top.html",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Sink In - Tech Learnings",
+    "url": "https://gosink.in/rss/",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Hacker News: Front Page",
+    "url": "https://hnrss.org/frontpage",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Hacker News: Launches",
+    "url": "https://hnrss.org/launches",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Cricket | The Indian Express",
+    "url": "https://indianexpress.com/section/sports/cricket/feed/",
+    "category": "sports",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Sports | The Indian Express",
+    "url": "https://indianexpress.com/section/sports/feed/",
+    "category": "sports",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Tennis | The Indian Express",
+    "url": "https://indianexpress.com/section/sports/tennis/feed/",
+    "category": "sports",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "The Indian Express",
+    "url": "https://indianexpress.com/section/world/feed/",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "inessential.com",
+    "url": "https://inessential.com/xml/rss.xml",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "UX Daily - User Experience Daily",
+    "url": "https://interaction-design.org/rss/site_news.xml",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Jalopnik - Obsessed with the culture of cars",
+    "url": "https://jalopnik.com/rss",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "قومی خبریں",
+    "url": "https://jang.com.pk/rss/1/1",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Josh Comeau's blog",
+    "url": "https://joshwcomeau.com/rss.xml",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Know Your Meme Newsfeed",
+    "url": "https://knowyourmeme.com/newsfeed.rss",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Kotaku",
+    "url": "https://kotaku.com/rss",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Lifehacker",
+    "url": "https://lifehacker.com/rss",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Latest News program News18 Lokmat",
+    "url": "https://lokmat.news18.com/rss/program.xml",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Marathi News: मराठी बातम्या,  Latest News in Marathi, Breaking Marathi News, Marathi News Paper | Maharashtra Times",
+    "url": "https://maharashtratimes.com/rssfeedsdefault.cms",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Marco.org",
+    "url": "https://marco.org/rss",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "The Airbnb Tech Blog - Medium",
+    "url": "https://medium.com/feed/airbnb-engineering",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Android in The Airbnb Tech Blog on Medium",
+    "url": "https://medium.com/feed/airbnb-engineering/tagged/android",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "The PayPal Technology Blog - Medium",
+    "url": "https://medium.com/feed/paypal-engineering",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Memebase",
+    "url": "https://memebase.cheezburger.com/rss",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "The Nation - Top Stories",
+    "url": "https://nation.com.pk/rss/top-stories",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Stories Archives - Nature Canada",
+    "url": "https://naturecanada.ca/category/news/blog/feed/",
+    "category": "science",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Nautilus",
+    "url": "https://nautil.us/rss/all",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Navbharat Times",
+    "url": "https://navbharattimes.indiatimes.com/rssfeedsdefault.cms",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Bitcoin News",
+    "url": "https://news.bitcoin.com/feed/",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Top stories - Google News",
+    "url": "https://news.google.com/rss",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "المدينة",
+    "url": "https://news.google.com/rss/search?q=site%3Aal-madina.com%20when%3A1d&hl=ar&gl=SA&ceid=SA:ar",
+    "category": "world",
+    "country": "السعودية",
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "الرياض",
+    "url": "https://news.google.com/rss/search?q=site%3Aalriyadh.com%20when%3A1d&hl=ar&gl=SA&ceid=SA:ar",
+    "category": "world",
+    "country": "السعودية",
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "السومرية",
+    "url": "https://news.google.com/rss/search?q=site%3Aalsumaria.tv%20when%3A1d&hl=ar&gl=SA&ceid=SA:ar",
+    "category": "world",
+    "country": "العراق",
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Associated Press (Google News)",
+    "url": "https://news.google.com/rss/search?q=site%3Aapnews.com+when%3A24h&hl=en-US&gl=US&ceid=US:en",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Nikkei Asia",
+    "url": "https://news.google.com/rss/search?q=site%3Aasia.nikkei.com%20when%3A1d&hl=en-US&gl=US&ceid=US:en",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "CNN (Google News)",
+    "url": "https://news.google.com/rss/search?q=site%3Acnn.com+when%3A24h&hl=en-US&gl=US&ceid=US:en",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "dpa",
+    "url": "https://news.google.com/rss/search?q=site%3Adpa.com%20when%3A1d&hl=en-US&gl=US&ceid=US:en",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "EFE",
+    "url": "https://news.google.com/rss/search?q=site%3Aefe.com%20when%3A1d&hl=en-US&gl=US&ceid=US:en",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "عنب بلدي",
+    "url": "https://news.google.com/rss/search?q=site%3Aenabbaladi.net%20when%3A1d&hl=ar&gl=SA&ceid=SA:ar",
+    "category": "world",
+    "country": "سوريا",
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Kyodo News",
+    "url": "https://news.google.com/rss/search?q=site%3Aenglish.kyodonews.net%20when%3A1d&hl=en-US&gl=US&ceid=US:en",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Jiji Press",
+    "url": "https://news.google.com/rss/search?q=site%3Ajiji.com%20when%3A1d&hl=en-US&gl=US&ceid=US:en",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "The Korea Herald",
+    "url": "https://news.google.com/rss/search?q=site%3Akoreaherald.com%20when%3A1d&hl=en-US&gl=US&ceid=US:en",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "NHK World",
+    "url": "https://news.google.com/rss/search?q=site%3Anhk.or.jp%20when%3A1d&hl=en-US&gl=US&ceid=US:en",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "عكاظ",
+    "url": "https://news.google.com/rss/search?q=site%3Aokaz.com.sa%20when%3A1d&hl=ar&gl=SA&ceid=SA:ar",
+    "category": "world",
+    "country": "السعودية",
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Reuters (Google News)",
+    "url": "https://news.google.com/rss/search?q=site%3Areuters.com+when%3A24h&hl=en-US&gl=US&ceid=US:en",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "شفق نيوز عربي",
+    "url": "https://news.google.com/rss/search?q=site%3Ashafaq.com%2Far%20when%3A1d&hl=ar&gl=SA&ceid=SA:ar",
+    "category": "world",
+    "country": "العراق",
+    "lang": "ar",
+    "pipeline": "general"
+  },
+  {
+    "name": "Toronto Star",
+    "url": "https://news.google.com/rss/search?q=site%3Athestar.com%20when%3A1d&hl=en-US&gl=US&ceid=US:en",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "ライブドアニュース - 主要トピックス",
+    "url": "https://news.livedoor.com/topics/rss/top.xml",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "MIT News",
+    "url": "https://news.mit.edu/rss/research",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "MIT News - Science, Technology, and Society | Technology and society | Program in STS | History of science | History of MIT",
+    "url": "https://news.mit.edu/rss/topic/science-technology-and-society",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Hacker News",
+    "url": "https://news.ycombinator.com/rss",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "News Blog",
+    "url": "https://newsnblogs.com/feed/",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "НВ",
+    "url": "https://nv.ua/rss/all.xml",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "OkKotlin",
+    "url": "https://okkotlin.com/rss.xml",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "OpenAI ",
+    "url": "https://openai.com/news/engineering/rss.xml",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "overreacted — A blog by Dan Abramov",
+    "url": "https://overreacted.io/rss.xml",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "TED Talks Daily",
+    "url": "https://pa.tedcdn.com/feeds/talks.rss",
+    "category": "science",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Phys.org - latest science and technology news stories",
+    "url": "https://phys.org/rss-feed/",
+    "category": "science",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "The Infinite Monkey Cage",
+    "url": "https://podcasts.files.bbci.co.uk/b00snr0w.rss",
+    "category": "science",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Discovery",
+    "url": "https://podcasts.files.bbci.co.uk/p002w557.rss",
+    "category": "science",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Stumped",
+    "url": "https://podcasts.files.bbci.co.uk/p02gsrmh.rss",
+    "category": "sports",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Test Match Special",
+    "url": "https://podcasts.files.bbci.co.uk/p02nrsl2.rss",
+    "category": "sports",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Tailenders",
+    "url": "https://podcasts.files.bbci.co.uk/p02pcb4w.rss",
+    "category": "sports",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "PostSecret",
+    "url": "https://postsecret.com/feed/?alt=rss",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Probably Science",
+    "url": "https://probablyscience.libsyn.com/rss",
+    "category": "science",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Public Object",
+    "url": "https://publicobject.com/rss/",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Developing Android Apps",
+    "url": "https://reddit.com/r/androiddev.rss",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "So many books, so little time",
+    "url": "https://reddit.com/r/books/.rss",
+    "category": "culture",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Movie News and Discussion",
+    "url": "https://reddit.com/r/movies/.rss",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Personal Finance",
+    "url": "https://reddit.com/r/personalfinance/.rss",
+    "category": "economy",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Reddit Science",
+    "url": "https://reddit.com/r/science/.rss",
+    "category": "science",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "📺Television News and Discussion",
+    "url": "https://reddit.com/r/television/.rss",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Reflections of the Natural World",
+    "url": "https://reflectionsofthenaturalworld.com/feed/",
+    "category": "science",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "The Rio Times",
+    "url": "https://riotimesonline.com/feed/",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Risky Business",
+    "url": "https://risky.biz/feeds/risky-business",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "رؤيا",
+    "url": "https://royanews.tv/rss",
+    "category": "world",
+    "country": "الأردن",
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "BBC Earth Podcast",
+    "url": "https://rss.acast.com/bbcearthpodcast",
+    "category": "science",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Harry Potter and the Sacred Text",
+    "url": "https://rss.acast.com/harrypottersacredtext",
+    "category": "culture",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Masters of Scale",
+    "url": "https://rss.art19.com/masters-of-scale",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Money For the Rest of Us",
+    "url": "https://rss.art19.com/money-for-the-rest-of-us",
+    "category": "economy",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "The Tim Ferriss Show",
+    "url": "https://rss.art19.com/tim-ferriss-show",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Deutsche Welle",
+    "url": "https://rss.dw.com/rdf/rss-en-all",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "DW عربية",
+    "url": "https://rss.dw.com/xml/rss-ar-all",
+    "category": "world",
+    "country": null,
+    "lang": "ar",
+    "pipeline": "general"
+  },
+  {
+    "name": "DW News",
+    "url": "https://rss.dw.com/xml/rss-en-all",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "España",
+    "url": "https://rss.elconfidencial.com/espana/",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "FOCUS Online",
+    "url": "https://rss.focus.de/fol/XML/rss_folnews.xml",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "NYT > Climate and Environment",
+    "url": "https://rss.nytimes.com/services/xml/rss/nyt/Climate.xml",
+    "category": "science",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "NYT > Food",
+    "url": "https://rss.nytimes.com/services/xml/rss/nyt/DiningandWine.xml",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "NYT > Style",
+    "url": "https://rss.nytimes.com/services/xml/rss/nyt/FashionandStyle.xml",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "NYT > Science",
+    "url": "https://rss.nytimes.com/services/xml/rss/nyt/Science.xml",
+    "category": "science",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "NYT > Sports > Soccer",
+    "url": "https://rss.nytimes.com/services/xml/rss/nyt/Soccer.xml",
+    "category": "sports",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "NYT > Sports",
+    "url": "https://rss.nytimes.com/services/xml/rss/nyt/Sports.xml",
+    "category": "sports",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "NYT > Technology",
+    "url": "https://rss.nytimes.com/services/xml/rss/nyt/Technology.xml",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "NYT > Sports > Tennis",
+    "url": "https://rss.nytimes.com/services/xml/rss/nyt/Tennis.xml",
+    "category": "sports",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "NYT > Travel",
+    "url": "https://rss.nytimes.com/services/xml/rss/nyt/Travel.xml",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "NYT > World News",
+    "url": "https://rss.nytimes.com/services/xml/rss/nyt/World.xml",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "News Agency UNIAN",
+    "url": "https://rss.unian.net/site/news_eng.rss",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Информационное агентство УНИАН",
+    "url": "https://rss.unian.net/site/news_rus.rss",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Neuroscience News -- ScienceDaily",
+    "url": "https://sciencedaily.com/rss/mind_brain/neuroscience.xml",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Breaking News on Seeking Alpha",
+    "url": "https://seekingalpha.com/market_currents.xml",
+    "category": "economy",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Shirtloads of Science",
+    "url": "https://shirtloadsofscience.libsyn.com/rss",
+    "category": "science",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Signal Blog",
+    "url": "https://signal.org/blog/rss.xml",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Podcast Archives - Software Engineering Daily",
+    "url": "https://softwareengineeringdaily.com/category/podcast/feed",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "https://sports.yahoo.com/rss/",
+    "url": "https://sports.yahoo.com/rss/",
+    "category": "sports",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Stack Abuse",
+    "url": "https://stackabuse.com/rss/",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "The Startup Junkies Podcast",
+    "url": "https://startupjunkie.libsyn.com/rss",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Steam RSS News Feed",
+    "url": "https://store.steampowered.com/feeds/news.xml",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Stripe Blog",
+    "url": "https://stripe.com/blog/feed.rss",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Swift by Sundell",
+    "url": "https://swiftbysundell.com/feed.rss",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Bruno Rocha",
+    "url": "https://swiftrocks.com/rss.xml",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "TASS",
+    "url": "https://tass.com/rss/v2.xml",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "TechCentral",
+    "url": "https://techcentral.co.za/feed",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "TechCrunch",
+    "url": "https://techcrunch.com/feed/",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Startups – TechCrunch",
+    "url": "https://techcrunch.com/startups/feed/",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "cryptocurrency | TechCrunch",
+    "url": "https://techcrunch.com/tag/cryptocurrency/feed",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "cybersecurity | TechCrunch",
+    "url": "https://techcrunch.com/tag/cybersecurity/feed/",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "The Gradient",
+    "url": "https://thegradient.pub/rss/",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "The Market's Compass Technical View",
+    "url": "https://themarketscompass.substack.com/feed",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "The Week in Chess",
+    "url": "https://theweekinchess.com/twic-rss-feed",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "The Women in Tech Show: A Technical Podcast",
+    "url": "https://thewomenintechshow.com/category/podcast/feed/",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Environment News, Earth News, Global Warming, Wild Life, Carbon Trading, Climate Business, Climate Change & Pollution News",
+    "url": "https://timesofindia.indiatimes.com/rssfeeds/2647163.cms",
+    "category": "science",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "World News, Today World News, Latest International News, World Breaking News, Trending News of World - Times of India",
+    "url": "https://timesofindia.indiatimes.com/rssfeeds/296589292.cms",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Sports News: Cricket Live Scorecard, Latest Cricket News, Football, NBA, NFL, WWE, NHL, MLB News & More",
+    "url": "https://timesofindia.indiatimes.com/rssfeeds/4719148.cms",
+    "category": "sports",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Cricket News Today, Latest Cricket Updates, Cricket Live Score, Upcoming Matches | Times of India",
+    "url": "https://timesofindia.indiatimes.com/rssfeeds/54829575.cms",
+    "category": "sports",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Times of India",
+    "url": "https://timesofindia.indiatimes.com/rssfeedstopstories.cms",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "TouchArcade - iPhone, iPad, Android Games Forum",
+    "url": "https://toucharcade.com/community/forums/-/index.rss",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Towards Data Science - Medium",
+    "url": "https://towardsdatascience.com/feed",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "The Express Tribune",
+    "url": "https://tribune.com.pk/feed/home",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Новини на tsn.ua",
+    "url": "https://tsn.ua/rss/full.rss",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "TVLine - All TV. No Interference. TV News & Spoilers by TVLine",
+    "url": "https://tvline.com/feed/",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Use Your Loaf - iOS Development News & Tips",
+    "url": "https://useyourloaf.com/blog/rss.xml",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "ABC News Australia",
+    "url": "https://www.abc.net.au/news/feed/45910/rss.xml",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "AFP",
+    "url": "https://www.afp.com/en/rss/all/news",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Ain't It Cool News Feed",
+    "url": "https://www.aintitcool.com/node/feed/",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "العربية",
+    "url": "https://www.alarabiya.net/feed",
+    "category": "world",
+    "country": null,
+    "lang": "ar",
+    "pipeline": "general"
+  },
+  {
+    "name": "البيان",
+    "url": "https://www.albayan.ae/rss",
+    "category": "world",
+    "country": "الإمارات",
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "الاتحاد",
+    "url": "https://www.alittihad.ae/rss",
+    "category": "world",
+    "country": "الإمارات",
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Al Jazeera English",
+    "url": "https://www.aljazeera.com/xml/rss/all.xml",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "الجزيرة",
+    "url": "https://www.aljazeera.net/aljazeerarss/a7c186be-1baa-4bd4-9d80-a84db769f779/73d0e1b4-532f-45ef-b135-bfdff8b8cab9",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "الخليج",
+    "url": "https://www.alkhaleej.ae/rss",
+    "category": "world",
+    "country": "الإمارات",
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "المصري اليوم",
+    "url": "https://www.almasryalyoum.com/rss",
+    "category": "world",
+    "country": "مصر",
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "المدن",
+    "url": "https://www.almodon.com/rss",
+    "category": "world",
+    "country": "لبنان",
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "الشرق",
+    "url": "https://www.alsharq.net/rss",
+    "category": "world",
+    "country": "قطر",
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Latest And Breaking Hindi News Headlines, News In Hindi | अमर उजाला हिंदी न्यूज़ | - Amar Ujala",
+    "url": "https://www.amarujala.com/rss/breaking-news.xml",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Amazon Science Homepage",
+    "url": "https://www.amazon.science/index.rss",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "ANSA",
+    "url": "https://www.ansa.it/english/news/english_rss.xml",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Apple Newsroom",
+    "url": "https://www.apple.com/newsroom/rss-feed.rss",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Architectural Digest",
+    "url": "https://www.architecturaldigest.com/feed/rss",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "عصر ايران",
+    "url": "https://www.asriran.com/fa/rss/allnews",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Autocar RSS Feed",
+    "url": "https://www.autocar.co.uk/rss",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Bernama",
+    "url": "https://www.bernama.com/en/rss.php",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "देश | दैनिक भास्कर",
+    "url": "https://www.bhaskar.com/rss-feed/1061/",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "The Keyword",
+    "url": "https://www.blog.google/rss/",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "The Boston Globe",
+    "url": "https://www.bostonglobe.com/rss/bigpicture",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Home Page",
+    "url": "https://www.business-standard.com/rss/home_page_top_stories.rss",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Latest Content - Car and Driver",
+    "url": "https://www.caranddriver.com/rss/all.xml/",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "CBC News",
+    "url": "https://www.cbc.ca/webfeed/rss/rss-topstories",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "CNA",
+    "url": "https://www.channelnewsasia.com/api/v1/rss-outbound-feed?_format=xml",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Chess.com News",
+    "url": "https://www.chess.com/rss/news",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "US Top News and Analysis",
+    "url": "https://www.cnbc.com/id/100003114/device/rss/rss.html",
+    "category": "economy",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "International: Top News And Analysis",
+    "url": "https://www.cnbc.com/id/100727362/device/rss/rss.html",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "CNET",
+    "url": "https://www.cnet.com/rss/news/",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "ComingSoon.net – Movie Trailers, TV & Streaming News, and More",
+    "url": "https://www.comingsoon.net/feed",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Daily Maverick",
+    "url": "https://www.dailymaverick.co.za/dmrss/",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Deccan Chronicle - Latest India news | Breaking news | Hyderabad News | World news | Business news | Politics | Technology news",
+    "url": "https://www.deccanchronicle.com/rss_feed/",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "BLOG - decor8",
+    "url": "https://www.decor8blog.com/blog?format=rss",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Architecture news and projects | Dezeen",
+    "url": "https://www.dezeen.com/architecture/feed/",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "ઈન્ડિયા | દિવ્ય ભાસ્કર",
+    "url": "https://www.divyabhaskar.co.in/rss-feed/1037/",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "India News",
+    "url": "https://www.dnaindia.com/feeds/india.xml",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Droid Life – Opinionated Android news.",
+    "url": "https://www.droid-life.com/feed",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "The Economist",
+    "url": "https://www.economist.com/the-world-this-week/rss.xml",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Agencia EFE | www.efe.com | English edition",
+    "url": "https://www.efe.com/efe/english/4/rss",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "ElDiario.es - ElDiario.es",
+    "url": "https://www.eldiario.es/rss/",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Beauty - ELLE",
+    "url": "https://www.elle.com/rss/beauty.xml/",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Fashion - ELLE",
+    "url": "https://www.elle.com/rss/fashion.xml/",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "El Periódico - portada",
+    "url": "https://www.elperiodico.com/es/rss/rss_portada.xml",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Engadget - Technology News & Expert Reviews",
+    "url": "https://www.engadget.com/rss.xml",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "www.espn.com - TOP",
+    "url": "https://www.espn.com/espn/rss/news",
+    "category": "sports",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "www.espn.com - TENNIS",
+    "url": "https://www.espn.com/espn/rss/tennis/news",
+    "category": "sports",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Eurogamer.net Latest Articles Feed",
+    "url": "https://www.eurogamer.net/?format=rss",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Euro Weekly News Spain",
+    "url": "https://www.euroweeklynews.com/feed/",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "ایکسپریس اردو",
+    "url": "https://www.express.pk/feed/",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "https://www.fashionbeans.com/rss-feed/?category=fashion",
+    "url": "https://www.fashionbeans.com/rss-feed/?category=fashion",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Aktuell - FAZ.NET",
+    "url": "https://www.faz.net/rss/aktuell/",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "CryptoCurrency – Finance Magnates | Financial and business news",
+    "url": "https://www.financemagnates.com/cryptocurrency/feed/",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "The Financial Express",
+    "url": "https://www.financialexpress.com/feed/",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Firstpost India Latest News",
+    "url": "https://www.firstpost.com/rss/india.xml",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Forbes - Business",
+    "url": "https://www.forbes.com/business/feed/",
+    "category": "economy",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "فرانس 24 عربي",
+    "url": "https://www.france24.com/ar/rss",
+    "category": "world",
+    "country": null,
+    "lang": "ar",
+    "pipeline": "general"
+  },
+  {
+    "name": "France 24",
+    "url": "https://www.france24.com/en/rss",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Free Press Journal",
+    "url": "https://www.freepressjournal.in/stories.rss",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Financial Times",
+    "url": "https://www.ft.com/world?format=rss",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Good Good Good",
+    "url": "https://www.goodgoodgood.co/articles/rss.xml",
+    "category": "science",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "GSMArena.com - Latest articles",
+    "url": "https://www.gsmarena.com/rss-news-reviews.php3",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Top Stories News - Gujarat Samachar : World's Leading Gujarati Newspaper",
+    "url": "https://www.gujaratsamachar.com/rss/top-stories",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "هسبريس",
+    "url": "https://www.hespress.com/feed",
+    "category": "world",
+    "country": "المغرب",
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Hindustan Times",
+    "url": "https://www.hindustantimes.com/feeds/rss/world-news/rssfeed.xml",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "History in 28-minutes",
+    "url": "https://www.historyisnowmagazine.com/blog?format=RSS",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Latest from Ideal Home in News",
+    "url": "https://www.idealhome.co.uk/feed",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Inc.com",
+    "url": "https://www.inc.com/rss/",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "The Independent",
+    "url": "https://www.independent.co.uk/news/world/rss",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "India Today | Latest Stories",
+    "url": "https://www.indiatoday.in/rss/home",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Interior Design",
+    "url": "https://www.interiordesign.net/rss/",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "All News",
+    "url": "https://www.investing.com/rss/news.rss",
+    "category": "economy",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Irish Mirror - Home",
+    "url": "https://www.irishmirror.ie/?service=rss",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "خبرگزاری ایسنا | صفحه اصلی |  ISNA News Agency",
+    "url": "https://www.isna.ir/rss",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "The Japan Times",
+    "url": "https://www.japantimes.co.jp/feed/",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Japan Times latest articles",
+    "url": "https://www.japantimes.co.jp/feed/topstories/",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "خبرگزاری خبرآنلاین - آخرین اخبار ایران و جهان | Khabaronline",
+    "url": "https://www.khabaronline.ir/rss",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Kirkus Reviews",
+    "url": "https://www.kirkusreviews.com/feeds/rss/",
+    "category": "culture",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "كونا",
+    "url": "https://www.kuna.net.kw/rss",
+    "category": "world",
+    "country": "الكويت",
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "إل بي سي آي اللبنانية",
+    "url": "https://www.lbcgroup.tv/Rss/latest-news/ar",
+    "category": "world",
+    "country": "لبنان",
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Le Monde",
+    "url": "https://www.lemonde.fr/en/rss/une.xml",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "ليبيا أخبار",
+    "url": "https://www.libyaakhbar.com/feed/",
+    "category": "world",
+    "country": "ليبيا",
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Live Life Travel",
+    "url": "https://www.livelifetravel.world/feed/",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "معاً",
+    "url": "https://www.maannews.net/rss",
+    "category": "world",
+    "country": "فلسطين",
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Macworld",
+    "url": "https://www.macworld.com/index.rss",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "خبرگزاری مهر | اخبار ایران و جهان | Mehr News Agency",
+    "url": "https://www.mehrnews.com/rss",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Music Business Worldwide",
+    "url": "https://www.musicbusinessworldwide.com/feed/",
+    "category": "culture",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "NASA",
+    "url": "https://www.nasa.gov/rss/dyn/breaking_news.rss",
+    "category": "science",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Nature",
+    "url": "https://www.nature.com/nature.rss",
+    "category": "science",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Top World News- News18.com",
+    "url": "https://www.news18.com/rss/world.xml",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "NewsBTC",
+    "url": "https://www.newsbtc.com/feed/",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "New Scientist - Space",
+    "url": "https://www.newscientist.com/subject/space/feed/",
+    "category": "science",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Newsweek",
+    "url": "https://www.newsweek.com/rss",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Newsweek Polska",
+    "url": "https://www.newsweek.pl/rss.xml",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "NN/g latest articles and announcements",
+    "url": "https://www.nngroup.com/feed/rss/",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "NYT > Japan",
+    "url": "https://www.nytimes.com/svc/collections/v1/publish/http://www.nytimes.com/topic/destination/japan/rss.xml",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Gastropod",
+    "url": "https://www.omnycontent.com/d/playlist/aaea4e69-af51-495e-afc9-a9760146922b/2a195077-f014-41d2-8313-ab190186b4c2/277bcd5c-0a05-4c14-8ba6-ab190186b4d5/podcast.rss",
+    "category": "science",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "News, Latest News, Today's News Headlines, Breaking News, LIVE News - Oneindia",
+    "url": "https://www.oneindia.com/rss/news-fb.xml",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Outlook India",
+    "url": "https://www.outlookindia.com/rss/main/magazine",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Polska Agencja Prasowa SA",
+    "url": "https://www.pap.pl/rss.xml",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "POLITICO Europe",
+    "url": "https://www.politico.eu/feed/",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Polygon.com",
+    "url": "https://www.polygon.com/rss/index.xml",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Popular Science",
+    "url": "https://www.popsci.com/arcio/rss/",
+    "category": "science",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Українська правда",
+    "url": "https://www.pravda.com.ua/rss/",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Psychology Today",
+    "url": "https://www.psychologytoday.com/intl/rss.xml",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "when things get too real for meirl",
+    "url": "https://www.reddit.com/r/2meirl4meirl/.rss",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Advice Animals",
+    "url": "https://www.reddit.com/r/AdviceAnimals/.rss",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Bitcoin - The Currency of the Internet",
+    "url": "https://www.reddit.com/r/Bitcoin/.rss",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "EFL Championship",
+    "url": "https://www.reddit.com/r/Championship/.rss?format=xml",
+    "category": "sports",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Cricket",
+    "url": "https://www.reddit.com/r/Cricket/.rss",
+    "category": "sports",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Cryptocurrency News & Discussion",
+    "url": "https://www.reddit.com/r/CryptoCurrency/.rss",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "EarthPorn: Amazing images of light and landscape",
+    "url": "https://www.reddit.com/r/EarthPorn/.rss",
+    "category": "science",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "r/IndianDankMemes - India's Largest Meme Subreddit",
+    "url": "https://www.reddit.com/r/IndianDankMemes/.rss",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Indian Memes",
+    "url": "https://www.reddit.com/r/IndianMeyMeys/.rss",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Interior Design (Interior Architecture)",
+    "url": "https://www.reddit.com/r/InteriorDesign/.rss",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Nature Gifs",
+    "url": "https://www.reddit.com/r/NatureGifs/.rss",
+    "category": "science",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "🔥 Nature Is Fucking Lit",
+    "url": "https://www.reddit.com/r/NatureIsFuckingLit/.rss",
+    "category": "science",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "PrequelMemes - Memes of the Star Wars Prequels",
+    "url": "https://www.reddit.com/r/PrequelMemes/.rss",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Android",
+    "url": "https://www.reddit.com/r/android/.rss",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "r/Apple: Unofficial Apple Community",
+    "url": "https://www.reddit.com/r/apple/.rss",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Architecture",
+    "url": "https://www.reddit.com/r/architecture/.rss",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Blackhat Library: Hacking techniques and research",
+    "url": "https://www.reddit.com/r/blackhat/.rss",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "r/Chess",
+    "url": "https://www.reddit.com/r/chess/.rss",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "For the budding patzer",
+    "url": "https://www.reddit.com/r/chessbeginners/.rss",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "cybersecurity",
+    "url": "https://www.reddit.com/r/cybersecurity/.rss",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "dankmemes",
+    "url": "https://www.reddit.com/r/dankmemes/.rss",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Environment",
+    "url": "https://www.reddit.com/r/environment/.rss",
+    "category": "science",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Ethereum",
+    "url": "https://www.reddit.com/r/ethereum/.rss",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Football - The People's Sport",
+    "url": "https://www.reddit.com/r/football/.rss?format=xml",
+    "category": "sports",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Formula 1",
+    "url": "https://www.reddit.com/r/formula1/.rss",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "r/gaming",
+    "url": "https://www.reddit.com/r/gaming.rss",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "A sub for History Memes",
+    "url": "https://www.reddit.com/r/historymemes/.rss",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "r/iPhone",
+    "url": "https://www.reddit.com/r/iphone/.rss",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "selfies of the soul",
+    "url": "https://www.reddit.com/r/me_irl/.rss",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "/r/Memes the original since 2008",
+    "url": "https://www.reddit.com/r/memes/.rss",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Nature",
+    "url": "https://www.reddit.com/r/nature/.rss",
+    "category": "science",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Technical Information Security Content & Discussion",
+    "url": "https://www.reddit.com/r/netsec/.rss",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "programming",
+    "url": "https://www.reddit.com/r/programming/.rss",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "/r/space: news, articles and discussion",
+    "url": "https://www.reddit.com/r/space/.rss?format=xml",
+    "category": "science",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Reddit Sports",
+    "url": "https://www.reddit.com/r/sports.rss",
+    "category": "sports",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Tennis News & Discussion",
+    "url": "https://www.reddit.com/r/tennis/.rss",
+    "category": "sports",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "😎HAHA DAE MINIONS!!!😎",
+    "url": "https://www.reddit.com/r/terriblefacebookmemes/.rss",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "User Experience",
+    "url": "https://www.reddit.com/r/userexperience/.rss",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Internet for the Spirit",
+    "url": "https://www.reddit.com/r/wholesomememes/.rss",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Wildlife Photography: Gear, Photos & Discussion",
+    "url": "https://www.reddit.com/r/wildlifephotography/.rss",
+    "category": "science",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "World News",
+    "url": "https://www.reddit.com/r/worldnews/.rss",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Refinery29",
+    "url": "https://www.refinery29.com/beauty/rss.xml",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Refinery29",
+    "url": "https://www.refinery29.com/fashion/rss.xml",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Republika Online RSS Feed",
+    "url": "https://www.republika.co.id/rss/",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "https://www.rp.pl",
+    "url": "https://www.rp.pl/rss/1019",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "ScienceAlert",
+    "url": "https://www.sciencealert.com/rss",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Latest Science News -- ScienceDaily",
+    "url": "https://www.sciencedaily.com/rss/all.xml",
+    "category": "science",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "South China Morning Post",
+    "url": "https://www.scmp.com/rss/91/feed/",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "SEBI RSS Feed",
+    "url": "https://www.sebi.gov.in/sebirss.xml",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "سكاي نيوز عربية",
+    "url": "https://www.skynewsarabia.com/web/rss",
+    "category": "world",
+    "country": null,
+    "lang": "ar",
+    "pipeline": "general"
+  },
+  {
+    "name": "Saturday Morning Breakfast Cereal",
+    "url": "https://www.smbc-comics.com/comic/rss",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "The Sydney Morning Herald",
+    "url": "https://www.smh.com.au/rss/feed.xml",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Soccer News",
+    "url": "https://www.soccernews.com/feed",
+    "category": "sports",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "SowetanLIVE",
+    "url": "https://www.sowetanlive.co.za/rss/?publication=sowetan-live",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "وكالة الأنباء السعودية واس",
+    "url": "https://www.spa.gov.sa/rss",
+    "category": "world",
+    "country": "السعودية",
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Der Spiegel",
+    "url": "https://www.spiegel.de/international/index.rss",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Sportskeeda",
+    "url": "https://www.sportskeeda.com/feed",
+    "category": "sports",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Sprouted Kitchen",
+    "url": "https://www.sproutedkitchen.com/home?format=rss",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "The Straits Times",
+    "url": "https://www.straitstimes.com/news/world/rss.xml",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Suara.com",
+    "url": "https://www.suara.com/rss",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Swift by Sundell",
+    "url": "https://www.swiftbysundell.com/feed.rss",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "تابناک | TABNAK",
+    "url": "https://www.tabnak.ir/fa/rss/allnews",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "اخبار ایران و جهان",
+    "url": "https://www.tasnimnews.com/fa/rss/feed/0/8/0/%D9%85%D9%87%D9%85%D8%AA%D8%B1%DB%8C%D9%86-%D8%A7%D8%AE%D8%A8%D8%A7%D8%B1-%D8%AA%D8%B3%D9%86%DB%8C%D9%85",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "The Telegraph",
+    "url": "https://www.telegraph.co.uk/rss.xml",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "The Globe and Mail",
+    "url": "https://www.theglobeandmail.com/arc/outboundfeeds/rss/category/world/",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Wildlife | The Guardian",
+    "url": "https://www.theguardian.com/environment/wildlife/rss",
+    "category": "science",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Fashion | The Guardian",
+    "url": "https://www.theguardian.com/fashion/rss",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Football | The Guardian",
+    "url": "https://www.theguardian.com/football/rss",
+    "category": "sports",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Space | The Guardian",
+    "url": "https://www.theguardian.com/science/space/rss",
+    "category": "science",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Chess | The Guardian",
+    "url": "https://www.theguardian.com/sport/chess/rss",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Cricket | The Guardian",
+    "url": "https://www.theguardian.com/sport/cricket/rss",
+    "category": "sports",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Tennis | The Guardian",
+    "url": "https://www.theguardian.com/sport/tennis/rss",
+    "category": "sports",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Sport | The Guardian",
+    "url": "https://www.theguardian.com/uk/sport/rss",
+    "category": "sports",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Travel | The Guardian",
+    "url": "https://www.theguardian.com/uk/travel/rss",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Environment | The Guardian",
+    "url": "https://www.theguardian.com/us/environment/rss",
+    "category": "science",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "India | The Guardian",
+    "url": "https://www.theguardian.com/world/india/rss",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "World news | The Guardian",
+    "url": "https://www.theguardian.com/world/rss",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "The Hindu - Home",
+    "url": "https://www.thehindu.com/feeder/default.rss",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "The Hindu",
+    "url": "https://www.thehindu.com/news/international/feeder/default.rss",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Football News, Football Scores, Premier League, La Liga, ISL | The Hindu",
+    "url": "https://www.thehindu.com/sport/football/feeder/default.rss",
+    "category": "sports",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Tennis News, Updates, Tennis Scores, ATP, WTA, Grand Slams | The Hindu",
+    "url": "https://www.thehindu.com/sport/tennis/feeder/default.rss",
+    "category": "sports",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Business Line - Home",
+    "url": "https://www.thehindubusinessline.com/feeder/default.rss",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "TheJournal.ie",
+    "url": "https://www.thejournal.ie/feed/",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Kitchn | Inspiring cooks, nourishing homes",
+    "url": "https://www.thekitchn.com/main.rss",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "The News International - Pakistan",
+    "url": "https://www.thenews.com.pk/rss/1/1",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "The Onion",
+    "url": "https://www.theonion.com/rss",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "www.theregister.com - Articles",
+    "url": "https://www.theregister.com/headlines.rss",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "The Verge",
+    "url": "https://www.theverge.com/rss/index.xml",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "TimesLIVE",
+    "url": "https://www.timeslive.co.za/rss/",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Tribunnews.com",
+    "url": "https://www.tribunnews.com/rss",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "TV Fanatic",
+    "url": "https://www.tvfanatic.com/rss.xml",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "UPI",
+    "url": "https://www.upi.com/rss/TopNews/",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "UrduPoint.com All Urdu News",
+    "url": "https://www.urdupoint.com/rss/urdupoint.rss",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Vox",
+    "url": "https://www.vox.com/rss/energy-and-environment/index.xml",
+    "category": "science",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Latest from Who What Wear",
+    "url": "https://www.whowhatwear.com/rss",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Science Latest",
+    "url": "https://www.wired.com/feed/category/science/latest/rss",
+    "category": "science",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "www.wirtualnemedia.pl",
+    "url": "https://www.wirtualnemedia.pl/rss/wirtualnemedia_rss.xml",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Cricket News: Stories, Features, Interviews, Opinion, Reports | Wisden",
+    "url": "https://www.wisden.com/feed",
+    "category": "sports",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "WonderHowTo",
+    "url": "https://www.wonderhowto.com/rss.xml",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Yatzer | Live Beautifully. Explore Endlessly.",
+    "url": "https://www.yatzer.com/rss.xml",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "خبرگزاری باشگاه خبرنگاران | آخرین اخبار ایران و جهان | YJC",
+    "url": "https://www.yjc.ir/fa/rss/allnews",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "اليوم السابع",
+    "url": "https://www.youm7.com/rss/SectionRss?SectionID=97",
+    "category": "world",
+    "country": "مصر",
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Google TechTalks",
+    "url": "https://www.youtube.com/feeds/videos.xml?user=GoogleTechTalks",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Linus Tech Tips",
+    "url": "https://www.youtube.com/feeds/videos.xml?user=LinusTechTips",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Business Insider",
+    "url": "https://www.youtube.com/feeds/videos.xml?user=businessinsider",
+    "category": "economy",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "chess24",
+    "url": "https://www.youtube.com/feeds/videos.xml?user=chess24media",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Zac Sweers",
+    "url": "https://www.zacsweers.dev/rss/",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Latest news",
+    "url": "https://www.zdnet.com/topic/security/rss.xml",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "xkcd.com",
+    "url": "https://xkcd.com/rss.xml",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Adventure.com",
+    "url": "http://adventure.com/feed/",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Airbnb Design",
+    "url": "http://airbnb.design/feed/",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Andrew Chen",
+    "url": "http://andrewchen.co/feed/",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Backlinko",
+    "url": "http://backlinko.com/feed",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "The Berkeley Artificial Intelligence Research Blog",
+    "url": "http://bair.berkeley.edu/blog/feed.xml",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Inside Design",
+    "url": "http://blog.invisionapp.com/feed/",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Sam Altman",
+    "url": "http://blog.samaltman.com/posts.atom",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Budget Bytes",
+    "url": "http://budgetbytes.blogspot.com/feeds/posts/default",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Consequence",
+    "url": "http://consequenceofsound.net/feed",
+    "category": "culture",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "OnStartups",
+    "url": "http://feed.onstartups.com/onstartups",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Song Exploder",
+    "url": "http://feed.songexploder.net/songexploder",
+    "category": "culture",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Latest from Android Central",
+    "url": "http://feeds.androidcentral.com/androidcentral",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "CodeNewbie",
+    "url": "http://feeds.codenewbie.org/cnpodcast.xml",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Nerd's Eye View | Kitces.com",
+    "url": "http://feeds.feedblitz.com/kitcesnerdseyeview&x=1",
+    "category": "economy",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Android Central Podcast",
+    "url": "http://feeds.feedburner.com/AndroidCentralPodcast",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Android Police",
+    "url": "http://feeds.feedburner.com/AndroidPolice",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Both Sides of the Table",
+    "url": "http://feeds.feedburner.com/BothSidesOfTheTable",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "\"Human Nature\" Blog Feed",
+    "url": "http://feeds.feedburner.com/ConservationInternationalBlog",
+    "category": "science",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Explosm.net",
+    "url": "http://feeds.feedburner.com/Explosm",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Google Developers Blog",
+    "url": "http://feeds.feedburner.com/GDBcode",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Neil Patel",
+    "url": "http://feeds.feedburner.com/KISSmetrics",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Million Mile Secrets",
+    "url": "http://feeds.feedburner.com/MillionMileSecrets",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "MoneyNing",
+    "url": "http://feeds.feedburner.com/MoneyNing",
+    "category": "economy",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "One Big Photo",
+    "url": "http://feeds.feedburner.com/OneBigPhoto",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Programming Throwdown",
+    "url": "http://feeds.feedburner.com/ProgrammingThrowdown",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "PsyBlog",
+    "url": "http://feeds.feedburner.com/PsychologyBlog",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Rock, Paper, Shotgun",
+    "url": "http://feeds.feedburner.com/RockPaperShotgun",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "BRIDGE（ブリッジ）テクノロジー＆スタートアップ情報",
+    "url": "http://feeds.feedburner.com/SdJapan",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "The Ancient Gaming Noob",
+    "url": "http://feeds.feedburner.com/TheAncientGamingNoob",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "iMore - The #1 iPhone, iPad, and iPod touch blog",
+    "url": "http://feeds.feedburner.com/TheiPhoneBlog",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "A Weekly Dose of Architecture Books",
+    "url": "http://feeds.feedburner.com/archidose",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Rabbit Ramblings",
+    "url": "http://feeds.feedburner.com/blogspot/GlZMR",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Strobist",
+    "url": "http://feeds.feedburner.com/blogspot/WOBq",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Thrifty Decor Chick | Thrifty DIY, Decor and Organizing",
+    "url": "http://feeds.feedburner.com/blogspot/ZBcZ",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Android Developers Backstage",
+    "url": "http://feeds.feedburner.com/blogspot/androiddevelopersbackstage",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Android Developers Blog",
+    "url": "http://feeds.feedburner.com/blogspot/hsDu",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Can't Bowl Can't Throw Cricket Show",
+    "url": "http://feeds.feedburner.com/cantbowlcantthrow",
+    "category": "sports",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Content Marketing Institute",
+    "url": "http://feeds.feedburner.com/cmi-content-marketing",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Core77",
+    "url": "http://feeds.feedburner.com/core77/blog",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Entrepreneur – Latest",
+    "url": "http://feeds.feedburner.com/entrepreneur/latest",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "FAIL Blog",
+    "url": "http://feeds.feedburner.com/failblog",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Fast Company",
+    "url": "http://feeds.feedburner.com/fastcompany/headlines",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Food52",
+    "url": "http://feeds.feedburner.com/food52-TheAandMBlog",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "From Head To Toe",
+    "url": "http://feeds.feedburner.com/frmheadtotoe",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "I Can Has Cheezburger?",
+    "url": "http://feeds.feedburner.com/icanhascheezburger",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Metal Injection",
+    "url": "http://feeds.feedburner.com/metalinjection",
+    "category": "culture",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Marketo Marketing blog ",
+    "url": "http://feeds.feedburner.com/modernb2bmarketing",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "The Oatmeal - Comics by Matthew Inman",
+    "url": "http://feeds.feedburner.com/oatmealfeed",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "PlayStation.Blog",
+    "url": "http://feeds.feedburner.com/psblog",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Sachin Rekhi's Blog",
+    "url": "http://feeds.feedburner.com/sachinrekhiblog",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Software Engineering Radio - The Podcast for Professional Software Developers",
+    "url": "http://feeds.feedburner.com/se-radio",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Moz",
+    "url": "http://feeds.feedburner.com/seomoz",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Serious Eats: Recipes",
+    "url": "http://feeds.feedburner.com/seriouseats/recipes",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Smart Passive Income",
+    "url": "http://feeds.feedburner.com/smartpassiveincome",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "smitten kitchen",
+    "url": "http://feeds.feedburner.com/smittenkitchen",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Speedhunters",
+    "url": "http://feeds.feedburner.com/speedhunters",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "The Points Guy Articles",
+    "url": "http://feeds.feedburner.com/thepointsguy",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "the TV addict",
+    "url": "http://feeds.feedburner.com/thetvaddict/AXob",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "UX Movement",
+    "url": "http://feeds.feedburner.com/uxmovement",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Yanko Design",
+    "url": "http://feeds.feedburner.com/yankodesign",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Scott Hanselman's Blog",
+    "url": "http://feeds.hanselman.com/ScottHanselman",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "IGN Articles",
+    "url": "http://feeds.ign.com/ign/all",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Wise Bread",
+    "url": "http://feeds.killeraces.com/wisebread",
+    "category": "economy",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Mashable",
+    "url": "http://feeds.mashable.com/Mashable",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "SlashGear",
+    "url": "http://feeds.slashgear.com/slashgear",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "the memory palace",
+    "url": "http://feeds.thememorypalace.us/thememorypalace",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Radiolab",
+    "url": "http://feeds.wnyc.org/radiolab",
+    "category": "science",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Phandroid",
+    "url": "http://feeds2.feedburner.com/AndroidPhoneFans",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Everything Everywhere",
+    "url": "http://feeds2.feedburner.com/EverythingEverywhere/",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "First Round Review",
+    "url": "http://firstround.com/review/feed.xml",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Engineering – The GitHub Blog",
+    "url": "http://githubengineering.com/atom.xml",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Google Online Security Blog",
+    "url": "http://googleonlinesecurity.blogspot.com/atom.xml",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Google AI Blog",
+    "url": "http://googleresearch.blogspot.com/atom.xml",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Guy Kawasaki",
+    "url": "http://guykawasaki.com/feed/",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Krebs on Security",
+    "url": "http://krebsonsecurity.com/feed/",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Spotify Engineering",
+    "url": "http://labs.spotify.com/feed/",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Magenta",
+    "url": "http://magenta.tensorflow.org/feed.xml",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Oh Happy Day!",
+    "url": "http://ohhappyday.com/feed/",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "PHD Comics",
+    "url": "http://phdcomics.com/gradfeed.php",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Seth Godin's Blog ",
+    "url": "http://sethgodin.typepad.com/seths_blog/atom.xml",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Steve Blank",
+    "url": "http://steveblank.com/feed/",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "The Growth Show",
+    "url": "http://thegrowthshow.hubspot.libsynpro.com/",
+    "category": "economy",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Threatpost",
+    "url": "http://threatpost.com/feed",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "VentureBeat",
+    "url": "http://venturebeat.com/feed/",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Psychology Blog",
+    "url": "http://www.all-about-psychology.com/psychology.xml",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Brasil Wire",
+    "url": "http://www.brasilwire.com/feed/",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Convince and Convert ",
+    "url": "http://www.convinceandconvert.com/feed/",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Dinner: A Love Story",
+    "url": "http://www.dinneralovestory.com/feed/",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Forbes - Entrepreneurs",
+    "url": "http://www.forbes.com/entrepreneurs/index.xml",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "HistoryNet",
+    "url": "http://www.historynet.com/feed",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Interior Design Ideas",
+    "url": "http://www.home-designing.com/feed",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Love and Lemons",
+    "url": "http://www.loveandlemons.com/feed/",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Product Hunt — The best new products, every day",
+    "url": "http://www.producthunt.com/feed",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Quanta Magazine",
+    "url": "http://www.quantamagazine.org/feed/",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Quick Sprout",
+    "url": "http://www.quicksprout.com/feed/",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Schneier on Security",
+    "url": "http://www.schneier.com/blog/index.rdf",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "SharpBrains",
+    "url": "http://www.sharpbrains.com/feed/",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Shutterbean",
+    "url": "http://www.shutterbean.com/feed/",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "www.theregister.com - Articles",
+    "url": "http://www.theregister.co.uk/security/headlines.atom",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "9to5Mac",
+    "url": "https://9to5mac.com/feed",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "الشرق الأوسط",
+    "url": "https://aawsat.com/feed",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "A Beautiful Mess",
+    "url": "https://abeautifulmess.com/feed",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "GitLab",
+    "url": "https://about.gitlab.com/atom.xml",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Aestas Book Blog",
+    "url": "https://aestasbookblog.com/feed/",
+    "category": "culture",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Afford Anything®",
+    "url": "https://affordanything.com/feed/",
+    "category": "economy",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "اندبندنت عربية",
+    "url": "https://alikhbariya.net/feeds/sources/015f1c27-1e52-4bd9-8359-40f9e3da4910.xml",
+    "category": "world",
+    "country": null,
+    "lang": "ar",
+    "pipeline": "general"
+  },
+  {
+    "name": "الحرة",
+    "url": "https://alikhbariya.net/feeds/sources/0a01f2ab-c9f2-4ce5-a6e7-6c1e0fe8a7e9.xml",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "عالم التقنية",
+    "url": "https://alikhbariya.net/feeds/sources/4e240c64-9b3f-4b11-a725-4a1114b9fd2b.xml",
+    "category": "world",
+    "country": "السعودية",
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "يورونيوز عربي",
+    "url": "https://alikhbariya.net/feeds/sources/7d02e6ac-19d7-40f8-b3dc-f868fa79ed32.xml",
+    "category": "world",
+    "country": null,
+    "lang": "ar",
+    "pipeline": "general"
+  },
+  {
+    "name": "نون بوست",
+    "url": "https://alikhbariya.net/feeds/sources/7d246b7a-398a-4807-8831-71d2134874c1.xml",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "موزاييك إف إم",
+    "url": "https://alikhbariya.net/feeds/sources/8c05d09d-1d37-4c04-a5f1-fb178eb9c49c.xml",
+    "category": "world",
+    "country": "تونس",
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "الصباح المغربية",
+    "url": "https://alikhbariya.net/feeds/sources/9df805b6-1e61-4414-b2cf-09c43f16ff71.xml",
+    "category": "world",
+    "country": "المغرب",
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "القدس العربي",
+    "url": "https://alikhbariya.net/feeds/sources/ba242115-5d30-4e48-9562-12c462f01111.xml",
+    "category": "world",
+    "country": "فلسطين",
+    "lang": "ar",
+    "pipeline": "general"
+  },
+  {
+    "name": "النهار اللبنانية",
+    "url": "https://alikhbariya.net/feeds/sources/bb738d6c-83ed-4840-ae2b-217855abc379.xml",
+    "category": "world",
+    "country": "لبنان",
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "العربي الجديد",
+    "url": "https://alikhbariya.net/feeds/sources/f51d6e12-4518-4c15-9a3c-cd43dd8b8f94.xml",
+    "category": "world",
+    "country": null,
+    "lang": "ar",
+    "pipeline": "general"
+  },
+  {
+    "name": "A List Apart: The Full Feed",
+    "url": "https://alistapart.com/main/feed/",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Android Community",
+    "url": "https://androidcommunity.com/feed/",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Axios",
+    "url": "https://api.axios.com/feed/",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "The Atomic Birdhouse",
+    "url": "https://atomicbird.com/index.xml",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Augmented Code",
+    "url": "https://augmentedcode.io/feed/",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "AVC",
+    "url": "https://avc.com/feed/",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "The Bad Crypto Podcast",
+    "url": "https://badcryptopodcast.com/feed/",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Benoit Pasquier",
+    "url": "https://benoitpasquier.com/index.xml",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Better Chess",
+    "url": "https://betterchess.net/feed/",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Bitcoin Audible",
+    "url": "https://bitcoinaudible.com/feed/",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Engineering – The Asana Blog",
+    "url": "https://blog.asana.com/category/eng/feed/",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Ethereum Foundation Blog",
+    "url": "https://blog.ethereum.org/feed.xml",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Company | The JetBrains Blog",
+    "url": "https://blog.jetbrains.com/blog/feed",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "The JetBrains Blog",
+    "url": "https://blog.jetbrains.com/feed",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Java, SQL and jOOQ.",
+    "url": "https://blog.jooq.org/feed",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Kraken Blog",
+    "url": "https://blog.kraken.com/feed/",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Machine Learning Blog | ML@CMU | Carnegie Mellon University",
+    "url": "https://blog.ml.cmu.edu/feed/",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Flurries of latent creativity - Stripe CTO blog",
+    "url": "https://blog.singleton.io/index.xml",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "BOOK RIOT",
+    "url": "https://bookriot.com/feed/",
+    "category": "culture",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Both Sides of the Table - Medium",
+    "url": "https://bothsidesofthetable.com/feed",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "The best vintage and classic cars for sale online | Bring a Trailer",
+    "url": "https://bringatrailer.com/feed/",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Centsational Style",
+    "url": "https://centsationalstyle.com/feed/",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "The Citizen",
+    "url": "https://citizen.co.za/feed/",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Chocolate & Zucchini",
+    "url": "https://cnz.to/feed/",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Etsy Engineering | Code as Craft",
+    "url": "https://codeascraft.com/feed/atom/",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "The Sunday Wisdom",
+    "url": "https://coffeeandjunk.substack.com/feed",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "CryptoPotato",
+    "url": "https://cryptopotato.com/feed/",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "CSS-Tricks",
+    "url": "https://css-tricks.com/feed/",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "The Cynical Developer",
+    "url": "https://cynicaldeveloper.com/feed/podcast",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Dan Luu",
+    "url": "https://danluu.com/atom.xml",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Daring Fireball",
+    "url": "https://daringfireball.net/feeds/main",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "David Walsh Blog",
+    "url": "https://davidwalsh.name/feed",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Deadline",
+    "url": "https://deadline.com/feed/",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "DeepMind ",
+    "url": "https://deepmind.com/blog/feed/basic/",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Design MilkArchitecture, Architectural Designs, and House Designs | Design Milk",
+    "url": "https://design-milk.com/category/architecture/feed/",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Design MilkInterior Design Ideas for Your Modern Home | Design Milk",
+    "url": "https://design-milk.com/category/interior-design/feed/",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Atlassian Developer Blog",
+    "url": "https://developer.atlassian.com/blog/feed.xml",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Nvidia Developer Blog",
+    "url": "https://developer.nvidia.com/blog/feed",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Uber Engineering Blog",
+    "url": "https://eng.uber.com/feed/",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Spotify Engineering",
+    "url": "https://engineering.atspotify.com/feed/",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Engineering at Meta",
+    "url": "https://engineering.fb.com/feed/",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Eric Jang",
+    "url": "https://evjang.com/feed",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "InfoQ",
+    "url": "https://feed.infoq.com",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Essential Tennis Podcast - Instruction, Lessons, Tips",
+    "url": "https://feed.podbean.com/essentialtennis/feed.xml",
+    "category": "sports",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Afford Anything®",
+    "url": "https://feeds.feedburner.com/AffordAnythingFeed",
+    "category": "economy",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "The Android Arsenal",
+    "url": "https://feeds.feedburner.com/Android_Arsenal",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "BMWBLOG",
+    "url": "https://feeds.feedburner.com/BmwBlog",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "CSS-Tricks",
+    "url": "https://feeds.feedburner.com/CssTricks",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Digital Photography School",
+    "url": "https://feeds.feedburner.com/DigitalPhotographySchool",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Frugalwoods",
+    "url": "https://feeds.feedburner.com/Frugalwoods",
+    "category": "economy",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "IrishCentral.com - Top Stories",
+    "url": "https://feeds.feedburner.com/IrishCentral",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "JUST™ Creative",
+    "url": "https://feeds.feedburner.com/JustCreativeDesignBlog",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Startup Stories - Mixergy",
+    "url": "https://feeds.feedburner.com/Mixergy-main-podcast",
+    "category": "economy",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Big Think",
+    "url": "https://feeds.feedburner.com/bigthink/main",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Coding Horror",
+    "url": "https://feeds.feedburner.com/codinghorror",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Dan Carlin's Hardcore History",
+    "url": "https://feeds.feedburner.com/dancarlin/history?format=xml",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "IrishExaminer.com",
+    "url": "https://feeds.feedburner.com/ietopstories",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Into The Gloss - Beauty Tips, Trends, And Product Reviews",
+    "url": "https://feeds.feedburner.com/intothegloss/oqoU",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Martin Kleppmann's blog",
+    "url": "https://feeds.feedburner.com/martinkl?format=xml",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "OpIndia",
+    "url": "https://feeds.feedburner.com/opindia",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Scott H Young",
+    "url": "https://feeds.feedburner.com/scotthyoung/HAHx",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "VentureBeat",
+    "url": "https://feeds.feedburner.com/venturebeat/SZYF",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Perpetual Chess Podcast",
+    "url": "https://feeds.megaphone.fm/BLU4811105299",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "30 for 30 Podcasts",
+    "url": "https://feeds.megaphone.fm/ESP5765452710",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Switch Hit Podcast",
+    "url": "https://feeds.megaphone.fm/ESP9247246951",
+    "category": "sports",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "You Must Remember This",
+    "url": "https://feeds.megaphone.fm/YMRT7068253588",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "The Clark Howard Podcast",
+    "url": "https://feeds.megaphone.fm/clarkhoward",
+    "category": "economy",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Darknet Diaries",
+    "url": "https://feeds.megaphone.fm/darknetdiaries",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Hacking Humans",
+    "url": "https://feeds.megaphone.fm/hacking-humans",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Listen Money Matters - Free your inner financial badass. All the stuff you should know about personal finance.",
+    "url": "https://feeds.megaphone.fm/listen-money-matters",
+    "category": "economy",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Reply All",
+    "url": "https://feeds.megaphone.fm/replyall",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "So Money with Farnoosh Torabi",
+    "url": "https://feeds.megaphone.fm/somoney",
+    "category": "economy",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "The Stacking Benjamins Show",
+    "url": "https://feeds.megaphone.fm/stacking-benjamins",
+    "category": "economy",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "The Vergecast",
+    "url": "https://feeds.megaphone.fm/vergecast",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Planet Money",
+    "url": "https://feeds.npr.org/510289/podcast.xml",
+    "category": "economy",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Invisibilia",
+    "url": "https://feeds.npr.org/510307/podcast.xml",
+    "category": "science",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Hidden Brain",
+    "url": "https://feeds.npr.org/510308/podcast.xml",
+    "category": "science",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "How I Built This with Guy Raz",
+    "url": "https://feeds.npr.org/510313/podcast.xml",
+    "category": "economy",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Throughline",
+    "url": "https://feeds.npr.org/510333/podcast.xml",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Fragmented - AI Developer Podcast",
+    "url": "https://feeds.simplecast.com/LpAGSLnY",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "The Stack Overflow Podcast",
+    "url": "https://feeds.simplecast.com/XA_851k3",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Developer Tea",
+    "url": "https://feeds.simplecast.com/dLRotFGk",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Hanselminutes with Scott Hanselman",
+    "url": "https://feeds.simplecast.com/gvtxUiIf",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Bitcoin & Crypto Trading: Ledger Cast",
+    "url": "https://feeds.simplecast.com/j5Cx9jps",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "EconTalk",
+    "url": "https://feeds.simplecast.com/wgl4xEgL",
+    "category": "economy",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "The Bitcoin Podcast",
+    "url": "https://feeds.simplecast.com/xCQr3ykc",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Sawbones: A Marital Tour of Misguided Medicine",
+    "url": "https://feeds.simplecast.com/y1LF_sn2",
+    "category": "science",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "All About Android (Audio)",
+    "url": "https://feeds.twit.tv/aaa.xml",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "FLOSS Weekly (Audio)",
+    "url": "https://feeds.twit.tv/floss.xml",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Budgets Are Sexy",
+    "url": "https://feeds2.feedburner.com/budgetsaresexy",
+    "category": "economy",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "/Film",
+    "url": "https://feeds2.feedburner.com/slashfilm",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Blog on Feld Thoughts",
+    "url": "https://feld.com/archives/tag/blog/feed",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Feld Thoughts",
+    "url": "https://feld.com/feed",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "FlowingData",
+    "url": "https://flowingdata.com/feed",
+    "category": "science",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Fortune | FORTUNE",
+    "url": "https://fortune.com/feed",
+    "category": "economy",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "from",
+    "url": "https://from",
+    "category": "world",
+    "country": "",
+    "lang": "ar",
+    "pipeline": "general"
+  },
+  {
+    "name": "Farnam Street",
+    "url": "https://fs.blog/feed/",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "The singularity is nearer",
+    "url": "https://geohot.github.io/blog/feed.xml",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "The GitHub Blog",
+    "url": "https://github.blog/feed/",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Green Kitchen Stories",
+    "url": "https://greenkitchenstories.com/feed/",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Blog – Hackaday",
+    "url": "https://hackaday.com/blog/feed/",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Handstand Sam",
+    "url": "https://handstandsam.com/feed/",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "INCRYPTED",
+    "url": "https://incrypted.net/feed/",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Indian Meme Templates",
+    "url": "https://indianmemetemplates.com/feed/",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Indie Games Plus",
+    "url": "https://indiegamesplus.com/feed",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "In My Own Style",
+    "url": "https://inmyownstyle.com/feed",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Instagram Engineering - Medium",
+    "url": "https://instagram-engineering.com/feed",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "500px",
+    "url": "https://iso.500px.com/feed/",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Jake Wharton",
+    "url": "https://jakewharton.com/atom.xml",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Jay Alammar",
+    "url": "https://jalammar.github.io/feed.xml",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Japan Today",
+    "url": "https://japantoday.com/feed",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Jornal de Brasília",
+    "url": "https://jornaldebrasilia.com.br/feed/",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Julia Evans",
+    "url": "https://jvns.ca/atom.xml",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Spotify Engineering",
+    "url": "https://labs.spotify.com/feed/",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Irrational Exuberance",
+    "url": "https://lethain.com/feeds/",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Lichess's Blog",
+    "url": "https://lichess.org/blog.atom",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Lil’Log",
+    "url": "https://lilianweng.github.io/lil-log/feed.xml",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Malicious Life",
+    "url": "https://malicious.life/feed/podcast/",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "BLOG POSTS – Mark Avery",
+    "url": "https://markavery.info/blog/feed/",
+    "category": "science",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Martin Fowler",
+    "url": "https://martinfowler.com/feed.atom",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "The Airtable Engineering Blog",
+    "url": "https://medium.com/feed/airtable-eng",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Android Developers - Medium",
+    "url": "https://medium.com/feed/androiddevelopers",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Better Programming - Medium",
+    "url": "https://medium.com/feed/better-programming",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "BuyUcoin Talks - Medium",
+    "url": "https://medium.com/feed/buyucoin-talks",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "HackerNoon.com - Medium",
+    "url": "https://medium.com/feed/hackernoon",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Medium Engineering - Medium",
+    "url": "https://medium.com/feed/medium-eng",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Android in MindOrks on Medium",
+    "url": "https://medium.com/feed/mindorks/tagged/android",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Pinterest Engineering Blog - Medium",
+    "url": "https://medium.com/feed/pinterest-engineering",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "The Black Box of Product Management - Medium",
+    "url": "https://medium.com/feed/the-black-box-of-product-management",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Millennial Money",
+    "url": "https://millennialmoney.com/feed/",
+    "category": "economy",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Mobile A11y",
+    "url": "https://mobilea11y.com/index.xml",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Money Saving Mom®",
+    "url": "https://moneysavingmom.com/feed/",
+    "category": "economy",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "MyWifeQuitHerJob.com",
+    "url": "https://mywifequitherjob.com/feed/",
+    "category": "economy",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Ness Labs",
+    "url": "https://nesslabs.com/feed",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "R7 - Notícias",
+    "url": "https://noticias.r7.com/feed.xml",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Oblivious Investor",
+    "url": "https://obliviousinvestor.com/feed/",
+    "category": "economy",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Ole Begemann",
+    "url": "https://oleb.net/blog/atom.xml",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "PetaPixel",
+    "url": "https://petapixel.com/feed/",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "ProAndroidDev - Medium",
+    "url": "https://proandroiddev.com/feed",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Swarajya",
+    "url": "https://prod-qt-images.s3.amazonaws.com/production/swarajya/feed.xml",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Product Life",
+    "url": "https://productlife.to/feed",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "PyTorch",
+    "url": "https://pytorch.org/feed",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "ReadWrite",
+    "url": "https://readwrite.com/feed/",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Robert Heaton | Blog",
+    "url": "https://robertheaton.com/feed.xml",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Saket Narayan",
+    "url": "https://saket.me/feed/",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Shopify Engineering - Shopify Engineering",
+    "url": "https://shopifyengineering.myshopify.com/blogs/engineering.atom",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Singularity Hub",
+    "url": "https://singularityhub.com/feed/",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Slack Design",
+    "url": "https://slack.design/feed/",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Engineering at Slack",
+    "url": "https://slack.engineering/feed",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Sophie Alpert",
+    "url": "https://sophiebits.com/atom.xml",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Stack Overflow Blog",
+    "url": "https://stackoverflow.blog/feed/",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Steve Blank",
+    "url": "https://steveblank.com/feed/",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Stuck in Customs",
+    "url": "https://stuckincustoms.com/feed/",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "ТЕЛЕГРАФ - последние новости Украины и мира",
+    "url": "https://telegraf.com.ua/yandex-feed/",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "The Beauty Look Book",
+    "url": "https://thebeautylookbook.com/feed",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "The Bloggess",
+    "url": "https://thebloggess.com/feed/",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "The College Investor",
+    "url": "https://thecollegeinvestor.com/feed/",
+    "category": "economy",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Environment + Energy – The Conversation",
+    "url": "https://theconversation.com/au/environment/articles.atom",
+    "category": "science",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "The Decision Lab",
+    "url": "https://thedecisionlab.com/feed/",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "The Inspired Room",
+    "url": "https://theinspiredroom.net/feed/",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "The Next Web",
+    "url": "https://thenextweb.com/feed/",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "ThePrint",
+    "url": "https://theprint.in/feed/",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "The Blog of Author Tim Ferriss",
+    "url": "https://tim.blog/feed/",
+    "category": "economy",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "tyler.io",
+    "url": "https://tyler.io/feed/",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Usability Geek",
+    "url": "https://usabilitygeek.com/feed/",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "UX Collective - Medium",
+    "url": "https://uxdesign.cc/feed",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "UXmatters",
+    "url": "https://uxmatters.com/index.xml",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "UX Movement",
+    "url": "https://uxmovement.com/feed/",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "UX Planet",
+    "url": "https://uxplanet.org/feed",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Variety",
+    "url": "https://variety.com/feed/",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Вести.ua",
+    "url": "https://vesti.ua/feeds/partners",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "web.dev",
+    "url": "https://web.dev/feed.xml",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "WePay Engineering Blog",
+    "url": "https://wecode.wepay.com/feed.xml",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Well Kept Wallet",
+    "url": "https://wellkeptwallet.com/feed/",
+    "category": "economy",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Wokeread",
+    "url": "https://wokeread.home.blog/feed/",
+    "category": "culture",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Active Wild",
+    "url": "https://www.activewild.com/feed/",
+    "category": "science",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "الغد",
+    "url": "https://www.alghad.com/feed",
+    "category": "world",
+    "country": "الأردن",
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Android Authority",
+    "url": "https://www.androidauthority.com/feed",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Atlas Obscura - Latest Articles and Places",
+    "url": "https://www.atlasobscura.com/feeds/latest",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "BikeEXIF",
+    "url": "https://www.bikeexif.com/feed",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "The Bitcoin Knowledge Podcast",
+    "url": "https://www.bitcoin.kn/feed/podcast/",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Movies",
+    "url": "https://www.bleedingcool.com/movies/feed/",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "TV",
+    "url": "https://www.bleedingcool.com/tv/feed/",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Car Body Design",
+    "url": "https://www.carbodydesign.com/feed/",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Carscoops",
+    "url": "https://www.carscoops.com/feed/",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Chessable Blog",
+    "url": "https://www.chessable.com/blog/feed/",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Code Wall",
+    "url": "https://www.codewall.co.uk/feed/",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "CryptoNinjas",
+    "url": "https://www.cryptoninjas.net/feed/",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Cult of Android",
+    "url": "https://www.cultofandroid.com/feed",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Cult of Mac",
+    "url": "https://www.cultofmac.com/feed",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "https://www.cyanogenmods.org/feed",
+    "url": "https://www.cyanogenmods.org/feed",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "David Lebovitz",
+    "url": "https://www.davidlebovitz.com/feed/",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Dawn",
+    "url": "https://www.dawn.com/feeds/home",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "decoist",
+    "url": "https://www.decoist.com/feed/",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "architecture archives | designboom | architecture & design magazine",
+    "url": "https://www.designboom.com/architecture/feed/",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "design archives | designboom | architecture & design magazine",
+    "url": "https://www.designboom.com/design/feed",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Interior design | Dezeen",
+    "url": "https://www.dezeen.com/interiors/feed/",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "الشروق",
+    "url": "https://www.echoroukonline.com/feed",
+    "category": "world",
+    "country": "الجزائر",
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "The Escapist",
+    "url": "https://www.escapistmagazine.com/v2/feed/",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "The One And Only Blog Of Joe Fabisevich",
+    "url": "https://www.fabisevi.ch/feed.xml",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Financial Samurai",
+    "url": "https://www.financialsamurai.com/feed/",
+    "category": "economy",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "FirstShowing.net",
+    "url": "https://www.firstshowing.net/feed/",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Forbes - Leadership",
+    "url": "https://www.forbes.com/leadership/feed/",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "GameSpot - All Content",
+    "url": "https://www.gamespot.com/feeds/mashup/",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Good Financial Cents®",
+    "url": "https://www.goodfinancialcents.com/feed/",
+    "category": "economy",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Grammarly Blog",
+    "url": "https://www.grammarly.com/blog/feed/",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "How Sweet Eats",
+    "url": "https://www.howsweeteats.com/feed/",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "How-To Geek",
+    "url": "https://www.howtogeek.com/feed/",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "huffingtonpost.es",
+    "url": "https://www.huffingtonpost.es/feeds/index.xml",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "IKEA Hackers",
+    "url": "https://www.ikeahackers.net/feed",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "IndieWire",
+    "url": "https://www.indiewire.com/feed",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "The Intercom Blog",
+    "url": "https://www.intercom.com/blog/feed",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "JansattaJansatta",
+    "url": "https://www.jansatta.com/feed/",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Joel on Software",
+    "url": "https://www.joelonsoftware.com/feed/",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Learn To Trade The Market",
+    "url": "https://www.learntotradethemarket.com/feed",
+    "category": "economy",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Light Stalking",
+    "url": "https://www.lightstalking.com/feed/",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Liz Marie Blog",
+    "url": "https://www.lizmarieblog.com/feed/",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Loksattaदेश-विदेश – Loksatta",
+    "url": "https://www.loksatta.com/desh-videsh/feed/",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "The Loop",
+    "url": "https://www.loopinsight.com/feed",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Love and Olive Oil",
+    "url": "https://www.loveandoliveoil.com/feed",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "MacStories",
+    "url": "https://www.macstories.net/feed",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Makeup and Beauty Blog | Makeup Reviews, Swatches and How-To Makeup",
+    "url": "https://www.makeupandbeautyblog.com/feed/",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "MakeUseOf",
+    "url": "https://www.makeuseof.com/feed/",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Making Sense Of Cents",
+    "url": "https://www.makingsenseofcents.com/feed",
+    "category": "economy",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Merdeka.com",
+    "url": "https://www.merdeka.com/feed/",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Mind the Product",
+    "url": "https://www.mindtheproduct.com/feed/",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Money Crashers",
+    "url": "https://www.moneycrashers.com/feed/",
+    "category": "economy",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Money Under 30",
+    "url": "https://www.moneyunder30.com/feed",
+    "category": "economy",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Moneyweb",
+    "url": "https://www.moneyweb.co.za/feed/",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "NerdWallet",
+    "url": "https://www.nerdwallet.com/blog/feed/",
+    "category": "economy",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "NewInBooks",
+    "url": "https://www.newinbooks.com/feed/",
+    "category": "culture",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Travel Blog -",
+    "url": "https://www.nomadicmatt.com/travel-blog/feed/",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Blog | Nature | PBS",
+    "url": "https://www.pbs.org/wnet/nature/blog/feed/",
+    "category": "science",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Penny Arcade",
+    "url": "https://www.penny-arcade.com/feed",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Perfect Tennis",
+    "url": "https://www.perfect-tennis.com/feed/",
+    "category": "sports",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "POPSUGAR Beauty",
+    "url": "https://www.popsugar.com/beauty/feed",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "POPSUGAR Fashion",
+    "url": "https://www.popsugar.com/fashion/feed",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Prakati India",
+    "url": "https://www.prakati.in/feed/",
+    "category": "science",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Product Hunt — The best new products, every day",
+    "url": "https://www.producthunt.com/feed",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Analog(ue)",
+    "url": "https://www.relay.fm/analogue/feed",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Clockwise",
+    "url": "https://www.relay.fm/clockwise/feed",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Under the Radar",
+    "url": "https://www.relay.fm/radar/feed",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Rocket",
+    "url": "https://www.relay.fm/rocket/feed",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "RMF24.pl",
+    "url": "https://www.rmf24.pl/feed",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "SavingAdvice.com Blog",
+    "url": "https://www.savingadvice.com/feed/",
+    "category": "economy",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Side Hustle Nation",
+    "url": "https://www.sidehustlenation.com/feed",
+    "category": "economy",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Articles on Smashing Magazine — For Web Designers And Developers",
+    "url": "https://www.smashingmagazine.com/feed",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Articles on Smashing Magazine — For Web Designers And Developers",
+    "url": "https://www.smashingmagazine.com/feed/",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Latest from Space.com",
+    "url": "https://www.space.com/feeds/all",
+    "category": "science",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "The42",
+    "url": "https://www.the42.ie/feed/",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Programming Archives - The Crazy Programmer",
+    "url": "https://www.thecrazyprogrammer.com/category/programming/feed",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Cricket – The Roar",
+    "url": "https://www.theroar.com.au/cricket/feed/",
+    "category": "sports",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "The South African",
+    "url": "https://www.thesouthafrican.com/feed/",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "TheTruthAboutCars",
+    "url": "https://www.thetruthaboutcars.com/feed/",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "The Wildlife India",
+    "url": "https://www.thewildlifeindia.com/feeds/posts/default",
+    "category": "science",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Travel Dudes",
+    "url": "https://www.traveldudes.com/feed/",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Trendir",
+    "url": "https://www.trendir.com/feed/",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "تونس الرقمية",
+    "url": "https://www.tunisienumerique.com/feed/",
+    "category": "world",
+    "country": "تونس",
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Unite.AI",
+    "url": "https://www.unite.ai/feed/",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Young House Love",
+    "url": "https://www.younghouselove.com/feed/",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Chess Talk",
+    "url": "https://www.youtube.com/feeds/videos.xml?channel_id=UC6HDXr-sNPnWLF_Q-y3KduA",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "nature video",
+    "url": "https://www.youtube.com/feeds/videos.xml?channel_id=UC7c8mE90qCtu11z47U0KErg",
+    "category": "science",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "ChessBase India",
+    "url": "https://www.youtube.com/feeds/videos.xml?channel_id=UCIsEhwBMPkRHsEgqYAPQHsA",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "droidcon SF",
+    "url": "https://www.youtube.com/feeds/videos.xml?channel_id=UCKubKoe1CBw_-n_GXetEQbg",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "agadmator's Chess Channel",
+    "url": "https://www.youtube.com/feeds/videos.xml?channel_id=UCL5YbN5WLFD8dLIegT5QAbA",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Love Nature",
+    "url": "https://www.youtube.com/feeds/videos.xml?channel_id=UCRZPkuHwaoKwTP3CYPdVldg",
+    "category": "science",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Cricbuzz",
+    "url": "https://www.youtube.com/feeds/videos.xml?channel_id=UCSRQXk5yErn4e14vN76upOw",
+    "category": "sports",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Explore Oceans",
+    "url": "https://www.youtube.com/feeds/videos.xml?channel_id=UCSyg9cb3Iq-NtlbxqNB9wGw",
+    "category": "science",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Yannic Kilcher",
+    "url": "https://www.youtube.com/feeds/videos.xml?channel_id=UCZHmQk67mSJgfCCTn7xBfew",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Conservation International",
+    "url": "https://www.youtube.com/feeds/videos.xml?channel_id=UCam5sCp6mzGBcn8ZBB2RBJg",
+    "category": "science",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Two Minute Papers",
+    "url": "https://www.youtube.com/feeds/videos.xml?channel_id=UCbfYPyITQ-7l4upoX8nvctg",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Real Wild",
+    "url": "https://www.youtube.com/feeds/videos.xml?channel_id=UCbq-4OJxnziD3awH-aTezeA",
+    "category": "science",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Nature on PBS",
+    "url": "https://www.youtube.com/feeds/videos.xml?channel_id=UCcBp_9YPyma4c3HTadmRJ3Q",
+    "category": "science",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "DeepLearningAI",
+    "url": "https://www.youtube.com/feeds/videos.xml?channel_id=UCcIXc5mJsHVYTZR1maL5l9w",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Pakistan Cricket",
+    "url": "https://www.youtube.com/feeds/videos.xml?channel_id=UCiWrjBhlICf_L_RK5y6Vrxw",
+    "category": "sports",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "National Geographic",
+    "url": "https://www.youtube.com/feeds/videos.xml?channel_id=UCpVm7bg6pXKo1Pr6k5kxG9A",
+    "category": "science",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Lesics",
+    "url": "https://www.youtube.com/feeds/videos.xml?channel_id=UCqZQJ4600a9wIfMPbYc60OQ",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "BBC Earth",
+    "url": "https://www.youtube.com/feeds/videos.xml?channel_id=UCwmZiChSryoWQCZMIQezgTg",
+    "category": "science",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Kotlin",
+    "url": "https://www.youtube.com/feeds/videos.xml?playlist_id=PLQ176FUIyIUa6SChjajjVc-LMzxWiz6dy",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Android Authority",
+    "url": "https://www.youtube.com/feeds/videos.xml?user=AndroidAuthority",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Apple",
+    "url": "https://www.youtube.com/feeds/videos.xml?user=Apple",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Architectural Digest",
+    "url": "https://www.youtube.com/feeds/videos.xml?user=ArchitecturalDigest",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Bloomberg Originals",
+    "url": "https://www.youtube.com/feeds/videos.xml?user=Bloomberg",
+    "category": "economy",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Bon Appétit",
+    "url": "https://www.youtube.com/feeds/videos.xml?user=BonAppetitDotCom",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "CNET",
+    "url": "https://www.youtube.com/feeds/videos.xml?user=CNETTV",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "TFIL (Traveling to EVERY COUNTRY in A-Z Order)",
+    "url": "https://www.youtube.com/feeds/videos.xml?user=ECastee",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "GaryVee",
+    "url": "https://www.youtube.com/feeds/videos.xml?user=GaryVaynerchuk",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Laura in the Kitchen",
+    "url": "https://www.youtube.com/feeds/videos.xml?user=LauraVitalesKitchen",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Serious Eats",
+    "url": "https://www.youtube.com/feeds/videos.xml?user=SeriousEats",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Sri Lanka Cricket",
+    "url": "https://www.youtube.com/feeds/videos.xml?user=TheOfficialSLC",
+    "category": "sports",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "The Verge",
+    "url": "https://www.youtube.com/feeds/videos.xml?user=TheVerge",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Android Developers",
+    "url": "https://www.youtube.com/feeds/videos.xml?user=androiddevelopers",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Binging with Babish",
+    "url": "https://www.youtube.com/feeds/videos.xml?user=bgfilms",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "cricket.com.au",
+    "url": "https://www.youtube.com/feeds/videos.xml?user=cricketaustraliatv",
+    "category": "sports",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "England & Wales Cricket Board",
+    "url": "https://www.youtube.com/feeds/videos.xml?user=ecbcricket",
+    "category": "sports",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Living Big In A Tiny House",
+    "url": "https://www.youtube.com/feeds/videos.xml?user=livingbigtinyhouse",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "MacRumors",
+    "url": "https://www.youtube.com/feeds/videos.xml?user=macrumors",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Marie Forleo",
+    "url": "https://www.youtube.com/feeds/videos.xml?user=marieforleo",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Marques Brownlee",
+    "url": "https://www.youtube.com/feeds/videos.xml?user=marquesbrownlee",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "SpaceX",
+    "url": "https://www.youtube.com/feeds/videos.xml?user=spacexchannel",
+    "category": "science",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "thechesswebsite",
+    "url": "https://www.youtube.com/feeds/videos.xml?user=thechesswebsite",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Unbox Therapy",
+    "url": "https://www.youtube.com/feeds/videos.xml?user=unboxtherapy",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Chess.com",
+    "url": "https://www.youtube.com/feeds/videos.xml?user=wwwChesscom",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "YuckSauce",
+    "url": "https://yucksauce.com/feed/",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "Zarah Dominguez",
+    "url": "https://zarah.dev/feed.xml",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "ZebPay",
+    "url": "https://zebpay.com/feed/",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "zsmb.co",
+    "url": "https://zsmb.co/index.xml",
+    "category": "tech",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": "list",
+    "url": "https://list",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": " ",
+    "url": "https://globalvoices.org/-/world/caribbean/feed/feed/",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": " ",
+    "url": "https://globalvoices.org/-/world/central-asia-caucasus/feed/feed/",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": " ",
+    "url": "https://globalvoices.org/-/world/east-asia/feed/feed/",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": " ",
+    "url": "https://globalvoices.org/-/world/eastern-central-europe/feed/feed/",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": " ",
+    "url": "https://globalvoices.org/-/world/latin-america/feed/feed/",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": " ",
+    "url": "https://globalvoices.org/-/world/north-america/feed/feed/",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": " ",
+    "url": "https://globalvoices.org/-/world/oceania/feed/feed/",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": " ",
+    "url": "https://globalvoices.org/-/world/south-asia/feed/feed/",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": " ",
+    "url": "https://globalvoices.org/-/world/sub-saharan-africa/feed/feed/",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": " ",
+    "url": "https://globalvoices.org/-/world/middle-east-north-africa/feed/feed/",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": " ",
+    "url": "https://globalvoices.org/-/world/western-europe/feed/feed/",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": " ",
+    "url": "https://globalvoices.org/-/world/caribbean/anguilla/feed/feed/",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": " ",
+    "url": "https://globalvoices.org/-/world/caribbean/antigua-and-barbuda/feed/feed/",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": " ",
+    "url": "https://globalvoices.org/-/world/caribbean/aruba/feed/feed/",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": " ",
+    "url": "https://globalvoices.org/-/world/caribbean/bahamas/feed/feed/",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": " ",
+    "url": "https://globalvoices.org/-/world/caribbean/barbados/feed/feed/",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": " ",
+    "url": "https://globalvoices.org/-/world/caribbean/belize/feed/feed/",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": " ",
+    "url": "https://globalvoices.org/-/world/caribbean/bermuda/feed/feed/",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": " ",
+    "url": "https://globalvoices.org/-/world/caribbean/bonaire/feed/feed/",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": " ",
+    "url": "https://globalvoices.org/-/world/caribbean/british-virgin-islands/feed/feed/",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": " ",
+    "url": "https://globalvoices.org/-/world/caribbean/cayman-islands/feed/feed/",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": " ",
+    "url": "https://globalvoices.org/-/world/caribbean/curacao/feed/feed/",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": " ",
+    "url": "https://globalvoices.org/-/world/caribbean/dominica/feed/feed/",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": " ",
+    "url": "https://globalvoices.org/-/world/caribbean/french-guiana/feed/feed/",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": " ",
+    "url": "https://globalvoices.org/-/world/caribbean/grenada/feed/feed/",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": " ",
+    "url": "https://globalvoices.org/-/world/caribbean/guadeloupe/feed/feed/",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": " ",
+    "url": "https://globalvoices.org/-/world/caribbean/guyana/feed/feed/",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": " ",
+    "url": "https://globalvoices.org/-/world/caribbean/haiti/feed/feed/",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": " ",
+    "url": "https://globalvoices.org/-/world/caribbean/jamaica/feed/feed/",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": " ",
+    "url": "https://globalvoices.org/-/world/caribbean/martinique/feed/feed/",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": " ",
+    "url": "https://globalvoices.org/-/world/caribbean/montserrat/feed/feed/",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": " ",
+    "url": "https://globalvoices.org/-/world/caribbean/saint-lucia/feed/feed/",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": " ",
+    "url": "https://globalvoices.org/-/world/caribbean/st-barthelemy/feed/feed/",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": " ",
+    "url": "https://globalvoices.org/-/world/caribbean/st-eustatius/feed/feed/",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": " ",
+    "url": "https://globalvoices.org/-/world/caribbean/st-maarten/feed/feed/",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": " ",
+    "url": "https://globalvoices.org/-/world/caribbean/st-vincent-the-grenadines/feed/feed/",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": " ",
+    "url": "https://globalvoices.org/-/world/caribbean/stkitts-nevis/feed/feed/",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": " ",
+    "url": "https://globalvoices.org/-/world/caribbean/suriname/feed/feed/",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": " ",
+    "url": "https://globalvoices.org/-/world/caribbean/trinidad-tobago/feed/feed/",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": " ",
+    "url": "https://globalvoices.org/-/world/caribbean/turks-caicos-isl/feed/feed/",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": " ",
+    "url": "https://globalvoices.org/-/world/caribbean/us-virgin-islands/feed/feed/",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": " ",
+    "url": "https://globalvoices.org/-/world/central-asia-caucasus/afghanistan/feed/feed/",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": " ",
+    "url": "https://globalvoices.org/-/world/central-asia-caucasus/armenia/feed/feed/",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": " ",
+    "url": "https://globalvoices.org/-/world/central-asia-caucasus/azerbaijan/feed/feed/",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": " ",
+    "url": "https://globalvoices.org/-/world/central-asia-caucasus/georgia/feed/feed/",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": " ",
+    "url": "https://globalvoices.org/-/world/central-asia-caucasus/kazakhstan/feed/feed/",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": " ",
+    "url": "https://globalvoices.org/-/world/central-asia-caucasus/kyrgyzstan/feed/feed/",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": " ",
+    "url": "https://globalvoices.org/-/world/central-asia-caucasus/mongolia/feed/feed/",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": " ",
+    "url": "https://globalvoices.org/-/world/central-asia-caucasus/tajikistan/feed/feed/",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": " ",
+    "url": "https://globalvoices.org/-/world/central-asia-caucasus/turkmenistan/feed/feed/",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": " ",
+    "url": "https://globalvoices.org/-/world/central-asia-caucasus/uzbekistan/feed/feed/",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": " ",
+    "url": "https://globalvoices.org/-/world/east-asia/brunei/feed/feed/",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": " ",
+    "url": "https://globalvoices.org/-/world/east-asia/cambodia/feed/feed/",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": " ",
+    "url": "https://globalvoices.org/-/world/east-asia/china/feed/feed/",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": " ",
+    "url": "https://globalvoices.org/-/world/east-asia/hong-kong-china/feed/feed/",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": " ",
+    "url": "https://globalvoices.org/-/world/east-asia/indonesia/feed/feed/",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": " ",
+    "url": "https://globalvoices.org/-/world/east-asia/japan/feed/feed/",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": " ",
+    "url": "https://globalvoices.org/-/world/east-asia/laos/feed/feed/",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": " ",
+    "url": "https://globalvoices.org/-/world/east-asia/macau-china/feed/feed/",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": " ",
+    "url": "https://globalvoices.org/-/world/east-asia/malaysia/feed/feed/",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": " ",
+    "url": "https://globalvoices.org/-/world/east-asia/myanmar-burma/feed/feed/",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  },
+  {
+    "name": " ",
+    "url": "https://globalvoices.org/-/world/east-asia/north-korea/feed/feed/",
+    "category": "world",
+    "country": null,
+    "lang": "en",
+    "pipeline": "general"
+  }
+]

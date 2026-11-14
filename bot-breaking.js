@@ -1,5 +1,6 @@
 // WRLDLINE dedicated breaking-news desk. Separate from the 100 general-news feeds.
 const taxonomy=require("./taxonomy.js");
+const fs=require("fs");
 const URL=process.env.SUPABASE_URL,KEY=process.env.SUPABASE_SERVICE_ROLE_KEY;
 const HEADERS={apikey:KEY,Authorization:"Bearer "+KEY,"Content-Type":"application/json"};
 const GOOGLE=(domain,lang="ar")=>{
@@ -7,7 +8,7 @@ const GOOGLE=(domain,lang="ar")=>{
  return "https://news.google.com/rss/search?q="+encodeURIComponent(q)+"&hl="+(lang==="ar"?"ar&gl=SA&ceid=SA:ar":"en-US&gl=US&ceid=US:en");
 };
 // Telegram channels are public breaking desks; publisher RSS searches are constrained to explicit urgent markers.
-const FEEDS=[
+const STATIC_FEEDS=[
  {publisher:"الجزيرة الآن",type:"telegram",handle:"ajarabic_now",lang:"ar"},
  {publisher:"الجزيرة عاجل",type:"telegram",handle:"aljazeerabrk",lang:"ar"},
  {publisher:"الميادين عاجل",type:"telegram",handle:"almayadeen",lang:"ar"},
@@ -99,6 +100,7 @@ const FEEDS=[
  {publisher:"The Hill",url:GOOGLE("thehill.com","en"),lang:"en"},
  {publisher:"CTV News",url:GOOGLE("ctvnews.ca","en"),lang:"en"}
 ];
+let FEEDS=STATIC_FEEDS;
 // Validate the newly added source batch against the existing registry (publisher and host).
 const ADDED_SOURCE_HOSTS=["dw.com","trt.net.tr","arabic.euronews.com","aa.com.tr","independentarabia.com","aawsat.com","alquds.co.uk","news.un.org","swissinfo.ch","al-monitor.com","abcnews.go.com","nbcnews.com","cbsnews.com","npr.org","nytimes.com","usatoday.com","cnbc.com","news.sky.com","thehill.com","ctvnews.ca"];
 const ADDED_SOURCE_NAMES=["dw عربية","trt عربي","يورونيوز عربي","وكالة الأناضول العربية","إندبندنت عربية","الشرق الأوسط","القدس العربي","أخبار الأمم المتحدة عربي","سويس إنفو عربي","المونيتور عربي","abc news","nbc news","cbs news","npr","the new york times","usa today","cnbc","sky news","the hill","ctv news"];
@@ -156,6 +158,17 @@ async function collect(f){
 }
 async function main(){
  if(!URL||!KEY)throw new Error("Missing Supabase credentials");
+ try {
+  const catalog=JSON.parse(fs.readFileSync("./source-catalog.json","utf8"));
+  if(Array.isArray(catalog)&&catalog.length>=1000) {
+   const batchSize=250, start=(Math.floor(Date.now()/300000)*batchSize)%1000;
+   FEEDS=Array.from({length:batchSize},(_,i)=>{
+    const f=catalog[(start+i)%1000], u=new URL(f.url), target=u.hostname.replace(/^www\./,"")+u.pathname.split("/").filter(Boolean).slice(0,2).join("/");
+    const q="site:"+target+" (breaking OR \"just in\" OR عاجل) when:1h";
+    return {publisher:f.name,url:"https://news.google.com/rss/search?q="+encodeURIComponent(q)+"&hl="+(f.lang==="ar"?"ar&gl=SA&ceid=SA:ar":"en-US&gl=US&ceid=US:en")+"&src=wrldline-breaking-"+(start+i+1),lang:f.lang||"en",category:f.category,country:f.country};
+   });
+  }
+ } catch(error) { console.warn("SOURCE_CATALOG_UNAVAILABLE "+String(error).slice(0,160)); }
  let next=0;const results=new Array(FEEDS.length);async function worker(){while(next<FEEDS.length){const i=next++;results[i]=await collect(FEEDS[i]);}}await Promise.all(Array.from({length:18},worker));
  const summary={feeds:FEEDS.length,successful:results.filter(x=>x.ok).length,failed:results.filter(x=>!x.ok).length,alerts:results.reduce((n,x)=>n+x.count,0),raw_items:results.reduce((n,x)=>n+(x.raw||0),0),empty_sources:results.filter(x=>x.ok&&x.raw===0).map(x=>x.source),telegram:FEEDS.filter(x=>x.type==="telegram").length};
  console.log("BREAKING_SUMMARY "+JSON.stringify(summary));
