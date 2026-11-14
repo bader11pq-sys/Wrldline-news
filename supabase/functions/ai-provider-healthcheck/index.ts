@@ -51,6 +51,21 @@ async function callGonka(key:string){
  return {ok:true,model,auth_status:authStatus,models_available:ids.length,generation:"passed"};
 }
 
+async function callBazaarlink(key: string) {
+ const keyResponse=await fetch("https://api.bazaarlink.ai/v1/key",{headers:{"Authorization":"Bearer "+key},signal:AbortSignal.timeout(12000)});
+ if(!keyResponse.ok)throw new Error("BazaarLink key verification HTTP "+keyResponse.status);
+ const keyPayload=await keyResponse.json(),keyInfo=keyPayload?.data||keyPayload;
+ if(keyInfo?.is_management_key===true)throw new Error("BazaarLink management keys cannot be used for model inference.");
+ const model=Deno.env.get("BAZAARLINK_MODEL")||"auto:free";
+ const response=await fetch("https://api.bazaarlink.ai/v1/chat/completions",{method:"POST",headers:{"Authorization":"Bearer "+key,"Content-Type":"application/json","X-Free-Fallback":"false"},signal:AbortSignal.timeout(25000),body:JSON.stringify({model,messages:[{role:"system",content:"Return a valid JSON object only."},{role:"user",content:'Return exactly this JSON object: {"status":"ok"}'}],response_format:{type:"json_object"},temperature:0,max_tokens:80})});
+ if(!response.ok)throw new Error("BazaarLink inference HTTP "+response.status+": "+(await response.text()).slice(0,250));
+ const payload=await response.json(),raw=payload.choices?.[0]?.message?.content;
+ if(typeof raw!=="string"||!raw.trim())throw new Error("BazaarLink returned an empty test response.");
+ let parsed:any;try{parsed=JSON.parse(raw)}catch{throw new Error("BazaarLink did not return valid JSON.");}
+ if(parsed.status!=="ok")throw new Error("BazaarLink returned an unexpected test response.");
+ return {ok:true,model:payload.model||model,key_type:keyInfo?.is_free_tier===true?"free-tier":"standard",remaining_limit:typeof keyInfo?.limit_remaining==="number"?keyInfo.limit_remaining:undefined,key_source:Deno.env.get("Bazaarlink_API_Key")?"Bazaarlink_API_Key":"BAZAARLINK_API_KEY"};
+}
+
 async function callFirecrawl(key:string){
  const response=await fetch("https://api.firecrawl.dev/v2/scrape",{
   method:"POST",
@@ -104,6 +119,7 @@ Deno.serve(async(req:Request)=>{
   run("nvidia",Deno.env.get("NVIDIA_API_KEY") || null,callNvidia),
   run("openrouter",Deno.env.get("OPENROUTER_API_KEY") || null,callOpenRouter),
   run("gonka",Deno.env.get("GONKA_BROKER_API_KEY") || null,callGonka),
+  run("bazaarlink",Deno.env.get("Bazaarlink_API_Key") || Deno.env.get("BAZAARLINK_API_KEY") || null,callBazaarlink),
   run("firecrawl",Deno.env.get("FIRECRAWL_API_KEY") || null,callFirecrawl)
  ]);
  const configured=results.filter(x=>x.status!=="not_configured");
