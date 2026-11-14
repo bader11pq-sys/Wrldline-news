@@ -70,7 +70,7 @@ async function uploadSelectedMedia(){
 function resetForm(){
  $("articleForm").reset();$("articleId").value="";$("contentType").value="news";$("source").value="هيئة التحرير";$("source").readOnly=false;syncContentType();$("editorialStatus").value="published";$("isBreaking").checked=false;$("mediaType").value="image";$("mediaFile").value="";setMediaPreview("");$("saveButton").textContent=t("نشر الخبر","Publish story");
 }
-async function showSession(){await ensureDb();const {data:{session}}=await db.auth.getSession();const role=session?.user?.app_metadata?.role;const allowed=["editor","admin"].includes(role);$("loginPanel").classList.toggle("hidden",!!session);$("accessPanel").classList.toggle("hidden",!session||allowed);$("editorPanel").classList.toggle("hidden",!allowed);if(session&&allowed){$("userLabel").textContent=(session.user.email||"محرر مسجل")+" · "+role;await loadArticles();}else if(session){message("تم تسجيل الدخول، لكن الحساب لا يحمل دوراً تحريرياً موثوقاً.");}}
+async function showSession(){await ensureDb();const {data:{session}}=await db.auth.getSession();const role=session?.user?.app_metadata?.role;const allowed=["editor","admin"].includes(role);$("loginPanel").classList.toggle("hidden",!!session);$("accessPanel").classList.toggle("hidden",!session||allowed);$("editorPanel").classList.toggle("hidden",!allowed);if(session&&allowed){$("userLabel").textContent=(session.user.email||"محرر مسجل")+" · "+role;await loadArticles();await loadOpsDashboard();if(opsRefreshTimer)clearInterval(opsRefreshTimer);opsRefreshTimer=setInterval(()=>{if(!document.hidden)loadOpsDashboard();},60000);}else{if(opsRefreshTimer)clearInterval(opsRefreshTimer);opsRefreshTimer=null;}else if(session){message("تم تسجيل الدخول، لكن الحساب لا يحمل دوراً تحريرياً موثوقاً.");}}
 $("loginForm").addEventListener("submit",async e=>{e.preventDefault();message("جارٍ التحقق...");try{await ensureDb();const {error}=await db.auth.signInWithPassword({email:$("email").value.trim(),password:$("password").value});if(error){message("تعذر تسجيل الدخول: "+error.message);return;}message("تم تسجيل الدخول.");await showSession();}catch(error){message("حدث خطأ أثناء الاتصال بخدمة الدخول: "+(error?.message||String(error)));}});
 $("logoutButton").addEventListener("click",async()=>{try{await ensureDb();await db.auth.signOut();message("تم تسجيل الخروج.");await showSession();}catch(error){message("تعذر تسجيل الخروج: "+error.message);}});
 async function runProviderHealthcheck(){
@@ -141,4 +141,71 @@ $("articleForm").addEventListener("submit",async e=>{
 });
 async function deleteArticle(id){if(!confirm("هل تريد حذف هذا الخبر نهائياً؟"))return;const {error}=await db.from("articles").delete().eq("id",id);if(error){message("فشل الحذف: "+error.message);return;}message("تم حذف الخبر.");await loadArticles();}
 document.addEventListener("wrldline:language",()=>{renderArticleList();});
-showSession().catch(error=>message("تعذر تهيئة لوحة التحرير: "+(error?.message||String(error))));
+
+let opsRefreshTimer=null;
+const opsFmt=value=>value?new Date(value).toLocaleString("ar-SA",{hour12:true}):"—";
+const opsSafe=value=>String(value??"—").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+function opsLine(label,value,state=""){
+ const row=document.createElement("div");row.className="ops-line";
+ const a=document.createElement("span");a.textContent=label;
+ const b=document.createElement("strong");b.textContent=value;b.className=state;
+ row.append(a,b);return row;
+}
+async function loadOpsDashboard(){
+ const status=$("opsStatus"),button=$("opsRefreshButton");
+ if(!db||$("editorPanel").classList.contains("hidden"))return;
+ button.disabled=true;status.textContent="جارٍ جلب المؤشرات من الخادم...";
+ try{
+  const {data,error}=await db.functions.invoke("ops-dashboard",{body:{}});
+  if(error)throw error;
+  if(!data||data.error)throw new Error(data?.error||"رد غير صالح من خدمة المراقبة");
+  const f=data.feeds||{},ing=data.ingestion||{},c=data.content||{};
+  $("opsFeeds").textContent=f.active??"—";
+  $("opsFeedsHint").textContent=(f.failed||0)+" مصدر لديه خطأ · "+(f.stale||0)+" مصدر متأخر";
+  $("opsFeedsHint").className=(f.failed||f.stale)?"ops-warn":"ops-ok";
+  $("opsRuns").textContent=ing.runs_1h??"—";
+  $("opsRunsHint").textContent=(ing.runs_24h||0)+" دورة خلال 24 ساعة";
+  $("opsPublished").textContent=c.published_last_hour??"—";
+  $("opsBreaking").textContent=(data.breaking_last_hour||0)+" خبر عاجل في آخر ساعة";
+  $("opsPending").textContent=c.ai_pending??"—";
+  $("opsTranslation").textContent=(c.translation_errors_24h||0)+" أخطاء ترجمة خلال 24 ساعة";
+  $("opsUpdatedAt").textContent="آخر تحديث: "+opsFmt(data.generated_at);
+  status.textContent="تم تحديث المؤشرات بنجاح.";
+  status.style.color="#54c79a";
+  const pipes=$("opsPipelines");pipes.replaceChildren();
+  const entries=Object.entries(ing.pipelines||{});
+  if(!entries.length)pipes.textContent="لا توجد دورات مسجلة في آخر 24 ساعة.";
+  for(const [name,p] of entries){
+   const rate=p.runs?Math.round(p.failed/p.runs):0;
+   pipes.append(opsLine(name,p.runs+" دورة · "+p.parsed+" مقال · "+p.failed+" فشل",p.failed?"ops-warn":"ops-ok"));
+  }
+  const providers=$("opsProviders");providers.replaceChildren();
+  const list=data.providers||[];
+  if(!list.length)providers.textContent="لا توجد حالات توقف مسجلة حاليًا؛ هذا لا يغني عن فحص المزودات.";
+  for(const p of list){
+   const active=p.disabled_until&&new Date(p.disabled_until)>new Date();
+   providers.append(opsLine(p.provider,active?"متوقف حتى "+opsFmt(p.disabled_until):"لا يوجد توقف مسجل",active?"ops-bad":"ops-ok"));
+   if(p.reasons?.length){const note=document.createElement("small");note.textContent=p.reasons.join(" · ");note.style.color="var(--muted)";providers.append(note);}
+  }
+  const tbody=$("opsRunsTable");tbody.replaceChildren();
+  for(const run of (ing.latest_runs||[]).slice(0,10)){
+   const tr=document.createElement("tr");
+   [run.pipeline,opsFmt(run.started_at),run.source_count??"—",run.successful_sources??"—",run.failed_sources??"—",run.parsed_items??"—"].forEach((v,i)=>{const td=document.createElement("td");td.textContent=v; if(i===4&&Number(v)>0)td.className="ops-bad";tr.append(td);});
+   tbody.append(tr);
+  }
+  if(!tbody.children.length){const tr=document.createElement("tr"),td=document.createElement("td");td.colSpan=6;td.textContent="لا توجد دورات مسجلة.";tr.append(td);tbody.append(tr);}
+  const errors=$("opsFeedErrors");errors.replaceChildren();
+  if(!(f.failed_samples||[]).length)errors.textContent="لا توجد أخطاء مسجلة على المصادر النشطة.";
+  for(const feed of (f.failed_samples||[])){
+   const box=document.createElement("div");box.className="ops-line";box.style.display="block";
+   const name=document.createElement("strong");name.textContent=feed.name||"مصدر بلا اسم";
+   const detail=document.createElement("small");detail.textContent=String(feed.last_error||"خطأ غير محدد").slice(0,240);detail.style.display="block";detail.style.color="var(--muted)";
+   box.append(name,detail);errors.append(box);
+  }
+ }catch(error){
+  status.textContent="تعذر تحديث لوحة المراقبة: "+(error?.message||String(error));
+  status.style.color="#ed747c";
+ }finally{button.disabled=false;}
+}
+$("opsRefreshButton")?.addEventListener("click",loadOpsDashboard);
+\nshowSession().catch(error=>message("تعذر تهيئة لوحة التحرير: "+(error?.message||String(error))));
