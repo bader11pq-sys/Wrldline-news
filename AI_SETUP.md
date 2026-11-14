@@ -11,6 +11,7 @@ The repository includes a background worker (`classify-pending.js`) and GitHub A
 - `GONKA_BROKER_API_KEY` — Gonka Broker key (starts with `gnk-prx-`), read only by server-side classification, translation, and provider-healthcheck functions. Optional `GONKA_MODEL` pins an exact model ID returned by Gonka `/v1/models`; otherwise the function selects the first currently available model.
 - `GEMINI_API_KEY` — preferred Gemini credential. Runtime functions select it first. `GOOGLE_API_KEY` is retained only as a legacy fallback when `GEMINI_API_KEY` is absent.
 - Optional fallback providers: `GROQ_API_KEY`, `NVIDIA_API_KEY`, `GONKA_BROKER_API_KEY`, and/or `OPENROUTER_API_KEY`.
+- Optional `OPENROUTER_MODEL` pins the OpenRouter model used by the daily briefing and translation fallback; otherwise the safe default is `openrouter/free`.
 - The integration uses the tested model `nvidia/nemotron-3.5-lightning-30b-a3b`.
 
 **GitHub repository → Settings → Secrets and variables → Actions**
@@ -24,6 +25,8 @@ The Edge Function reads provider keys from the Supabase Edge Function environmen
 Supabase Cron invokes the classification worker. It selects only published, non-Telegram articles from the last hour and sends up to ten IDs per run. The worker authenticates server-to-server and calls `classify-news`.
 
 Provider fallback order: Gemini → Groq → NVIDIA → Gonka → OpenRouter. Gonka uses `https://proxy.gonkabroker.com/v1`, discovers available models through `/models`, and sends JSON-only prompts because Gonka Broker does not currently support JSON mode / structured outputs. Healthcheck attempts `/test-auth` when the broker exposes it, discovers models, and verifies the credential with a real small classification+translation generation (the live `/chat/completions` response is the definitive auth check). NVIDIA requests use the OpenAI-compatible `/v1/chat/completions` endpoint with JSON output and disabled reasoning mode for predictable structured classification. The provider-healthcheck tests classification/translation-shaped JSON and reports the overall service healthy when at least one configured provider passes.
+
+The same fallback order is used by the daily briefing, so a temporary quota or outage in Gemini/Groq does not prevent the briefing from using NVIDIA, Gonka, or OpenRouter. Firecrawl is not an LLM: it is an optional server-side article-text extractor and cache, and `NEWSDATA_API_KEY` is a news-data ingestion key rather than an AI key.
 
 ## Risk map
 

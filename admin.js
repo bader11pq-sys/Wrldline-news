@@ -143,9 +143,9 @@ async function classifyPending(){
  const pending=cachedArticles.filter(a=>a.editorial_status==="published"&&a.ai_classification_status!=="classified"&&!/t\.me|telegram\.me|telegram/i.test([a.url,a.source_url,a.source_name].join(" "))).slice(0,10);
  if(!pending.length){message(t("لا توجد أخبار منشورة تنتظر التصنيف حالياً.","No published stories are waiting for classification."));return;}
  const button=$("classifyButton");button.disabled=true;button.textContent=t("جارٍ تحليل الأخبار...","Classifying stories...");
- const {data,error}=await db.functions.invoke("classify-news",{body:{article_ids:pending.map(a=>a.id)}});
- button.disabled=false;button.textContent=t("✦ تحليل 10 أخبار بالذكاء الاصطناعي","✦ AI-classify 10 stories");
- if(error){message(t("تعذر تشغيل الذكاء الاصطناعي: ","Could not run AI classification: ")+error.message+t(" — تأكد من نشر الدالة وإضافة OPENAI_API_KEY."," — Make sure the function is deployed and OPENAI_API_KEY is configured."));return;}
+	 const {data,error}=await db.functions.invoke("classify-news",{body:{article_ids:pending.map(a=>a.id)}});
+	 button.disabled=false;button.textContent=t("✦ تحليل 10 أخبار بالذكاء الاصطناعي","✦ AI-classify 10 stories");
+	 if(error){message(t("تعذر تشغيل الذكاء الاصطناعي: ","Could not run AI classification: ")+error.message+t(" — تأكد من نشر الدالة وضبط أحد مزودي الذكاء الاصطناعي في أسرار Supabase."," — Make sure the function is deployed and at least one AI provider is configured in Supabase secrets."));return;}
  const ok=(data?.results||[]).filter(x=>x.status==="classified").length;
  const review=(data?.results||[]).filter(x=>x.status==="needs_review").length;
  const failed=(data?.results||[]).filter(x=>x.status==="failed").length;
