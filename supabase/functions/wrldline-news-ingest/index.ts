@@ -10,8 +10,8 @@ function decode(value = "", preserveLines = false) {
   .replace(/&#x([0-9a-f]+);/gi,(_,n)=>String.fromCodePoint(parseInt(n,16)))
   .replace(/&amp;/g,"&").replace(/&quot;/g,'"').replace(/&apos;|&#39;/g,"'")
   .replace(/&lt;/g,"<").replace(/&gt;/g,">");
- if(preserveLines) return text.replace(/<br\s*\/?\s*>/gi,"\\n").replace(/<\\/(?:div|p|li)>/gi,"\\n").replace(/<[^>]*>/g," ").replace(/[\\t\\f\\v ]+/g," ").replace(/ *\\n */g,"\\n").replace(/\\n{2,}/g,"\\n").trim();
- return text.replace(/<br\\s*\\/?\\s*>/gi," ").replace(/<[^>]*>/g," ").replace(/\\s+/g," ").trim();
+ if(preserveLines) return text.replace(/<br\s*\/?\s*>/gi,"\n").replace(/<\/(?:div|p|li)>/gi,"\n").replace(/<[^>]*>/g," ").replace(/[\t\f\v ]+/g," ").replace(/ *\n */g,"\n").replace(/\n{2,}/g,"\n").trim();
+ return text.replace(/<br\s*\/?\s*>/gi," ").replace(/<[^>]*>/g," ").replace(/\s+/g," ").trim();
 }
 function tag(block: string,names: string[]) {
  for (const name of names) {
