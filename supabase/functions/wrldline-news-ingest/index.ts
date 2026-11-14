@@ -90,7 +90,8 @@ async function processGeneralFeed(feed: any) {
  for(let i=0;i<candidates.length;i++) {
   try {
    const xml=await requestText(candidates[i],7000);
-   const rows=parseGeneral(xml,feed);
+   const parsedRows=parseGeneral(xml,feed);
+   const rows=[...new Map(parsedRows.map((row:any)=>[row.url,row])).values()];
    if(!rows.length) throw new Error("Feed returned no parseable RSS/Atom entries");
    const mergeCategory=["politics","economy","security","tech","sports","culture","health"].includes(feed.category);
    const saved=await dbRequest("articles?on_conflict=url",{method:"POST",headers:{"Prefer":(mergeCategory?"resolution=merge-duplicates":"resolution=ignore-duplicates")+",return=minimal"},body:JSON.stringify(rows)});
