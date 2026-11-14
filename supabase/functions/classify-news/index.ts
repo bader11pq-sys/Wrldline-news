@@ -93,11 +93,37 @@ function clamp(n: number, min: number, max: number) {
 }
 
 function extractJsonObject(raw: string) {
-  const cleaned = raw.replace(/^```(?:json)?/i, "").replace(/```$/i, "").trim();
-  const start = cleaned.indexOf("{");
-  const end = cleaned.lastIndexOf("}");
-  if (start < 0 || end <= start) throw new Error("AI returned invalid JSON.");
-  return JSON.parse(cleaned.slice(start, end + 1));
+ const cleaned=String(raw||"").replace(/<think>[\s\S]*?<\/think>/gi,"").split(String.fromCharCode(96)).join("").replace(/<\|[^|]*\|>/g,"").trim();
+ const candidates:string[]=[];
+ let depth=0,inString=false,escaped=false,start=-1;
+ for(let i=0;i<cleaned.length;i++) {
+  const ch=cleaned[i];
+  if(inString) {
+   if(escaped) escaped=false;
+   else if(ch==="\\") escaped=true;
+   else if(ch==='"') inString=false;
+   continue;
+  }
+  if(ch==='"') inString=true;
+  else if(ch==="{") { if(depth===0) start=i; depth++; }
+  else if(ch==="}"&&depth>0) { depth--; if(depth===0&&start>=0) { candidates.push(cleaned.slice(start,i+1)); start=-1; } }
+ }
+ for(const candidate of candidates) {
+  let safe="",inside=false,escape=false;
+  for(const ch of candidate) {
+   if(inside) {
+    if(escape) { safe+=ch; escape=false; continue; }
+    if(ch==="\\") { safe+=ch; escape=true; continue; }
+    if(ch==='"') { safe+=ch; inside=false; continue; }
+    const code=ch.charCodeAt(0);
+    if(code<32) { safe+=ch==="\n"?"\\n":ch==="\r"?"\\r":ch==="\t"?"\\t":" "; continue; }
+    safe+=ch;
+   } else { if(ch==='"') inside=true; safe+=ch; }
+  }
+  safe=safe.replace(/,\s*([}\]])/g,"$1");
+  try { return JSON.parse(safe); } catch {}
+ }
+ throw new Error("AI returned invalid JSON.");
 }
 
 
