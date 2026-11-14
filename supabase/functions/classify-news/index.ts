@@ -81,7 +81,7 @@ async function firecrawlArticleText(article: any, apiKey: string | null, db: any
 }
 
 function isWithinAiWindow(article:any) {
- const ts=Date.parse(article.published_at||article.received_at||"");
+ const ts=Date.parse(article.published_at||"");
  const age=Date.now()-ts;
  return Number.isFinite(ts)&&age>=-300000&&age<=3600000;
 }
