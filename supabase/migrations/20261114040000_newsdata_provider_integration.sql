@@ -5,9 +5,17 @@ alter table public.articles
   add column if not exists newsdata_ai_tags jsonb not null default '[]'::jsonb,
   add column if not exists newsdata_sentiment text,
   add column if not exists newsdata_datatype text,
-  add column if not exists newsdata_fetched_at timestamptz;
+  add column if not exists newsdata_fetched_at timestamptz,
+  add column if not exists newsdata_keywords text[] not null default '{}',
+  add column if not exists newsdata_ai_summary text,
+  add column if not exists newsdata_regions jsonb not null default '[]'::jsonb,
+  add column if not exists newsdata_organizations jsonb not null default '[]'::jsonb,
+  add column if not exists newsdata_symbols text[] not null default '{}',
+  add column if not exists newsdata_sentiment_stats jsonb,
+  add column if not exists newsdata_source_priority integer;
 
-create unique index if not exists articles_newsdata_article_id_uidx
+drop index if exists public.articles_newsdata_article_id_uidx;
+create index if not exists articles_newsdata_article_id_idx
   on public.articles (newsdata_article_id)
   where newsdata_article_id is not null;
 
