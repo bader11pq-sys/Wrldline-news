@@ -200,7 +200,7 @@ async function generate(prompt: string) {
 
 function attachSources(items: any[], sourceMap: Map<string, any>) {
   return (Array.isArray(items) ? items : []).slice(0, 12).map((item: any) => {
-    const ids = Array.isArray(item.source_ids) ? [...new Set(item.source_ids.map(String))].filter((id) => sourceMap.has(id)).slice(0, 8) : [];
+    const ids: string[] = Array.isArray(item.source_ids) ? [...new Set<string>((item.source_ids as unknown[]).map((id: unknown) => String(id)))].filter((id: string) => sourceMap.has(id)).slice(0, 8) : [];
     const sources = ids.map((id) => sourceMap.get(id));
     const hasConflict = sources.some((source: any) => (source.conflicts || 0) > 0 || ["disputed", "retracted"].includes(source.verification));
     const hasIndependentConfirmation = sources.some((source: any) =>
@@ -222,7 +222,7 @@ function attachSources(items: any[], sourceMap: Map<string, any>) {
 
 function attachTrendSources(items: any[], sourceMap: Map<string, any>) {
   return (Array.isArray(items) ? items : []).slice(0, 8).map((item: any) => {
-    const ids = Array.isArray(item.source_ids) ? [...new Set(item.source_ids.map(String))].filter((id) => sourceMap.has(id)).slice(0, 6) : [];
+    const ids: string[] = Array.isArray(item.source_ids) ? [...new Set<string>((item.source_ids as unknown[]).map((id: unknown) => String(id)))].filter((id: string) => sourceMap.has(id)).slice(0, 6) : [];
     return {
       title: String(item.title || "").slice(0, 180),
       analysis: String(item.analysis || item.summary || "").slice(0, 900),
