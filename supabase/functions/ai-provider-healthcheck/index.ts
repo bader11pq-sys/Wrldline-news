@@ -100,11 +100,11 @@ Deno.serve(async(req:Request)=>{
  const geminiApiKey=Deno.env.get("GEMINI_API_KEY")||Deno.env.get("GOOGLE_API_KEY")||null;
  const results=await Promise.all([
   run("gemini",geminiApiKey,callGemini),
-  run("groq",Deno.env.get("GROQ_API_KEY"),callGroq),
-  run("nvidia",Deno.env.get("NVIDIA_API_KEY"),callNvidia),
-  run("openrouter",Deno.env.get("OPENROUTER_API_KEY"),callOpenRouter),
-  run("gonka",Deno.env.get("GONKA_BROKER_API_KEY"),callGonka),
-  run("firecrawl",Deno.env.get("FIRECRAWL_API_KEY"),callFirecrawl)
+  run("groq",Deno.env.get("GROQ_API_KEY") || null,callGroq),
+  run("nvidia",Deno.env.get("NVIDIA_API_KEY") || null,callNvidia),
+  run("openrouter",Deno.env.get("OPENROUTER_API_KEY") || null,callOpenRouter),
+  run("gonka",Deno.env.get("GONKA_BROKER_API_KEY") || null,callGonka),
+  run("firecrawl",Deno.env.get("FIRECRAWL_API_KEY") || null,callFirecrawl)
  ]);
  const configured=results.filter(x=>x.status!=="not_configured");
  results[0].key_source=Deno.env.get("GEMINI_API_KEY")?"GEMINI_API_KEY":(Deno.env.get("GOOGLE_API_KEY")?"GOOGLE_API_KEY":null);
