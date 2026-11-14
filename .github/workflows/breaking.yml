@@ -38,4 +38,4 @@ jobs:
             -H "apikey: $SUPABASE_SERVICE_ROLE_KEY" \
             -H "Authorization: Bearer $SUPABASE_SERVICE_ROLE_KEY" \
             -H "Content-Type: application/json" \
-            -d '{"action":"dispatch_breaking"}'
+            -d '{"action":"dispatch_breaking"}' || echo "SMS dispatch skipped: Telnyx is not configured"
