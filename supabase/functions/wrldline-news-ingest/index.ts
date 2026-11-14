@@ -84,7 +84,8 @@ async function processGeneralFeed(feed: any) {
    const xml=await requestText(candidates[i],7000);
    const rows=parseGeneral(xml,feed);
    if(!rows.length) throw new Error("Feed returned no parseable RSS/Atom entries");
-   const mergeCategory=["politics","economy","security","tech","sports","culture","health"].includes(feed.category);\n   const saved=await dbRequest("articles?on_conflict=url",{method:"POST",headers:{"Prefer":(mergeCategory?"resolution=merge-duplicates":"resolution=ignore-duplicates")+",return=minimal"},body:JSON.stringify(rows)});
+   const mergeCategory=["politics","economy","security","tech","sports","culture","health"].includes(feed.category);
+   const saved=await dbRequest("articles?on_conflict=url",{method:"POST",headers:{"Prefer":(mergeCategory?"resolution=merge-duplicates":"resolution=ignore-duplicates")+",return=minimal"},body:JSON.stringify(rows)});
    if(!saved.ok) throw new Error("Database HTTP "+saved.status+" "+(await saved.text()).slice(0,160));
    return {ok:true,name:feed.name,parsed:rows.length,usedFallback:i>0};
   } catch(e: any) { lastError=String(e?.message||e).slice(0,200); }
