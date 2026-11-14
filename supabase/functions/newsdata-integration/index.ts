@@ -32,7 +32,7 @@ function validRecentDate(value: unknown): string|null {
   const d=new Date(String(value||""));
   if(Number.isNaN(d.getTime())) return null;
   const age=Date.now()-d.getTime();
-  if(age < -300000 || age > 3600000) return null;
+  if(age < -300000 || age > 48*3600000) return null;
   return d.toISOString();
 }
 async function newsdataRequest(path: string, params: Record<string,string>) {
@@ -90,6 +90,13 @@ async function syncNews() {
       lang:normalizeLang(item.language),
       category:mapCategory(cats),newsdata_categories:cats,
       newsdata_ai_tags:Array.isArray(item.ai_tag)?item.ai_tag:(item.ai_tag?[item.ai_tag]:[]),
+      newsdata_keywords:Array.isArray(item.keywords)?item.keywords:[],
+      newsdata_ai_summary:item.ai_summary||null,
+      newsdata_regions:Array.isArray(item.ai_region)?item.ai_region:(item.ai_region?[item.ai_region]:[]),
+      newsdata_organizations:Array.isArray(item.ai_org)?item.ai_org:(item.ai_org?[item.ai_org]:[]),
+      newsdata_symbols:Array.isArray(item.symbol)?item.symbol:(item.symbol?[item.symbol]:[]),
+      newsdata_sentiment_stats:item.sentiment_stats||null,
+      newsdata_source_priority:Number.isFinite(Number(item.source_priority))?Number(item.source_priority):null,
       newsdata_sentiment:item.sentiment||null,
       newsdata_datatype:item.datatype||null,
       newsdata_fetched_at:item.fetched_at||new Date().toISOString(),
@@ -108,23 +115,28 @@ async function syncNews() {
     const returned=await response.json().catch(()=>[]);
     saved=Array.isArray(returned)?returned.length:rows.length;
   }
-  return {mode:"sync",category_batch:categories,api_results:raw.length,eligible_fresh:rows.length,saved_or_updated:saved,discarded_old_or_duplicate:raw.length-rows.length,provider_total:body.totalResults??null};
+  return {mode:"sync",category_batch:categories,api_results:raw.length,eligible_within_48h:rows.length,saved_or_updated:saved,discarded_old_or_duplicate:raw.length-rows.length,provider_total:body.totalResults??null,provider_delay_note:"NewsData results are restricted to the latest 48 hours; no external LLM is called by this function."};
 }
 async function discoverSources() {
   const body=await newsdataRequest("sources",{category:"politics,sports,business,technology,health",language:"ar,en"});
   const sources=Array.isArray(body.results)?body.results:[];
-  const rows=sources.filter((x:any)=>x.source_id).map((x:any)=>({
-    source_id:String(x.source_id),source_name:String(x.source_name||x.source_id),
-    source_url:x.source_url||null,country:Array.isArray(x.country)?x.country[0]:(x.country||null),
-    language:Array.isArray(x.language)?x.language[0]:(x.language||null),
-    categories:Array.isArray(x.category)?x.category:(x.category?[x.category]:[]),
-    updated_at:new Date().toISOString()
-  }));
+  const rows=sources.map((x:any)=>{
+    const id=typeof x==="string"?x:(x.source_id||x.id||x.domain||x.domainurl||x.source_url||x.url||"");
+    if(!id) return null;
+    return {
+      source_id:String(id),source_name:String(x.source_name||x.name||x.domain||id),
+      source_url:x.source_url||x.url||(String(id).includes(".")?"https://"+id:null),
+      country:Array.isArray(x.country)?x.country[0]:(x.country||null),
+      language:Array.isArray(x.language)?x.language[0]:(x.language||null),
+      categories:Array.isArray(x.category)?x.category:(Array.isArray(x.categories)?x.categories:(x.category?[x.category]:[])),
+      updated_at:new Date().toISOString()
+    };
+  }).filter(Boolean);
   if(rows.length) {
     const response=await dbRequest("newsdata_sources?on_conflict=source_id",{method:"POST",headers:{"Prefer":"resolution=merge-duplicates,return=minimal"},body:JSON.stringify(rows)});
     if(!response.ok) throw new Error("Sources catalog upsert HTTP "+response.status+": "+(await response.text()).slice(0,250));
   }
-  return {mode:"sources",sources_received:sources.length,sources_saved:rows.length,sample_source_keys:Object.keys(sources[0]||{}),sample_source:sources[0]||null};
+  return {mode:"sources",sources_received:sources.length,sources_saved:rows.length,sample_source_keys:rows.length?undefined:Object.keys(sources[0]||{})};
 }
 Deno.serve(async (req: Request) => {
   if(req.method!=="POST") return Response.json({error:"POST required"},{status:405});
