@@ -13,10 +13,14 @@ const headers = { apikey: SERVICE_KEY, Authorization: "Bearer " + SERVICE_KEY, "
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 
 async function loadByStatus(status, limit) {
+  const cutoff = new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString();
+  const now = new Date().toISOString();
   const query = new URLSearchParams({
-    select: "id,url,source_url,source_name,ai_classification_status,editorial_status",
+    select: "id,url,source_url,source_name,published_at,ai_classification_status,classification_attempts,classification_retry_after,editorial_status",
     editorial_status: "eq.published",
     ai_classification_status: "eq." + status,
+    published_at: "gte." + cutoff,
+    or: "(classification_retry_after.is.null,classification_retry_after.lte." + now + ")",
     order: "published_at.asc",
     limit: String(limit)
   });
@@ -36,7 +40,7 @@ async function main() {
   for (let i = 0; i < articles.length; i++) {
     if (i) await sleep(REQUEST_GAP_MS);
     const response = await fetch(SUPABASE_URL + "/functions/v1/classify-news", {
-      method: "POST", headers, body: JSON.stringify({ article_ids: [articles[i].id] })
+      method: "POST", headers, body: JSON.stringify({ article_ids: [articles[i].id], allow_backlog: true })
     });
     const body = await response.json().catch(() => ({}));
     if (response.status === 429 || response.status === 503 || body.rate_limited) {
@@ -49,7 +53,8 @@ async function main() {
       if (item.status === "classified") classified++;
       else if (item.status === "needs_review") review++;
       else if (item.status === "failed") { failed++; console.error("Classification failed for " + item.id + ": " + (item.error || "unknown")); }
-      else if (item.status === "deferred") { deferred = true; console.warn("Classification deferred; next scheduled run will retry after cooldown: " + (item.error || "")); }
+      else if (item.status === "deferred") { deferred = true; console.warn("Classification deferred; retry after cooldown: " + (item.error || "")); }
+      else if (item.status === "expired_ignored" || item.status === "telegram_ticker_only") { console.log("Classification skipped for " + item.id + ": " + item.status); }
     }
     if (deferred) break;
   }

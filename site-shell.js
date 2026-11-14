@@ -1,5 +1,28 @@
 /* WRLDLINE HISTORY — shared header, footer, icon sprite */
 (() => {
+  const stored = localStorage.getItem("wrldline:language");
+  const urlLang = new URLSearchParams(location.search).get("lang");
+  const lang = (urlLang === "ar" || urlLang === "en") ? urlLang : ((stored === "ar" || stored === "en") ? stored : "ar");
+  document.documentElement.lang = lang;
+  document.documentElement.dir = lang === "ar" ? "rtl" : "ltr";
+  document.documentElement.dataset.lang = lang;
+  const copy = {
+    ar: {
+      brandHome: "WRLDLINE — الرئيسية", menu: "فتح القائمة", home: "الرئيسية", encyclopedia: "الموسوعة", theme: "تبديل المظهر", account: "حسابي",
+      navHome: "الرئيسية", shorts: "▶ Shorts", context: "غرفة السياق", balance: "ميزان الروايات", impact: "أطلس التأثير", history: "الموسوعة التاريخية", mirror: "مرآة التاريخ", explainers: "افهمها في دقيقة", promises: "ذاكرة الوعود", library: "المكتبة",
+      about: "منصة إخبارية رقمية تضع العالم في سياقه: تغطية متعددة المصادر، أدوات للمقارنة والفهم، وموسوعة تاريخية مرجعية مفتوحة.",
+      newsrooms: "غرف الأخبار", knowledge: "المعرفة", encyclopediaCol: "الموسوعة", atlas: "الأطلس", compare: "المقارنة", aboutLink: "عن الموقع",
+      copyright: "© <span data-year>2026</span> WRLDLINE NEWS — المحتوى الإخباري يُنسب إلى مصادره الأصلية.", editorial: "التحليلات والسياق من تحرير WRLDLINE."
+    },
+    en: {
+      brandHome: "WRLDLINE — Home", menu: "Open menu", home: "Home", encyclopedia: "Encyclopedia", theme: "Toggle appearance", account: "My account",
+      navHome: "Home", shorts: "▶ Shorts", context: "Context Room", balance: "Narrative Balance", impact: "Impact Atlas", history: "History Encyclopedia", mirror: "History Mirror", explainers: "Explained in a minute", promises: "Promise Ledger", library: "Library",
+      about: "A digital newsroom that puts the world in context: multi-source coverage, comparison and understanding tools, and an open reference history encyclopedia.",
+      newsrooms: "Newsrooms", knowledge: "Knowledge", encyclopediaCol: "Encyclopedia", atlas: "Atlas", compare: "Compare", aboutLink: "About",
+      copyright: "© <span data-year>2026</span> WRLDLINE NEWS — News content is attributed to its original sources.", editorial: "Analysis and context by WRLDLINE editorial."
+    }
+  };
+  const t = (key) => copy[lang][key] || copy.ar[key];
   const sprite = `<svg class="wl-sr" aria-hidden="true"><defs>
 <symbol id="i-menu" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M3 6h18M3 12h18M3 18h18"/></symbol>
 <symbol id="i-home" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5V21H3z"/><path d="M9 21v-6h6v6"/></symbol>
@@ -26,26 +49,26 @@
   const header = `<header class="wl-header" id="siteHeader">
   <div class="wl-container">
     <div class="wl-masthead">
-      <a class="wl-brand" href="index.html" aria-label="WRLDLINE — الرئيسية"><span class="wl-brand-mark">W</span><span class="wl-brand-copy"><strong>WRLDLINE</strong><small>GLOBAL NEWS NETWORK</small></span></a>
+      <a class="wl-brand" href="index.html" aria-label="${t("brandHome")}"><span class="wl-brand-mark">W</span><span class="wl-brand-copy"><strong>WRLDLINE</strong><small>GLOBAL NEWS NETWORK</small></span></a>
       <div class="wl-head-actions">
-        <button class="wl-icon-btn wl-mobile-menu" id="menuButton" type="button" aria-label="فتح القائمة" aria-expanded="false" aria-controls="mainNav"><svg aria-hidden="true"><use href="#i-menu"/></svg></button>
-        <a class="wl-icon-btn" href="index.html" aria-label="الرئيسية"><svg aria-hidden="true"><use href="#i-home"/></svg></a>
-        <a class="wl-icon-btn" href="history.html" aria-label="الموسوعة"><svg aria-hidden="true"><use href="#i-book"/></svg></a>
-        <button class="wl-icon-btn" id="themeButton" type="button" aria-label="تبديل المظهر"><svg aria-hidden="true"><use href="#i-moon"/></svg></button>
-        <a class="wl-account" href="index.html#account"><svg aria-hidden="true"><use href="#i-user"/></svg> حسابي</a>
+        <button class="wl-icon-btn wl-mobile-menu" id="menuButton" type="button" aria-label="${t("menu")}" aria-expanded="false" aria-controls="mainNav"><svg aria-hidden="true"><use href="#i-menu"/></svg></button>
+        <a class="wl-icon-btn" href="index.html" aria-label="${t("home")}"><svg aria-hidden="true"><use href="#i-home"/></svg></a>
+        <a class="wl-icon-btn" href="history.html" aria-label="${t("encyclopedia")}"><svg aria-hidden="true"><use href="#i-book"/></svg></a>
+        <button class="wl-icon-btn" id="themeButton" type="button" aria-label="${t("theme")}"><svg aria-hidden="true"><use href="#i-moon"/></svg></button>
+        <a class="wl-account" href="index.html#account"><svg aria-hidden="true"><use href="#i-user"/></svg> ${t("account")}</a>
       </div>
     </div>
-    <div class="wl-nav-wrap" id="mainNav"><nav class="wl-nav" aria-label="التنقل الرئيسي"><div class="wl-nav-scroll">
-      <a class="wl-nav-link" href="index.html">الرئيسية</a>
-      <a class="wl-nav-link wl-nav-link--shorts" href="shorts.html">▶ Shorts</a>
-      <a class="wl-nav-link" href="context.html">غرفة السياق</a>
-      <a class="wl-nav-link" href="balance.html">ميزان الروايات</a>
-      <a class="wl-nav-link" href="impact.html">أطلس التأثير</a>
-      <a class="wl-nav-link" href="history.html">الموسوعة التاريخية</a>
-      <a class="wl-nav-link" href="mirror.html">مرآة التاريخ</a>
-      <a class="wl-nav-link" href="explainers.html">افهمها في دقيقة</a>
-      <a class="wl-nav-link" href="promises.html">ذاكرة الوعود</a>
-      <a class="wl-nav-link" href="history-library.html">المكتبة</a>
+    <div class="wl-nav-wrap" id="mainNav"><nav class="wl-nav" aria-label="${t("navHome")}"><div class="wl-nav-scroll">
+      <a class="wl-nav-link" href="index.html">${t("navHome")}</a>
+      <a class="wl-nav-link wl-nav-link--shorts" href="shorts.html">${t("shorts")}</a>
+      <a class="wl-nav-link" href="context.html">${t("context")}</a>
+      <a class="wl-nav-link" href="balance.html">${t("balance")}</a>
+      <a class="wl-nav-link" href="impact.html">${t("impact")}</a>
+      <a class="wl-nav-link" href="history.html">${t("history")}</a>
+      <a class="wl-nav-link" href="mirror.html">${t("mirror")}</a>
+      <a class="wl-nav-link" href="explainers.html">${t("explainers")}</a>
+      <a class="wl-nav-link" href="promises.html">${t("promises")}</a>
+      <a class="wl-nav-link" href="history-library.html">${t("library")}</a>
     </div></nav></div>
   </div>
   <div class="hx-read-progress"><i id="readProgress"></i></div>
@@ -54,12 +77,12 @@
   const footer = `<footer class="site-footer">
   <div class="wl-container">
     <div class="footer-main">
-      <div><a class="wl-brand footer-brand" href="index.html"><span class="wl-brand-mark">W</span><span class="wl-brand-copy"><strong>WRLDLINE</strong><small>GLOBAL NEWS NETWORK</small></span></a><p class="footer-about">منصة إخبارية رقمية تضع العالم في سياقه: تغطية متعددة المصادر، أدوات للمقارنة والفهم، وموسوعة تاريخية مرجعية مفتوحة.</p></div>
-      <div class="footer-col"><h3>غرف الأخبار</h3><a href="index.html">الرئيسية</a><a href="context.html">غرفة السياق</a><a href="balance.html">ميزان الروايات</a><a href="impact.html">أطلس التأثير</a></div>
-      <div class="footer-col"><h3>المعرفة</h3><a href="history.html">الموسوعة التاريخية</a><a href="mirror.html">مرآة التاريخ</a><a href="explainers.html">افهمها في دقيقة</a><a href="promises.html">ذاكرة الوعود</a></div>
-      <div class="footer-col"><h3>الموسوعة</h3><a href="history-explore.html">الأطلس</a><a href="history-compare.html">المقارنة</a><a href="history-library.html">المكتبة</a><a href="about.html">عن الموقع</a></div>
+      <div><a class="wl-brand footer-brand" href="index.html"><span class="wl-brand-mark">W</span><span class="wl-brand-copy"><strong>WRLDLINE</strong><small>GLOBAL NEWS NETWORK</small></span></a><p class="footer-about">${t("about")}</p></div>
+      <div class="footer-col"><h3>${t("newsrooms")}</h3><a href="index.html">${t("navHome")}</a><a href="context.html">${t("context")}</a><a href="balance.html">${t("balance")}</a><a href="impact.html">${t("impact")}</a></div>
+      <div class="footer-col"><h3>${t("knowledge")}</h3><a href="history.html">${t("history")}</a><a href="mirror.html">${t("mirror")}</a><a href="explainers.html">${t("explainers")}</a><a href="promises.html">${t("promises")}</a></div>
+      <div class="footer-col"><h3>${t("encyclopediaCol")}</h3><a href="history-explore.html">${t("atlas")}</a><a href="history-compare.html">${t("compare")}</a><a href="history-library.html">${t("library")}</a><a href="about.html">${t("aboutLink")}</a></div>
     </div>
-    <div class="footer-bottom"><span>© <span data-year>2026</span> WRLDLINE NEWS — المحتوى الإخباري يُنسب إلى مصادره الأصلية.</span><span>التحليلات والسياق من تحرير WRLDLINE.</span></div>
+    <div class="footer-bottom"><span>${t("copyright")}</span><span>${t("editorial")}</span></div>
   </div>
 </footer>`;
 
@@ -72,5 +95,9 @@
   const active = map[page];
   document.querySelectorAll(".wl-nav-link").forEach(a => {
     if (a.getAttribute("href") === active) { a.classList.add("is-active"); a.setAttribute("aria-current", "page"); }
+  });
+  document.addEventListener("wrldline:language", (event) => {
+    const next = event && event.detail && event.detail.lang;
+    if ((next === "ar" || next === "en") && next !== lang) location.reload();
   });
 })();

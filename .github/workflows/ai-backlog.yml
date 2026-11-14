@@ -1,12 +1,7 @@
-name: WRLDLINE AI Backlog Processor
+name: WRLDLINE AI Backlog Processor (manual fallback)
+# Supabase cron `wrldline-ai-classification-worker` is the single scheduled
+# classifier. This workflow is a manual fallback for operators only.
 on:
-  push:
-    branches: [main]
-    paths:
-      - 'classify-pending.js'
-      - '.github/workflows/ai-backlog.yml'
-  schedule:
-    - cron: '*/30 * * * *'
   workflow_dispatch:
 concurrency:
   group: wrldline-ai-backlog
@@ -20,7 +15,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '24'
-      - name: Classify one pending and one failed article
+      - name: Drain one pending and one failed article (manual fallback)
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}

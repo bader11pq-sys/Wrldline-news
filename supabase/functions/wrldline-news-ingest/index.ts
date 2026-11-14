@@ -1,3 +1,4 @@
+import { normalizeCategory, resolveSourceLanguage, normalizeScope, inferSourceScope, TAXONOMY_VERSION } from "../_shared/taxonomy.ts";
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL") || "https://vmaxbnogmmfyrcucapnq.supabase.co";
 const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || Deno.env.get("SUPABASE_SECRET_KEY") || "";
 const DB_HEADERS = { apikey: SERVICE_KEY, Authorization: "Bearer " + SERVICE_KEY, "Content-Type": "application/json" };
@@ -70,8 +71,10 @@ function parseGeneral(xml: string,feed: any) {
   const date=tag(block,["pubDate","published","updated","dc:date"]);
   const publishedAt=parsedDate(date);
   if(!publishedAt) return null;
-  const arabic=/[\u0600-\u06FF]/.test(title);
-  return {url,title:title.slice(0,500),summary:summary.slice(0,5000),image_url:entryImage(block),category:["politics","economy","security","tech","sports","culture","health","world"].includes(feed.category)?feed.category:"world",feed_id:feed.id||null,country:"غير محدد",source_name:feed.name,source_url:feed.url,lang:arabic?"ar":(feed.lang||"en"),verification:"unconfirmed",published_at:publishedAt,ai_classification_status:"pending",editorial_status:"published"};
+  const language=resolveSourceLanguage(feed.lang,title+" "+summary);
+  const category=normalizeCategory(feed.category);
+  const sourceScope=normalizeScope(feed.source_scope||inferSourceScope(feed));
+  return {url,title:title.slice(0,500),summary:summary.slice(0,5000),image_url:entryImage(block),category,feed_id:feed.id||null,country:null,event_country:null,source_scope:sourceScope,source_language:language.language,language_detection:language.detection,source_name:feed.name,source_url:feed.url,lang:language.language,verification:"unconfirmed",published_at:publishedAt,ai_classification_status:"pending",editorial_status:"published",classification_reason:category==="uncategorized"?"unclassified_source":"rss_source_section",taxonomy_version:TAXONOMY_VERSION};
  }).filter(Boolean);
 }
 async function dbRequest(path: string,init: RequestInit & {headers?: Record<string,string>} = {}) {
@@ -95,8 +98,7 @@ async function processGeneralFeed(feed: any) {
    const parsedRows=parseGeneral(xml,feed);
    const rows=[...new Map(parsedRows.map((row:any)=>[row.url,row])).values()];
    if(!rows.length) throw new Error("Feed returned no parseable RSS/Atom entries");
-   const mergeCategory=["politics","economy","security","tech","sports","culture","health"].includes(feed.category);
-   const saved=await dbRequest("articles?on_conflict=url",{method:"POST",headers:{"Prefer":(mergeCategory?"resolution=merge-duplicates":"resolution=ignore-duplicates")+",return=minimal"},body:JSON.stringify(rows)});
+   const saved=await dbRequest("articles?on_conflict=url",{method:"POST",headers:{"Prefer":"resolution=ignore-duplicates,return=minimal"},body:JSON.stringify(rows)});
    if(!saved.ok) throw new Error("Database HTTP "+saved.status+" "+(await saved.text()).slice(0,160));
    return {ok:true,name:feed.name,parsed:rows.length,usedFallback:i>0};
   } catch(e: any) { lastError=String(e?.message||e).slice(0,200); }
@@ -105,12 +107,12 @@ async function processGeneralFeed(feed: any) {
 }
 async function setFeedHealth(feed: any,result: any) {
  const query="feeds?url=eq."+encodeURIComponent(feed.url);
- const patch={last_fetched:result.ok?new Date().toISOString():null,last_error:result.ok?null:result.error,active:true};
+ const patch={last_fetched:result.ok?new Date().toISOString():null,last_error:result.ok?null:result.error,active:true,category:normalizeCategory(feed.category),lang:feed.lang||"en",source_scope:normalizeScope(feed.source_scope||inferSourceScope(feed))};
  const r=await dbRequest(query,{method:"PATCH",headers:{"Prefer":"return=minimal"},body:JSON.stringify(patch)});
  return r.ok;
 }
 async function runGeneral() {
- const r=await dbRequest("feeds?select=id,name,url,lang,category,active&active=eq.true&order=name.asc");
+ const r=await dbRequest("feeds?select=id,name,url,lang,category,source_scope,active&active=eq.true&order=name.asc");
  if(!r.ok) throw new Error("Could not load feeds: "+r.status+" "+(await r.text()).slice(0,160));
  const feeds=await r.json();
  const runId=await beginRun("general");
@@ -178,7 +180,7 @@ async function runTranslation() {
   let scanned=0;
   for(let offset=0;offset<20000 && pending.length<20;offset+=pageSize) {
    const params=new URLSearchParams({
-    select:"id,title,summary,ai_summary,lang,url,source_name,is_breaking,published_at,received_at,translation_attempts,translation_retry_after,article_translations(lang,title,summary,ai_summary)",
+    select:"id,title,summary,ai_summary,lang,url,source_name,is_breaking,published_at,received_at,translation_attempts,translation_retry_after,article_translations(lang,title,summary,ai_summary,translation_status,translation_source)",
     editorial_status:"eq.published",published_at:"gte."+new Date(Date.now()-3600000).toISOString(),order:"is_breaking.desc,published_at.desc",limit:String(pageSize),offset:String(offset)
    });
    const response=await dbRequest("articles?"+params.toString());
@@ -195,7 +197,7 @@ async function runTranslation() {
     const sourceLang=declared.startsWith("ar")?"ar":(declared.startsWith("en")?"en":(/[\u0600-\u06FF]/.test(article.title)?"ar":"en"));
     const target=sourceLang==="ar"?"en":"ar";
     const existing=(article.article_translations||[]).find((item:any)=>item.lang===target);
-    const complete=!!(existing?.title&&existing?.summary&&(!article.ai_summary||existing?.ai_summary));
+    const complete=!!(existing?.title&&existing?.summary&&existing?.translation_status==="published"&&(!article.ai_summary||existing?.ai_summary));
     if(!complete && perTarget[target as "ar"|"en"]<10) {
      pending.push({id:article.id,target,sourceLang,title:String(article.title).slice(0,100)});
      perTarget[target as "ar"|"en"]++;

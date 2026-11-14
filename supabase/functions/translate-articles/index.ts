@@ -388,9 +388,9 @@ Deno.serve(async(req:Request)=>{
    const sourceLang=declaredLang.startsWith("ar")?"ar":(declaredLang.startsWith("en")?"en":(/[\u0600-\u06FF]/.test(article.title||"")?"ar":"en"));
    const target=sourceLang==="ar"?"en":"ar";
    const sourceSummary=String(article.summary||article.ai_summary||article.title||"").trim();
-   const existing=await db.from("article_translations").select("id,ai_summary,title,summary").eq("article_id",article.id).eq("lang",target).maybeSingle();
+   const existing=await db.from("article_translations").select("id,ai_summary,title,summary,translation_status,translation_source").eq("article_id",article.id).eq("lang",target).maybeSingle();
    if(existing.error) throw existing.error;
-   if(existing.data?.title&&existing.data?.summary&&(!article.ai_summary||existing.data?.ai_summary)) return {id:article.id,status:"already_translated",lang:target};
+   if(existing.data?.title&&existing.data?.summary&&(!article.ai_summary||existing.data?.ai_summary)) return {id:article.id,status:"already_translated",lang:target,translation_status:existing.data.translation_status||"published"};
    let sourceContent=sourceSummary;
    if(sourceContent.length<350) {
     const scraped=await firecrawlArticleText(article,firecrawlKey,db,4000);
@@ -439,7 +439,9 @@ Deno.serve(async(req:Request)=>{
    if(!title||!summary) throw new Error("AI returned an empty translated title or summary.");
    const {error:upsertError}=await db.from("article_translations").upsert({
     article_id:article.id,lang:target,title:title.slice(0,500),summary:summary.slice(0,4000),
-    ai_summary:String(translated.ai_summary||"").slice(0,2000)
+    ai_summary:String(translated.ai_summary||"").slice(0,2000),
+    translation_status:"review",translation_source:"machine_draft",provider:provider,model:provider,
+    reviewed_at:null,reviewed_by:null,published_at:null
    },{onConflict:"article_id,lang"});
    if(upsertError) throw upsertError;
    await db.from("articles").update({translation_attempts:0,translation_retry_after:null,translation_last_error:null}).eq("id",article.id);

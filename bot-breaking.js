@@ -1,4 +1,5 @@
 // WRLDLINE dedicated breaking-news desk. Separate from the 100 general-news feeds.
+const taxonomy=require("./taxonomy.js");
 const URL=process.env.SUPABASE_URL,KEY=process.env.SUPABASE_SERVICE_ROLE_KEY;
 const HEADERS={apikey:KEY,Authorization:"Bearer "+KEY,"Content-Type":"application/json"};
 const GOOGLE=(domain,lang="ar")=>{
@@ -118,7 +119,9 @@ function rssRows(xml,f){
 function row(title,url,summary,date,f,force=false){
  if(!title||!/^https?:\/\//i.test(url)||(!force&&!urgent.test(title)))return null;
  const dt=date?new Date(date):null;if(!dt||Number.isNaN(dt.getTime())||Date.now()-dt.getTime()>2*60*60*1000||dt.getTime()>Date.now()+5*60*1000)return null;
- return {url,title:title.slice(0,500),summary:(summary||"").slice(0,3000),source_name:f.publisher+" Breaking Desk",source_url:f.type==="telegram"?"https://t.me/"+f.handle:f.url,category:"world",country:"دولي",lang:f.lang,verification:"unconfirmed",published_at:dt.toISOString(),editorial_status:"published",ai_classification_status:"pending",is_breaking:true};
+ const sourceLanguage=f.lang==="ar"?"ar":(f.lang==="en"?"en":taxonomy.detectLanguage(title+" "+summary));
+ const sourceScope=taxonomy.normalizeScope(f.source_scope||taxonomy.inferSourceScope({name:f.publisher,url:f.url||"",country:null}));
+ return {url,title:title.slice(0,500),summary:(summary||"").slice(0,3000),source_name:f.publisher+" Breaking Desk",source_url:f.type==="telegram"?"https://t.me/"+f.handle:f.url,category:taxonomy.normalizeCategory(f.category),country:null,event_country:null,source_country:null,source_scope:sourceScope,source_language:sourceLanguage,language_detection:f.lang?"declared":"detected",lang:sourceLanguage,verification:"unconfirmed",published_at:dt.toISOString(),editorial_status:"published",ai_classification_status:"pending",classification_reason:"breaking_desk_unclassified",taxonomy_version:taxonomy.TAXONOMY_VERSION,is_breaking:true};
 }
 function telegramRows(html,f){
  const starts=[...html.matchAll(/<div class="tgme_widget_message\b/g)].map(m=>m.index),out=[];

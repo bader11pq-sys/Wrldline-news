@@ -1,13 +1,7 @@
-name: WRLDLINE Multi-source News Ingestion
-# Gemini → Groq → OpenRouter fallback; quota-safe pending-story processing.
+name: WRLDLINE Multi-source News Ingestion (manual fallback)
+# Supabase cron `wrldline-general-ingestion` and `wrldline-breaking-ingestion`
+# are the scheduled ingestion path. This workflow is a manual fallback only.
 on:
-  push:
-    branches: [main]
-    paths:
-      - 'bot-ingest.js'
-      - '.github/workflows/bot.yml'
-  schedule:
-    - cron: '*/5 * * * *'
   workflow_dispatch:
 concurrency:
   group: wrldline-news-ingestion

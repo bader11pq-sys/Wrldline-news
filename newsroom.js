@@ -173,7 +173,7 @@
 
   function categoryCounts(articles) {
     const map = new Map();
-    (articles || []).forEach(a => { const k = a.category || a.cat || "world"; map.set(k, (map.get(k) || 0) + 1); });
+    (articles || []).forEach(a => { const k = a.category || a.cat || "uncategorized"; map.set(k, (map.get(k) || 0) + 1); });
     return map;
   }
 
