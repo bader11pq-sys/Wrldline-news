@@ -142,7 +142,7 @@ async function collect(f){
   const url=f.type==="telegram"?"https://t.me/s/"+f.handle:f.url;
   const r=await fetch(url,{headers:{"User-Agent":"Mozilla/5.0 (compatible; WRLDLINE-Breaking/3.0)","Accept":"text/html,application/rss+xml,application/xml,*/*"},signal:AbortSignal.timeout(10000)});
   if(!r.ok)throw new Error("HTTP "+r.status);
-  const body=await r.text(),raw=rawItemCount(body,f),rows=f.type==="telegram"?telegramRows(body,f):rssRows(body,f);
+  const body=await r.text(),raw=rawItemCount(body,f),parsed=f.type==="telegram"?telegramRows(body,f):rssRows(body,f),rows=[...new Map(parsed.map(x=>[x.url,x])).values()];
   if(rows.length){
    const saved=await fetch(URL+"/rest/v1/articles?on_conflict=url",{method:"POST",headers:{...HEADERS,Prefer:"resolution=merge-duplicates,return=minimal"},body:JSON.stringify(rows)});
    if(!saved.ok)throw new Error("DB "+saved.status+" "+(await saved.text()).slice(0,150));
