@@ -213,7 +213,9 @@ function toggleCardTranslation(button){
 }
 function translationPanelMarkup(article){
  if(article.translationTitle&&article.translationSummary)return '<div class="translation-panel" hidden><div class="translation-original"><small>'+ui("النص الأصلي","Original text")+'</small><strong>'+escapeHTML(article.originalTitle||"")+'</strong><p>'+escapeHTML(article.originalSummary||"")+'</p></div><div class="translation-result"><small>'+ui("الترجمة","Translation")+'</small><strong>'+escapeHTML(article.translationTitle)+'</strong><p>'+escapeHTML(article.translationSummary)+'</p></div></div>';
- return '<div class="translation-panel" hidden><p>'+ui("الترجمة غير متاحة بعد؛ ستظهر هنا تلقائياً عند اكتمال المعالجة.","Translation is not available yet; it will appear here when processing finishes.")+'</p></div>';
+ const age=Date.now()-Date.parse(article.published_at||"");
+ const message=age>3600000?ui("لا توجد ترجمة محفوظة لهذا الخبر. لا نعيد إرسال الأخبار الأقدم من ساعة إلى مزودي الذكاء الاصطناعي.","No saved translation is available. Articles older than one hour are not resubmitted to AI providers."):ui("الترجمة قيد التجهيز وستظهر هنا عند اكتمال المعالجة.","Translation is being prepared and will appear here when processing finishes.");
+ return '<div class="translation-panel" hidden><p>'+message+'</p></div>';
 }
 function renderExclusive(){
  const host=document.getElementById("exclusiveNewsGrid");if(!host)return;
