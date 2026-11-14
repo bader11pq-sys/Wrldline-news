@@ -229,7 +229,7 @@ function initNewsRealtime(){
   if(!state.db||state.newsChannel)return;
   let refreshTimer=null;
   state.newsChannel=state.db.channel("wrldline-public-news")
-   .on("postgres_changes",{event:"INSERT",schema:"public",table:"articles",filter:"editorial_status=eq.published"},()=>{
+   .on("postgres_changes",{event:"*",schema:"public",table:"articles",filter:"editorial_status=eq.published"},()=>{
     if(refreshTimer)clearTimeout(refreshTimer);
     refreshTimer=setTimeout(()=>{refreshTimer=null;fetchNews();},1200);
    })
