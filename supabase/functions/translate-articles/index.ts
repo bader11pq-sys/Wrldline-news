@@ -377,8 +377,8 @@ Deno.serve(async(req:Request)=>{
     "Publisher: "+(article.source_name||"Unknown"),
     "Original URL: "+(article.url||""),
     "TITLE:\n"+(article.title||""),
-    "SUMMARY:\n"+sourceSummary,
-    "AI CONTEXT SUMMARY:\n"+(article.ai_summary||sourceSummary)
+    "SUMMARY:\n"+sourceContent,
+    "AI CONTEXT SUMMARY:\n"+(article.ai_summary||sourceContent)
    ].join("\n");
    let translated:any=null;
    let provider="deepl";
