@@ -56,10 +56,14 @@ function googleFallback(feed: any) {
   return "https://news.google.com/rss/search?q="+encodeURIComponent(q)+"&hl="+(english?"en-US&gl=US&ceid=US:en":"ar&gl=SA&ceid=SA:ar");
  } catch { return null; }
 }
+function isPublisherNoise(title: string) {
+ const value=String(title||"").trim().toLowerCase();
+ return /^(?:kuna news agency\s*-\s*كونا|- trt world|nam news network \(nnn\) - the non aligned movement - bernama|the non aligned movement - bernama|- japan wire by kyodo news|- جريدة الوطن السعودية|bernama mrem \(eng\) - bernama mrem|\| afp\.com - afp\.com|latest news - xinhua|جريدة الغد المطبوعة - جريدة الغد|- efe - agencia de noticias)$/i.test(value);
+}
 function parseGeneral(xml: string,feed: any) {
  return xmlEntries(xml).slice(0,25).map((block: string)=>{
   const title=tag(block,["title"]),url=entryLink(block);
-  if(!title||!/^https?:\/\//i.test(url)) return null;
+  if(!title||isPublisherNoise(title)||!/^https?:\/\//i.test(url)) return null;
   const summary=tag(block,["description","summary","content:encoded","content"]);
   const date=tag(block,["pubDate","published","updated","dc:date"]);
   const publishedAt=parsedDate(date);
