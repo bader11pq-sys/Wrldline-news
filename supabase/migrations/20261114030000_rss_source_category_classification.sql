@@ -1,3 +1,5 @@
+select cron.unschedule(jobid) from cron.job where jobname = 'wrldline-ai-classification-worker';
+
 
 -- RSS source sections are the authoritative article categories; AI category cron is retired separately.
 update public.feeds
