@@ -140,6 +140,7 @@ function providerCooldownSeconds(provider: string, error: unknown) {
  if (/\b429\b|rate.?limit|quota|resource_exhausted/.test(message)) {
   if(provider==="gemini" && /quota|resource_exhausted|billing|exceeded your current quota/.test(message)) return 24*60*60;
   if(provider==="openrouter" && /free-models-per-day|free model.*per day/.test(message)) return 24*60*60;
+  if(provider==="groq" && /tokens per day|\btpd\b/.test(message)) return 24*60*60;
   if(provider==="groq" && /tokens per minute|\btpm\b|try again in/.test(message)) return 60;
   if(provider==="nvidia" && /invalid json|no structured/.test(message)) return 5*60;
   return 5*60;
