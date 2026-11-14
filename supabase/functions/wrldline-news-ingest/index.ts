@@ -124,160 +124,29 @@ async function runGeneral() {
  return summary;
 }
 
-const GOOGLE=(domain: string,lang: string="ar")=>{
- const q=`site:${domain} when:1h`;
- return "https://news.google.com/rss/search?q="+encodeURIComponent(q)+"&hl="+(lang==="ar"?"ar&gl=SA&ceid=SA:ar":"en-US&gl=US&ceid=US:en");
-};
-// Telegram channels are public breaking desks; publisher RSS searches are constrained to explicit urgent markers.
-
-const FEEDS=[
- {publisher:"الجزيرة الآن",type:"telegram",handle:"ajarabic_now",lang:"ar"},
- {publisher:"الجزيرة عاجل",type:"telegram",handle:"aljazeerabrk",lang:"ar"},
- {publisher:"الميادين عاجل",type:"telegram",handle:"almayadeen",lang:"ar"},
- {publisher:"الحدث عاجل",type:"telegram",handle:"alhadath_brk",lang:"ar"},
- {publisher:"الشرق عاجل",type:"telegram",handle:"AsharqNewsBreaking",lang:"ar"},
- {publisher:"العربية",type:"telegram",handle:"Alarabiya",lang:"ar"},
- {publisher:"سكاي نيوز عربية",url:GOOGLE("skynewsarabia.com"),lang:"ar"},
- {publisher:"BBC عربي",url:GOOGLE("bbc.com/arabic"),lang:"ar"},
- {publisher:"CNN عربية",url:GOOGLE("cnn.com/arabic"),lang:"ar"},
- {publisher:"الحرة",url:GOOGLE("alhurra.com"),lang:"ar"},
- {publisher:"RT عربي",url:GOOGLE("arabic.rt.com"),lang:"ar"},
- {publisher:"فرانس 24 عربي",url:GOOGLE("france24.com/ar"),lang:"ar"},
- {publisher:"التلفزيون العربي",url:GOOGLE("alaraby.com"),lang:"ar"},
- {publisher:"شبكة قدس الإخبارية",url:GOOGLE("qudsn.co"),lang:"ar"},
- {publisher:"رؤيا الإخباري",url:GOOGLE("royanews.tv"),lang:"ar"},
- {publisher:"عاجل السعودية",url:"https://ajel.sa/rss.xml",lang:"ar"},
- {publisher:"وكالة الأنباء السعودية واس",url:GOOGLE("spa.gov.sa"),lang:"ar"},
- {publisher:"القاهرة الإخبارية",url:GOOGLE("alqaheranews.net"),lang:"ar"},
- {publisher:"كونا",url:GOOGLE("kuna.net.kw"),lang:"ar"},
- {publisher:"المنار",url:GOOGLE("almanar.com.lb"),lang:"ar"},
- {publisher:"سبوتنيك عربي",url:GOOGLE("sputnikarabic.ae"),lang:"ar"},
- {publisher:"رويترز",url:GOOGLE("reuters.com","en"),lang:"en"},
- {publisher:"Associated Press",url:GOOGLE("apnews.com","en"),lang:"en"},
- {publisher:"BBC News",url:GOOGLE("bbc.com/news","en"),lang:"en"},
- {publisher:"AFP",url:GOOGLE("afp.com","en"),lang:"en"},
- {publisher:"EFE",url:GOOGLE("efe.com","en"),lang:"en"},
- {publisher:"dpa",url:GOOGLE("dpa.com","en"),lang:"en"},
- {publisher:"Kyodo News",url:GOOGLE("english.kyodonews.net","en"),lang:"en"},
- {publisher:"Jiji Press",url:GOOGLE("jiji.com","en"),lang:"en"},
- {publisher:"Xinhua",url:GOOGLE("news.cn","en"),lang:"en"},
- {publisher:"TASS",url:GOOGLE("tass.com","en"),lang:"en"},
- {publisher:"UPI",url:GOOGLE("upi.com","en"),lang:"en"},
- {publisher:"Yonhap News Agency",url:GOOGLE("yna.co.kr","en"),lang:"en"},
- {publisher:"NHK World",url:GOOGLE("nhk.or.jp","en"),lang:"en"},
- {publisher:"CNA",url:GOOGLE("channelnewsasia.com","en"),lang:"en"},
- {publisher:"Bernama",url:GOOGLE("bernama.com","en"),lang:"en"},
- {publisher:"ANSA",url:GOOGLE("ansa.it","en"),lang:"en"},
- {publisher:"The Hindu",url:GOOGLE("thehindu.com","en"),lang:"en"},
- {publisher:"The Times of India",url:GOOGLE("timesofindia.indiatimes.com","en"),lang:"en"},
- {publisher:"The Indian Express",url:GOOGLE("indianexpress.com","en"),lang:"en"},
- {publisher:"Hindustan Times",url:GOOGLE("hindustantimes.com","en"),lang:"en"},
- {publisher:"Dawn",url:GOOGLE("dawn.com","en"),lang:"en"},
- {publisher:"South China Morning Post",url:GOOGLE("scmp.com","en"),lang:"en"},
- {publisher:"The Japan Times",url:GOOGLE("japantimes.co.jp","en"),lang:"en"},
- {publisher:"Nikkei Asia",url:GOOGLE("asia.nikkei.com","en"),lang:"en"},
- {publisher:"The Korea Herald",url:GOOGLE("koreaherald.com","en"),lang:"en"},
- {publisher:"The Straits Times",url:GOOGLE("straitstimes.com","en"),lang:"en"},
- {publisher:"The Sydney Morning Herald",url:GOOGLE("smh.com.au","en"),lang:"en"},
- {publisher:"ABC News Australia",url:GOOGLE("abc.net.au","en"),lang:"en"},
- {publisher:"CBC News",url:GOOGLE("cbc.ca","en"),lang:"en"},
- {publisher:"The Globe and Mail",url:GOOGLE("theglobeandmail.com","en"),lang:"en"},
- {publisher:"Toronto Star",url:GOOGLE("thestar.com","en"),lang:"en"},
- {publisher:"Le Monde",url:GOOGLE("lemonde.fr","en"),lang:"en"},
- {publisher:"El País",url:GOOGLE("english.elpais.com","en"),lang:"en"},
- {publisher:"Der Spiegel",url:GOOGLE("spiegel.de","en"),lang:"en"},
- {publisher:"POLITICO Europe",url:GOOGLE("politico.eu","en"),lang:"en"},
- {publisher:"The Independent",url:GOOGLE("independent.co.uk","en"),lang:"en"},
- {publisher:"The Telegraph",url:GOOGLE("telegraph.co.uk","en"),lang:"en"},
- {publisher:"The Wall Street Journal",url:GOOGLE("wsj.com","en"),lang:"en"},
- {publisher:"Financial Times",url:GOOGLE("ft.com","en"),lang:"en"},
- {publisher:"The Economist",url:GOOGLE("economist.com","en"),lang:"en"},
- {publisher:"Bloomberg",url:GOOGLE("bloomberg.com","en"),lang:"en"},
- {publisher:"Axios",url:GOOGLE("axios.com","en"),lang:"en"},
- {publisher:"Newsweek",url:GOOGLE("newsweek.com","en"),lang:"en"},
- {publisher:"The Atlantic",url:GOOGLE("theatlantic.com","en"),lang:"en"},
- {publisher:"Semafor",url:GOOGLE("semafor.com","en"),lang:"en"},
- {publisher:"The Kyiv Independent",url:GOOGLE("kyivindependent.com","en"),lang:"en"},
- {publisher:"Ukrainska Pravda",url:GOOGLE("pravda.com.ua","en"),lang:"en"},
- {publisher:"The Washington Post",url:GOOGLE("washingtonpost.com","en"),lang:"en"},
- {publisher:"The Guardian",url:GOOGLE("theguardian.com","en"),lang:"en"},
- {publisher:"DW عربية",url:GOOGLE("dw.com/ar"),lang:"ar"},
- {publisher:"TRT عربي",url:GOOGLE("trt.net.tr/ar"),lang:"ar"},
- {publisher:"يورونيوز عربي",url:GOOGLE("arabic.euronews.com"),lang:"ar"},
- {publisher:"وكالة الأناضول العربية",url:GOOGLE("aa.com.tr/ar"),lang:"ar"},
- {publisher:"إندبندنت عربية",url:GOOGLE("independentarabia.com"),lang:"ar"},
- {publisher:"الشرق الأوسط",url:GOOGLE("aawsat.com"),lang:"ar"},
- {publisher:"القدس العربي",url:GOOGLE("alquds.co.uk"),lang:"ar"},
- {publisher:"أخبار الأمم المتحدة عربي",url:GOOGLE("news.un.org/ar"),lang:"ar"},
- {publisher:"سويس إنفو عربي",url:GOOGLE("swissinfo.ch/ara"),lang:"ar"},
- {publisher:"المونيتور عربي",url:GOOGLE("al-monitor.com/ar"),lang:"ar"},
- {publisher:"ABC News",url:GOOGLE("abcnews.go.com","en"),lang:"en"},
- {publisher:"NBC News",url:GOOGLE("nbcnews.com","en"),lang:"en"},
- {publisher:"CBS News",url:GOOGLE("cbsnews.com","en"),lang:"en"},
- {publisher:"NPR",url:GOOGLE("npr.org","en"),lang:"en"},
- {publisher:"The New York Times",url:GOOGLE("nytimes.com","en"),lang:"en"},
- {publisher:"USA Today",url:GOOGLE("usatoday.com","en"),lang:"en"},
- {publisher:"CNBC",url:GOOGLE("cnbc.com","en"),lang:"en"},
- {publisher:"Sky News",url:GOOGLE("news.sky.com","en"),lang:"en"},
- {publisher:"The Hill",url:GOOGLE("thehill.com","en"),lang:"en"},
- {publisher:"CTV News",url:GOOGLE("ctvnews.ca","en"),lang:"en"}
-];
-function urgentRow(title: string,url: string,summary: string,date: string,feed: any) {
- const normalizedTitle=String(title||"").replace(/[\u061C\u200E\u200F\u202A-\u202E\u2066-\u2069]/g,"").replace(/^["'“”‘’(]+/,"").trim();
- if(!normalizedTitle||!/^https?:\/\//i.test(url)||!URGENT.test(normalizedTitle)) return null;
- const dt=date?new Date(date):null;
- if(!dt||Number.isNaN(dt.getTime())||Date.now()-dt.getTime()>2*60*60*1000||dt.getTime()>Date.now()+5*60*1000) return null;
- return {url,title:title.slice(0,500),summary:(summary||"").slice(0,3000),source_name:feed.publisher+" Breaking Desk",source_url:feed.type==="telegram"?"https://t.me/"+feed.handle:feed.url,category:"world",country:"غير محدد",lang:feed.lang,verification:"unconfirmed",published_at:dt.toISOString(),editorial_status:"published",ai_classification_status:"pending",is_breaking:true};
-}
-function parseTelegram(html: string,feed: any) {
- const starts=[...html.matchAll(/<div class="tgme_widget_message\b/g)].map(m=>m.index),out=[];
- for(let i=0;i<starts.length;i++) {
-  const block=html.slice(starts[i],starts[i+1]??html.length);
-  const body=(block.match(/<div class="tgme_widget_message_text[^"]*"[^>]*>([\s\S]*?)<\/div>/i)||[])[1]||"";
-  const date=(block.match(/<time[^>]*datetime=["']([^"']+)["']/i)||[])[1];
-  const post=(block.match(/href=["'](https?:\/\/t\.me\/[^/"']+\/\d+)["']/i)||[])[1];
-  const clean=decode(body,true); if(!clean||!date||!post) continue;
-  const title=(clean.split(/\n+/).map(line=>line.trim()).find(Boolean)||clean).slice(0,500);
-  const item=urgentRow(title,post,clean,date,feed);
-  if(item) {item.summary=clean.slice(0,3000);out.push(item);}
- }
- return out.slice(0,20);
-}
-function parseBreakingRss(xml: string,feed: any) {
- const blocks=xmlEntries(xml);
- return blocks.slice(0,20).map(block=>{
-  const title=tag(block,["title"]),url=entryLink(block);
-  const summary=tag(block,["description","summary","content"]);
-  const date=tag(block,["pubDate","published","updated"]);
-  return urgentRow(title,url,summary,date,feed);
- }).filter(Boolean);
-}
-async function collectBreaking(feed: any) {
- try {
-  const url=feed.type==="telegram"?"https://t.me/s/"+feed.handle:feed.url;
-  const r=await fetch(url,{headers:{"User-Agent":"Mozilla/5.0 (compatible; WRLDLINE-Breaking/4.0)","Accept":"text/html,application/rss+xml,application/xml,*/*"},signal:AbortSignal.timeout(9000)});
-  if(!r.ok) throw new Error("HTTP "+r.status);
-  const body=await r.text();
-  const raw=feed.type==="telegram"?(body.match(/tgme_widget_message\b/g)||[]).length:xmlEntries(body).length;
-  const rows=feed.type==="telegram"?parseTelegram(body,feed):parseBreakingRss(body,feed);
-  if(rows.length) {
-   const saved=await dbRequest("articles?on_conflict=url",{method:"POST",headers:{"Prefer":"resolution=merge-duplicates,return=minimal"},body:JSON.stringify(rows)});
-   if(!saved.ok) throw new Error("DB "+saved.status+" "+(await saved.text()).slice(0,160));
-  }
-  console.log("BREAKING_SOURCE "+feed.publisher+" raw="+raw+" parsed="+rows.length);
-  return {ok:true,source:feed.publisher,raw,parsed:rows.length};
- } catch(e: any) { const error=String(e?.message||e).slice(0,180); console.error("BREAKING_SOURCE_ERROR "+feed.publisher+": "+error); return {ok:false,source:feed.publisher,raw:0,parsed:0,error}; }
-}
+// Dedicated 90-source urgent polling runs in bot-breaking.js through GitHub Actions.
+// This cron worker classifies urgent headlines already collected by the 146-feed newsroom,
+// avoiding a second burst of 90 external requests from the Supabase Edge runtime.
 async function runBreaking() {
  const runId=await beginRun("breaking");
- let next=0; const results=new Array(FEEDS.length);
- async function worker() {
-  while(next<FEEDS.length) { const i=next++; results[i]=await collectBreaking(FEEDS[i]); }
+ const cutoff=new Date(Date.now()-2*60*60*1000).toISOString();
+ const response=await dbRequest("articles?select=id,title,source_name,published_at,is_breaking&editorial_status=eq.published&published_at=gte."+encodeURIComponent(cutoff)+"&or=(is_breaking.eq.false,is_breaking.is.null)&order=published_at.desc&limit=2000");
+ if(!response.ok) throw new Error("Breaking scan failed: "+response.status+" "+(await response.text()).slice(0,180));
+ const rows=await response.json();
+ const matches=rows.filter((article:any)=>{
+  const published=Date.parse(article.published_at||"");
+  const age=Date.now()-published;
+  return typeof article.title==="string"&&URGENT.test(article.title)&&Number.isFinite(published)&&age>=-300000&&age<=2*60*60*1000;
+ }).slice(0,500);
+ for(let offset=0;offset<matches.length;offset+=100) {
+  const ids=matches.slice(offset,offset+100).map((article:any)=>article.id).filter(Boolean);
+  if(!ids.length) continue;
+  const saved=await dbRequest("articles?id=in.("+ids.join(",")+")",{method:"PATCH",headers:{"Prefer":"return=minimal"},body:JSON.stringify({is_breaking:true})});
+  if(!saved.ok) throw new Error("Could not flag urgent articles: "+saved.status+" "+(await saved.text()).slice(0,180));
  }
- await Promise.all(Array.from({length:16},worker));
- const summary={pipeline:"breaking",feeds:FEEDS.length,successful:results.filter(x=>x?.ok).length,failed:results.filter(x=>!x?.ok).length,raw_items:results.reduce((n,x)=>n+(x?.raw||0),0),parsed_items:results.reduce((n,x)=>n+(x?.parsed||0),0),empty_sources:results.filter(x=>x?.ok&&x.raw===0).length};
- await updateRun(runId,{source_count:summary.feeds,successful_sources:summary.successful,failed_sources:summary.failed,parsed_items:summary.parsed_items,error_summary:results.filter(x=>!x?.ok).slice(0,12).map(x=>String(x?.source||"unknown")+": "+String(x?.error||"failed")).join(" | ")||null});
- return summary;
+ const sources=new Set(matches.map((article:any)=>String(article.source_name||"").trim()).filter(Boolean));
+ await updateRun(runId,{source_count:sources.size,successful_sources:sources.size,failed_sources:0,parsed_items:matches.length,error_summary:null});
+ return {pipeline:"breaking",scanned:rows.length,flagged:matches.length,sources:sources.size};
 }
 
 
