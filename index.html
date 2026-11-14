@@ -4,6 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#101b2d">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
   <meta name="description" content="ورلدلاين نيوز — تغطية إخبارية عالمية، عاجل، سياسة، اقتصاد، تقنية، رياضة وتحليلات من مصادرها.">
   <meta name="robots" content="index,follow,max-image-preview:large">
   <link rel="canonical" href="https://al-ghaib.us.ci/">
@@ -14,7 +15,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=20261114-4">
+  <link rel="stylesheet" href="style.css?v=20261114-editorial5">
   <link rel="manifest" href="manifest.json">
 </head>
 <body>
@@ -55,7 +56,7 @@
   <section class="coverage-pulse" id="coveragePulse" aria-labelledby="coveragePulseHeading"><div class="coverage-pulse-head"><div><span class="section-kicker">WRLDLINE SIGNAL</span><h2 id="coveragePulseHeading">نبض التغطية</h2><p>ما الملفات الأكثر حضورًا في غرفة الأخبار خلال آخر 24 ساعة؟</p></div><span class="coverage-live"><i></i> تحديث مباشر</span></div><div class="coverage-pulse-grid" id="coveragePulseGrid"><div class="loading-state">نحلل حركة التغطية...</div></div></section>
     <section class="map-teaser"><div><span class="section-kicker">WRLDLINE INTELLIGENCE</span><h2>مرصد العالم والخريطة التفاعلية</h2><p>تابع الأحداث حسب موقعها وإشارات المخاطر المستخرجة من التغطية الإخبارية الحديثة.</p></div><a class="outline-button" href="map.html">افتح الخريطة التفاعلية ↗</a></section><section class="map-teaser"><div><span class="section-kicker">GLOBAL DAILY BRIEFING</span><h2>العالم في 24 ساعة</h2><p>ملخص موسع لأبرز أحداث اليوم، مع السياق والتأثير وروابط المصادر الأصلية. يتجدد عند 00:00 UTC.</p></div><a class="outline-button" href="daily-briefing.html">اقرأ الملخص اليومي ↗</a></section>
     </main>
-  <footer class="site-footer"><div class="container footer-main"><a class="brand footer-brand" href="#"><span class="brand-mark">W</span><span class="brand-copy"><strong>WRLDLINE</strong><small>GLOBAL NEWS NETWORK</small></span></a><p>منصة إخبارية رقمية تضع العالم في سياقه.</p><div class="footer-links"><span>تغطية عالمية متعددة المصادر</span><a href="#mainContent">العودة للأعلى ↑</a></div></div><div class="container footer-bottom"><span>© <span id="year"></span> WRLDLINE NEWS</span><span>المحتوى الإخباري يُنسب إلى مصادره الأصلية.</span></div></footer>
+  <footer class="site-footer"><div class="container footer-main"><a class="brand footer-brand" href="#"><span class="brand-mark">W</span><span class="brand-copy"><strong>WRLDLINE</strong><small>GLOBAL NEWS NETWORK</small></span></a><p>منصة إخبارية رقمية تضع العالم في سياقه.</p><div class="footer-links policy-site-links"><span>تغطية عالمية متعددة المصادر</span><a href="#mainContent">العودة للأعلى ↑</a><a href="about.html">عن الموقع</a><a href="contact.html">التواصل</a><a href="privacy.html">الخصوصية</a><a href="terms.html">الشروط</a><a href="corrections.html">التصحيح</a><a href="newsletter.html">النشرة</a></div></div><div class="container footer-bottom"><span>© <span id="year"></span> WRLDLINE NEWS</span><span>المحتوى الإخباري يُنسب إلى مصادره الأصلية.</span></div></footer>
   <div class="search-overlay" id="searchOverlay" aria-hidden="true"><div class="search-dialog" role="dialog" aria-modal="true" aria-label="البحث في الأخبار"><div class="search-top"><label for="searchInput">ابحث في التغطية</label><button class="icon-button" id="closeSearch" aria-label="إغلاق البحث">×</button></div><input id="searchInput" type="search" placeholder="عنوان، موضوع، دولة أو مصدر..." autocomplete="off"><div id="searchResults" class="search-results"><p class="muted">اكتب كلمة للبدء.</p></div></div></div>
   <div class="modal-overlay" id="articleModal" aria-hidden="true"><article class="article-dialog" id="modalContent"></article></div>
   <nav class="mobile-dock" aria-label="التنقل السريع"><a href="#mainContent" class="dock-item"><span>⌂</span><small>الرئيسية</small></a><a href="#breakingSection" class="dock-item"><span>◉</span><small>عاجل</small></a><a href="shorts.html" class="dock-item"><span>▣</span><small>Shorts</small></a><a href="daily-briefing.html" class="dock-item"><span>◷</span><small>الملخص</small></a><a href="markets.html" class="dock-item"><span>↗</span><small>الأسواق</small></a><button type="button" class="dock-item" id="dockSaved"><span>☆</span><small>المحفوظات</small></button><button type="button" class="dock-item" id="dockSearch"><span>⌕</span><small>بحث</small></button></nav>
@@ -63,7 +64,9 @@
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="language.js?v=20261113-2" defer></script>
-  <script src="script.js?v=20261114-8" defer></script>
+  <script src="script.js?v=20261114-editorial5" defer></script>
 <script src="share.js?v=20261113-4" defer></script>
+<script src="analytics-config.js?v=20261114-1"></script>
+<script src="analytics.js?v=20261114-1" defer></script>
 </body>
 </html>

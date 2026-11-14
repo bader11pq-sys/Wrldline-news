@@ -43,6 +43,16 @@
       (item.impact ? '<p class="impact"><strong>الدلالة:</strong> ' + escapeHTML(item.impact) + '</p>' : "") +
       sourceLinks(item.sources) + '</article>';
   }
+  function fingerprint(value) {
+    return String(value || "").toLocaleLowerCase("ar").replace(/[\u064B-\u065F\u0670\u06D6-\u06ED]/g, "").replace(/[^\p{L}\p{N}]+/gu, " ").trim();
+  }
+  function dedupeBriefingItems(items, key, seen) {
+    return (items || []).filter((item) => {
+      const value = fingerprint(item && item[key]);
+      if (!value || seen.has(value)) return false;
+      seen.add(value); return true;
+    });
+  }
   function renderBriefing(row, stale = false) {
     const start = new Date(row.window_start), end = new Date(row.window_end);
     $("#utcDateLabel").textContent = "ملخص يوم " + formatDate(row.briefing_date);
@@ -56,24 +66,30 @@
     $("#executiveSummary").textContent = row.executive_summary || "";
     $("#executiveSection").hidden = !row.executive_summary;
 
-    $("#topDevelopments").innerHTML = (row.top_developments || []).map(storyCard).join("");
-    $("#topSection").hidden = !(row.top_developments || []).length;
+    const seen = new Set();
+    const topItems = dedupeBriefingItems(row.top_developments, "headline", seen);
+    $("#topDevelopments").innerHTML = topItems.map(storyCard).join("");
+    $("#topSection").hidden = !topItems.length;
 
-    $("#briefingSections").innerHTML = (row.sections || []).map((section) =>
+    const sections = (row.sections || []).map((section) => ({...section, items: dedupeBriefingItems(section.items, "headline", seen)})).filter((section) => section.items.length);
+    $("#briefingSections").innerHTML = sections.map((section) =>
       '<article class="briefing-category"><h3>' + escapeHTML(section.title) + '</h3><p>' + escapeHTML(section.overview || "") + '</p>' +
-      (section.items || []).map(storyCard).join("") + '</article>'
+      section.items.map(storyCard).join("") + '</article>'
     ).join("");
-    $("#coverageSection").hidden = !(row.sections || []).length;
+    $("#coverageSection").hidden = !sections.length;
 
     function renderList(items, host) {
       host.innerHTML = (items || []).map((item) =>
         '<article class="briefing-list-item"><h3>' + escapeHTML(item.title || "متابعة") + '</h3><p>' + escapeHTML(item.analysis || "") + '</p>' + sourceLinks(item.sources) + '</article>'
       ).join("");
     }
-    renderList(row.global_trends, $("#globalTrends"));
-    renderList(row.watchlist, $("#watchlist"));
-    $("#trendsSection").hidden = !(row.global_trends || []).length;
-    $("#watchSection").hidden = !(row.watchlist || []).length;
+    const trendSeen = new Set();
+    const globalTrends = dedupeBriefingItems(row.global_trends, "title", trendSeen);
+    const watchlist = dedupeBriefingItems(row.watchlist, "title", trendSeen);
+    renderList(globalTrends, $("#globalTrends"));
+    renderList(watchlist, $("#watchlist"));
+    $("#trendsSection").hidden = !globalTrends.length;
+    $("#watchSection").hidden = !watchlist.length;
 
     const freshness = stale ? "تنبيه: لم يتوفر ملخص دورة اليوم بعد؛ نعرض أحدث نسخة مكتملة." : "اكتمل إعداد ملخص اليوم.";
     setStatus(freshness + " الفترة: " + formatDate(row.briefing_date) + " (UTC). آخر إنشاء: " + formatTime(row.generated_at) + " UTC.", stale ? "warning" : "");
@@ -83,7 +99,7 @@
     const params = new URLSearchParams({ select: "*", briefing_date: "eq." + target, limit: "1" });
     const response = await fetch(SUPABASE_URL + "/rest/v1/daily_news_briefings?" + params.toString(), {
       headers: { apikey: SUPABASE_KEY, Authorization: "Bearer " + SUPABASE_KEY },
-      cache: "no-store",
+      cache: "no-store", signal: AbortSignal.timeout(12000),
     });
     if (!response.ok) throw new Error("تعذر جلب الملخص (" + response.status + ")");
     const rows = await response.json();
@@ -93,7 +109,7 @@
     const params = new URLSearchParams({ select: "*", order: "briefing_date.desc", limit: "1" });
     const response = await fetch(SUPABASE_URL + "/rest/v1/daily_news_briefings?" + params.toString(), {
       headers: { apikey: SUPABASE_KEY, Authorization: "Bearer " + SUPABASE_KEY },
-      cache: "no-store",
+      cache: "no-store", signal: AbortSignal.timeout(12000),
     });
     if (!response.ok) throw new Error("تعذر جلب آخر نسخة مكتملة (" + response.status + ")");
     const rows = await response.json();

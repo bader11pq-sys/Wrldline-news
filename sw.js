@@ -1,7 +1,7 @@
-const CACHE_NAME = "wrldline-shell-v50";
+const CACHE_NAME = "wrldline-shell-v52";
 const NEWS_CACHE = "wrldline-public-news-v1";
 const BRIEFING_CACHE = "wrldline-daily-briefing-v1";
-const SHELL_URLS = ["/", "/index.html", "/style.css", "/script.js", "/language.js", "/share.js", "/manifest.json", "/history.html", "/history-world-expansion.js", "/history-executive.js", "/history-research.js", "/history-expansion.js", "/history-lab.js", "/markets.html", "/markets.css", "/markets.js", "/map.html", "/map.js", "/shorts.html", "/shorts.css", "/shorts.js", "/daily-briefing.html", "/daily-briefing.css", "/daily-briefing.js"];
+const SHELL_URLS = ["/", "/index.html", "/style.css", "/script.js", "/language.js", "/share.js", "/manifest.json", "/favicon.svg", "/analytics-config.js", "/analytics.js", "/forms.js", "/policy.css", "/about.html", "/contact.html", "/privacy.html", "/terms.html", "/corrections.html", "/newsletter.html", "/history.html", "/history-world-expansion.js", "/history-executive.js", "/history-research.js", "/history-expansion.js", "/history-lab.js", "/markets.html", "/markets.css", "/markets.js", "/map.html", "/map.js", "/shorts.html", "/shorts.css", "/shorts.js", "/daily-briefing.html", "/daily-briefing.css", "/daily-briefing.js"];
 self.addEventListener("install", event => {
   event.waitUntil((async () => {
     const cache = await caches.open(CACHE_NAME);
@@ -36,13 +36,13 @@ self.addEventListener("fetch", event => {
   const url = new URL(request.url);
   if (url.hostname === "vmaxbnogmmfyrcucapnq.supabase.co" && url.pathname === "/rest/v1/articles") {
     event.respondWith(networkFirst(request, NEWS_CACHE).catch(() =>
-      new Response("[]", { headers: { "Content-Type": "application/json", "X-WRLDLINE-Offline": "1" } })
+      new Response(JSON.stringify({error:"offline",message:"WRLDLINE network unavailable"}), { status: 503, headers: { "Content-Type": "application/json", "X-WRLDLINE-Offline": "1" } })
     ));
     return;
   }
   if (url.hostname === "vmaxbnogmmfyrcucapnq.supabase.co" && url.pathname === "/rest/v1/daily_news_briefings") {
     event.respondWith(networkFirst(request, BRIEFING_CACHE).catch(() =>
-      new Response("[]", { headers: { "Content-Type": "application/json", "X-WRLDLINE-Offline": "1" } })
+      new Response(JSON.stringify({error:"offline",message:"WRLDLINE network unavailable"}), { status: 503, headers: { "Content-Type": "application/json", "X-WRLDLINE-Offline": "1" } })
     ));
     return;
   }

@@ -6,4 +6,10 @@
   <url><loc>https://al-ghaib.us.ci/shorts.html</loc><changefreq>hourly</changefreq><priority>0.7</priority></url>
   <url><loc>https://al-ghaib.us.ci/daily-briefing.html</loc><changefreq>daily</changefreq><priority>0.8</priority></url>
   <url><loc>https://al-ghaib.us.ci/history.html</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://al-ghaib.us.ci/about.html</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://al-ghaib.us.ci/contact.html</loc><changefreq>monthly</changefreq><priority>0.5</priority></url>
+  <url><loc>https://al-ghaib.us.ci/privacy.html</loc><changefreq>yearly</changefreq><priority>0.5</priority></url>
+  <url><loc>https://al-ghaib.us.ci/terms.html</loc><changefreq>yearly</changefreq><priority>0.5</priority></url>
+  <url><loc>https://al-ghaib.us.ci/corrections.html</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://al-ghaib.us.ci/newsletter.html</loc><changefreq>monthly</changefreq><priority>0.4</priority></url>
 </urlset>
