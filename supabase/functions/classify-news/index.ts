@@ -147,6 +147,7 @@ function providerCooldownSeconds(provider: string, error: unknown) {
    if(/tokens per minute|\btpm\b/.test(message)) return 60;
   }
   if(provider==="nvidia" && /invalid json|no structured/.test(message)) return 5*60;
+  if(provider==="bazaarlink" && /too many concurrent|in.?flight/.test(message)) return 30;
   return 5*60;
  }
  if (/\b(401|403)\b|unauthorized|invalid api key|authentication/.test(message)) return 30*60;
@@ -246,23 +247,23 @@ async function gonkaGenerate(prompt:string,apiKey:string,maxOutputTokens:number)
  return extractJsonObject(raw);
 }
 async function generateWithPrimaryModels(prompt: string, groqKey: string | null, nvidiaKey: string | null, bazaarlinkKey: string | null, bazaarlinkModel: string, maxOutputTokens: number, db: any, cooldowns: Set<string>) {
- const groqPrompt = prompt + "\\n\\nمهمتك الأساسية والحصرية في هذا الطلب: التصنيف التحريري. أعطِ الأولوية لدقة country وcountry_code وregion وevent_type وsummary وconfidence وtopic وsecondary_topics وgeographic_scope وtopic_confidence وtopic_reason. لا تخمّن عند غياب الدليل. أخرج كائن JSON بالمخطط الكامل المطلوب.";
- const nvidiaPrompt = prompt + "\\n\\nمهمتك الأساسية والحصرية في هذا الطلب: تحليل المخاطر والجغرافيا والحصرية. أعطِ الأولوية لدقة risk_level وrisk_score وlocation_name وlatitude وlongitude وis_exclusive وexclusive_type وexclusive_confidence وexclusive_reason. لا تخمّن عند غياب الدليل. أخرج كائن JSON بالمخطط الكامل المطلوب.";
- async function runTask(task: string, primaryName: "groq" | "nvidia", primaryKey: string | null, taskPrompt: string) {
-  const primaryCall = primaryName === "groq" ? groqGenerate : nvidiaGenerate;
-  let primaryError = "";
-  if (primaryKey && !cooldowns.has(primaryName)) {
-   try { const data = await primaryCall(taskPrompt, primaryKey, maxOutputTokens); await recordProviderSuccess(db, cooldowns, primaryName); return {data,provider:primaryName}; }
-   catch(error) { primaryError=String(error).slice(0,260); await recordProviderFailure(db,cooldowns,primaryName,error); }
-  } else primaryError = !primaryKey ? primaryName + " API key is not configured" : primaryName + " cooldown is active";
-  if (!bazaarlinkKey || cooldowns.has("bazaarlink")) throw Object.assign(new Error(task+" could not run. "+primaryError+"; BazaarLink "+(!bazaarlinkKey?"API key is not configured":"cooldown is active")),{deferred:true,retryAfter:300});
-  try { const data=await bazaarlinkGenerate(taskPrompt,bazaarlinkKey,maxOutputTokens,bazaarlinkModel); await recordProviderSuccess(db,cooldowns,"bazaarlink"); return {data,provider:"bazaarlink"}; }
-  catch(error) { await recordProviderFailure(db,cooldowns,"bazaarlink",error); throw Object.assign(new Error(task+" failed on "+primaryName+" ("+primaryError+") and BazaarLink ("+String(error).slice(0,260)+")"),{deferred:true,retryAfter:300}); }
+ const groqPrompt=prompt+"\\n\\nمهمتك الأساسية والحصرية في هذا الطلب: التصنيف التحريري. أعطِ الأولوية لدقة country وcountry_code وregion وevent_type وsummary وconfidence وtopic وsecondary_topics وgeographic_scope وtopic_confidence وtopic_reason. لا تخمّن عند غياب الدليل. أخرج كائن JSON بالمخطط الكامل المطلوب.";
+ const nvidiaPrompt=prompt+"\\n\\nمهمتك الأساسية والحصرية في هذا الطلب: تحليل المخاطر والجغرافيا والحصرية. أعطِ الأولوية لدقة risk_level وrisk_score وlocation_name وlatitude وlongitude وis_exclusive وexclusive_type وexclusive_confidence وexclusive_reason. لا تخمّن عند غياب الدليل. أخرج كائن JSON بالمخطط الكامل المطلوب.";
+ async function runPrimary(name:"groq"|"nvidia",key:string|null,taskPrompt:string,call:typeof groqGenerate) {
+  if(!key)return {data:null,provider:null,error:name+" API key is not configured"};
+  if(cooldowns.has(name))return {data:null,provider:null,error:name+" cooldown is active"};
+  try {const data=await call(taskPrompt,key,maxOutputTokens);await recordProviderSuccess(db,cooldowns,name);return {data,provider:name,error:""};}
+  catch(error){await recordProviderFailure(db,cooldowns,name,error);return {data:null,provider:null,error:name+": "+String(error).slice(0,260)};}
  }
- const settled=await Promise.allSettled([runTask("editorial","groq",groqKey,groqPrompt),runTask("risk_geography_exclusivity","nvidia",nvidiaKey,nvidiaPrompt)]);
- const results:any[]=[]; const errors:string[]=[];
- for(let i=0;i<settled.length;i++){const item=settled[i];if(item.status==="fulfilled")results[i]=item.value;else errors.push(String(item.reason).slice(0,300));}
- if(errors.length){const quota=errors.some(error=>/429|quota|resource_exhausted|rate.?limit|tokens per day|tokens per minute/i.test(error));throw Object.assign(new Error("AI analysis is incomplete. "+errors.join(" | ")),{deferred:true,quotaExceeded:quota,retryAfter:quota?300:90});}
+ const results:any[]=await Promise.all([runPrimary("groq",groqKey,groqPrompt,groqGenerate),runPrimary("nvidia",nvidiaKey,nvidiaPrompt,nvidiaGenerate)]);
+ const missing=results.map((value,index)=>value.data?-1:index).filter(index=>index>=0);
+ if(missing.length){
+  const primaryErrors=missing.map(index=>results[index].error).join(" | ");
+  if(!bazaarlinkKey||cooldowns.has("bazaarlink"))throw Object.assign(new Error("Primary AI analysis is incomplete. "+primaryErrors+"; BazaarLink "+(!bazaarlinkKey?"API key is not configured":"cooldown is active")),{deferred:true,retryAfter:300});
+  const fallbackPrompt=missing.length===2?prompt+"\\n\\nنفّذ المهمتين معاً في طلب واحد: التصنيف التحريري الكامل، ثم تحليل المخاطر والجغرافيا والحصرية. أعد كل الحقول المطلوبة في كائن JSON واحد، ولا تخمّن أي قيمة لا يدعمها النص.":missing[0]===0?groqPrompt:nvidiaPrompt;
+  try{const data=await bazaarlinkGenerate(fallbackPrompt,bazaarlinkKey,maxOutputTokens,bazaarlinkModel);await recordProviderSuccess(db,cooldowns,"bazaarlink");for(const index of missing)results[index]={data,provider:"bazaarlink",error:""};}
+  catch(error){await recordProviderFailure(db,cooldowns,"bazaarlink",error);const quota=/429|quota|resource_exhausted|rate.?limit/i.test(String(error));throw Object.assign(new Error("BazaarLink fallback failed after primary provider failure. "+primaryErrors+" | "+String(error).slice(0,300)),{deferred:true,quotaExceeded:quota,retryAfter:quota?60:300});}
+ }
  const editorial=results[0].data,intelligence=results[1].data;
  const merged={...editorial,risk_level:intelligence.risk_level,risk_score:intelligence.risk_score,location_name:intelligence.location_name,latitude:intelligence.latitude,longitude:intelligence.longitude,is_exclusive:intelligence.is_exclusive,exclusive_type:intelligence.exclusive_type,exclusive_confidence:intelligence.exclusive_confidence,exclusive_reason:intelligence.exclusive_reason};
  const providersUsed=[...new Set([results[0].provider,results[1].provider])];
