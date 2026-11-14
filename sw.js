@@ -1,10 +1,10 @@
-const CACHE_NAME = "wrldline-shell-v49";
+const CACHE_NAME = "wrldline-shell-v50";
 const NEWS_CACHE = "wrldline-public-news-v1";
 const BRIEFING_CACHE = "wrldline-daily-briefing-v1";
-const SHELL_URLS = ["/index.html", "/history.html", "/history-world-expansion.js", "/history-executive.js", "/history-research.js", "/history-expansion.js", "/history-lab.js", "/design.css", "/daily-briefing.html", "/daily-briefing.css", "/daily-briefing.js"];
+const SHELL_URLS = ["/", "/index.html", "/style.css", "/script.js", "/language.js", "/share.js", "/manifest.json", "/history.html", "/history-world-expansion.js", "/history-executive.js", "/history-research.js", "/history-expansion.js", "/history-lab.js", "/markets.html", "/markets.css", "/markets.js", "/map.html", "/map.js", "/shorts.html", "/shorts.css", "/shorts.js", "/daily-briefing.html", "/daily-briefing.css", "/daily-briefing.js"];
 self.addEventListener("install", event => {
   event.waitUntil((async () => {
-    await caches.open(CACHE_NAME).then(cache => cache.addAll(SHELL_URLS).catch(() => {}));
+    const cache = await caches.open(CACHE_NAME);\n    await Promise.allSettled(SHELL_URLS.map(async url => {\n      try { const response = await fetch(new Request(url, { cache: "reload" })); if (response.ok) await cache.put(url, response); } catch {}\n    }));
     await self.skipWaiting();
   })());
 });
