@@ -189,7 +189,7 @@ async function generateWithOpenRouter(prompt: string, key: string) {
 
 async function generate(prompt: string) {
   const errors: string[] = [];
-  const gemini = Deno.env.get("GEMINI_API_KEY");
+  const gemini = Deno.env.get("GEMINI_API_KEY") || Deno.env.get("GOOGLE_API_KEY");
   const groq = Deno.env.get("GROQ_API_KEY");
   const openrouter = Deno.env.get("OPENROUTER_API_KEY");
   if (gemini) { try { return { data: await generateWithGemini(prompt, gemini), provider: "gemini" }; } catch (e) { errors.push("Gemini: " + String(e).slice(0, 180)); } }
