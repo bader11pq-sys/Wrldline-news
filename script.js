@@ -15,7 +15,7 @@ function newsDataMetaMarkup(a){
  if(!a.newsdataArticleId&&!tags.length&&!sentimentLabel&&!a.newsdataAiSummary)return "";
  return '<div class="newsdata-meta"><span class="newsdata-provider">NewsData.io</span>'+tags.map(t=>'<span class="newsdata-tag">'+escapeHTML(t)+'</span>').join("")+(sentimentLabel?'<span class="newsdata-sentiment sentiment-'+escapeHTML(sentiment)+'">'+ui("المشاعر: ","Sentiment: ")+escapeHTML(sentimentLabel)+'</span>':"")+'</div>';
 }
-const state = { articles:[], missedArticles:[], filtered:[], category:"all", country:"all", lang:localStorage.getItem("wrldline:language")==="en"?"en":"ar", limit:PAGE_SIZE, saved:new Set(readSaved()), query:"", sort:"newest", loading:false, db:null, user:null, follows:{category:[],country:[]}, followOnly:false, realtime:null,  pendingLocalSaved:new Set(readSaved()), breakingTickerIndex:0, breakingTickerCurrentId:null, refetchAfterCurrent:false,lastFetchAt:0 };
+const state = { articles:[], missedArticles:[], filtered:[], category:"all", country:"all", lang:localStorage.getItem("wrldline:language")==="en"?"en":"ar", limit:PAGE_SIZE, saved:new Set(readSaved()), query:"", sort:"newest", loading:false, db:null, user:null, follows:{category:[],country:[]}, followOnly:false, realtime:null,  pendingLocalSaved:new Set(readSaved()), breakingTickerIndex:0, breakingTickerCurrentId:null, missedLimit:8, refetchAfterCurrent:false,lastFetchAt:0 };
 
 document.addEventListener("DOMContentLoaded", () => {
   initPreferences(); bindEvents(); updateClock(); fetchNews(); initPersonalization(); setInterval(()=>{if(!document.hidden&&Date.now()-state.lastFetchAt>=90000)fetchNews();},30000); setInterval(updateBreaking, 15000);
@@ -85,6 +85,7 @@ function bindEvents(){
  document.getElementById("countryFilter").addEventListener("change",e=>{state.country=e.target.value;state.limit=PAGE_SIZE;applyFilters();});
  document.getElementById("sortFilter").addEventListener("change",e=>{state.sort=e.target.value;applyFilters();});
  document.getElementById("loadMoreButton").addEventListener("click",()=>{state.limit+=PAGE_SIZE;renderFeed();});
+ document.getElementById("missedLoadMoreButton")?.addEventListener("click",()=>{state.missedLimit+=8;renderMissedStories();});
  document.getElementById("followFeedButton").addEventListener("click",()=>{if(!state.user){showToast("سجّل الدخول أولاً لحفظ ومزامنة متابعاتك.");return;}state.followOnly=!state.followOnly;document.getElementById("followFeedButton").classList.toggle("active",state.followOnly);document.getElementById("followFeedButton").setAttribute("aria-pressed",String(state.followOnly));applyFilters();});
  document.getElementById("followOptions").addEventListener("click",e=>{const b=e.target.closest("[data-follow-type]");if(b)toggleFollow(b.dataset.followType,b.dataset.followValue);});
  document.getElementById("coveragePulseGrid").addEventListener("click",e=>{const b=e.target.closest("[data-pulse-category]");if(b)selectCategory(b.dataset.pulseCategory);});
@@ -240,9 +241,12 @@ function translationPanelMarkup(article){
 }
 function renderMissedStories(){
  const host=document.getElementById("missedNewsGrid");if(!host)return;
- const items=(state.missedArticles||[]).slice(0,18);
- const count=document.getElementById("missedNewsCount");if(count)count.textContent=state.lang==="ar"?items.length+" أخبار من مصادر NewsData":items.length+" NewsData stories";
- if(!items.length){host.innerHTML='<div class="missed-empty">'+ui("لا توجد أخبار إضافية من NewsData حالياً.","No additional NewsData stories right now.")+'</div>';return;}
+ const all=state.missedArticles||[],items=all.slice(0,state.missedLimit||8);
+ const count=document.getElementById("missedNewsCount");
+ if(count)count.textContent=state.lang==="ar"?all.length+" خبر":all.length+" stories";
+ const more=document.getElementById("missedLoadMoreButton");
+ if(more){more.hidden=items.length>=all.length;more.textContent=ui("عرض المزيد","Show more");}
+ if(!items.length){host.innerHTML='<div class="missed-empty">'+ui("لا توجد أخبار إضافية حالياً.","No additional stories right now.")+'</div>';return;}
  host.innerHTML=items.map(a=>'<article class="news-card missed-news-card"><div class="card-open" role="button" tabindex="0" data-open="'+escapeHTML(a.id)+'">'+imageMarkup(a,"card-image")+'<div class="card-content"><div class="story-meta"><span class="category-label">'+escapeHTML(categoryName(a.cat))+'</span><span>'+escapeHTML(timeAgo(a.published_at,true))+'</span></div><h3>'+escapeHTML(a.title)+'</h3><p>'+escapeHTML(a.summary)+'</p>'+newsDataMetaMarkup(a)+'<div class="card-byline"><span>'+escapeHTML(a.src)+'</span><time>'+escapeHTML(timeAgo(a.published_at,true))+'</time></div></div></div><div class="missed-source-link"><a href="'+escapeHTML(a.sourceURL)+'" target="_blank" rel="noopener noreferrer">'+ui("المصدر الأصلي ↗","Original source ↗")+'</a></div></article>').join("");
  host.querySelectorAll("[data-open]").forEach(el=>el.addEventListener("click",()=>openArticle(el.dataset.open)));
 }
@@ -273,23 +277,20 @@ function isDedicatedBreakingSource(name){
  const source=String(name||"").trim().toLocaleLowerCase();
  return /breaking desk|news alert|غرفة الأخبار العاجلة|مصادر العاجل/.test(source);
 }
-function breakingItems(maxAge=15*60*1000){
+function breakingItems(maxAge=20*60*1000,ageField="received_at"){
  const now=Date.now();
  return state.articles.filter(a=>{
-  if(a.isNewsDataOnly)return false;
-  // is_breaking is the editorial signal; do not hide alerts merely because
-  // their publisher label differs from the dedicated-ingestion naming scheme.
-  if(a.isBreaking!==true)return false;
-  const published=Date.parse(a.published_at||"");
-  const age=now-published;
-  return Number.isFinite(published)&&age>=-60*1000&&age<=maxAge;
- }).sort((a,b)=>new Date(b.published_at)-new Date(a.published_at));
+  if(a.isNewsDataOnly||a.isBreaking!==true)return false;
+  const timestamp=ageField==="received_at"?(a.raw?.received_at||a.published_at):a.published_at;
+  const date=Date.parse(timestamp||""),age=now-date;
+  return Number.isFinite(date)&&age>=-60*1000&&age<=maxAge;
+ }).sort((a,b)=>Date.parse(b.published_at)-Date.parse(a.published_at));
 }
 function renderBreakingSection(){
  const host=document.getElementById("breakingNewsGrid");if(!host)return;
- const items=breakingItems(24*60*60*1000);const count=document.getElementById("breakingCount");
- count.textContent=state.lang==="ar"?items.length+" أخبار عاجلة خلال آخر 24 ساعة":items.length+" breaking stories in the last 24 hours";
- if(!items.length){host.innerHTML='<div class="empty-state">'+ui("لا توجد أخبار عاجلة خلال آخر 24 ساعة. ستظهر هنا التنبيهات الجديدة التي يحددها المحرر.","No breaking alerts in the last 24 hours. New editor-selected alerts will appear here.")+'</div>';return;}
+ const items=breakingItems(5*60*60*1000,"published_at"),count=document.getElementById("breakingCount");
+ count.textContent=state.lang==="ar"?"آخر 5 ساعات": "Last 5 hours";
+ if(!items.length){host.innerHTML='<div class="empty-state">'+ui("لا توجد أخبار عاجلة خلال آخر 5 ساعات.","No breaking alerts in the last 5 hours.")+'</div>';return;}
  host.innerHTML=items.slice(0,8).map(a=>'<article class="breaking-news-card" role="button" tabindex="0" data-open="'+escapeHTML(a.id)+'">'+imageMarkup(a,"breaking-news-image")+'<div class="breaking-news-copy"><div class="story-meta"><span class="breaking-badge">'+ui("عاجل","BREAKING")+'</span><span>'+escapeHTML(timeAgo(a.published_at,a.isNewsDataOnly))+'</span><span>'+escapeHTML(categoryName(a.cat))+'</span></div><h3>'+escapeHTML(a.title)+'</h3><p>'+escapeHTML(a.summary)+'</p><small>'+escapeHTML(a.src)+' · '+ui("اقرأ التفاصيل","Read story")+' ←</small></div></article>').join("");
  host.querySelectorAll("[data-open]").forEach(el=>el.addEventListener("click",()=>openArticle(el.dataset.open)));
 }
@@ -302,22 +303,22 @@ function rotateBreaking(){
  updateBreaking();
 }
 function updateBreaking(){
- const items=breakingItems();renderBreakingSection();
+ const items=breakingItems(20*60*1000,"received_at");renderBreakingSection();
  const strip=document.getElementById("breakingStrip"),title=document.getElementById("breakingText"),time=document.getElementById("breakingTime");
  const marquee=title.querySelector(".breaking-marquee")||title;
  if(!items.length){state.breakingTickerIndex=0;state.breakingTickerCurrentId=null;strip.hidden=true;marquee.textContent="";marquee.classList.remove("is-moving","is-ltr","is-rtl");delete marquee.dataset.articleId;delete marquee.dataset.articleTitle;title.removeAttribute("title");time.textContent="";return;}
  let item=items.find(a=>a.id===state.breakingTickerCurrentId);
- if(!item||Date.parse(items[0].published_at)>Date.parse(item.published_at)){state.breakingTickerIndex=0;item=items[0];state.breakingTickerCurrentId=item.id;}
+ if(!item){state.breakingTickerIndex=0;item=items[0];state.breakingTickerCurrentId=item.id;}
  state.breakingTickerIndex=Math.max(0,items.findIndex(a=>a.id===item.id));strip.hidden=false;
  if(marquee.dataset.articleId!==item.id||marquee.dataset.articleTitle!==String(item.title||"")){
-  const cleanTitle=String(item.title||"").replace(/[\u061C\u200E\u200F\u202A-\u202E\u2066-\u2069]/g,"").normalize("NFC").trim();
-  const isRTL=/[\u0590-\u08FF]/.test(cleanTitle),direction=isRTL?"rtl":"ltr";
+  const cleanTitle=String(item.title||"").replace(/[\\u061C\\u200E\\u200F\\u202A-\\u202E\\u2066-\\u2069]/g,"").normalize("NFC").trim();
+  const isRTL=/[\\u0590-\\u08FF]/.test(cleanTitle),direction=isRTL?"rtl":"ltr";
   marquee.textContent=cleanTitle;marquee.dataset.articleId=item.id;marquee.dataset.articleTitle=String(item.title||"");
   marquee.classList.remove("is-moving","is-ltr","is-rtl");title.setAttribute("dir",direction);title.style.direction=direction;title.style.textAlign="start";
   marquee.setAttribute("dir",direction);marquee.style.direction=direction;marquee.style.unicodeBidi="isolate";marquee.classList.add(isRTL?"is-rtl":"is-ltr");
   marquee.style.removeProperty("--breaking-duration");marquee.style.removeProperty("--breaking-start");
   requestAnimationFrame(()=>{const viewportWidth=title.clientWidth,distance=(viewportWidth*2)+marquee.scrollWidth;marquee.style.setProperty("--breaking-start",viewportWidth+"px");marquee.style.setProperty("--breaking-duration",Math.max(12,distance/55)+"s");marquee.classList.add("is-moving");});
-  marquee.onanimationend=()=>{if(breakingItems().length>1)rotateBreaking();else{marquee.classList.remove("is-moving");requestAnimationFrame(()=>marquee.classList.add("is-moving"));}};
+  marquee.onanimationend=()=>{if(breakingItems(20*60*1000,"received_at").length>1)rotateBreaking();else{marquee.classList.remove("is-moving");requestAnimationFrame(()=>marquee.classList.add("is-moving"));}};
  }
  title.title=ui("تنبيه عاجل اختاره محرر WRLDLINE","Breaking alert selected by a WRLDLINE editor");time.textContent=ui("عاجل · ","Breaking · ")+timeAgo(item.published_at);
 }
