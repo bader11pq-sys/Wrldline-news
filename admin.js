@@ -208,4 +208,5 @@ async function loadOpsDashboard(){
  }finally{button.disabled=false;}
 }
 $("opsRefreshButton")?.addEventListener("click",loadOpsDashboard);
-\nshowSession().catch(error=>message("تعذر تهيئة لوحة التحرير: "+(error?.message||String(error))));
+
+showSession().catch(error=>message("تعذر تهيئة لوحة التحرير: "+(error?.message||String(error))));
