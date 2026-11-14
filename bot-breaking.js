@@ -76,8 +76,33 @@ const FEEDS=[
  {publisher:"The Kyiv Independent",url:GOOGLE("kyivindependent.com","en"),lang:"en"},
  {publisher:"Ukrainska Pravda",url:GOOGLE("pravda.com.ua","en"),lang:"en"},
  {publisher:"The Washington Post",url:GOOGLE("washingtonpost.com","en"),lang:"en"},
- {publisher:"The Guardian",url:GOOGLE("theguardian.com","en"),lang:"en"}
+ {publisher:"The Guardian",url:GOOGLE("theguardian.com","en"),lang:"en"},
+ {publisher:"DW عربية",url:GOOGLE("dw.com/ar","ar"),lang:"ar"},
+ {publisher:"TRT عربي",url:GOOGLE("trt.net.tr/ar","ar"),lang:"ar"},
+ {publisher:"يورونيوز عربي",url:GOOGLE("arabic.euronews.com","ar"),lang:"ar"},
+ {publisher:"وكالة الأناضول العربية",url:GOOGLE("aa.com.tr/ar","ar"),lang:"ar"},
+ {publisher:"إندبندنت عربية",url:GOOGLE("independentarabia.com","ar"),lang:"ar"},
+ {publisher:"الشرق الأوسط",url:GOOGLE("aawsat.com","ar"),lang:"ar"},
+ {publisher:"القدس العربي",url:GOOGLE("alquds.co.uk","ar"),lang:"ar"},
+ {publisher:"أخبار الأمم المتحدة عربي",url:GOOGLE("news.un.org/ar","ar"),lang:"ar"},
+ {publisher:"سويس إنفو عربي",url:GOOGLE("swissinfo.ch/ara","ar"),lang:"ar"},
+ {publisher:"المونيتور عربي",url:GOOGLE("al-monitor.com/ar","ar"),lang:"ar"},
+ {publisher:"ABC News",url:GOOGLE("abcnews.go.com","en"),lang:"en"},
+ {publisher:"NBC News",url:GOOGLE("nbcnews.com","en"),lang:"en"},
+ {publisher:"CBS News",url:GOOGLE("cbsnews.com","en"),lang:"en"},
+ {publisher:"NPR",url:GOOGLE("npr.org","en"),lang:"en"},
+ {publisher:"The New York Times",url:GOOGLE("nytimes.com","en"),lang:"en"},
+ {publisher:"USA Today",url:GOOGLE("usatoday.com","en"),lang:"en"},
+ {publisher:"CNBC",url:GOOGLE("cnbc.com","en"),lang:"en"},
+ {publisher:"Sky News",url:GOOGLE("news.sky.com","en"),lang:"en"},
+ {publisher:"The Hill",url:GOOGLE("thehill.com","en"),lang:"en"},
+ {publisher:"CTV News",url:GOOGLE("ctvnews.ca","en"),lang:"en"}
 ];
+// Validate the newly added source batch against the existing registry (publisher and host).
+const ADDED_SOURCE_HOSTS=["dw.com","trt.net.tr","arabic.euronews.com","aa.com.tr","independentarabia.com","aawsat.com","alquds.co.uk","news.un.org","swissinfo.ch","al-monitor.com","abcnews.go.com","nbcnews.com","cbsnews.com","npr.org","nytimes.com","usatoday.com","cnbc.com","news.sky.com","thehill.com","ctvnews.ca"];
+const ADDED_SOURCE_NAMES=["dw عربية","trt عربي","يورونيوز عربي","وكالة الأناضول العربية","إندبندنت عربية","الشرق الأوسط","القدس العربي","أخبار الأمم المتحدة عربي","سويس إنفو عربي","المونيتور عربي","abc news","nbc news","cbs news","npr","the new york times","usa today","cnbc","sky news","the hill","ctv news"];
+if(new Set(ADDED_SOURCE_HOSTS).size!==ADDED_SOURCE_HOSTS.length||new Set(ADDED_SOURCE_NAMES).size!==ADDED_SOURCE_NAMES.length)throw new Error("Duplicate source in added breaking-news batch");
+
 const urgent=/\bBREAKING\b|\bJUST IN\b|\bLIVE\b|عاجل|الآن|قبل قليل|تطور عاجل|نبأ عاجل/i;
 function dec(s=""){return String(s).replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g,"$1").replace(/&amp;/g,"&").replace(/&quot;/g,'"').replace(/&#39;|&#x27;/g,"'").replace(/&lt;/g,"<").replace(/&gt;/g,">").replace(/&#(\d+);/g,(_,n)=>String.fromCodePoint(+n)).replace(/&#x([0-9a-f]+);/gi,(_,n)=>String.fromCodePoint(parseInt(n,16))).replace(/<br\s*\/?\s*>/gi," ").replace(/<[^>]*>/g," ").replace(/\s+/g," ").trim();}
 function tag(b,n){const m=b.match(new RegExp("<"+n+"(?:\\s[^>]*)?>([\\s\\S]*?)</"+n+">","i"));return m?dec(m[1]):"";}
