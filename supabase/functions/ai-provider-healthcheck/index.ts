@@ -50,6 +50,34 @@ async function callGonka(key:string){
  if(!valid(data))throw new Error("Gonka generation did not match the classification/translation schema");
  return {ok:true,model,auth_status:authStatus,models_available:ids.length,generation:"passed"};
 }
+async function callDeepL(key:string){
+ const endpoint=key.trim().endsWith(":fx")?"https://api-free.deepl.com":"https://api.deepl.com";
+ const headers={"Authorization":"DeepL-Auth-Key "+key.trim(),"Content-Type":"application/json"};
+ const usage=await fetch(endpoint+"/v2/usage",{headers,signal:AbortSignal.timeout(15000)});
+ if(!usage.ok)throw new Error("DeepL usage HTTP "+usage.status+" (authentication or account endpoint rejected)");
+ const usageData=await usage.json();
+ const translated=await fetch(endpoint+"/v2/translate",{method:"POST",headers,signal:AbortSignal.timeout(20000),body:JSON.stringify({text:["WRLDLINE translation health check"],target_lang:"AR"})});
+ if(!translated.ok)throw new Error("DeepL translation HTTP "+translated.status);
+ const payload=await translated.json();
+ const output=payload.translations?.[0]?.text;
+ if(typeof output!=="string"||!output.trim())throw new Error("DeepL returned an empty translation");
+ return {ok:true,operation:"usage+translation",characters_used:usageData.character_count??null,character_limit:usageData.character_limit??null};
+}
+
+async function callFirecrawl(key:string){
+ const response=await fetch("https://api.firecrawl.dev/v2/scrape",{
+  method:"POST",
+  headers:{"Authorization":"Bearer "+key,"Content-Type":"application/json"},
+  signal:AbortSignal.timeout(30000),
+  body:JSON.stringify({url:"https://www.firecrawl.dev/",formats:["markdown"],onlyMainContent:true})
+ });
+ if(!response.ok)throw new Error("Firecrawl scrape HTTP "+response.status+": "+(await response.text()).slice(0,220));
+ const payload=await response.json();
+ const markdown=String(payload?.data?.markdown||payload?.markdown||"").trim();
+ if(markdown.length<200)throw new Error("Firecrawl returned no usable page markdown");
+ return {ok:true,operation:"scrape",characters:markdown.length,api:"v2"};
+}
+
 async function run(name:string,key:string|null,fn:(key:string)=>Promise<any>){if(!key)return {provider:name,status:"not_configured"};try{return {provider:name,status:"passed",...(await fn(key))};}catch(e){return {provider:name,status:"failed",error:String(e).slice(0,300)};}}
 Deno.serve(async(req:Request)=>{
  if(req.method==="OPTIONS")return new Response("ok",{headers:cors});
@@ -68,14 +96,29 @@ Deno.serve(async(req:Request)=>{
    }catch{}
   }
  }
- if(!authorized)return json({ok:false,error:"Service or verified cron authorization required"},401);
+ if(!authorized&&token){
+  const base=Deno.env.get("SUPABASE_URL")||"https://vmaxbnogmmfyrcucapnq.supabase.co";
+  const anonKey=Deno.env.get("SUPABASE_ANON_KEY")||Deno.env.get("SUPABASE_PUBLISHABLE_KEY")||"";
+  if(anonKey){
+   try{
+    const userResponse=await fetch(base+"/auth/v1/user",{headers:{"apikey":anonKey,"Authorization":"Bearer "+token},signal:AbortSignal.timeout(8000)});
+    if(userResponse.ok){
+     const user=await userResponse.json();
+     authorized=["admin","editor"].includes(user?.app_metadata?.role);
+    }
+   }catch{}
+  }
+ }
+ if(!authorized)return json({ok:false,error:"Admin/editor authorization required"},401);
  const geminiApiKey=Deno.env.get("GOOGLE_API_KEY")||Deno.env.get("GEMINI_API_KEY")||null;
  const results=await Promise.all([
   run("gemini",geminiApiKey,callGemini),
   run("groq",Deno.env.get("GROQ_API_KEY"),callGroq),
   run("nvidia",Deno.env.get("NVIDIA_API_KEY"),callNvidia),
   run("openrouter",Deno.env.get("OPENROUTER_API_KEY"),callOpenRouter),
-  run("gonka",Deno.env.get("GONKA_BROKER_API_KEY"),callGonka)
+  run("gonka",Deno.env.get("GONKA_BROKER_API_KEY"),callGonka),
+  run("deepl",Deno.env.get("DEEPL_API_KEY"),callDeepL),
+  run("firecrawl",Deno.env.get("FIRECRAWL_API_KEY"),callFirecrawl)
  ]);
  const configured=results.filter(x=>x.status!=="not_configured");
  results[0].key_source=Deno.env.get("GOOGLE_API_KEY")?"GOOGLE_API_KEY":(Deno.env.get("GEMINI_API_KEY")?"GEMINI_API_KEY":null);
