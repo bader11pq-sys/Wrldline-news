@@ -1,3 +1,4 @@
+// Re-run the live Gemini key-source check whenever this script changes.
 // Trigger provider-level classification and translation smoke tests after Gemini retry handling deployment.
 const SUPABASE_URL=process.env.SUPABASE_URL;
 const SERVICE_KEY=process.env.SUPABASE_SERVICE_ROLE_KEY;
