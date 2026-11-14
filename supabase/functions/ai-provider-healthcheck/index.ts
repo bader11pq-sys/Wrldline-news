@@ -97,7 +97,7 @@ Deno.serve(async(req:Request)=>{
   }
  }
  if(!authorized)return json({ok:false,error:"Admin/editor authorization required"},401);
- const geminiApiKey=Deno.env.get("GOOGLE_API_KEY")||Deno.env.get("GEMINI_API_KEY")||null;
+ const geminiApiKey=Deno.env.get("GEMINI_API_KEY")||Deno.env.get("GOOGLE_API_KEY")||null;
  const results=await Promise.all([
   run("gemini",geminiApiKey,callGemini),
   run("groq",Deno.env.get("GROQ_API_KEY"),callGroq),
@@ -107,6 +107,6 @@ Deno.serve(async(req:Request)=>{
   run("firecrawl",Deno.env.get("FIRECRAWL_API_KEY"),callFirecrawl)
  ]);
  const configured=results.filter(x=>x.status!=="not_configured");
- results[0].key_source=Deno.env.get("GOOGLE_API_KEY")?"GOOGLE_API_KEY":(Deno.env.get("GEMINI_API_KEY")?"GEMINI_API_KEY":null);
+ results[0].key_source=Deno.env.get("GEMINI_API_KEY")?"GEMINI_API_KEY":(Deno.env.get("GOOGLE_API_KEY")?"GOOGLE_API_KEY":null);
  return json({ok:configured.some(x=>x.status==="passed"),all_configured_passed:configured.length>0&&configured.every(x=>x.status==="passed"),tested_at:new Date().toISOString(),results});
 });
