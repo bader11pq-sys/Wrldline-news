@@ -56,7 +56,7 @@ async function authorize(req: Request) {
   return response.ok && (await response.json())===true;
 }
 async function health() {
-  const body=await newsdataRequest("latest",{timeframe:"48",size:"10",category:"sports",language:"en"});
+  const body=await newsdataRequest("latest",{size:"10",category:"sports",language:"en"});
   const results=Array.isArray(body.results)?body.results:[];
   const dates=results.map((x:any)=>Date.parse(x.pubDate||"")).filter((x:number)=>Number.isFinite(x));
   const newest=dates.length?Math.max(...dates):null;
@@ -73,7 +73,7 @@ async function syncNews() {
   const slot=Math.floor(Date.now()/900000)%CATEGORY_BATCHES.length;
   const categories=CATEGORY_BATCHES[slot];
   const body=await newsdataRequest("latest",{
-    timeframe:"1",size:"10",category:categories.join(","),
+    size:"10",category:categories.join(","),
     language:"ar,en",removeduplicate:"1"
   });
   const raw=Array.isArray(body.results)?body.results:[];
