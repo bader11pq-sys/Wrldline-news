@@ -1,0 +1,30 @@
+name: BazaarLink API Healthcheck
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'ai-provider-healthcheck.js'
+      - 'supabase/functions/ai-provider-healthcheck/**'
+      - '.github/workflows/bazaarlink-healthcheck.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: wrldline-bazaarlink-healthcheck
+  cancel-in-progress: false
+jobs:
+  verify-bazaarlink:
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Verify GitHub and Supabase BazaarLink secrets with real inference
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          FIRECRAWL_API_KEY: ${{ secrets.FIRECRAWL_API_KEY }}
+          BAZAARLINK_API_KEY: ${{ secrets.Bazaarlink_API_Key }}
+        run: node ai-provider-healthcheck.js
