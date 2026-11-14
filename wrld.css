@@ -767,3 +767,14 @@ body.modal-open{overflow:hidden}
 @media(max-width:900px){.shorts-preview-rail{grid-template-columns:repeat(5,190px)}.shorts-preview-loading{grid-template-columns:repeat(5,190px)}}
 @media(max-width:600px){.shorts-preview-section{margin-inline:-1px;border-radius:18px}.shorts-preview-section .wl-section-head{padding-inline:18px}.shorts-preview-rail{padding-inline:18px}.shorts-preview-loading{padding-inline:18px}.shorts-preview-card{min-height:260px}}
 .wl-nav-link--shorts{color:#a87927!important;font-weight:800}.wl-nav-link--shorts span{font-size:10px;margin-inline-end:4px}
+
+/* ---------- Live breaking ticker: always moving, newest first ---------- */
+.wl-breaking-text{position:relative;display:block;flex:1;min-width:0;height:24px;line-height:24px;overflow:hidden;white-space:nowrap;text-overflow:clip}
+.wl-breaking-text .breaking-marquee{display:inline-block;min-width:max-content;will-change:transform;transform:translateX(0);padding-inline:10px}
+.wl-breaking-text .breaking-marquee.is-moving{animation-duration:var(--breaking-duration,14s);animation-timing-function:linear;animation-iteration-count:1;animation-fill-mode:both}
+.wl-breaking-text .breaking-marquee.is-rtl.is-moving{animation-name:wrld-breaking-rtl}
+.wl-breaking-text .breaking-marquee.is-ltr.is-moving{animation-name:wrld-breaking-ltr}
+@keyframes wrld-breaking-rtl{from{transform:translateX(100%)}to{transform:translateX(-100%)}}
+@keyframes wrld-breaking-ltr{from{transform:translateX(-100%)}to{transform:translateX(100%)}}
+@media(prefers-reduced-motion:reduce){.wl-breaking-text .breaking-marquee.is-moving{animation:none;transform:none;max-width:100%;overflow:hidden;text-overflow:ellipsis}}
+@media(max-width:760px){.wl-breaking-in{gap:8px;min-height:40px}.wl-breaking-label{padding-inline:7px;font-size:10px}.wl-breaking-time{font-size:9px}.wl-breaking-text{font-size:11.5px}}

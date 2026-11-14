@@ -72,7 +72,7 @@ const FEEDS = [
   // International wire agencies and global newspapers — added after checking the existing 60-source list
   {url:"https://www.afp.com/en/rss/all/news",name:"AFP",country:"دولي",lang:"en",fallbackUrl:googleNewsUrlEn("afp.com")},
   {url:googleNewsUrlEn("efe.com"),name:"EFE",country:"دولي",lang:"en"},
-  {url:googleNewsUrlEn("dpa.com"),name:"dpa",country:"دولي",lang:"en"},
+  {url:googleNewsUrlEn("dpa.com"),name:"dpa",country:"دولي",lang:"en",fallbackUrl:googleNewsUrlEn("dpa.com")},
   {url:googleNewsUrlEn("english.kyodonews.net"),name:"Kyodo News",country:"دولي",lang:"en"},
   {url:googleNewsUrlEn("jiji.com"),name:"Jiji Press",country:"دولي",lang:"en"},
   {url:"https://english.news.cn/rss/world.xml",name:"Xinhua",country:"دولي",lang:"en",fallbackUrl:googleNewsUrlEn("news.cn")},
@@ -110,7 +110,13 @@ const FEEDS = [
   {url:"https://feeds.bloomberg.com/politics/news.rss",name:"Bloomberg",country:"دولي",lang:"en",fallbackUrl:googleNewsUrlEn("bloomberg.com")},
   {url:"https://api.axios.com/feed/",name:"Axios",country:"دولي",lang:"en",fallbackUrl:googleNewsUrlEn("axios.com")},
   {url:"https://www.newsweek.com/rss",name:"Newsweek",country:"دولي",lang:"en",fallbackUrl:googleNewsUrlEn("newsweek.com")}
-];
+ ];
+const FEED_REGISTRY_KEYS=new Set();
+for(const feed of FEEDS){
+ const key=feed.url;
+ if(FEED_REGISTRY_KEYS.has(key))throw new Error("Duplicate primary feed URL in registry: "+key);
+ FEED_REGISTRY_KEYS.add(key);
+}
 const SUPABASE_URL=process.env.SUPABASE_URL;
 const KEY=process.env.SUPABASE_SERVICE_ROLE_KEY||process.env.SUPABASE_KEY;
 const HEADERS={apikey:KEY,Authorization:"Bearer "+KEY,"Content-Type":"application/json"};
@@ -121,7 +127,7 @@ function entries(xml){const rss=xml.match(/<item\b[\s\S]*?<\/item>/gi)||[];const
 function getLink(block){const rss=tag(block,["link"]);if(/^https?:\/\//i.test(rss))return rss;const m=block.match(/<link\b[^>]*href=["']([^"']+)["'][^>]*\/?>/i);return m?decode(m[1]):tag(block,["guid","id"]);}
 function getImage(block){const m=block.match(/<(?:enclosure|media:content|media:thumbnail)[^>]*(?:url|href)=["']([^"']+)["']/i)||block.match(/<img[^>]+src=["']([^"']+)["']/i);return m?m[1]:null;}
 function safeDate(value){if(!value)return null;const d=new Date(value);return Number.isNaN(d.getTime())?null:d.toISOString();}
-function isPublisherNoise(title: string) {
+function isPublisherNoise(title) {
  const value=String(title||"").trim().toLowerCase();
  return /^(?:kuna news agency\s*-\s*كونا|- trt world|nam news network \(nnn\) - the non aligned movement - bernama|the non aligned movement - bernama|- japan wire by kyodo news|- جريدة الوطن السعودية|bernama mrem \(eng\) - bernama mrem|\| afp\.com - afp\.com|latest news - xinhua|جريدة الغد المطبوعة - جريدة الغد|- efe - agencia de noticias)$/i.test(value);
 }
