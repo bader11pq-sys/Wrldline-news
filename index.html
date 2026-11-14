@@ -18,6 +18,7 @@
   <link rel="stylesheet" href="wrld.css?v=20261114-2">
   <link rel="manifest" href="manifest.json">
   <link rel="stylesheet" href="site-enhancements.css">
+  <link rel="stylesheet" href="intelligence.css?v=20261114-1">
 </head>
 <body class="wl-home">
   <a class="skip-link" href="#mainContent">تجاوز إلى المحتوى</a>
@@ -156,6 +157,17 @@
           <button class="wl-room" data-category="health"><span class="wl-room-icon"><svg aria-hidden="true"><use href="#i-heart"/></svg></span><strong>صحة</strong><small data-room-count="health">—</small></button>
           <button class="wl-room" data-category="world"><span class="wl-room-icon"><svg aria-hidden="true"><use href="#i-globe"/></svg></span><strong>حول العالم</strong><small data-room-count="world">—</small></button>
         </nav>
+      </div>
+    </section>
+
+    <section class="intel-hub" aria-labelledby="intelHubTitle">
+      <div class="wl-container">
+        <div class="intel-hub-head"><div><span class="wl-kicker">WRLDLINE INTELLIGENCE</span><h2 id="intelHubTitle">اقرأ ما تغيّر… وافهم ما وراء الخبر</h2></div><p>طبقة شفافة تفصل الخبر المنسوب إلى مصدره عن التحليل المساعد، وتوضح ما نعرفه وما يحتاج إلى دليل إضافي.</p></div>
+        <div class="intel-grid">
+          <article class="intel-card"><div class="intel-card-top"><span>منذ آخر زيارة</span><span id="intelLastVisit">—</span></div><strong id="intelNewCount">—</strong><p>قصة جديدة أو محدّثة</p><button id="intelNewButton" type="button">عرض الجديد فقط</button><button id="intelVisitButton" type="button">تسجيل هذه الزيارة</button></article>
+          <article class="intel-card"><div class="intel-card-top"><span>مقياس الثقة الحي</span><span>شفافية</span></div><strong>◉</strong><p id="intelReliabilitySummary">نحسب الأدلة المستقلة والتأكيدات الرسمية، لا عدد العناوين.</p><div class="intel-reading" aria-label="مستوى القراءة"><button type="button" data-reading-mode="ten">10 ثوانٍ</button><button type="button" data-reading-mode="minute">دقيقة</button><button type="button" data-reading-mode="deep">تحليل</button></div></article>
+          <article class="intel-card intel-card--wide"><div class="intel-card-top"><span>افهم الدولة والسياق</span><span>تجريبي</span></div><p>حدد الدولة والتاريخ والمنطقة لفصل السياسة الأمنية والاقتصادية والاجتماعية عن الانطباع السريع.</p><form id="countryLensForm" class="intel-country-form"><input id="countryLensCountry" aria-label="الدولة" placeholder="الدولة" required><input id="countryLensDate" type="date" aria-label="التاريخ"><input id="countryLensRegion" aria-label="المنطقة" placeholder="المنطقة أو الملف"><button type="submit">ابنِ عدسة الفهم</button></form><div id="countryLensResult" class="intel-country-result" hidden></div></article>
+        </div>
       </div>
     </section>
 
@@ -437,6 +449,7 @@
   <script src="newsroom-data.js?v=20261114-1" defer></script>
   <script src="newsroom.js?v=20261114-1" defer></script>
   <script src="home.js?v=20261114-1" defer></script>
+  <script src="intelligence.js?v=20261114-1" defer></script>
   <script src="share.js?v=20261113-4" defer></script>
   <script src="analytics-config.js?v=20261114-1"></script>
   <script src="analytics.js?v=20261114-1" defer></script>
