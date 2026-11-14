@@ -125,7 +125,7 @@ async function runGeneral() {
 }
 
 const GOOGLE=(domain: string,lang: string="ar")=>{
- const q=lang==="ar"?`site:${domain} ("عاجل" OR "الآن" OR "قبل قليل" OR "تطور عاجل") when:1h`:`site:${domain} (BREAKING OR "JUST IN") when:1h`;
+ const q=`site:${domain} when:1h`;
  return "https://news.google.com/rss/search?q="+encodeURIComponent(q)+"&hl="+(lang==="ar"?"ar&gl=SA&ceid=SA:ar":"en-US&gl=US&ceid=US:en");
 };
 // Telegram channels are public breaking desks; publisher RSS searches are constrained to explicit urgent markers.
