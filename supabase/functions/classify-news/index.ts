@@ -34,14 +34,24 @@ const schema = {
 function json(body: unknown, status = 200) {
   return new Response(JSON.stringify(body), { status, headers: cors });
 }
-async function firecrawlArticleText(articleUrl: string, apiKey: string | null, maxChars = 10000) {
- if (!apiKey || !articleUrl) return null;
+async function firecrawlArticleText(article: any, apiKey: string | null, db: any, maxChars = 10000) {
+ if (!article?.id || !article?.url) return null;
  let parsed: URL;
- try { parsed = new URL(articleUrl); } catch { return null; }
+ try { parsed = new URL(article.url); } catch { return null; }
  if (parsed.protocol !== "https:" || !parsed.hostname || parsed.hostname === "localhost" ||
      parsed.hostname.endsWith(".local") || parsed.hostname.endsWith(".internal") ||
-     /^\d{1,3}(\.\d{1,3}){3}$/.test(parsed.hostname) ||
+     /^\\d{1,3}(\\.\\d{1,3}){3}$/.test(parsed.hostname) ||
      parsed.hostname === "api.supabase.com" || parsed.hostname.endsWith(".supabase.co")) return null;
+ try {
+  const { data: cached, error: cacheError } = await db.from("article_content_cache")
+   .select("source_url,content_markdown,scraped_at").eq("article_id", article.id).maybeSingle();
+  if (!cacheError && cached && cached.source_url === parsed.toString() &&
+      Date.now() - Date.parse(cached.scraped_at) < 24 * 60 * 60 * 1000 &&
+      String(cached.content_markdown || "").length >= 500) {
+   return String(cached.content_markdown).slice(0, maxChars);
+  }
+ } catch (error) { console.warn("Firecrawl cache read failed:", String(error).slice(0, 180)); }
+ if (!apiKey) return null;
  try {
   const response = await fetch("https://api.firecrawl.dev/v2/scrape", {
    method: "POST",
@@ -57,6 +67,12 @@ async function firecrawlArticleText(articleUrl: string, apiKey: string | null, m
   const payload = await response.json();
   const markdown = String(payload?.data?.markdown || payload?.markdown || "").trim();
   if (markdown.length < 500) return null;
+  const saved = await db.from("article_content_cache").upsert({
+   article_id: article.id, source_url: parsed.toString(),
+   content_markdown: markdown.slice(0, 12000), provider: "firecrawl",
+   scraped_at: new Date().toISOString()
+  }, { onConflict: "article_id" });
+  if (saved.error) console.warn("Firecrawl cache write failed:", saved.error.message);
   return markdown.slice(0, maxChars);
  } catch (error) {
   console.warn("Firecrawl scrape error:", String(error).slice(0, 220));
@@ -294,7 +310,7 @@ Deno.serve(async (req: Request) => {
       continue;
     }
     try {
-      const fullArticleText = await firecrawlArticleText(article.url, firecrawlKey, 10000);
+      const fullArticleText = await firecrawlArticleText(article, firecrawlKey, db, 10000);
       const articleBody = fullArticleText || String(article.summary || "");
       const prompt = [
         "أنت محلل بيانات إخبارية. صنّف النص فقط ولا تضف وقائع غير موجودة.",
