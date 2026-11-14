@@ -4,13 +4,14 @@ const DB_HEADERS = { apikey: SERVICE_KEY, Authorization: "Bearer " + SERVICE_KEY
 const URGENT = /^(?:\s|[\[({])*?(?:BREAKING(?: NEWS)?|JUST IN)(?=$|[\s:：|—-])|^(?:\s|[\[({])*?(?:عاجل|نبأ عاجل|خبر عاجل|تطور عاجل)(?=$|[\s:：،|—-])/i;
 const COUNTRY_BY_NAME = {"الجزيرة":"دولي","BBC عربي":"دولي","CNN عربية":"دولي","العربية":"دولي","الشرق الأوسط":"دولي","سكاي نيوز عربية":"دولي","فرانس 24 عربي":"دولي","DW عربية":"دولي","وكالة الأنباء السعودية واس":"السعودية","كونا":"الكويت","الخليج":"الإمارات","الاتحاد":"الإمارات","البيان":"الإمارات","الشرق":"قطر","اليوم السابع":"مصر","المصري اليوم":"مصر","الغد":"الأردن","رؤيا":"الأردن","المدن":"لبنان","معاً":"فلسطين","عربي21":"دولي","هسبريس":"المغرب","الشروق":"الجزائر","تونس الرقمية":"تونس","ليبيا أخبار":"ليبيا","آر تي عربي":"دولي","النهار اللبنانية":"لبنان","العربي الجديد":"دولي","وكالة الأناضول العربية":"دولي","القدس العربي":"فلسطين","موزاييك إف إم":"تونس","يورونيوز عربي":"دولي","الصباح المغربية":"المغرب","الحرة":"دولي","عالم التقنية":"السعودية","أخبار الأمم المتحدة":"دولي","اندبندنت عربية":"دولي","نون بوست":"دولي","البوابة العربية للأخبار التقنية":"السعودية","عاجل":"السعودية","الرياض":"السعودية","عكاظ":"السعودية","إل بي سي آي اللبنانية":"لبنان","المدينة":"السعودية","شفق نيوز عربي":"العراق","عنب بلدي":"سوريا","السومرية":"العراق","BBC Top Stories":"دولي","NPR World":"دولي","BBC World":"دولي","Al Jazeera English":"دولي","The Guardian":"دولي","DW News":"دولي","France 24":"دولي","NPR":"دولي","The New York Times":"دولي","Sky News":"دولي","Reuters (Google News)":"دولي","Associated Press (Google News)":"دولي","CNN (Google News)":"دولي","AFP":"دولي","EFE":"دولي","dpa":"دولي","Kyodo News":"دولي","Jiji Press":"دولي","Xinhua":"دولي","TASS":"دولي","UPI":"دولي","Yonhap News Agency":"دولي","NHK World":"دولي","CNA":"دولي","Bernama":"دولي","ANSA":"دولي","The Hindu":"دولي","The Times of India":"دولي","The Indian Express":"دولي","Hindustan Times":"دولي","Dawn":"دولي","South China Morning Post":"دولي","The Japan Times":"دولي","Nikkei Asia":"دولي","The Korea Herald":"دولي","The Straits Times":"دولي","The Sydney Morning Herald":"دولي","ABC News Australia":"دولي","CBC News":"دولي","The Globe and Mail":"دولي","Toronto Star":"دولي","Le Monde":"دولي","El País":"دولي","Der Spiegel":"دولي","POLITICO Europe":"دولي","The Independent":"دولي","The Telegraph":"دولي","The Wall Street Journal":"دولي","Financial Times":"دولي","The Economist":"دولي","Bloomberg":"دولي","Axios":"دولي","Newsweek":"دولي"};
 
-function decode(value = "") {
- return String(value).replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g,"$1")
+function decode(value = "", preserveLines = false) {
+ let text=String(value).replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g,"$1")
   .replace(/&#(\d+);/g,(_,n)=>String.fromCodePoint(Number(n)))
   .replace(/&#x([0-9a-f]+);/gi,(_,n)=>String.fromCodePoint(parseInt(n,16)))
   .replace(/&amp;/g,"&").replace(/&quot;/g,'"').replace(/&apos;|&#39;/g,"'")
-  .replace(/&lt;/g,"<").replace(/&gt;/g,">").replace(/<br\s*\/?\s*>/gi," ")
-  .replace(/<[^>]*>/g," ").replace(/\s+/g," ").trim();
+  .replace(/&lt;/g,"<").replace(/&gt;/g,">");
+ if(preserveLines) return text.replace(/<br\s*\/?\s*>/gi,"\\n").replace(/<\\/(?:div|p|li)>/gi,"\\n").replace(/<[^>]*>/g," ").replace(/[\\t\\f\\v ]+/g," ").replace(/ *\\n */g,"\\n").replace(/\\n{2,}/g,"\\n").trim();
+ return text.replace(/<br\\s*\\/?\\s*>/gi," ").replace(/<[^>]*>/g," ").replace(/\\s+/g," ").trim();
 }
 function tag(block: string,names: string[]) {
  for (const name of names) {
@@ -208,8 +209,8 @@ function parseTelegram(html: string,feed: any) {
   const body=(block.match(/<div class="tgme_widget_message_text[^"]*"[^>]*>([\s\S]*?)<\/div>/i)||[])[1]||"";
   const date=(block.match(/<time[^>]*datetime=["']([^"']+)["']/i)||[])[1];
   const post=(block.match(/href=["'](https?:\/\/t\.me\/[^/"']+\/\d+)["']/i)||[])[1];
-  const clean=decode(body); if(!clean||!date||!post) continue;
-  const title=clean.split(/\n|\s{2,}/)[0].slice(0,500)||clean.slice(0,500);
+  const clean=decode(body,true); if(!clean||!date||!post) continue;
+  const title=(clean.split(/\n+/).map(line=>line.trim()).find(Boolean)||clean).slice(0,500);
   const item=urgentRow(title,post,clean,date,feed);
   if(item) {item.summary=clean.slice(0,3000);out.push(item);}
  }
