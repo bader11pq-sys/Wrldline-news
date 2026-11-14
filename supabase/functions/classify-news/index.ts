@@ -299,7 +299,7 @@ Deno.serve(async (req: Request) => {
   const anonKey = Deno.env.get("SUPABASE_ANON_KEY") || (() => { try { return JSON.parse(Deno.env.get("SUPABASE_PUBLISHABLE_KEYS") || "{}").default; } catch { return null; } })();
   const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ||
     (() => { try { return JSON.parse(Deno.env.get("SUPABASE_SECRET_KEYS") || "{}").default; } catch { return null; } })();
-  const geminiKey = Deno.env.get("GOOGLE_API_KEY") || Deno.env.get("GEMINI_API_KEY") || null;
+  const geminiKey = Deno.env.get("GEMINI_API_KEY") || Deno.env.get("GOOGLE_API_KEY") || null;
   const groqKey = Deno.env.get("GROQ_API_KEY") || null;
   const nvidiaKey = Deno.env.get("NVIDIA_API_KEY") || null;
   const openRouterKey = Deno.env.get("OPENROUTER_API_KEY") || null;
