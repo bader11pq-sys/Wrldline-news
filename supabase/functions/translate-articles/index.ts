@@ -350,6 +350,7 @@ Deno.serve(async(req:Request)=>{
  let deeplDisabled=!!(deeplDisabledUntil&&Date.parse(deeplDisabledUntil)>Date.now());
  let deeplQuotaExhausted=deeplDisabled&&/quota|456/i.test(String(deeplState?.reason||""));
  let cursor=0;
+ let aiProviderCursor=0;
  let pauseReason:string|null=null;
  async function processArticle(article:any) {
   let deeplError:string|null=null;
@@ -362,6 +363,11 @@ Deno.serve(async(req:Request)=>{
    const existing=await db.from("article_translations").select("id,ai_summary,title,summary").eq("article_id",article.id).eq("lang",target).maybeSingle();
    if(existing.error) throw existing.error;
    if(existing.data?.title&&existing.data?.summary&&(!article.ai_summary||existing.data?.ai_summary)) return {id:article.id,status:"already_translated",lang:target};
+   let sourceContent=sourceSummary;
+   if(sourceContent.length<350) {
+    const scraped=await firecrawlArticleText(article,firecrawlKey,db,4000);
+    if(scraped) sourceContent=scraped;
+   }
    const prompt=[
     "You are a professional news translator for a bilingual international newsroom.",
     "Translate the supplied headline, summary, and AI context summary faithfully into "+(target==="ar"?"Modern Standard Arabic":"clear international English")+". Never return an empty title or summary. If the source summary is missing, write a concise factual summary using only the available title and AI context summary. If the AI context summary is already in the target language, preserve it faithfully.",
