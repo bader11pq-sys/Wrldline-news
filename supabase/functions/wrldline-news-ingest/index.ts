@@ -37,8 +37,9 @@ function entryImage(block: string) {
  return m?decode(m[1]):null;
 }
 function parsedDate(value: string | null | undefined) {
- const d=value?new Date(value):new Date();
- return Number.isNaN(d.getTime())?new Date().toISOString():d.toISOString();
+ if(!value) return null;
+ const d=new Date(value);
+ return Number.isNaN(d.getTime())?null:d.toISOString();
 }
 async function requestText(url: string,timeout=7000) {
  const r=await fetch(url,{headers:{"User-Agent":"Mozilla/5.0 (compatible; WRLDLINE-News/3.0; +https://al-ghaib.us.ci)","Accept":"application/rss+xml, application/atom+xml, application/xml, text/xml, */*"},signal:AbortSignal.timeout(timeout)});
@@ -61,8 +62,10 @@ function parseGeneral(xml: string,feed: any) {
   if(!title||!/^https?:\/\//i.test(url)) return null;
   const summary=tag(block,["description","summary","content:encoded","content"]);
   const date=tag(block,["pubDate","published","updated","dc:date"]);
+  const publishedAt=parsedDate(date);
+  if(!publishedAt) return null;
   const arabic=/[\u0600-\u06FF]/.test(title);
-  return {url,title:title.slice(0,500),summary:summary.slice(0,5000),image_url:entryImage(block),category:["politics","economy","security","tech","sports","culture","health","world"].includes(feed.category)?feed.category:"world",feed_id:feed.id||null,country:"غير محدد",source_name:feed.name,source_url:feed.url,lang:arabic?"ar":(feed.lang||"en"),verification:"unconfirmed",published_at:parsedDate(date),ai_classification_status:"pending",editorial_status:"published"};
+  return {url,title:title.slice(0,500),summary:summary.slice(0,5000),image_url:entryImage(block),category:["politics","economy","security","tech","sports","culture","health","world"].includes(feed.category)?feed.category:"world",feed_id:feed.id||null,country:"غير محدد",source_name:feed.name,source_url:feed.url,lang:arabic?"ar":(feed.lang||"en"),verification:"unconfirmed",published_at:publishedAt,ai_classification_status:"pending",editorial_status:"published"};
  }).filter(Boolean);
 }
 async function dbRequest(path: string,init: RequestInit & {headers?: Record<string,string>} = {}) {
@@ -198,8 +201,8 @@ const FEEDS=[
 function urgentRow(title: string,url: string,summary: string,date: string,feed: any) {
  const normalizedTitle=String(title||"").replace(/[\u061C\u200E\u200F\u202A-\u202E\u2066-\u2069]/g,"").replace(/^["'“”‘’(]+/,"").trim();
  if(!normalizedTitle||!/^https?:\/\//i.test(url)||!URGENT.test(normalizedTitle)) return null;
- const dt=new Date(date||Date.now());
- if(Number.isNaN(dt.getTime())||Date.now()-dt.getTime()>2*60*60*1000||dt.getTime()>Date.now()+5*60*1000) return null;
+ const dt=date?new Date(date):null;
+ if(!dt||Number.isNaN(dt.getTime())||Date.now()-dt.getTime()>2*60*60*1000||dt.getTime()>Date.now()+5*60*1000) return null;
  return {url,title:title.slice(0,500),summary:(summary||"").slice(0,3000),source_name:feed.publisher+" Breaking Desk",source_url:feed.type==="telegram"?"https://t.me/"+feed.handle:feed.url,category:"world",country:"غير محدد",lang:feed.lang,verification:"unconfirmed",published_at:dt.toISOString(),editorial_status:"published",ai_classification_status:"pending",is_breaking:true};
 }
 function parseTelegram(html: string,feed: any) {
