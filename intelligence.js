@@ -5,6 +5,8 @@
   const READ_KEY = "wrldline:reading-mode:v1";
   const $ = (id) => document.getElementById(id);
   let articles = [];
+  const API = "https://vmaxbnogmmfyrcucapnq.supabase.co";
+  const KEY = "sb_publishable_D3c88u75_LcEN460Y3Jcpw__EfqUnBx";
   const esc = (v) => window.WRLDLINE_UI?.escapeHTML?.(v) || String(v ?? "").replace(/[&<>\"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]));
   const fmt = (v) => { try { return new Intl.DateTimeFormat("ar-SA-u-ca-gregory", {dateStyle:"medium", timeStyle:"short"}).format(new Date(v)); } catch { return "غير متوفر"; } };
   const reliability = (a) => {
@@ -36,13 +38,34 @@
       answer.innerHTML = `بحسب الملخص المنشور، يتعلق السؤال بـ «${esc(a.title)}». المصدر المنسوب هو <b>${esc(a.src || "المصدر الأصلي")}</b>، وآخر توقيت مسجل ${esc(fmt(a.published_at))}. لا نضيف معلومة لا تظهر في مصادر القصة؛ <a href="${esc(a.sourceURL || "#")}" target="_blank" rel="noopener noreferrer">افتح المصدر الأصلي ↗</a>`;
     });
   }
+  function changeLogShell() {
+    return `<section class="intel-change-log"><div class="intel-analysis-head"><strong>سجل التغيير المرئي</strong><span>تحديثات القصة</span></div><div class="intel-change-items"><small>جارٍ التحقق من سجل العنوان والملخص والثقة…</small></div></section>`;
+  }
+  async function loadChangeLog(a, body) {
+    const host = body.querySelector(".intel-change-items");
+    if (!host) return;
+    try {
+      const select = "changed_at,change_type,changed_fields";
+      const url = `${API}/rest/v1/article_change_log?select=${select}&article_id=eq.${encodeURIComponent(a.id)}&order=changed_at.desc&limit=8`;
+      const response = await fetch(url, {headers:{apikey:KEY}, signal:AbortSignal.timeout(8000)});
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      const rows = await response.json();
+      if (!rows.length) { host.innerHTML = "<small>لا توجد تغييرات مسجلة بعد؛ هذه هي النسخة الحالية المنشورة.</small>"; return; }
+      const labels = {title:"العنوان",summary:"الملخص",verification:"الموثوقية",verification_source_count:"عدد المصادر",correction_note:"التصحيح",ai_summary:"التحليل المساعد",editorial_status:"الحالة"};
+      host.innerHTML = rows.map(row => { const fields = Object.keys(row.changed_fields || {}).map(k => labels[k] || k).join("، "); const kind = row.change_type === "correction" ? "تصحيح" : row.change_type === "verification" ? "تحديث موثوقية" : row.change_type === "created" ? "أُنشئت القصة" : "تحديث تحريري"; return `<div class="intel-change-item"><strong>${esc(kind)}</strong><span>${esc(fmt(row.changed_at))}</span><p>${esc(fields || "تغيرت بيانات القصة")}</p></div>`; }).join("");
+    } catch (error) {
+      host.innerHTML = "<small>سجل التغييرات سيظهر بعد تفعيل ترحيل التدقيق في Supabase؛ لا نخمن تاريخاً غير موجود.</small>";
+      console.warn("WRLDLINE change log:", error);
+    }
+  }
   function enhanceModal(e) {
     const a = e.detail?.article;
     if (!a) return;
     const body = document.querySelector(".modal-article-body");
     if (!body || body.querySelector(".intel-reliability")) return;
-    body.insertAdjacentHTML("beforeend", renderReliability(a) + analyze(a) + askBox(a));
+    body.insertAdjacentHTML("beforeend", renderReliability(a) + analyze(a) + askBox(a) + changeLogShell());
     wireAsk(a);
+    loadChangeLog(a, body);
   }
   function renderDashboard() {
     const last = Number(localStorage.getItem(VISIT_KEY) || 0);
