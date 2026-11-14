@@ -7,6 +7,16 @@ const result=await response.json().catch(()=>({}));
 console.log("AI_PROVIDER_HEALTHCHECK "+JSON.stringify(result));
 
 if(!response.ok||!result.ok)process.exit(1);
+const gemini=(result.results||[]).find(item=>item.provider==="gemini");
+if(!gemini||gemini.status!=="passed"||gemini.key_source!=="GEMINI_API_KEY"){
+  console.error("SUPABASE_GEMINI_CHECK_FAILED "+JSON.stringify({
+    status:gemini?.status||"missing",
+    key_source:gemini?.key_source||null,
+    error:gemini?.error||null
+  }));
+  process.exit(1);
+}
+console.log("SUPABASE_GEMINI_CHECK passed; key_source=GEMINI_API_KEY; model="+(gemini.model||"verified"));
 const runtimeFirecrawl=(result.results||[]).find(item=>item.provider==="firecrawl");
 if(!runtimeFirecrawl||runtimeFirecrawl.status!=="passed"){
   console.error("SUPABASE_FIRECRAWL_CHECK_FAILED "+JSON.stringify(runtimeFirecrawl||{status:"missing"}));
