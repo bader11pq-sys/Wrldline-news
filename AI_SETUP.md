@@ -9,7 +9,8 @@ The repository includes a background worker (`classify-pending.js`) and GitHub A
 **Supabase Dashboard → Project Settings → Edge Functions → Secrets**
 - `NVIDIA_API_KEY` — NVIDIA API Catalog key.
 - `GONKA_BROKER_API_KEY` — Gonka Broker key (starts with `gnk-prx-`), read only by server-side classification, translation, and provider-healthcheck functions. Optional `GONKA_MODEL` pins an exact model ID returned by Gonka `/v1/models`; otherwise the function selects the first currently available model.
-- At least one fallback provider key: `GOOGLE_API_KEY` or `GEMINI_API_KEY`, `GROQ_API_KEY`, and/or `OPENROUTER_API_KEY`.
+- `GEMINI_API_KEY` — preferred Gemini credential. Runtime functions select it first. `GOOGLE_API_KEY` is retained only as a legacy fallback when `GEMINI_API_KEY` is absent.
+- Optional fallback providers: `GROQ_API_KEY`, `NVIDIA_API_KEY`, `GONKA_BROKER_API_KEY`, and/or `OPENROUTER_API_KEY`.
 - The integration uses the tested model `nvidia/nemotron-3.5-lightning-30b-a3b`.
 
 **GitHub repository → Settings → Secrets and variables → Actions**
