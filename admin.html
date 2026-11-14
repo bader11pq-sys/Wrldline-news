@@ -16,7 +16,42 @@
 <section class="panel hidden" id="accessPanel"><h2>الحساب غير مخوّل للتحرير</h2><p class="muted">يلزم منح حساب المحرر دوراً موثوقاً من Supabase Dashboard عبر Authentication → Users → المستخدم → Raw App Metadata وإضافة <code>{"role":"admin"}</code>، ثم تسجيل الخروج والدخول مجدداً. لا تستخدم User Metadata لهذا الغرض.</p></section>
 <section class="panel hidden" id="editorPanel"><div class="row"><div><h2>إدارة الأخبار</h2><small id="userLabel"></small></div><button class="btn secondary" id="logoutButton">تسجيل الخروج</button></div>
 <div class="notice">تخضع عمليات النشر والتعديل والحذف لسياسات Row Level Security في Supabase. لا تمنح صلاحيات الكتابة للمستخدمين المجهولين.</div>
-<section class="panel" id="aiProviderPanel">
+<section class="panel" id="opsDashboardPanel">
+ <div class="row"><div><h2>مركز المراقبة التشغيلية</h2><small class="muted">مؤشرات حية من قواعد البيانات وسجلات دورات التشغيل — تحديث تلقائي كل دقيقة</small></div><div class="actions"><span id="opsUpdatedAt" class="muted">لم يتم الفحص بعد</span><button class="btn" type="button" id="opsRefreshButton">تحديث الآن</button></div></div>
+ <div id="opsStatus" class="status" role="status" aria-live="polite">جارٍ الاتصال بمركز المراقبة...</div>
+ <div class="ops-metrics" id="opsMetrics">
+  <div class="ops-metric"><small>مصادر RSS النشطة</small><strong id="opsFeeds">—</strong><span id="opsFeedsHint">—</span></div>
+  <div class="ops-metric"><small>دورات الجمع خلال ساعة</small><strong id="opsRuns">—</strong><span id="opsRunsHint">—</span></div>
+  <div class="ops-metric"><small>أخبار منشورة خلال ساعة</small><strong id="opsPublished">—</strong><span id="opsBreaking">—</span></div>
+  <div class="ops-metric"><small>أخبار تنتظر التصنيف</small><strong id="opsPending">—</strong><span id="opsTranslation">—</span></div>
+ </div>
+ <div class="ops-grid">
+  <section class="ops-subpanel"><h3>صحة خطوط المعالجة</h3><div id="opsPipelines" class="ops-list">—</div></section>
+  <section class="ops-subpanel"><h3>حالة مزودي الذكاء الاصطناعي</h3><div id="opsProviders" class="ops-list">—</div></section>
+ </div>
+ <section class="ops-subpanel"><h3>آخر دورات التشغيل</h3><div class="ops-table-wrap"><table class="ops-table"><thead><tr><th>المسار</th><th>وقت البدء</th><th>المصادر</th><th>ناجح</th><th>فاشل</th><th>مقالات</th></tr></thead><tbody id="opsRunsTable"><tr><td colspan="6">—</td></tr></tbody></table></div></section>
+ <section class="ops-subpanel"><h3>مصادر تحتاج انتباه</h3><div id="opsFeedErrors" class="ops-list">—</div></section>
+ <p class="ops-footnote">الحالة تُحسب من آخر البيانات المسجلة؛ لا تعني «سليم» أن المصدر الخارجي متاح لحظيًا. سجلات المزودين تعرض التوقفات المسجلة فقط، ولا تنفذ اختبار استهلاك API تلقائيًا.</p>
+</section>
+<style>
+#opsDashboardPanel .ops-metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:18px 0}
+#opsDashboardPanel .ops-metric,#opsDashboardPanel .ops-subpanel{background:#0d1929;border:1px solid var(--line);border-radius:12px;padding:14px;min-width:0}
+#opsDashboardPanel .ops-metric small,#opsDashboardPanel .ops-metric span{display:block;color:var(--muted);font-size:11px}
+#opsDashboardPanel .ops-metric strong{display:block;font:700 28px Manrope,sans-serif;margin:5px 0}
+#opsDashboardPanel .ops-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
+#opsDashboardPanel .ops-subpanel{margin:12px 0}
+#opsDashboardPanel .ops-subpanel h3{font-size:15px;margin:0 0 10px}
+#opsDashboardPanel .ops-list{display:grid;gap:8px}
+#opsDashboardPanel .ops-line{display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-bottom:1px solid var(--line);font-size:12px}
+#opsDashboardPanel .ops-line:last-child{border:0}
+#opsDashboardPanel .ops-ok{color:#54c79a}#opsDashboardPanel .ops-warn{color:#e7b65c}#opsDashboardPanel .ops-bad{color:#ed747c}
+#opsDashboardPanel .ops-table-wrap{overflow-x:auto}
+#opsDashboardPanel .ops-table{width:100%;border-collapse:collapse;white-space:nowrap;font-size:11px}
+#opsDashboardPanel .ops-table th,#opsDashboardPanel .ops-table td{padding:9px 10px;text-align:start;border-bottom:1px solid var(--line)}
+#opsDashboardPanel .ops-footnote{font-size:11px;color:var(--muted);margin:14px 0 0}
+@media(max-width:680px){#opsDashboardPanel .ops-metrics{grid-template-columns:1fr 1fr}#opsDashboardPanel .ops-grid{grid-template-columns:1fr}#opsDashboardPanel .ops-metric strong{font-size:24px}}
+</style>
+\n<section class="panel" id="aiProviderPanel">
  <div class="row"><div><h2>فحص مزودات الذكاء الاصطناعي</h2><small class="muted">اختبار اتصال ومصادقة وتوليد/ترجمة فعلية من الخادم دون كشف مفاتيح API.</small></div><button class="btn" type="button" id="runProviderHealthButton">فحص جميع المزودات</button></div>
  <div class="notice">يشمل الاختبار Gemini وGroq وNVIDIA وOpenRouter وGonka وDeepL. الاختبار يرسل طلبًا قصيرًا حقيقيًا لكل مزود مُعدّ، وقد يستهلك قدرًا ضئيلًا من الحصة.</div>
  <div id="providerHealthSummary" class="status" role="status" aria-live="polite">اضغط «فحص جميع المزودات» لبدء الاختبار.</div>
@@ -32,6 +67,6 @@
 <div class="row" style="margin-top:25px"><h2>غرفة المراجعة</h2><div class="actions"><button class="btn secondary" id="classifyButton">إعادة محاولة تصنيف 10 أخبار</button><button class="btn secondary" id="refreshButton">تحديث القائمة</button></div></div><p class="muted">يعمل التصنيف الذكي تلقائياً في الخلفية بعد وصول الأخبار. هذا الزر مخصص لإعادة محاولة الأخبار المتعثرة أو المعلقة فقط. يتطلب ذلك ضبط مفاتيح الخدمة الموضحة في AI_SETUP.md. النتائج منخفضة الثقة تظهر للمراجعة، والتصنيف لا يقيس صحة الخبر.</p><div class="grid"><div><label for="articleSearch">بحث في الأخبار</label><input id="articleSearch" type="search" placeholder="عنوان أو مصدر أو دولة"></div><div><label for="statusFilter">تصفية الحالة</label><select id="statusFilter"><option value="all">كل الحالات</option><option value="review">قيد المراجعة</option><option value="draft">مسودات</option><option value="published">منشور</option><option value="rejected">مرفوض</option></select></div></div><div id="articleList" class="status">جارٍ التحميل...</div></section>
 <div id="status" class="status" role="status" aria-live="polite">يلزم تسجيل الدخول للمتابعة.</div>
 </main>
-<script src="admin.js?v=20261113-8" defer onerror="document.getElementById('status').textContent='تعذر تحميل كود لوحة التحرير. أعد تحميل الصفحة أو افتحها في Safari دون مانع محتوى.';"></script><script src="language.js?v=20261113-2" defer></script>
+<script src="admin.js?v=20261114-ops1" defer onerror="document.getElementById('status').textContent='تعذر تحميل كود لوحة التحرير. أعد تحميل الصفحة أو افتحها في Safari دون مانع محتوى.';"></script><script src="language.js?v=20261113-2" defer></script>
 <script src="share.js?v=20261113-4" defer></script>
 </body></html>
