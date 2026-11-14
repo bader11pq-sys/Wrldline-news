@@ -111,7 +111,7 @@ async function runProviderHealthcheck(){
   const {data,error}=await db.functions.invoke("ai-provider-healthcheck",{body:{}});
   if(error)throw error;
   const results=Array.isArray(data?.results)?data.results:[];
-  const labels={gemini:"Google Gemini",groq:"Groq",nvidia:"NVIDIA",openrouter:"OpenRouter",gonka:"Gonka",deepl:"DeepL"};
+  const labels={gemini:"Google Gemini",groq:"Groq",nvidia:"NVIDIA",openrouter:"OpenRouter",gonka:"Gonka",bazaarlink:"BazaarLink",deepl:"DeepL"};
   const states={passed:"ناجح",failed:"فشل",not_configured:"غير مُعدّ"};
   const colors={passed:"#1d8b62",failed:"#c64a52",not_configured:"#78879a"};
   const counts={passed:0,failed:0,not_configured:0};
