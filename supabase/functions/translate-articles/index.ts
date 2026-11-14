@@ -70,6 +70,7 @@ function providerCooldownSeconds(provider: string, error: unknown) {
  if (/\b429\b|rate.?limit|quota|resource_exhausted/.test(message)) {
   if(provider==="gemini" && /quota|resource_exhausted|billing|exceeded your current quota/.test(message)) return 24*60*60;
   if(provider==="openrouter" && /free-models-per-day|free model.*per day/.test(message)) return 24*60*60;
+  if(provider==="groq" && /tokens per minute|\btpm\b|try again in/.test(message)) return 60;
   return 5*60;
  }
  if (/\b(401|403)\b|unauthorized|invalid api key|authentication/.test(message)) return 30*60;
@@ -122,7 +123,7 @@ async function groqGenerate(prompt: string, apiKey: string, maxOutputTokens: num
     if (attempt === 2) throw Object.assign(new Error(lastError), { deferred: true, retryAfter: response.status === 429 ? 60 : 30 });
     const retryHeader = response.headers.get("retry-after");
     const retrySeconds = retryHeader ? Number(retryHeader) : NaN;
-    const retryBodyMatch = detail.match(/try again in\\s+([\\d.]+)\\s*s/i);
+    const retryBodyMatch = detail.match(/try again in\s+([\d.]+)\s*s/i);
     const retryBodySeconds = retryBodyMatch ? Number(retryBodyMatch[1]) : NaN;
     const providerDelay = Number.isFinite(retrySeconds) ? retrySeconds * 1000 : (Number.isFinite(retryBodySeconds) ? retryBodySeconds * 1000 : 2500 * (attempt + 1));
     const delay = invalidStructuredOutput ? 1000 + Math.floor(Math.random() * 500) : Math.min(15000, Math.max(1500, providerDelay + 250 + Math.floor(Math.random() * 750)));
@@ -402,7 +403,7 @@ Deno.serve(async(req:Request)=>{
     deeplError=deeplQuotaExhausted?"DeepL monthly character quota exhausted; using AI fallback.":"DeepL temporarily disabled after authentication failure; using AI fallback.";
    }
    if(!translated) {
-    const generated=await generateWithFallback(prompt,gemini,groqKey,nvidiaKey,gonkaKey,openRouterKey,openRouterModel,1800,aiProviderCursor++,db,providerCooldowns);
+    const generated=await generateWithFallback(prompt,gemini,groqKey,nvidiaKey,gonkaKey,openRouterKey,openRouterModel,1200,aiProviderCursor++,db,providerCooldowns);
     translated=generated.data;
     provider=generated.provider;
    }
