@@ -44,7 +44,8 @@
   async function configure(){if(!apiUrl||!apiKey)throw new Error("Public API configuration not found");}
   async function fetchPage(offset,limit){
     const query=apiUrl+"/rest/v1/articles?select=id,title,summary,category,lang,image_url,media_type,url,source_url,source_name,is_breaking,published_at,received_at,article_translations(lang,title,summary)&editorial_status=eq.published&order=published_at.desc&limit="+limit+"&offset="+offset;
-    const response=await fetch(query,{headers:{apikey:apiKey,Authorization:"Bearer "+apiKey},signal:AbortSignal.timeout(20000)});
+    const token=await window.WRLDLINE_AUTH?.getAccessToken?.();
+    const response=await fetch(query,{headers:{apikey:apiKey,...(token?{Authorization:"Bearer "+token}: {})},signal:AbortSignal.timeout(20000)});
     if(!response.ok)throw new Error("News API HTTP "+response.status);
     const rows=await response.json();if(!Array.isArray(rows))throw new Error("Invalid news response");
     return rows;

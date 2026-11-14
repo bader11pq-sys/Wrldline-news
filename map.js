@@ -22,7 +22,8 @@ async function loadData(){
   const cutoff=new Date(Date.now()-24*3600000).toISOString();
   const url=API+"/rest/v1/articles?select=id,title,summary,category,country,source_name,url,published_at,article_translations(lang,title,summary,ai_summary),ai_country_code,ai_region,ai_event_type,ai_risk_level,ai_risk_score,ai_confidence,ai_summary,ai_location_name,ai_latitude,ai_longitude,ai_classification_status&editorial_status=eq.published&ai_classification_status=eq.classified&ai_country_code=not.is.null&published_at=gte."+encodeURIComponent(cutoff)+"&not.or=(url.ilike.*t.me*,source_url.ilike.*t.me*,source_name.ilike.*telegram*)&order=published_at.desc&limit=1000";
   const geoPromise=geoCache?Promise.resolve(null):fetch("https://raw.githubusercontent.com/datasets/geo-countries/master/data/countries.geojson",{signal:AbortSignal.timeout(20000)});
-  const res=await fetch(url,{cache:"no-store",headers:{apikey:KEY,Authorization:"Bearer "+KEY,"Cache-Control":"no-cache"},signal:AbortSignal.timeout(20000)});
+  const token=await window.WRLDLINE_AUTH?.getAccessToken?.();
+  const res=await fetch(url,{cache:"no-store",headers:{apikey:KEY,...(token?{Authorization:"Bearer "+token}:{}),"Cache-Control":"no-cache"},signal:AbortSignal.timeout(20000)});
   if(!res.ok)throw new Error(t("تعذر تحميل التحليلات (","Could not load analysis (")+res.status+")");
   const data=await res.json(),since=Date.now()-24*3600000;
   articles=(Array.isArray(data)?data:[]).filter(a=>a.ai_confidence>=0.68&&a.ai_country_code&&a.ai_risk_level!=="unknown"&&new Date(a.published_at||0).getTime()>=since).map(a=>{const tr=(a.article_translations||[]).find(x=>x.lang===lang);return {...a,title:tr?.title||a.title,summary:tr?.summary||a.summary,ai_summary:tr?.ai_summary||a.ai_summary};});

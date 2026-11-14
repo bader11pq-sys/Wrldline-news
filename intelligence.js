@@ -47,7 +47,8 @@
     try {
       const select = "changed_at,change_type,changed_fields";
       const url = `${API}/rest/v1/article_change_log?select=${select}&article_id=eq.${encodeURIComponent(a.id)}&order=changed_at.desc&limit=8`;
-      const response = await fetch(url, {headers:{apikey:KEY}, signal:AbortSignal.timeout(8000)});
+      const token = await window.WRLDLINE_AUTH?.getAccessToken?.();
+      const response = await fetch(url, {headers:{apikey:KEY,...(token?{Authorization:"Bearer "+token}:{})}, signal:AbortSignal.timeout(8000)});
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
       const rows = await response.json();
       if (!rows.length) { host.innerHTML = "<small>لا توجد تغييرات مسجلة بعد؛ هذه هي النسخة الحالية المنشورة.</small>"; return; }

@@ -97,8 +97,9 @@
 
   async function fetchRow(target) {
     const params = new URLSearchParams({ select: "*", briefing_date: "eq." + target, limit: "1" });
+    const token = await window.WRLDLINE_AUTH?.getAccessToken?.();
     const response = await fetch(SUPABASE_URL + "/rest/v1/daily_news_briefings?" + params.toString(), {
-      headers: { apikey: SUPABASE_KEY, Authorization: "Bearer " + SUPABASE_KEY },
+      headers: { apikey: SUPABASE_KEY, ...(token ? { Authorization: "Bearer " + token } : {}) },
       cache: "no-store", signal: AbortSignal.timeout(12000),
     });
     if (!response.ok) throw new Error("تعذر جلب الملخص (" + response.status + ")");
@@ -107,8 +108,9 @@
   }
   async function fetchLatest() {
     const params = new URLSearchParams({ select: "*", order: "briefing_date.desc", limit: "1" });
+    const token = await window.WRLDLINE_AUTH?.getAccessToken?.();
     const response = await fetch(SUPABASE_URL + "/rest/v1/daily_news_briefings?" + params.toString(), {
-      headers: { apikey: SUPABASE_KEY, Authorization: "Bearer " + SUPABASE_KEY },
+      headers: { apikey: SUPABASE_KEY, ...(token ? { Authorization: "Bearer " + token } : {}) },
       cache: "no-store", signal: AbortSignal.timeout(12000),
     });
     if (!response.ok) throw new Error("تعذر جلب آخر نسخة مكتملة (" + response.status + ")");

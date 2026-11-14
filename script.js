@@ -109,7 +109,7 @@ function newsDataMetaMarkup(a){
  if(!a.newsdataArticleId&&!tags.length&&!sentimentLabel&&!a.newsdataAiSummary)return "";
  return '<div class="newsdata-meta"><span class="newsdata-provider">NewsData.io</span>'+tags.map(t=>'<span class="newsdata-tag">'+escapeHTML(t)+'</span>').join("")+(sentimentLabel?'<span class="newsdata-sentiment sentiment-'+escapeHTML(sentiment)+'">'+ui("المشاعر: ","Sentiment: ")+escapeHTML(sentimentLabel)+'</span>':"")+'</div>';
 }
-const state = { articles:[], missedArticles:[], filtered:[], category:"all", country:"all", lang:localStorage.getItem("wrldline:language")==="en"?"en":"ar", limit:PAGE_SIZE, saved:new Set(readSaved()), query:"", sort:"newest", loading:false, db:null, user:null, follows:{category:[],country:[]}, followOnly:false, realtime:null,  pendingLocalSaved:new Set(readSaved()), breakingTickerIndex:0, breakingTickerCurrentId:null, missedLimit:8, refetchAfterCurrent:false,lastFetchAt:0 };
+const state = { articles:[], missedArticles:[], filtered:[], category:"all", country:"all", lang:localStorage.getItem("wrldline:language")==="en"?"en":"ar", limit:PAGE_SIZE, saved:new Set(readSaved()), query:"", sort:"newest", loading:false, db:null, user:null, preferences:null, follows:{category:[],country:[]}, followOnly:false, realtime:null,  pendingLocalSaved:new Set(readSaved()), breakingTickerIndex:0, breakingTickerCurrentId:null, missedLimit:8, refetchAfterCurrent:false,lastFetchAt:0 };
 
 document.addEventListener("DOMContentLoaded", () => {
   initPreferences(); bindEvents(); updateClock(); fetchNews(); initPersonalization(); setInterval(()=>{if(!document.hidden&&Date.now()-state.lastFetchAt>=90000)fetchNews();},30000); setInterval(updateBreaking, 15000);
@@ -118,7 +118,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 async function registerServiceWorker(){
  if(!("serviceWorker" in navigator))return;
- const workerBuild="v56";
+ const workerBuild="v57";
  navigator.serviceWorker.addEventListener("controllerchange",()=>{
   if(sessionStorage.getItem("wrldline:sw-build")!==workerBuild){
    sessionStorage.setItem("wrldline:sw-build",workerBuild);
@@ -126,7 +126,7 @@ async function registerServiceWorker(){
   }
  });
  try{
-  const registration=await navigator.serviceWorker.register("/sw.js?v=v56",{scope:"/"});
+  const registration=await navigator.serviceWorker.register("/sw.js?v=v57",{scope:"/"});
   registration.update().catch(()=>{});
   registration.addEventListener("updatefound",()=>{
    const worker=registration.installing;if(!worker)return;
@@ -194,13 +194,22 @@ document.addEventListener("click",e=>{const link=e.target.closest?.("[data-sourc
  window.addEventListener("popstate",()=>{if(!new URLSearchParams(location.search).has("article"))closeArticle(false);});
 }
 async function fetchNews(manual=false){
+ if(!window.WRLDLINE_AUTH){
+  await new Promise(resolve=>{
+   let settled=false;const done=()=>{if(!settled){settled=true;resolve();}};
+   document.addEventListener("wrldline:auth-ready",done,{once:true});
+   document.addEventListener("wrldline:auth-denied",done,{once:true});
+   setTimeout(done,1800);
+  });
+ }
  if(state.loading){state.refetchAfterCurrent=true;return;}
  state.loading=true;
  const refresh=document.getElementById("refreshButton");if(refresh){refresh.disabled=true;refresh.classList.add("is-loading");refresh.setAttribute("aria-busy","true");}
  document.getElementById("connectionLabel").textContent=ui("جارٍ تحديث الأخبار","Updating newsroom");
  document.getElementById("newsStatus")?.classList.remove("is-error");document.getElementById("newsStatus")?.classList.add("is-updating");
  try{
-  const headers={apikey:SUPABASE_ANON_KEY};
+  const token=await window.WRLDLINE_AUTH?.getAccessToken?.();
+  const headers={apikey:SUPABASE_ANON_KEY,...(token?{Authorization:"Bearer "+token}:{})};
   const select="select=id,title,summary,category,country,event_country,source_scope,source_language,language_detection,source_name,url,source_url,published_at,received_at,lang,media_type,image_url,is_breaking,content_type,sponsor_name,sponsor_url,correction_note,corrected_at,editorial_status,verification,verification_source_count,verification_independent_count,verification_field_count,verification_official_count,verification_conflict_count,verification_correction_count,verification_retraction_count,verification_updated_at,verification_note,ai_country_code,ai_summary,ai_risk_level,ai_risk_score,ai_confidence,is_exclusive,exclusive_type,exclusive_reason,exclusive_confidence,newsdata_article_id,newsdata_categories,newsdata_ai_tags,newsdata_sentiment,newsdata_ai_summary,newsdata_fetched_at,newsdata_only,article_translations(lang,title,summary,ai_summary,translation_status,translation_source)";
   const base=SUPABASE_URL+"/rest/v1/articles?"+select+"&editorial_status=eq.published";
   const since24h=new Date(Date.now()-24*60*60*1000).toISOString();
@@ -287,16 +296,19 @@ function renderFollowPanel(){
 }
 async function initPersonalization(){
  if(!window.supabase?.createClient)return;
- state.db=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
-  initNewsRealtime();
+ state.db=window.WRLDLINE_AUTH?.client||window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
  const {data:{session}}=await state.db.auth.getSession();await handlePersonalSession(session);
+ initNewsRealtime();
  state.db.auth.onAuthStateChange((_event,session)=>{setTimeout(()=>handlePersonalSession(session),0);});
 }
 async function handlePersonalSession(session){
  const next=session?.user||null,changed=state.user?.id!==next?.id;state.user=next;
  if(changed&&state.realtime){await state.db.removeChannel(state.realtime);state.realtime=null;}
- if(!next){state.follows={category:[],country:[]};state.followOnly=false;document.getElementById("followFeedButton").classList.remove("active");renderFollowPanel();return;}
- await loadCloudSaved(false);await loadFollows();renderFollowPanel();
+ if(!next){state.follows={category:[],country:[]};state.preferences=null;state.followOnly=false;document.getElementById("followFeedButton").classList.remove("active");renderFollowPanel();return;}
+ await loadCloudSaved(false);await loadPreferences();renderFollowPanel();
+ state.followOnly=state.follows.category.length>0||state.follows.country.length>0;
+ document.getElementById("followFeedButton").classList.toggle("active",state.followOnly);
+ if(state.articles.length)applyFilters();
  state.realtime=state.db.channel("wrldline-personal-"+next.id)
   .on("postgres_changes",{event:"*",schema:"public",table:"user_saved_articles",filter:"user_id=eq."+next.id},()=>loadCloudSaved(false))
   .on("postgres_changes",{event:"*",schema:"public",table:"user_follows",filter:"user_id=eq."+next.id},()=>loadFollows())
@@ -323,12 +335,47 @@ async function loadFollows(){
  state.follows={category:(data||[]).filter(x=>x.target_type==="category").map(x=>x.target_value),country:(data||[]).filter(x=>x.target_type==="country").map(x=>x.target_value)};
  renderFollowPanel();if(state.followOnly)applyFilters();
 }
+async function loadPreferences(){
+ if(!state.db||!state.user)return;
+ const {data,error}=await state.db.from("user_preferences").select("followed_categories,followed_countries,notify_breaking,notify_categories,notify_countries,browser_notifications").eq("user_id",state.user.id).maybeSingle();
+ if(error){console.warn("WRLDLINE preferences:",error.message);await loadFollows();return;}
+ if(!data){await loadFollows();state.preferences={followed_categories:state.follows.category,followed_countries:state.follows.country,notify_breaking:true,notify_categories:state.follows.category,notify_countries:state.follows.country,browser_notifications:false};await state.db.from("user_preferences").upsert({user_id:state.user.id,...state.preferences},{onConflict:"user_id"});return;}
+ state.preferences=data;
+ state.follows={category:Array.isArray(data.followed_categories)?data.followed_categories:[],country:Array.isArray(data.followed_countries)?data.followed_countries:[]};
+}
+async function savePreferenceArrays(){
+ if(!state.db||!state.user)return;
+ state.preferences=state.preferences||{};
+ state.preferences.followed_categories=state.follows.category;
+ state.preferences.followed_countries=state.follows.country;
+ state.preferences.notify_categories=state.follows.category;
+ state.preferences.notify_countries=state.follows.country;
+ const {error}=await state.db.from("user_preferences").upsert({user_id:state.user.id,...state.preferences},{onConflict:"user_id"});
+ if(error)console.warn("WRLDLINE preferences sync:",error.message);
+}
+function notificationMatches(article){
+ const p=state.preferences;if(!p||!p.browser_notifications)return false;
+ const category=normalizeCategory(article?.category||article?.cat||"");
+ const country=article?.country||article?.event_country||"";
+ if(article?.is_breaking&&p.notify_breaking)return true;
+ const cats=Array.isArray(p.notify_categories)&&p.notify_categories.length?p.notify_categories:(p.followed_categories||[]);
+ const countries=Array.isArray(p.notify_countries)&&p.notify_countries.length?p.notify_countries:(p.followed_countries||[]);
+ return cats.includes(category)||countries.includes(country);
+}
+function notifyForArticle(article){
+ if(!notificationMatches(article)||!("Notification" in window)||Notification.permission!=="granted")return;
+ const key="wrldline:notified:"+String(article.id||article.title||"");
+ if(sessionStorage.getItem(key))return;
+ sessionStorage.setItem(key,"1");
+ try{new Notification(article.is_breaking?"WRLDLINE · خبر عاجل":"WRLDLINE · خبر يهمك",{body:String(article.title||"").slice(0,140),tag:key});}catch(error){console.warn("WRLDLINE notification:",error);}
+}
 async function toggleFollow(type,value){
  if(!state.user||!["category","country"].includes(type))return;
  const exists=state.follows[type].includes(value);
  const result=exists?await state.db.from("user_follows").delete().eq("user_id",state.user.id).eq("target_type",type).eq("target_value",value):await state.db.from("user_follows").insert({user_id:state.user.id,target_type:type,target_value:value});
  if(result.error){showToast(ui("تعذر حفظ المتابعة: ","Could not save follow: ")+result.error.message);return;}
  state.follows[type]=exists?state.follows[type].filter(x=>x!==value):[...state.follows[type],value];
+ await savePreferenceArrays();
  renderFollowPanel();if(state.followOnly)applyFilters();showToast(exists?ui("تم إلغاء المتابعة","Unfollowed"):ui("تمت إضافة المتابعة","Added to following"));
 }
 function selectCategory(cat){state.category=cat;state.limit=PAGE_SIZE;document.querySelectorAll(".nav-link,.chip").forEach(el=>el.classList.toggle("active",el.dataset.category===cat));document.getElementById("feedTitle").textContent=cat==="all"?ui("أحدث الأخبار","Latest news"):categoryName(cat);applyFilters();document.getElementById("mainNav").classList.remove("mobile-open");document.getElementById("menuButton").setAttribute("aria-expanded","false");}
@@ -442,7 +489,8 @@ function initNewsRealtime(){
   if(!state.db||state.newsChannel)return;
   let refreshTimer=null;
   state.newsChannel=state.db.channel("wrldline-public-news")
-   .on("postgres_changes",{event:"*",schema:"public",table:"articles",filter:"editorial_status=eq.published"},()=>{
+   .on("postgres_changes",{event:"*",schema:"public",table:"articles",filter:"editorial_status=eq.published"},payload=>{
+    if(payload.eventType==="INSERT")notifyForArticle(payload.new||{});
     if(refreshTimer)clearTimeout(refreshTimer);
     refreshTimer=setTimeout(()=>{refreshTimer=null;fetchNews();},1200);
    })

@@ -75,23 +75,35 @@
   }
 
   async function fetchArticles(limit = 400) {
+    if (!window.WRLDLINE_AUTH) {
+      await new Promise(resolve => {
+        let settled = false;
+        const done = () => { if (!settled) { settled = true; resolve(); } };
+        document.addEventListener("wrldline:auth-ready", done, { once: true });
+        document.addEventListener("wrldline:auth-denied", done, { once: true });
+        setTimeout(done, 1800);
+      });
+    }
+    const cacheKey = CACHE_KEY + ":" + (window.WRLDLINE_AUTH?.user?.id || "anonymous");
     try {
-      const cached = JSON.parse(sessionStorage.getItem(CACHE_KEY) || "null");
+      const cached = JSON.parse(sessionStorage.getItem(cacheKey) || "null");
       if (cached && Date.now() - cached.at < CACHE_TTL && Array.isArray(cached.rows)) return cached.rows;
     } catch {}
     const select = "select=id,title,summary,category,country,source_name,url,source_url,published_at,image_url,ai_risk_level,ai_country_code,is_breaking,content_type,editorial_status";
     const url = SUPABASE_URL + "/rest/v1/articles?" + select + "&editorial_status=eq.published&order=published_at.desc&limit=" + Math.min(1000, limit);
     try {
-      const res = await fetch(url, { headers: { apikey: SUPABASE_ANON_KEY }, signal: AbortSignal.timeout(12000) });
+      const token = await window.WRLDLINE_AUTH?.getAccessToken?.();
+      const headers = { apikey: SUPABASE_ANON_KEY, ...(token ? { Authorization: "Bearer " + token } : {}) };
+      const res = await fetch(url, { headers, signal: AbortSignal.timeout(12000) });
       if (!res.ok) throw new Error("HTTP " + res.status);
       const rows = await res.json();
       const clean = (Array.isArray(rows) ? rows : []).filter(a => a && a.title && a.title.length > 12);
-      try { sessionStorage.setItem(CACHE_KEY, JSON.stringify({ at: Date.now(), rows: clean })); } catch {}
+      try { sessionStorage.setItem(cacheKey, JSON.stringify({ at: Date.now(), rows: clean })); } catch {}
       return clean;
     } catch (error) {
       console.warn("WRLDLINE newsroom fetch:", error);
       try {
-        const cached = JSON.parse(sessionStorage.getItem(CACHE_KEY) || "null");
+        const cached = JSON.parse(sessionStorage.getItem(cacheKey) || "null");
         if (cached && Array.isArray(cached.rows)) return cached.rows;
       } catch {}
       return [];
@@ -194,7 +206,7 @@
 
   function articleCard(a, opts = {}) {
     const img = a.image_url ? '<img src="' + escapeHTML(a.image_url) + '" alt="' + escapeHTML(a.title) + '" loading="lazy" decoding="async" referrerpolicy="no-referrer" onerror="this.style.display=\'none\'">' : "";
-    const cls = opts.compact ? "wl-live-story" : "news-card";
+    const cls = opts.compact ? "wl-live-story" : "news-card news-card--editorial";
     return '<article class="' + cls + '">' + (opts.compact ? "" : '<div class="card-open">' + img) +
       '<div class="' + (opts.compact ? "wl-live-copy" : "card-content") + '">' +
       '<div class="story-meta"><span class="category-label">' + escapeHTML(opts.category || "") + "</span><span>" + escapeHTML(sourceName(a)) + "</span><span class=\"read-time\">" + timeAgo(a.published_at) + "</span></div>" +
