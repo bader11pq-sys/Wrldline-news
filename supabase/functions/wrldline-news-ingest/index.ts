@@ -114,7 +114,7 @@ async function runGeneral() {
    await setFeedHealth(feeds[i],result).catch(()=>false);
   }
  }
- await Promise.all(Array.from({length:24},worker));
+ await Promise.all(Array.from({length:16},worker));
  const summary={pipeline:"general",feeds:feeds.length,successful:results.filter(x=>x?.ok).length,failed:results.filter(x=>!x?.ok).length,parsed_items:results.reduce((n,x)=>n+(x?.parsed||0),0),fallbacks:results.filter(x=>x?.usedFallback).length};
  await updateRun(runId,{source_count:summary.feeds,successful_sources:summary.successful,failed_sources:summary.failed,parsed_items:summary.parsed_items,error_summary:results.filter(x=>!x?.ok).slice(0,12).map(x=>String(x?.name||"unknown")+": "+String(x?.error||"failed")).join(" | ")||null});
  return summary;
@@ -196,7 +196,27 @@ const FEEDS=[
  {publisher:"The Kyiv Independent",url:GOOGLE("kyivindependent.com","en"),lang:"en"},
  {publisher:"Ukrainska Pravda",url:GOOGLE("pravda.com.ua","en"),lang:"en"},
  {publisher:"The Washington Post",url:GOOGLE("washingtonpost.com","en"),lang:"en"},
- {publisher:"The Guardian",url:GOOGLE("theguardian.com","en"),lang:"en"}
+ {publisher:"The Guardian",url:GOOGLE("theguardian.com","en"),lang:"en"},
+ {publisher:"DW عربية",url:GOOGLE("dw.com/ar"),lang:"ar"},
+ {publisher:"TRT عربي",url:GOOGLE("trt.net.tr/ar"),lang:"ar"},
+ {publisher:"يورونيوز عربي",url:GOOGLE("arabic.euronews.com"),lang:"ar"},
+ {publisher:"وكالة الأناضول العربية",url:GOOGLE("aa.com.tr/ar"),lang:"ar"},
+ {publisher:"إندبندنت عربية",url:GOOGLE("independentarabia.com"),lang:"ar"},
+ {publisher:"الشرق الأوسط",url:GOOGLE("aawsat.com"),lang:"ar"},
+ {publisher:"القدس العربي",url:GOOGLE("alquds.co.uk"),lang:"ar"},
+ {publisher:"أخبار الأمم المتحدة عربي",url:GOOGLE("news.un.org/ar"),lang:"ar"},
+ {publisher:"سويس إنفو عربي",url:GOOGLE("swissinfo.ch/ara"),lang:"ar"},
+ {publisher:"المونيتور عربي",url:GOOGLE("al-monitor.com/ar"),lang:"ar"},
+ {publisher:"ABC News",url:GOOGLE("abcnews.go.com","en"),lang:"en"},
+ {publisher:"NBC News",url:GOOGLE("nbcnews.com","en"),lang:"en"},
+ {publisher:"CBS News",url:GOOGLE("cbsnews.com","en"),lang:"en"},
+ {publisher:"NPR",url:GOOGLE("npr.org","en"),lang:"en"},
+ {publisher:"The New York Times",url:GOOGLE("nytimes.com","en"),lang:"en"},
+ {publisher:"USA Today",url:GOOGLE("usatoday.com","en"),lang:"en"},
+ {publisher:"CNBC",url:GOOGLE("cnbc.com","en"),lang:"en"},
+ {publisher:"Sky News",url:GOOGLE("news.sky.com","en"),lang:"en"},
+ {publisher:"The Hill",url:GOOGLE("thehill.com","en"),lang:"en"},
+ {publisher:"CTV News",url:GOOGLE("ctvnews.ca","en"),lang:"en"}
 ];
 function urgentRow(title: string,url: string,summary: string,date: string,feed: any) {
  const normalizedTitle=String(title||"").replace(/[\u061C\u200E\u200F\u202A-\u202E\u2066-\u2069]/g,"").replace(/^["'“”‘’(]+/,"").trim();
@@ -240,8 +260,9 @@ async function collectBreaking(feed: any) {
    const saved=await dbRequest("articles?on_conflict=url",{method:"POST",headers:{"Prefer":"resolution=merge-duplicates,return=minimal"},body:JSON.stringify(rows)});
    if(!saved.ok) throw new Error("DB "+saved.status+" "+(await saved.text()).slice(0,160));
   }
-  return {ok:true,raw,parsed:rows.length};
- } catch(e: any) { return {ok:false,raw:0,parsed:0,error:String(e?.message||e).slice(0,180)}; }
+  console.log("BREAKING_SOURCE "+feed.publisher+" raw="+raw+" parsed="+rows.length);
+  return {ok:true,source:feed.publisher,raw,parsed:rows.length};
+ } catch(e: any) { const error=String(e?.message||e).slice(0,180); console.error("BREAKING_SOURCE_ERROR "+feed.publisher+": "+error); return {ok:false,source:feed.publisher,raw:0,parsed:0,error}; }
 }
 async function runBreaking() {
  const runId=await beginRun("breaking");
@@ -249,9 +270,9 @@ async function runBreaking() {
  async function worker() {
   while(next<FEEDS.length) { const i=next++; results[i]=await collectBreaking(FEEDS[i]); }
  }
- await Promise.all(Array.from({length:24},worker));
+ await Promise.all(Array.from({length:16},worker));
  const summary={pipeline:"breaking",feeds:FEEDS.length,successful:results.filter(x=>x?.ok).length,failed:results.filter(x=>!x?.ok).length,raw_items:results.reduce((n,x)=>n+(x?.raw||0),0),parsed_items:results.reduce((n,x)=>n+(x?.parsed||0),0),empty_sources:results.filter(x=>x?.ok&&x.raw===0).length};
- await updateRun(runId,{source_count:summary.feeds,successful_sources:summary.successful,failed_sources:summary.failed,parsed_items:summary.parsed_items,error_summary:results.filter(x=>!x?.ok).slice(0,12).map(x=>String(x?.error||"failed")).join(" | ")||null});
+ await updateRun(runId,{source_count:summary.feeds,successful_sources:summary.successful,failed_sources:summary.failed,parsed_items:summary.parsed_items,error_summary:results.filter(x=>!x?.ok).slice(0,12).map(x=>String(x?.source||"unknown")+": "+String(x?.error||"failed")).join(" | ")||null});
  return summary;
 }
 
