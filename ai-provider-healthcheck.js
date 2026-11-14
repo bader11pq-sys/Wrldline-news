@@ -27,5 +27,5 @@ if(!firecrawlResponse.ok){
 const firecrawlPayload=await firecrawlResponse.json();
 const markdown=String(firecrawlPayload?.data?.markdown||firecrawlPayload?.markdown||"").trim();
 if(markdown.length<200)throw new Error("GitHub Firecrawl key returned no usable markdown.");
-console.log("GITHUB_FIRECRAWL_CHECK passed; markdown_chars="+markdown.length);
+console.log("GITHUB_FIRECRAWL_CHECK passed; markdown_chars="+markdown.length+"; key_scope=GitHub_Actions");
 
