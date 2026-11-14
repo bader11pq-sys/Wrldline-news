@@ -124,7 +124,7 @@ async function discoverSources() {
     const response=await dbRequest("newsdata_sources?on_conflict=source_id",{method:"POST",headers:{"Prefer":"resolution=merge-duplicates,return=minimal"},body:JSON.stringify(rows)});
     if(!response.ok) throw new Error("Sources catalog upsert HTTP "+response.status+": "+(await response.text()).slice(0,250));
   }
-  return {mode:"sources",sources_received:sources.length,sources_saved:rows.length};
+  return {mode:"sources",sources_received:sources.length,sources_saved:rows.length,sample_source_keys:Object.keys(sources[0]||{}),sample_source:sources[0]||null};
 }
 Deno.serve(async (req: Request) => {
   if(req.method!=="POST") return Response.json({error:"POST required"},{status:405});
