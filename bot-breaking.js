@@ -142,8 +142,15 @@ function rawItemCount(body,f){
  if(f.type==="telegram")return (body.match(/tgme_widget_message\b/g)||[]).length;
  return (body.match(/<item\b/gi)||body.match(/<entry\b/gi)||[]).length;
 }
+async function recordBreakingFeed(f){
+ if(!f.url) return;
+ const payload={name:String(f.publisher||"Breaking source").slice(0,180),url:f.url,lang:f.lang||"en",category:taxonomy.normalizeCategory(f.category),country:f.country||null,active:true,pipeline:"breaking",source_kind:"publisher_search_feed"};
+ const saved=await fetch(URL+"/rest/v1/feeds?on_conflict=url",{method:"POST",headers:{...HEADERS,Prefer:"resolution=merge-duplicates,return=minimal"},body:JSON.stringify(payload),signal:AbortSignal.timeout(8000)});
+ if(!saved.ok) throw new Error("Feed registry "+saved.status);
+}
 async function collect(f){
  try{
+  await recordBreakingFeed(f);
   const url=f.type==="telegram"?"https://t.me/s/"+f.handle:f.url;
   const r=await fetch(url,{headers:{"User-Agent":"Mozilla/5.0 (compatible; WRLDLINE-Breaking/3.0)","Accept":"text/html,application/rss+xml,application/xml,*/*"},signal:AbortSignal.timeout(10000)});
   if(!r.ok)throw new Error("HTTP "+r.status);
