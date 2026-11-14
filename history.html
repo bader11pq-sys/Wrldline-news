@@ -1,436 +1,114 @@
-<!doctype html>
-<html lang="ar" dir="rtl"><head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="theme-color" content="#101b2d">
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>الموسوعة التاريخية — WRLDLINE</title>
+<meta name="description" content="موسوعة تاريخية عربية مرجعية: أطلس حضارات، خط زمني عالمي، شخصيات، مصادر أصلية، خلافات تفسيرية، وأدوات للمقارنة والمراجعة.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=Noto+Kufi+Arabic:wght@400;500;600;700;800&family=Amiri:wght@400;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="wrld.css?v=20261114-3">
+<link rel="stylesheet" href="history.css?v=20261114-1">
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
-<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"><meta name="description" content="موسوعة WRLDLINE لتاريخ الدول والحضارات والثقافات عبر العصور.">
-<meta name="robots" content="index,follow">
-<link rel="canonical" href="https://al-ghaib.us.ci/history.html">
-<meta property="og:type" content="website"><meta property="og:title" content="موسوعة التاريخ | WRLDLINE NEWS"><meta property="og:description" content="استكشف تاريخ الدول والحضارات والأحداث والمقارنات التاريخية.">
-<title>موسوعة التاريخ | WRLDLINE NEWS</title>
-<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"><link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
-<style>
-:root{font-family:"IBM Plex Sans Arabic",sans-serif;color-scheme:dark;--bg:#0b1421;--panel:#142238;--panel2:#192b43;--line:#2b3d55;--text:#f2f5f9;--muted:#a9b6c7;--gold:#d5ad69;--blue:#8fb8d9}*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 80% 0%,#1a3049 0,transparent 40%),var(--bg);color:var(--text);line-height:1.9}a{color:var(--gold);text-decoration:none}.container{width:min(1120px,calc(100% - 30px));margin:auto}.top{border-bottom:1px solid var(--line);position:sticky;top:0;z-index:5;background:#0b1421eF;backdrop-filter:blur(14px)}.topin{min-height:64px;display:flex;justify-content:space-between;align-items:center}.brand{color:var(--text);font:800 17px Manrope,sans-serif;display:flex;gap:10px;align-items:center}.mark{width:36px;height:36px;border-radius:10px;background:var(--gold);color:#172437;display:grid;place-items:center;font-size:22px}.links{display:flex;gap:18px;font-size:12px}.hero{padding:55px 0 30px}.eyebrow{font:700 10px Manrope,sans-serif;letter-spacing:.18em;color:var(--gold)}h1{font-size:clamp(32px,5vw,54px);line-height:1.25;margin:12px 0}.hero p{max-width:800px;color:var(--muted);font-size:15px}.stats{display:flex;gap:9px;flex-wrap:wrap;margin-top:22px}.stat{padding:7px 12px;border:1px solid var(--line);border-radius:9px;color:var(--muted);font-size:11px}.stat b{color:var(--gold)}.toolbar{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;margin:12px 0 18px}.search{width:min(440px,100%);background:var(--panel);border:1px solid var(--line);border-radius:11px;padding:11px 14px;color:var(--text);font:inherit}.filters{display:flex;gap:7px;flex-wrap:wrap}.filter{background:transparent;border:1px solid var(--line);color:var(--muted);padding:7px 13px;border-radius:20px;font:inherit;font-size:11px;cursor:pointer}.filter.active{background:var(--gold);color:#172437;border-color:var(--gold);font-weight:700}.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:30px}.country{background:linear-gradient(145deg,#1a3049,#122136);border:1px solid var(--line);border-radius:15px;padding:19px;color:var(--text);text-align:right;cursor:pointer;min-height:185px;transition:.2s}.country:hover,.country.active{border-color:var(--gold);transform:translateY(-2px)}.flag{font-size:28px}.country h2{font-size:19px;margin:7px 0 0}.country p{color:var(--muted);font-size:11px;margin:4px 0 14px}.foot{display:flex;justify-content:space-between;color:var(--gold);font-size:10px}.detail{display:none;margin:28px 0 60px}.detail.open{display:block}.head{padding:24px;border:1px solid var(--line);border-radius:16px;background:linear-gradient(110deg,#1b314a,#142238);display:flex;justify-content:space-between;gap:20px}.head h2{font-size:clamp(25px,4vw,36px);margin:5px 0}.head p{color:var(--muted);margin:5px 0}.bigflag{font-size:48px}.facts{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin:12px 0 23px}.fact,.point,.chapter,.culture{background:var(--panel);border:1px solid var(--line);border-radius:11px;padding:12px}.fact small{display:block;color:var(--muted);font-size:10px}.fact b{font-size:12px}.sect{display:flex;justify-content:space-between;align-items:end;gap:10px;margin:26px 0 12px}.sect h3{font-size:20px;margin:0}.sect p{font-size:10px;color:var(--muted);margin:0}.timeline{display:grid;grid-template-columns:repeat(5,minmax(140px,1fr));gap:8px;overflow:auto;padding-bottom:6px}.point{min-width:140px}.point b{display:block;color:var(--gold);font-size:11px}.point span{color:var(--muted);font-size:10px}.eras{display:grid;gap:10px}.era{border:1px solid var(--line);border-radius:13px;background:var(--panel);overflow:hidden}.era summary{cursor:pointer;list-style:none;padding:15px 17px;display:grid;grid-template-columns:125px 1fr 20px;gap:12px;align-items:center}.era summary::-webkit-details-marker{display:none}.year{color:var(--gold);font-size:11px;direction:ltr;text-align:right}.era-title{font-size:14px;font-weight:700}.era-sub{display:block;color:var(--muted);font-size:10px;font-weight:400}.arrow{color:var(--gold)}.era[open] .arrow{transform:rotate(180deg)}.era-body{padding:17px;border-top:1px solid var(--line)}.intro{color:#d6e0eb;font-size:12px;margin:0 0 13px}.chapters{display:grid;grid-template-columns:repeat(2,1fr);gap:9px}.chapter h4,.culture h4{color:var(--blue);font-size:12px;margin:0 0 5px}.chapter p,.culture p{color:#c0ccda;font-size:11px;line-height:2;margin:0}.cultures{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}.culture h4{color:var(--gold)}.sources{margin-top:22px;border:1px solid var(--line);background:#0e1a2a;border-radius:12px;padding:15px}.sources h4{margin:0 0 7px}.sources li{font-size:11px;color:var(--muted);margin:5px 0}.note{color:var(--muted);font-size:10px;margin:16px 0}.history-gallery{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:12px 0 20px}.history-photo{background:var(--panel);border:1px solid var(--line);border-radius:12px;overflow:hidden}.history-photo img{width:100%;height:175px;object-fit:cover;display:block}.history-photo p{font-size:10px;color:var(--muted);padding:8px 10px;margin:0}.map-era-filter{display:flex;align-items:center;gap:10px;color:var(--muted);font-size:11px;margin:10px 0}.map-era-filter select{max-width:100%;background:var(--panel);border:1px solid var(--line);color:var(--text);border-radius:9px;padding:8px;font:inherit}.history-map{height:410px;border:1px solid var(--line);border-radius:13px;overflow:hidden;margin:12px 0}.map-disclaimer{font-size:10px;color:var(--muted)}.media-loading{padding:22px;background:var(--panel);border:1px solid var(--line);border-radius:12px;color:var(--muted);font-size:11px}@media(max-width:650px){.history-gallery{grid-template-columns:1fr 1fr}.history-photo img{height:130px}.history-map{height:320px}}footer{border-top:1px solid var(--line);padding:20px 0;color:var(--muted);font-size:10px;margin-top:45px}@media(max-width:760px){.grid{grid-template-columns:repeat(2,1fr)}.facts{grid-template-columns:repeat(2,1fr)}.cultures{grid-template-columns:repeat(2,1fr)}}@media(max-width:540px){.grid{grid-template-columns:1fr}.country{min-height:150px}.chapters,.cultures{grid-template-columns:1fr}.head{display:block}.bigflag{display:none}.era summary{grid-template-columns:80px 1fr 18px}.era-title{font-size:12px}.links{gap:10px;font-size:10px}.hero{padding-top:36px}}
+</head>
+<body class="hx-page" data-history-page="hub">
+<a class="skip-link" href="#main">تجاوز إلى المحتوى</a>
+<header id="siteHeader"></header>
+<main id="main">
+  <section class="hx-hero">
+    <div class="hx-wrap">
+      <div class="hx-hero-grid">
+        <div>
+          <span class="hx-kicker">THE HISTORICAL ATLAS · موسوعة مرجعية</span>
+          <h1>التاريخ ليس ذاكرة…<br><em>بل أداة قراءة للحاضر.</em></h1>
+          <p>أطلس حضارات ودول، خط زمني عالمي، شخصيات ومصادر، وخلافات تفسيرية تُعرض كما هي. لا نختزل التاريخ في الملوك والحروب، ولا نقدّم رواية واحدة بوصفها الحقيقة المطلقة.</p>
+          <div class="hx-search">
+            <svg aria-hidden="true"><use href="#i-search"/></svg>
+            <input id="historySearch" type="search" placeholder="ابحث عن دولة، حضارة، حدث، أو شخصية…" autocomplete="off" aria-label="بحث في الموسوعة">
+            <div class="hx-search-results" id="historySearchResults" hidden></div>
+          </div>
+          <div class="hx-hero-actions">
+            <a class="wl-btn wl-btn--gold" href="history-explore.html">استكشف الأطلس <svg aria-hidden="true"><use href="#i-arrow"/></svg></a>
+            <a class="wl-btn wl-btn--ghost" href="history-compare.html">قارن ملفين <svg aria-hidden="true"><use href="#i-compare"/></svg></a>
+            <a class="wl-btn wl-btn--ghost" href="history-library.html">المكتبة والمصادر</a>
+          </div>
+        </div>
+        <div>
+          <div class="hx-hero-stats">
+            <div class="hx-stat"><b id="statDossiers">0</b><span>ملفاً تاريخياً</span><small>دول وحضارات</small></div>
+            <div class="hx-stat"><b id="statEvents">0</b><span>حدثاً زمنياً</span><small>من 10000 ق.م</small></div>
+            <div class="hx-stat"><b id="statFigures">0</b><span>شخصية</span><small>محركون ومفكرون</small></div>
+            <div class="hx-stat"><b id="statSources">0</b><span>مصدراً</span><small>أولية وثانوية</small></div>
+          </div>
+          <p class="hx-hero-note">كل ملف يحمل تاريخ آخر مراجعة، ومصادره، وحدود معرفتنا. المحتوى مرجعي تعليمي، لا دعاية وطنية.</p>
+        </div>
+      </div>
+    </div>
+  </section>
 
-.world-atlas{margin:8px 0 38px;padding:24px;border:1px solid var(--line);border-radius:20px;background:linear-gradient(145deg,#14283f,#0e1b2d 75%);box-shadow:0 18px 55px #0003}.atlas-heading{display:flex;justify-content:space-between;align-items:flex-start;gap:18px}.atlas-heading h2{font-size:clamp(23px,3vw,34px);margin:6px 0}.atlas-heading p{font-size:12px;color:var(--muted);margin:0}.atlas-live{white-space:nowrap;border:1px solid #42634f;border-radius:30px;padding:5px 11px;color:#a8e0b8;font-size:10px}.atlas-live span{display:inline-block;width:7px;height:7px;border-radius:50%;background:#61d18a;margin-inline-end:6px;box-shadow:0 0 0 4px #61d18a22}.atlas-controls{display:grid;grid-template-columns:1.5fr 1fr;gap:12px;margin:22px 0}.atlas-controls label{display:grid;gap:6px;color:var(--muted);font-size:10px}.atlas-controls select{width:100%;background:var(--panel);border:1px solid var(--line);border-radius:10px;color:var(--text);padding:11px;font:inherit}.atlas-controls .search{width:100%;padding:9px 12px}.atlas-year{padding:16px;border:1px solid var(--line);border-radius:13px;background:#0b1727}.atlas-year>div:first-child{display:flex;justify-content:space-between;align-items:center;color:var(--muted);font-size:11px}.atlas-year strong{font:800 19px Manrope,sans-serif;color:var(--gold);direction:ltr}.atlas-year input{width:100%;margin:17px 0 5px;accent-color:var(--gold);cursor:pointer}.atlas-range{display:flex;justify-content:space-between;color:var(--muted);font-size:9px}.atlas-shortcuts{display:flex;gap:7px;overflow:auto;padding:12px 0 18px}.atlas-shortcuts button{white-space:nowrap;background:transparent;color:var(--muted);border:1px solid var(--line);border-radius:22px;padding:7px 12px;font:inherit;font-size:10px;cursor:pointer}.atlas-shortcuts button:hover{color:var(--gold);border-color:var(--gold)}.atlas-layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(280px,.9fr);gap:16px}.atlas-results-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}.atlas-results-head h3{font-size:16px;margin:0}.atlas-results-head span{font-size:10px;color:var(--muted)}.atlas-events{display:grid;gap:8px;max-height:460px;overflow:auto;padding-inline-end:3px}.atlas-event{display:grid;grid-template-columns:78px 1fr;gap:12px;padding:12px;border:1px solid var(--line);border-radius:11px;background:#172a40}.atlas-event-year{color:var(--gold);font:700 11px Manrope,sans-serif;direction:ltr;text-align:center;padding-top:3px}.atlas-event h4{font-size:12px;margin:0 0 3px}.atlas-event p{font-size:10px;color:#bac8d8;line-height:1.8;margin:0}.atlas-event small{display:block;color:var(--blue);font-size:9px;margin-top:5px}.atlas-map-wrap{border:1px solid var(--line);border-radius:13px;overflow:hidden;background:#0d1a2b}.atlas-map-head{display:flex;justify-content:space-between;gap:8px;padding:12px}.atlas-map-head strong{font-size:12px}.atlas-map-head small{font-size:9px;color:var(--muted)}.atlas-map{height:430px}.atlas-map-wrap .map-disclaimer{padding:0 12px 10px;margin:0}.atlas-empty{padding:24px;text-align:center;color:var(--muted);font-size:11px;border:1px dashed var(--line);border-radius:11px}@media(max-width:760px){.world-atlas{padding:16px}.atlas-layout{grid-template-columns:1fr}.atlas-events{max-height:360px}.atlas-map{height:310px}.atlas-controls{grid-template-columns:1fr}.atlas-heading{display:block}.atlas-live{display:inline-block;margin-top:12px}}</style>
-<style>
-.europeana-archive{margin:28px 0 40px;padding:clamp(16px,3vw,26px);border:1px solid var(--line);border-radius:18px;background:linear-gradient(145deg,#172b42,#0d1929)}
-.eu-heading{display:flex;justify-content:space-between;align-items:flex-start;gap:16px}.eu-heading h2{font-size:clamp(23px,3vw,32px);margin:5px 0}.eu-heading p{font-size:12px;color:var(--muted);max-width:720px;margin:0}.eu-source{white-space:nowrap;color:#b8d6ec;border:1px solid #35516a;border-radius:20px;padding:6px 10px;font-size:10px}
-.eu-controls{display:grid;grid-template-columns:1fr 1.5fr auto;gap:10px;align-items:end;margin:18px 0 10px}.eu-controls label{display:grid;gap:5px;color:var(--muted);font-size:10px}.eu-controls select,.eu-controls input{width:100%;min-height:43px;background:#0c1929;border:1px solid var(--line);border-radius:9px;padding:9px 11px;color:var(--text);font:inherit}.eu-controls button,.eu-more{border:1px solid var(--gold);background:var(--gold);color:#172437;border-radius:9px;padding:9px 16px;min-height:43px;font:700 11px inherit;cursor:pointer}
-.eu-topics{display:flex;gap:7px;overflow:auto;padding:7px 0 12px}.eu-topics button{white-space:nowrap;border:1px solid var(--line);background:transparent;color:var(--muted);border-radius:20px;padding:6px 11px;font:inherit;font-size:10px;cursor:pointer}.eu-topics button:hover{border-color:var(--gold);color:var(--gold)}
-.eu-status{font-size:11px;color:var(--muted);margin:8px 0 12px}.eu-results{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:11px}.eu-card{min-width:0;overflow:hidden;border:1px solid var(--line);border-radius:12px;background:#101f32}.eu-card img,.eu-no-image{display:block;width:100%;height:150px;object-fit:cover;background:#1b3048}.eu-no-image{display:grid;place-items:center;color:var(--muted);font-size:10px}.eu-card-body{padding:10px}.eu-card h3{font-size:12px;line-height:1.7;margin:0 0 5px}.eu-meta,.eu-description{font-size:9px;color:var(--muted);line-height:1.8;margin:4px 0}.eu-description{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}.eu-card-foot{display:flex;flex-direction:column;gap:5px;margin-top:8px}.eu-card-foot a{font-size:10px}.eu-rights{color:#9fc4df;font-size:9px;overflow-wrap:anywhere}.eu-more{display:block;margin:16px auto 0}.eu-note{font-size:9px;color:var(--muted);margin:16px 0 0}
-@media(max-width:850px){.eu-results{grid-template-columns:repeat(3,minmax(0,1fr))}.eu-controls{grid-template-columns:1fr 1fr}.eu-controls button{grid-column:1/-1}}@media(max-width:580px){.eu-results{grid-template-columns:repeat(2,minmax(0,1fr))}.eu-heading{display:block}.eu-source{display:inline-block;margin-top:10px}.eu-controls{grid-template-columns:1fr}.eu-controls button{grid-column:auto}.eu-card img,.eu-no-image{height:125px}}
-</style><link rel="stylesheet" href="design.css?v=20261113-1">
-</head><body class="history-page">
-<header class="top"><div class="container topin"><a class="brand" href="index.html"><span class="mark">W</span><span>WRLDLINE <small style="display:block;color:var(--muted);font:10px IBM Plex Sans Arabic">موسوعة التاريخ</small></span></a><nav class="links"><a href="index.html">الأخبار</a><a href="map.html">مرصد العالم</a></nav></div></header>
-<main class="container"><section class="hero"><div class="eyebrow">WRLDLINE HISTORY ARCHIVE</div><h1>التاريخ ليس صفحة واحدة.<br><span style="color:var(--gold)">إنه حكاية حضارات.</span></h1><p>موسوعة تفاعلية تروي تاريخ الدول من جذورها الأولى إلى العصر الحديث، وتربط السياسة بالمجتمع والاقتصاد والفكر والفنون. اختر دولة، ثم تنقّل بين العصور والفصول كأنك تقرأ كتاباً منظماً، لا كتلة نصية طويلة.</p><div class="stats"><span class="stat"><b>8</b> ملفات حضارية معمّقة</span><span class="stat"><b>29</b> محطة في الأطلس الأساسي</span><span class="stat"><b>70</b> محطة موسعة</span><span class="stat"><b>16</b> ملف دراسة معمّق</span><span class="stat"><b>9</b> مقارنات تاريخية</span></div></section>
-<section class="world-atlas" aria-labelledby="worldAtlasTitle">
- <div class="atlas-heading"><div><div class="eyebrow">INTERACTIVE WORLD HISTORY</div><h2 id="worldAtlasTitle">استكشف تاريخ العالم عبر الزمن</h2><p>حرّك المؤشر الزمني، اختر حضارة، وشاهد الأحداث على الخريطة وفي سجل زمني مترابط.</p></div><div class="atlas-live"><span></span> أطلس تفاعلي</div></div>
- <div class="atlas-controls">
-  <label class="atlas-search-wrap">ابحث في الأحداث والحضارات<input id="atlasSearch" class="search" type="search" placeholder="مثال: روما، طريق الحرير، الثورة الصناعية"></label>
-  <label>الحضارة أو المنطقة<select id="atlasCivilization"><option value="all">كل الحضارات</option><option value="mesopotamia">بلاد الرافدين</option><option value="egypt">مصر القديمة</option><option value="greece">اليونان</option><option value="rome">روما</option><option value="persia">فارس</option><option value="india">جنوب آسيا</option><option value="china">الصين</option><option value="arabia">الجزيرة العربية</option><option value="islamic">العالم الإسلامي</option><option value="europe">أوروبا الحديثة</option><option value="americas">الأمريكتان</option><option value="japan">اليابان</option></select></label>
- </div>
- <div class="atlas-year"><div><span>الحقبة المختارة</span><strong id="atlasYearLabel">500 ق.م</strong></div><input id="atlasYear" type="range" min="-3000" max="2026" step="10" value="-500" aria-label="اختيار السنة التاريخية"><div class="atlas-range"><span>3000 ق.م</span><span>2026م</span></div></div>
- <div class="atlas-shortcuts"><button type="button" data-year="-2500">الحضارات الأولى</button><button type="button" data-year="-500">العالم القديم</button><button type="button" data-year="600">بدايات العصور الوسطى</button><button type="button" data-year="1200">العصور الوسطى</button><button type="button" data-year="1750">العصر الحديث</button><button type="button" data-year="1950">العالم المعاصر</button></div>
- <div class="atlas-layout"><div><div class="atlas-results-head"><h3>أحداث حول هذه الحقبة</h3><span id="atlasCount">—</span></div><div id="atlasEvents" class="atlas-events" aria-live="polite"></div></div><div class="atlas-map-wrap"><div class="atlas-map-head"><strong>خريطة الأحداث التاريخية</strong><small>نقاط تقريبية لمراكز الأحداث</small></div><div id="worldHistoryMap" class="atlas-map"></div><p class="map-disclaimer">المواقع تقريبية لأغراض تعليمية، ولا تمثل حدود الدول أو نطاقات السيطرة التاريخية.</p></div></div>
-</section>
-<div class="toolbar"><input class="search" id="search" placeholder="ابحث عن دولة أو حضارة..."><div class="filters" id="filters"><button class="filter active" data-region="all">كل المناطق</button><button class="filter" data-region="asia">آسيا</button><button class="filter" data-region="africa">أفريقيا</button><button class="filter" data-region="europe">أوروبا</button><button class="filter" data-region="americas">الأمريكتان</button></div></div>
-<section class="grid" id="grid"></section><section class="detail" id="detail"></section><section id="europeanaArchive" class="europeana-archive" aria-labelledby="europeanaTitle">
- <div class="eu-heading"><div><div class="eyebrow">EUROPEAN DIGITAL HERITAGE</div><h2 id="europeanaTitle">أرشيف المتاحف الأوروبية</h2><p>استكشف قطعاً أصلية وصوراً ومخطوطات ووثائق من مجموعات المتاحف والمكتبات ودور المحفوظات الأوروبية عبر Europeana.</p></div><span class="eu-source">Europeana · بيانات مؤسسات ثقافية</span></div>
- <div class="eu-controls"><label>الدولة الأوروبية<select id="europeanaCountry"></select></label><label>ابحث عن حقبة أو قطعة أو شخصية<input id="europeanaQuery" type="search" placeholder="مثال: عصر النهضة، نابليون، الإمبراطورية الرومانية"></label><button type="button" id="europeanaSearch">ابحث في الأرشيف</button></div>
- <div class="eu-topics"><button type="button" data-eu-topic="Roman Empire">روما القديمة</button><button type="button" data-eu-topic="Renaissance">عصر النهضة</button><button type="button" data-eu-topic="Middle Ages">العصور الوسطى</button><button type="button" data-eu-topic="World War II">الحرب العالمية الثانية</button><button type="button" data-eu-topic="Ancient Greece">اليونان القديمة</button><button type="button" data-eu-topic="European art">الفنون الأوروبية</button></div>
- <p id="europeanaStatus" class="eu-status" role="status" aria-live="polite">جارٍ تهيئة الأرشيف…</p><div id="europeanaResults" class="eu-results"></div><button id="europeanaMore" class="eu-more" type="button" hidden>تحميل المزيد</button>
- <p class="eu-note">المقتنيات والبيانات مقدمة من المؤسسات المشاركة في Europeana. قد تختلف دقة التواريخ والوصف وحقوق إعادة الاستخدام بين سجل وآخر؛ افتح السجل الأصلي لمراجعة بيانات المؤسسة والترخيص قبل إعادة النشر.</p>
-</section><p class="note">ملاحظة منهجية: التواريخ القديمة تقريبية حيث تختلف تقديرات الباحثين، وتُعرض الروايات المختلف عليها بوصفها كذلك. استخدم ملفات الدراسة وبوابات المصادر للمقارنة والتحقق، ولا تعامل الملخصات التعليمية بوصفها بديلاً عن البحث الأكاديمي المتخصص.</p></main>
-<footer class="site-policy-footer"><div class="container"><span>© WRLDLINE NEWS · موسوعة التاريخ · المحتوى التعليمي لا يغني عن المصادر الأكاديمية المتخصصة.</span><span><a href="about.html">عن الموقع</a><a href="contact.html">التواصل</a><a href="privacy.html">الخصوصية</a><a href="terms.html">الشروط</a><a href="corrections.html">التصحيح</a><a href="newsletter.html">النشرة</a></span></div></footer>
-<script src="history-en.js?v=20261113-2"></script><script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <section class="hx-section">
+    <div class="hx-wrap">
+      <div class="hx-section-head">
+        <div><span class="hx-kicker">ATLAS</span><h2>أطلس الحضارات والدول</h2><p>ستّ مناطق، وأكثر من أربعين ملفاً. ابدأ من الجغرافيا أو من السؤال الذي يشغلك.</p></div>
+        <a class="hx-link" href="history-explore.html">كل الملفات <svg aria-hidden="true"><use href="#i-arrow"/></svg></a>
+      </div>
+      <div class="hx-regions" id="regionAtlas"></div>
+      <div class="hx-grid" id="featuredGrid"></div>
+    </div>
+  </section>
+
+  <section class="hx-section">
+    <div class="hx-wrap">
+      <div class="hx-section-head">
+        <div><span class="hx-kicker">TIMELINE</span><h2>خط الزمن العالمي</h2><p>من الكتابة الأولى إلى العالم الرقمي: أحداث مختارة تربط التحولات ببعضها.</p></div>
+        <a class="hx-link" href="history-explore.html?tab=timeline">الخط الكامل <svg aria-hidden="true"><use href="#i-arrow"/></svg></a>
+      </div>
+      <div class="hx-timeline" id="timelinePreview"></div>
+    </div>
+  </section>
+
+  <section class="hx-section">
+    <div class="hx-wrap">
+      <div class="hx-section-head"><div><span class="hx-kicker">TOOLS</span><h2>أدوات المعرفة</h2><p>الموسوعة ليست للقراءة فقط: اختبر فهمك، راجع المصطلحات، وقارن بين كيانين.</p></div></div>
+      <div class="hx-grid" id="learningPaths"></div>
+    </div>
+  </section>
+
+  <section class="hx-section">
+    <div class="hx-wrap">
+      <div class="hx-section-head">
+        <div><span class="hx-kicker">LIBRARY</span><h2>مكتبة المصادر</h2><p>مصادر أولية وثانوية، بأسماء المؤلفين ودور النشر والروابط. لا نختلق مرجعاً لملء الصفحة.</p></div>
+        <a class="hx-link" href="history-library.html">افتح المكتبة <svg aria-hidden="true"><use href="#i-arrow"/></svg></a>
+      </div>
+      <div class="hx-sources" id="sourcePreview"></div>
+    </div>
+  </section>
+
+  <section class="hx-section">
+    <div class="hx-wrap">
+      <div class="hx-section-head"><div><span class="hx-kicker">METHOD</span><h2>كيف نبني الموسوعة؟</h2></div></div>
+      <div class="hx-grid">
+        <div class="hx-card"><div class="hx-card-top"><span class="hx-flag">⚖️</span><span class="hx-type">منهج</span></div><h3>الخلاف جزء من المعرفة</h3><p>حين تختلف التفسيرات، نعرضها بأدلتها بدلاً من إخفائها. كل ملف يحمل قسم «خلافات تفسيرية» عندما يكون الخلاف جوهرياً.</p></div>
+        <div class="hx-card"><div class="hx-card-top"><span class="hx-flag">📚</span><span class="hx-type">مصادر</span></div><h3>قابل للتحقق</h3><p>كل ملف يُرفق بمصادر حقيقية وروابط، ونميّز بين المصدر الأولي والثانوي والمرجعي. لا نستخدم اقتباسات غير موثقة.</p></div>
+        <div class="hx-card"><div class="hx-card-top"><span class="hx-flag">🧭</span><span class="hx-type">تحرير</span></div><h3>ضد الاختزال</h3><p>نغطي الاقتصاد والبيئة والمرأة والمجتمعات المهمشة، لا الملوك والحروب فقط. التاريخ شبكة، لا قائمة تواريخ.</p></div>
+      </div>
+    </div>
+  </section>
+</main>
+<footer id="siteFooter"></footer>
+<script src="site-shell.js"></script>
+<script src="history-data.js"></script>
+<script src="history-entities-a.js"></script>
+<script src="history-entities-b.js"></script>
+<script src="history-entities-c.js"></script>
+<script src="history-events.js"></script>
+<script src="history-learning.js"></script>
+<script src="history-app.js"></script>
 <script>
-const countries=[
-{id:"sa",name:"المملكة العربية السعودية",flag:"🇸🇦",region:"asia",period:"من مجتمعات الجزيرة القديمة إلى الدولة الحديثة",facts:[["العاصمة","الرياض"],["اللغة","العربية"],["إعلان المملكة","23 سبتمبر 1932"],["الجذور","الجزيرة العربية"],],summary:"تاريخ الجزيرة العربية أقدم بكثير من الدولة الحديثة؛ فقد تشكّلت على أرضها طرق تجارة وممالك وواحات ومراكز دينية وثقافية. ثم مرّت بتحولات كبرى مع ظهور الإسلام، وتتابعت فيها كيانات سياسية وصولاً إلى الدول السعودية الثلاث وتوحيد المملكة.",timeline:[["قبل التاريخ","الاستيطان والواحات والطرق"],["القرون الأولى ق.م – 6م","ممالك الجزيرة والتجارة"],["القرن السابع","ظهور الإسلام ومركزية الحجاز"],["1727–1818","الدولة السعودية الأولى"],["1824–1891","الدولة السعودية الثانية"],["1902–1932","استعادة الرياض والتوحيد"],["1938–اليوم","النفط والتحولات الحديثة"]],eras:[
-["قبل التاريخ – القرن السادس","الجزيرة قبل الدولة الحديثة","الإنسان والبيئة والواحات وشبكات التجارة","شهدت شبه الجزيرة وجوداً بشرياً قديماً وتنوعاً بيئياً واسعاً. ساعدت الواحات والسواحل والممرات الصحراوية على نشوء مجتمعات مستقرة وأخرى رعوية وتجارية. لا تختزل هذه المرحلة في شعب واحد أو ثقافة واحدة؛ بل في فسيفساء من المجتمعات التي تفاعلت مع المناخ والموارد والجوار.",[
-["الاستيطان والبيئة","تكشف المواقع الأثرية عن وجود بشري في الجزيرة منذ عصور موغلة في القدم. تغيرت أنماط الاستيطان مع المناخ وتوفر المياه؛ فكانت بعض المناطق أكثر رطوبة في فترات قديمة، ثم اتسعت البيئات الجافة. وتوضح الأدوات والنقوش والرسوم الصخرية أن حياة السكان لم تكن نمطاً واحداً."],
-["الواحات والزراعة","نشأت حول الواحات أنماط معيشة تجمع الزراعة وتربية الحيوان والتبادل. كانت النخلة والحبوب والآبار عناصر مهمة في اقتصاد عدد من الواحات، بينما اعتمدت مناطق أخرى على الرعي والصيد والتجارة البحرية. وربطت الأسواق المحلية بين القرى والبادية والسواحل."],
-["الممالك والطرق التجارية","عرفت أطراف الجزيرة ممالك متعددة، منها سبأ ومعين وقتبان وحضرموت في الجنوب، والأنباط في الشمال الغربي. وربطت طرق القوافل جنوب الجزيرة وشمالها بمصر وبلاد الشام وبلاد الرافدين، ونقلت اللبان والمرّ والسلع والأفكار. كانت شبكة مسارات تتغير بحسب الماء والأمن والأسواق."]
-]],
-["القرن السابع – القرن السادس عشر","ظهور الإسلام والعصور الإسلامية","الحجاز ومكة والمدينة والطرق المقدسة","كان ظهور الإسلام في الحجاز نقطة تحول دينية وسياسية وثقافية واسعة. انطلقت الدعوة في مكة، ثم أصبحت المدينة مركزاً للجماعة الإسلامية الناشئة، ومنها امتد الإسلام إلى مناطق خارج الجزيرة. بقيت مكة والمدينة مركزين دينيين عالميين، بينما تواصلت في مناطق أخرى سلطات محلية وتقاليد تجارية متباينة.",[
-["مكة قبل الإسلام","كانت مكة مركزاً دينياً وتجارياً مهماً في غرب الجزيرة، وارتبطت طرقها بالأسواق والقبائل والحج إلى الكعبة. تميز المجتمع بروابط قبلية وحلف وتجاره وشعر شفهي، مع تنوع في المعتقدات والممارسات. ساهم موقع الحجاز في وصل جنوب الجزيرة ببلاد الشام."],
-["الدعوة والهجرة","بدأ نزول الوحي على النبي محمد في القرن السابع الميلادي، ثم واجهت الجماعة الأولى معارضة في مكة. شكّلت الهجرة إلى يثرب سنة 622م بداية مرحلة جديدة؛ إذ أصبحت المدينة مركزاً لتنظيم المجتمع والعلاقات بين مكوناته. وبعد وفاة النبي سنة 632م اتسع المجال الإسلامي خارج الجزيرة."],
-["الحج والعلم والتجارة","ارتبط الحجاز في عصور مختلفة بالخلافات والدول الإسلامية الكبرى. أسهم الحج في نقل المعرفة والكتب والسلع واللهجات بين أقاليم العالم الإسلامي، كما تطورت خدمات الماء والطرق والأسواق. وفي نجد والشرق والجنوب ظلت البلدات والواحات مرتبطة بتحالفات محلية وتجارة برية وبحرية."]
-]],
-["1446–1818م","الدرعية والدولة السعودية الأولى","نشأة الدرعية ثم قيام الدولة سنة 1727","تأسست الدرعية في وادي حنيفة في القرن الخامس عشر، ثم أصبحت في القرن الثامن عشر مركزاً سياسياً مهماً. وفي 1727م تولى الإمام محمد بن سعود الحكم فيها وأسس الدولة السعودية الأولى، التي توسع نفوذها في أجزاء واسعة من الجزيرة قبل أن تنتهي سنة 1818م بعد الحملة العثمانية المصرية.",[
-["نشأة الدرعية","ترتبط نشأة الدرعية بالأمير مانع المريدي في منتصف القرن الخامس عشر. وأسهم موقعها في وادي حنيفة وصلاتها بالبلدات المجاورة في تكوين مركز سياسي وتجاري في نجد. تطورت أحياؤها وعمرانها حول الوادي ومصادر المياه."],
-["تأسيس الدولة الأولى","في 1727م أسس الإمام محمد بن سعود الدولة السعودية الأولى واتخذ الدرعية عاصمة. شهدت الدولة توسعاً تدريجياً وتطويراً لشؤون الحكم والمال والأمن، وتداخلت في تاريخها التحالفات السياسية والدينية والعسكرية. وأصبحت الدرعية مركزاً للعلم والإدارة والتجارة."],
-["نهاية الدولة الأولى","انتهت الدولة سنة 1818م بعد حملة عسكرية قادها إبراهيم باشا، ابن محمد علي والي مصر. انتهى الحصار بتدمير أجزاء كبيرة من الدرعية، لكن الروابط الاجتماعية والسياسية المرتبطة بآل سعود لم تختفِ، ومهدت لاحقاً لعودة الدولة."]
-]],
-["1824–1932م","الدولة السعودية الثانية وتوحيد المملكة","الرياض ثم استعادة الحكم وبناء الدولة الحديثة","أعاد الإمام تركي بن عبدالله تأسيس الدولة السعودية الثانية سنة 1824م واتخذ الرياض عاصمة. وبعد سقوطها سنة 1891م، استعاد الملك عبدالعزيز الرياض سنة 1902م، ثم امتدت عملية توحيد مناطق البلاد على مراحل حتى إعلان المملكة العربية السعودية سنة 1932م.",[
-["الدولة السعودية الثانية","أسس الإمام تركي بن عبدالله الدولة الثانية سنة 1824م واتخذ الرياض عاصمة. وتواصل الحكم في عهد الإمام فيصل بن تركي، مع فترات من الاستقرار والتنافس الداخلي والضغوط الإقليمية. وانتهت الدولة سنة 1891م بعد صراعات سياسية وعسكرية."],
-["استعادة الرياض","في يناير 1902م استعاد الملك عبدالعزيز مدينة الرياض، وكانت تلك الخطوة بداية مرحلة طويلة من توحيد مناطق متعددة عبر التحالفات والحملات والاتفاقات. لم تكن عملية التوحيد حدثاً منفرداً، بل مساراً امتد أكثر من ثلاثة عقود."],
-["إعلان المملكة","امتدت عملية التوحيد إلى مناطق نجد والأحساء وعسير والحجاز وغيرها، مع اختلاف ظروف كل منطقة. وفي 23 سبتمبر 1932م أُعلن توحيد البلاد باسم المملكة العربية السعودية، وأصبحت الرياض عاصمتها."]
-]],
-["1932م – الحاضر","الدولة الحديثة والتحولات المعاصرة","النفط والتعليم والمدن والتحول الاقتصادي","شهدت المملكة خلال القرن العشرين تحولات كبيرة في الاقتصاد والإدارة والتعليم والبنية التحتية. غيّر اكتشاف النفط بنية الاقتصاد، ثم توسعت المدن والخدمات، وفي العقود الأخيرة دخلت البلاد مرحلة برامج تحول وتنويع اقتصادي واجتماعي.",[
-["النفط وبناء الاقتصاد","اكتُشف النفط بكميات تجارية في بئر الدمام رقم 7 سنة 1938م. وبعد الحرب العالمية الثانية اتسع الإنتاج والتصدير، وأصبح النفط عاملاً رئيسياً في الإيرادات الحكومية والبنية التحتية والتوسع الحضري. وارتبطت الصناعة النفطية بتطور الموانئ والطرق والخدمات."],
-["التعليم والمؤسسات","توسعت المدارس والجامعات ومؤسسات الصحة والإدارة على مدى عقود، وازدادت مشاركة المواطنين في قطاعات الدولة والاقتصاد. وكان بناء المؤسسات الحديثة جزءاً أساسياً من التحول الاجتماعي، إلى جانب توسع المدن وتغير أنماط العمل والسكن."],
-["المرحلة الراهنة","تستهدف رؤية السعودية 2030 تنويع الاقتصاد وتطوير قطاعات السياحة والثقافة والترفيه والصناعة والتقنية، إلى جانب تحديث الخدمات العامة. وتبقى نتائج هذه التحولات موضوعاً متجدداً للدراسة والمتابعة."]
-]]
-],culture:[["اللغة والأدب","العربية هي اللغة الرسمية، وتتنوّع اللهجات المحلية بين المناطق. للشعر النبطي والفصيح حضور تاريخي، إلى جانب الرواية والسرد الشفهي والأمثال."],["العمارة","تتنوع العمارة بين بيوت الطين في نجد، والعمارة الحجرية في عسير، والبيوت الحجازية ذات الرواشين، والعمارة الحديثة في المدن."],["الطعام والضيافة","تختلف الأطباق بحسب البيئة والمنطقة؛ ومن رموز الضيافة القهوة العربية والتمر، فيما تعكس أطباق الأرز والقمح والسمك تنوع الموارد والطرق التجارية."],["الفنون والتراث","تتعدد الفنون الشعبية مثل العرضة والسامري والخبيتي والخطوة، ولكل منطقة إيقاعاتها وأزياؤها واحتفالاتها. ومن الحرف التقليدية السدو والنسيج والفخار والفضيات."],["الدين والمجتمع","يشكل الإسلام الإطار الديني والثقافي الغالب، وترتبط مكة والمدينة بمكانة دينية عالمية. وتتباين العادات الاجتماعية بين المناطق مع وجود عناصر مشتركة."]],sources:[["وزارة الخارجية السعودية – تاريخ المملكة","https://www.mofa.gov.sa/en/ksa/Pages/history.aspx"],["سعوديبيديا – تاريخ المملكة","https://saudipedia.com/en/history-of-saudi-arabia"],["شركة الدرعية – الخط الزمني","https://www.diriyahcompany.sa/en/diriyah"],["يوم التأسيس – الدليل الرسمي","https://foundingday.sa/"]]},
-{id:"eg",name:"جمهورية مصر العربية",flag:"🇪🇬",region:"africa",period:"من مجتمعات وادي النيل إلى الجمهورية الحديثة",facts:[["العاصمة","القاهرة"],["اللغة","العربية"],["إعلان الجمهورية","1953"],["محور الحضارة","نهر النيل"]],summary:"شكّل نهر النيل محور الاستقرار والزراعة والدولة في مصر القديمة. ثم تعاقبت عليها عصور فرعونية ويونانية ورومانية وقبطية وإسلامية وعثمانية، قبل قيام دولة محمد علي وتطور الحركة الوطنية وصولاً إلى الجمهورية الحديثة.",timeline:[["قبل 3100 ق.م","مجتمعات ما قبل الأسرات"],["نحو 3100 ق.م","توحيد مصر وبداية التاريخ المدون"],["2686–2181 ق.م","الدولة القديمة والأهرامات"],["1550–1070 ق.م","الدولة الحديثة"],["332 ق.م – 395م","العصران البطلمي والروماني"],["641م وما بعدها","العصور الإسلامية"],["1805–1952","محمد علي والحركة الوطنية"],["1953–اليوم","الجمهورية الحديثة"]],eras:[
-["قبل 3100 ق.م – 2181 ق.م","النيل ونشأة الدولة المصرية","القرى والزراعة والتوحيد والعصر العتيق","نشأت مجتمعات وادي النيل عبر آلاف السنين، وساعد انتظام الفيضان وتراكم الطمي على قيام الزراعة والقرى والروابط التجارية. ومع تطور الإدارة والكتابة والسلطة الملكية، تبلورت الدولة المصرية المبكرة. ويُربط بدء التاريخ المدون بتوحيد مصر العليا والسفلى نحو 3100 ق.م تقريباً.",[
-["النيل والبيئة","كان النيل شريان الحياة؛ فالفيضان السنوي يترك تربة خصبة على ضفتيه ويتيح الزراعة والاستقرار. اعتمدت المجتمعات على فهم مواسم الماء وتخزين المحاصيل وتنظيم الري، وأصبحت إدارة الموارد أساساً مهماً للسلطة."],
-["مجتمعات ما قبل الأسرات","قبل قيام الدولة الموحدة، عاشت جماعات متعددة في شمال الوادي وجنوبه. تكشف المقابر والفخار والأدوات عن تطور اجتماعي واقتصادي وتبادل بين المجتمعات، ولم تكن مصر في هذه المرحلة كياناً سياسياً موحداً."],
-["توحيد البلاد والكتابة","يربط الباحثون بداية التاريخ المصري المدون بتوحيد مصر العليا والسفلى نحو 3100 ق.م وظهور نظم الكتابة والإدارة الملكية. تختلف تفاصيل هذه العملية بين التفسيرات الأثرية، لذلك تُعرض كتاريخ تقريبي لا كتاريخ قطعي لكل تفصيل."]
-]],
-["نحو 2686–1070 ق.م","الدولة القديمة والوسطى والحديثة","الأهرامات وإعادة الوحدة والإمبراطورية","تطورت مصر عبر ممالك مركزية وفترات انتقالية شهدت انقسام السلطة. بلغت الدولة القديمة شهرة معمارية ببناء الأهرامات، وأعادت الدولة الوسطى توحيد البلاد، بينما شهدت الدولة الحديثة توسعاً إقليمياً ومشروعات معابد ومقابر ملكية.",[
-["عصر الأهرامات","شهدت الأسرة الثالثة والرابعة مشاريع معمارية كبرى، منها هرم زوسر المدرج وأهرامات الجيزة. تطلبت هذه الأعمال إدارة للعمال والمواد والنقل والطعام، وتعكس تنظيماً اجتماعياً وإدارياً معقداً."],
-["الدولة الوسطى","بعد فترات من التجزؤ السياسي، أعاد ملوك طيبة توحيد البلاد. ازدهرت الإدارة والأدب والمشروعات الزراعية، كما توسع الاهتمام بالنوبة والحدود الجنوبية والتجارة."],
-["الدولة الحديثة","اتسع نفوذ مصر في بلاد الشام والنوبة، وبرز ملوك مثل حتشبسوت وتحتمس الثالث وأخناتون وتوت عنخ آمون ورمسيس الثاني. وشهدت طيبة والكرنك والأقصر ووادي الملوك مشاريع معمارية كبرى."]
-]],
-["1070 ق.م – 395م","العصور المتأخرة واليونانية والرومانية","الأسر المتأخرة والإسكندر والبطالمة وروما","تعاقبت على مصر أسر محلية وحكومات أجنبية، ثم دخلها الإسكندر الأكبر سنة 332 ق.م. وأسس البطالمة حكماً ذا طابع هلنستي، قبل أن تصبح مصر ولاية رومانية سنة 30 ق.م. استمرت التقاليد المصرية وتفاعلت مع ثقافات البحر المتوسط.",[
-["العصور المتأخرة","شهدت مصر حكماً متغيراً شمل أسرًا مصرية وليبية ونوبية وفارسية، مع استمرار التقاليد الدينية والفنية المصرية وتفاعلها مع قوى المنطقة."],
-["الإسكندر والبطالمة","دخل الإسكندر مصر سنة 332 ق.م، ثم حكمها البطالمة. أصبحت الإسكندرية مركزاً سياسياً وعلمياً وتجارياً مهماً في البحر المتوسط، وتداخلت الثقافة اليونانية مع التقاليد المصرية."],
-["الحكم الروماني والمسيحية","بعد هزيمة كليوباترا ومارك أنطونيوس، ضمت روما مصر سنة 30 ق.م. وفي القرون التالية انتشرت المسيحية وتطورت الكنيسة القبطية واللغة القبطية والفنون الرهبانية."]
-]],
-["641–1517م","مصر الإسلامية","الفتح الإسلامي والدول الفاطمية والأيوبية والمملوكية","دخلت البلاد الحكم الإسلامي في القرن السابع، ثم تعاقبت عليها ولايات وخلافات ودول محلية كبرى، منها الطولونية والإخشيدية والفاطمية والأيوبية والمملوكية. وأصبحت القاهرة مركزاً سياسياً وثقافياً وتجارياً مؤثراً.",[
-["الفتح والتحول اللغوي","دخلت القوات العربية الإسلامية مصر في القرن السابع الميلادي، وأصبحت البلاد جزءاً من الدولة الإسلامية. تدرج التحول اللغوي والديني عبر قرون ولم يحدث دفعة واحدة، واستمرت الجماعات القبطية ومؤسساتها في تشكيل الحياة الاجتماعية."],
-["الفاطميون والقاهرة","أسس الفاطميون القاهرة سنة 969م تقريباً، وأصبحت مركزاً سياسياً وثقافياً. ويرتبط بهذه المرحلة تأسيس الأزهر وتطور مؤسسات العلم والعمران والأسواق."],
-["الأيوبيون والمماليك","أنهى صلاح الدين الحكم الفاطمي وأسس الدولة الأيوبية، ثم حكم المماليك مصر من القرن الثالث عشر حتى الفتح العثماني سنة 1517م. لعبت مصر دوراً محورياً في التجارة والسياسة الإقليمية."]
-]],
-["1517–1953م","العثمانيون ومحمد علي والجمهورية","الولاية العثمانية والتحديث والحركة الوطنية","أصبحت مصر ولاية عثمانية سنة 1517م، ثم برز محمد علي في أوائل القرن التاسع عشر وأسس أسرة حاكمة ومشروعات تحديث عسكري وإداري واقتصادي. وفي القرن العشرين تصاعدت الحركة الوطنية حتى ثورة 1952 وإعلان الجمهورية سنة 1953.",[
-["محمد علي والتحديث","تولى محمد علي السلطة سنة 1805م، وشرع في بناء جيش وإدارة مركزية وتوسيع الزراعة والصناعة والتعليم. كانت هذه المشروعات واسعة التأثير لكنها ارتبطت أيضاً بالتجنيد والضرائب والتوسع العسكري."],
-["قناة السويس والاحتلال","افتتحت قناة السويس سنة 1869م، وأعادت تشكيل التجارة العالمية وموقع مصر الاستراتيجي. أدى التدخل المالي والسياسي إلى الاحتلال البريطاني سنة 1882م، وتطورت الحركة الوطنية لاحقاً عبر ثورة 1919 وإعلان استقلال محدود سنة 1922."],
-["ثورة 1952 والجمهورية","أطاحت حركة يوليو 1952 بالنظام الملكي، وأعلنت الجمهورية سنة 1953. شهدت المرحلة إعادة توزيع للأرض وتوسعاً في دور الدولة ومشروعات التصنيع والتعليم، ثم مرت مصر بحروب وتحولات اقتصادية وسياسية متتابعة."]
-]],
-["1953م – الحاضر","مصر المعاصرة","الحروب والسلام والتحولات السكانية والاقتصادية","شهدت مصر منذ قيام الجمهورية تجارب سياسية واقتصادية وعسكرية متباينة. أثرت حروب 1956 و1967 و1973 واتفاقية السلام 1979 في موقعها الإقليمي، فيما تستمر قضايا السكان والمياه والوظائف والتعليم والتنمية في تشكيل حاضرها.",[
-["السد العالي والتنمية","أصبح بناء السد العالي في أسوان من أبرز مشروعات الدولة في القرن العشرين، بهدف تنظيم مياه النيل وتوليد الكهرباء والحد من آثار الفيضان والجفاف. غيّر المشروع أنماط الزراعة والبيئة حول النهر."],
-["الحرب والسلام","خاضت مصر حروب 1956 و1967 و1973، ثم دخلت مسار السلام مع إسرائيل الذي أفضى إلى معاهدة 1979. أثرت هذه المحطات في السياسة والاقتصاد والعلاقات الإقليمية."],
-["القرن الحادي والعشرون","شهدت مصر تغيرات سياسية كبرى منذ 2011، وتحولات في البنية التحتية والاقتصاد والسكان. وتبقى قضايا المياه والموارد والوظائف والتعليم والتنمية من أهم ملفات النقاش العام."]
-]]
-],culture:[["اللغة والكتابة","تطورت الكتابة المصرية القديمة من الهيروغليفية إلى أشكال أكثر اختصاراً، ثم انتشرت القبطية، وأصبحت العربية لغة البلاد الغالبة بعد قرون من التحول."],["الدين والطقوس","عرفت مصر ديانات ومؤسسات دينية متعددة: المعتقدات المصرية القديمة، والمسيحية القبطية، والإسلام بتقاليده ومذاهبه. تعايشت هذه الطبقات تاريخياً بطرق معقدة."],["الفنون والعمارة","من المعابد والأهرامات والمقابر إلى الكنائس والأديرة والمساجد والعمارة الحديثة؛ تمثل مصر سجلاً معمارياً متراكماً يعكس تحولات السلطة والمجتمع."],["الأدب والفكر","تطورت تقاليد أدبية من النصوص المصرية القديمة إلى الأدب القبطي والعربي، وبرزت القاهرة مركزاً للنشر والصحافة والجامعة والمسرح والسينما."],["الموسيقى والطعام","تتنوع الموسيقى بين تقاليد ريفية وصعيدية ونوبية وحضرية، كما تعكس أطعمة مثل الفول والطعمية والكشري والملوخية تاريخ الزراعة والتبادل."]],sources:[["متحف المتروبوليتان – تاريخ مصر القديمة","https://resources.metmuseum.org/resources/metpublications/pdf/The_Art_of_Ancient_Egypt_A_Resource_for_Educators.pdf"],["Britannica – مصر","https://www.britannica.com/place/Egypt"],["UNESCO – مواقع مصر","https://whc.unesco.org/en/statesparties/eg"]]},
-{id:"cn",name:"جمهورية الصين الشعبية",flag:"🇨🇳",region:"asia",period:"من مجتمعات الأنهار إلى الدولة المعاصرة",facts:[["العاصمة","بكين"],["اللغة الرسمية","الصينية المندرينية"],["قيام الجمهورية الشعبية","1 أكتوبر 1949"],["الجذور","أحواض الأنهار"]],summary:"تطورت الحضارات الصينية حول أحواض الأنهار، ثم ظهرت سلالات حاكمة ومؤسسات بيروقراطية وفلسفات كبرى. مر التاريخ بوحدة وانقسام وإمبراطوريات وتفاعل تجاري وثقافي واسع، قبل قيام الجمهورية ثم الدولة الحديثة.",timeline:[["الألفية الثانية ق.م","شانغ والكتابة والطقوس"],["1046–256 ق.م","تشو والمدارس الفلسفية"],["221–206 ق.م","تشين وتوحيد الإمبراطورية"],["206 ق.م – 220م","هان والطرق التجارية"],["618–907م","تانغ والانفتاح الثقافي"],["960–1279م","سونغ والابتكار"],["1271–1912م","يوان ومينغ وتشينغ"],["1912–1949م","الجمهورية والحرب"],["1949–اليوم","جمهورية الصين الشعبية"]],eras:[
-["الألفيات القديمة – 1046 ق.م","المجتمعات المبكرة وشانغ","الأنهار والزراعة والكتابة والبرونز","نشأت مجتمعات زراعية في أحواض النهر الأصفر ونهر اليانغتسي. وتختلف الأدلة على السلالات الأقدم؛ فشيا ترتبط في الروايات التقليدية ببدايات الحكم، بينما تقدم آثار شانغ أدلة أوضح على الكتابة والملكية والطقوس.",[
-["الأنهار والاستقرار","ساهمت الأنهار والسهول الخصبة في قيام الزراعة والقرى والمراكز الحضرية. واحتاجت المجتمعات إلى تنظيم الري والتعامل مع الفيضانات، ما ساعد على تطور أشكال من السلطة المحلية."],
-["شيا وإرليتو","يربط بعض الباحثين موقع إرليتو بثقافة العصر البرونزي المبكر التي قد تتصل بتقاليد شيا، لكن تحديد العلاقة المباشرة محل نقاش علمي. لذلك ينبغي التمييز بين الرواية التاريخية التقليدية والأدلة الأثرية."],
-["سلالة شانغ","تقدم نقوش عظام العرافة في عهد شانغ أقدم مجموعة واسعة معروفة للكتابة الصينية. وتكشف عن طقوس ملكية وأسئلة حول الحرب والحصاد والطقس والأسلاف، إلى جانب صناعة برونزية متقنة."]
-]],
-["1046–221 ق.م","تشو وعصر الفلسفات","الشرعية السياسية وكونفوشيوس والطاوية","حكمت تشو أجزاء واسعة من الصين لقرون، لكن السلطة المركزية تراجعت تدريجياً وظهرت دول إقليمية متنافسة. في هذه البيئة نشأت مدارس فلسفية أثرت بعمق في الثقافة الصينية.",[
-["تفويض السماء","قدمت تشو مفهوم تفويض السماء لتفسير شرعية الحكم. ومع انتقال العاصمة وتراجع سلطة الملوك، ازدادت قوة الحكام الإقليميين وتعددت مراكز القرار."],
-["الربيع والخريف","شهدت هذه المرحلة تعدد الدويلات وتنافسها، وظهور شخصيات فكرية مثل كونفوشيوس الذي ركز على الأخلاق والتعليم والعلاقات الاجتماعية والحكم بالفضيلة."],
-["الممالك المتحاربة","تصاعدت الحروب والإصلاحات الإدارية والعسكرية. وتنافست مدارس فكرية، منها الكونفوشية والموهية والطاوية والقانونية، حول أفضل طريقة لتنظيم المجتمع والدولة."]
-]],
-["221 ق.م – 220م","تشين وهان: الإمبراطورية والطرق التجارية","التوحيد والبيروقراطية والامتداد غرباً","وحّد تشين شي هوانغ مناطق متنافسة سنة 221 ق.م، وأسس نموذجاً إمبراطورياً مركزياً. وبعد سقوط تشين، رسخت هان مؤسسات الحكم ووسعت التجارة والاتصالات عبر آسيا.",[
-["إمبراطورية تشين","وحدت تشين المقاييس والعملة والكتابة الإدارية بدرجات مختلفة، وأنشأت شبكة طرق ومشروعات دفاعية. ارتبطت الدولة بالمركزية الصارمة والعمل الإجباري، وسقطت بعد وفاة مؤسسها بسنوات قليلة."],
-["سلالة هان","استمر حكم هان أكثر من أربعة قرون مع انقطاع قصير، وتطورت خلالها الإدارة والكتابة والتاريخ. أصبحت الكونفوشية مرجعية مهمة للدولة، وإن لم تكن الفلسفة الوحيدة المؤثرة."],
-["طريق الحرير","اتسعت الاتصالات البرية والبحرية بين الصين وآسيا الوسطى وغرب آسيا. لم يكن طريق الحرير طريقاً واحداً، بل شبكة مسارات لنقل الحرير والخيول والمعادن والأفكار والديانات."]
-]],
-["220–960م","الانقسام ثم سوي وتانغ","البوذية وإعادة الوحدة والعصر الذهبي","بعد سقوط هان دخلت الصين قروناً من الانقسام السياسي، ثم أعادت سوي توحيدها، وأقامت تانغ إمبراطورية واسعة ذات تأثير ثقافي وتجاري كبير.",[
-["الممالك الثلاث","تنافست ممالك وي وشو وو بعد انهيار هان. وتلتها أسر متعاقبة في الشمال والجنوب، مع هجرات وتغيرات في المجتمع والجيش والإدارة."],
-["انتشار البوذية","انتقلت البوذية إلى الصين عبر شبكات آسيا الوسطى والتجارة والترجمة، وتفاعلت مع الكونفوشية والطاوية. وأصبحت الأديرة مراكز دينية وتعليمية واقتصادية."],
-["سوي وتانغ","أعادت سوي توحيد البلاد سنة 589م ووسعت القنوات الكبرى. ثم شهدت تانغ ازدهاراً في الشعر والفنون والتجارة والعلاقات الدبلوماسية، وكانت تشانغآن مدينة عالمية متعددة الثقافات."]
-]],
-["960–1912م","سونغ ويوان ومينغ وتشينغ","الابتكار الاقتصادي ثم نهاية الإمبراطورية","عرفت سونغ نمواً حضرياً وتجاريًا وتقنياً ملحوظاً، ثم حكم المغول في عهد يوان، وأعادت مينغ الحكم الصيني، قبل أن تحكم تشينغ المانشوية البلاد وتواجه أزمات القرن التاسع عشر.",[
-["سونغ والابتكار","تطورت المدن والأسواق والنقود الورقية والتجارة البحرية، وازداد استخدام الطباعة والبارود والبوصلة. كما شهدت الثقافة والفلسفة الكونفوشية الجديدة ازدهاراً."],
-["يوان والتبادل الأوراسي","أقام المغول سلالة يوان في القرن الثالث عشر، وربطوا الصين بمسارات سياسية وتجارية تمتد عبر أوراسيا. وانتقلت السلع والتقنيات والمعارف بين شرق القارة وغربها."],
-["مينغ وتشينغ","أعادت مينغ بناء مؤسسات الدولة واهتمت بالعاصمة بكين، ثم وسعت تشينغ الإمبراطورية. وفي القرن التاسع عشر أضعفت حروب الأفيون والتمردات والمعاهدات غير المتكافئة الحكم الإمبراطوري، حتى ثورة 1911 وإعلان الجمهورية سنة 1912."]
-]],
-["1912–1949م","الجمهورية والحرب والتحول الثوري","أمراء الحرب والغزو الياباني والحرب الأهلية","واجهت الجمهورية الجديدة صعوبة في توحيد البلاد، وتنافست قوى سياسية وعسكرية. وتفاقمت الأزمات مع الغزو الياباني والحرب العالمية الثانية، ثم انتهت الحرب الأهلية بانتصار الشيوعيين في البر الرئيسي سنة 1949.",[
-["الجمهورية المبكرة","تولى صن يات سن دوراً تأسيسياً في الحركة الجمهورية، لكن السلطة تفتتت بعد 1916 بين قادة عسكريين إقليميين. وتطورت حركات إصلاحية وفكرية في المدن والجامعات."],
-["الغزو الياباني","تصاعد العدوان الياباني منذ الثلاثينيات، واندلعت حرب واسعة سنة 1937. تسبب الاحتلال والحرب في خسائر بشرية ومادية هائلة وأعادا تشكيل السياسة الصينية."],
-["الحرب الأهلية","استؤنف الصراع بين الحزب القومي والحزب الشيوعي بعد الحرب العالمية الثانية. انتهى بانتصار الشيوعيين في البر الرئيسي سنة 1949 وانتقال حكومة جمهورية الصين إلى تايوان."]
-]],
-["1949م – الحاضر","جمهورية الصين الشعبية","الثورة وبناء الدولة والإصلاح والانفتاح","أُعلنت جمهورية الصين الشعبية في 1 أكتوبر 1949. مرت البلاد بحملات سياسية واقتصادية كبرى، ثم بدأت إصلاحات وانفتاحاً اقتصادياً منذ أواخر السبعينيات، وتحولت إلى قوة صناعية وتجارية عالمية.",[
-["تأسيس الجمهورية","أعلنت القيادة الشيوعية قيام جمهورية الصين الشعبية في بكين سنة 1949. أعادت الدولة تنظيم الأرض والإدارة والصناعة والتعليم، وارتبطت السنوات الأولى ببناء مؤسسات اشتراكية مركزية."],
-["القفزة الكبرى والثورة الثقافية","أدت القفزة الكبرى للأمام إلى مجاعة واسعة وخسائر بشرية جسيمة في أواخر الخمسينيات وأوائل الستينيات. ثم شهدت الثورة الثقافية (1966–1976) اضطرابات سياسية واجتماعية وتعليمية عميقة."],
-["الإصلاح والانفتاح","منذ 1978 تقريباً أطلقت القيادة إصلاحات اقتصادية وتوسعت المناطق الاقتصادية الخاصة والاستثمار والتجارة. أدى ذلك إلى نمو سريع وانتقال أعداد كبيرة من السكان إلى المدن، مع تحديات التفاوت والديموغرافيا والبيئة."]
-]]
-],culture:[["اللغات والكتابة","تستخدم الصينية كتابة قائمة على الرموز، وتوجد لغات ولهجات صينية متعددة. المندرينية هي اللغة الرسمية في جمهورية الصين الشعبية، مع تنوع لغوي كبير بين الأقاليم."],["الفلسفات والأديان","أثرت الكونفوشية والطاوية والبوذية في الأخلاق والفكر والطقوس. كما توجد تقاليد شعبية وديانات أخرى، وتغيرت علاقة الدولة بالمؤسسات الدينية عبر العصور."],["الطعام والمناطق","تتنوع المطابخ الصينية بين أقاليم مثل سيتشوان وكانتون وشاندونغ وجيانغسو، وتتأثر بالمناخ والمحاصيل والتاريخ التجاري والهجرة."],["الفنون والعمارة","يشمل التراث الصيني الخط والرسم والخزف والحدائق والعمارة الخشبية والقصور والمعابد، إلى جانب السينما والفنون المعاصرة."],["الأدب والتعليم","من النصوص الكلاسيكية إلى الرواية الحديثة، كان الأدب والتعليم والامتحانات الإمبراطورية أدوات للثقافة والارتقاء الاجتماعي وتكوين النخب."]],sources:[["جامعة كولومبيا – الخط الزمني لتاريخ الصين","https://afe.easia.columbia.edu/timelines/china_timeline.htm"],["Britannica – الصين","https://www.britannica.com/place/China"],["UNESCO – مواقع الصين","https://whc.unesco.org/en/statesparties/cn"]]}
-];
-countries.push(
-{id:"iq",name:"العراق وبلاد الرافدين",flag:"🇮🇶",region:"asia",period:"من مدن سومر وبابل إلى العراق المعاصر",facts:[["مركز تاريخي","بلاد الرافدين"],["اللغة اليوم","العربية والكردية"],["محطات قديمة","سومر وأكد وبابل وآشور"],["العاصمة","بغداد"]],summary:"بين دجلة والفرات نشأت واحدة من أقدم البيئات الحضرية في العالم. شهدت بلاد الرافدين تطور الكتابة والمدن والقوانين والإمبراطوريات، ثم أصبحت بغداد في العصر العباسي مركزاً علمياً وتجارياً عالمياً.",timeline:[["الألف الرابع ق.م","المدن السومرية والكتابة"],["2334 ق.م تقريباً","الإمبراطورية الأكدية"],["القرن 18 ق.م","بابل وشريعة حمورابي"],["911–609 ق.م","الإمبراطورية الآشورية الحديثة"],["539 ق.م","الفتح الأخميني لبابل"],["762م","تأسيس بغداد العباسية"],["1921–اليوم","الدولة العراقية الحديثة"]],eras:[["الألف الرابع – الثالث ق.م","نشوء المدن والكتابة","سومر وأكد وشبكات المدن","تطورت في جنوب بلاد الرافدين مدن ذات معابد وإدارة وأسواق، وظهرت الكتابة المسمارية لتسجيل المحاصيل والسلع والمعاملات.",[["أوروك والمدن الأولى","كانت أوروك من أبرز المراكز الحضرية المبكرة، وظهرت فيها مؤسسات دينية وإدارية ومهن متخصصة."],["الكتابة المسمارية","بدأت الكتابة بعلامات حسابية وإدارية ثم اتسعت لتدوين النصوص والأدب والقوانين والمراسلات."],["الإمبراطورية الأكدية","جمع سرجون الأكدي مدناً واسعة في كيان سياسي مركزي، وأصبحت الأكدية لغة إدارة ودبلوماسية مهمة."]]],["الألف الثاني – الأول ق.م","بابل وآشور","القانون والإدارة والقوة الإمبراطورية","تنافست ممالك بابل وآشور على النفوذ، وازدهرت تقاليد القانون والفلك والرياضيات والأدب.",[["شريعة حمورابي","تعكس مسلة حمورابي تصوراً للعدالة والملكية والأسرة والعمل في مجتمع بابل القديم."],["الإمبراطورية الآشورية","طورت آشور إدارة واسعة وشبكات طرق وجيشاً منظماً، وتركت قصوراً ونقوشاً ومكتبات مهمة."],["بابل والعلوم","شهدت بابل تطوراً في الحساب والفلك ورصد الأجرام السماوية وتدوين الجداول الرياضية."]]],["القرن السابع – العصر الحديث","العصور الإسلامية والعراق الحديث","بغداد والعلم والتحولات السياسية","أصبحت بغداد عاصمة عباسية كبرى، ثم مرت المنطقة بتحولات سياسية متتابعة وصولاً إلى الدولة الحديثة.",[["بغداد العباسية","أسست بغداد سنة 762م، وصارت مركزاً للترجمة والطب والفلك والفلسفة والتجارة."],["المغول والعصور اللاحقة","أدى سقوط بغداد سنة 1258م إلى تحول كبير، ثم تعاقبت سلطات إقليمية وعثمانية على المنطقة."],["الدولة العراقية","تأسست المملكة العراقية في القرن العشرين، ثم شهد البلد تحولات سياسية واجتماعية واقتصادية عميقة."]]]],deepDive:[["الأنهار والزراعة","شكّل دجلة والفرات أساس الاستقرار الزراعي وشبكات الري والنقل، لكن إدارة المياه والفيضانات كانت تتطلب تعاوناً ومؤسسات."],["المدن والمعرفة","من ألواح الطين إلى مكتبات بغداد، ارتبطت المعرفة بالتدوين والمدارس والرعاية السياسية والتبادل مع الأقاليم المجاورة."]],culture:[["اللغات","عرفت المنطقة السومرية والأكدية والآرامية، وتستخدم اليوم العربية والكردية ولغات أخرى."],["الأدب","تعد ملحمة جلجامش من أقدم الأعمال الأدبية المعروفة، إلى جانب الشعر العربي والفارسي والكردي."],["التراث","تضم المنطقة مواقع أثرية ومدناً تاريخية وموروثاً موسيقياً وحرفياً متنوعاً."]],sources:[["The Metropolitan Museum – Mesopotamia","https://www.metmuseum.org/toah/hd/mesp/hd_mesp.htm"],["British Museum – Mesopotamia","https://www.britishmuseum.org/collection/galleries/mesopotamia"],["UNESCO World Heritage Centre","https://whc.unesco.org/en/statesparties/iq"]] },
-{id:"gr",name:"اليونان",flag:"🇬🇷",region:"europe",period:"من عالم إيجة إلى الفلسفة والعصر الحديث",facts:[["العاصمة","أثينا"],["اللغة","اليونانية"],["محطات قديمة","مينوية وميكينية وكلاسيكية"],["الاستقلال الحديث","1830م تقريباً"]],summary:"تكوّن التاريخ اليوناني عبر عالم من المدن والجزر وشبكات البحر المتوسط. تركت الفلسفة والمسرح والفن والسياسة اليونانية أثراً عميقاً، ثم انتقلت المنطقة بين الحكم المقدوني والروماني والبيزنطي والعثماني قبل الدولة الحديثة.",timeline:[["الألف الثاني ق.م","حضارات إيجة"],["القرن الثامن ق.م","نشوء البوليس"],["490–479 ق.م","الحروب الفارسية"],["القرن الخامس ق.م","ازدهار أثينا"],["336–323 ق.م","الإسكندر الأكبر"],["146 ق.م","السيطرة الرومانية"],["1830م","استقلال اليونان الحديث"]],eras:[["الألف الثاني ق.م","حضارات إيجة","مينوس وموكناي والبحر","ازدهرت مجتمعات بحرية في كريت والبر اليوناني، وتركت قصوراً وفنوناً وشبكات تبادل.",[["الحضارة المينوية","نشأت في كريت مراكز قصرية وتجارية ذات فنون جدارية واتصالات واسعة."],["العالم الميكيني","ظهرت ممالك محصنة في البر اليوناني، وتوثق ألواح الخطي ب جوانب من إدارتها."],["التحولات البرونزية","شهدت نهاية العصر البرونزي تغيرات سكانية وسياسية وتراجع بعض المراكز القصرية."]]],["القرن الثامن – الرابع ق.م","المدن اليونانية الكلاسيكية","أثينا وإسبرطة والفكر والفن","تطورت مدن مستقلة ذات نظم سياسية متباينة، وازدهر المسرح والفلسفة والعمارة.",[["المدينة والديمقراطية","شهدت أثينا تطور مؤسسات مشاركة سياسية للمواطنين الذكور الأحرار، مع استبعاد النساء والعبيد والأجانب."],["الفلسفة والعلوم","ناقش سقراط وأفلاطون وأرسطو أسئلة المعرفة والأخلاق والسياسة والطبيعة."],["المسرح والفنون","أنتجت المأساة والكوميديا والنحت والعمارة الكلاسيكية نماذج أثرت في الفن اللاحق."]]],["القرن الرابع ق.م – العصر الحديث","العالم الهلنستي والبيزنطي والحديث","من الإسكندر إلى الدولة المعاصرة","وسع الإسكندر المجال اليوناني شرقاً، ثم أصبحت المنطقة جزءاً من العالم الروماني والبيزنطي والعثماني.",[["الإسكندر والهلنستية","انتشرت اللغة والثقافة اليونانية في ممالك واسعة وتفاعلت مع تقاليد مصر وغرب آسيا."],["بيزنطة","أصبحت القسطنطينية مركزاً سياسياً وثقافياً للشرق الروماني، وظلت اليونانية لغة مهمة فيه."],["الاستقلال الحديث","نشأت الدولة اليونانية الحديثة بعد حرب الاستقلال في القرن التاسع عشر، ثم تطورت مؤسساتها ضمن أوروبا الحديثة."]]]],deepDive:[["البحر والتجارة","ربطت الملاحة الجزر والمدن بمصر والأناضول وبلاد الشام والبحر الأسود، ونقلت السلع والأفكار."],["المواطنة والسياسة","كانت التجربة السياسية للمدن اليونانية متعددة، ولا يصح اختزالها في نموذج ديمقراطي واحد أو مساواة حديثة."]],culture:[["الفلسفة","أثرت المدارس الأفلاطونية والأرسطية والرواقية في الفكر العالمي."],["اللغة والأدب","تطورت ملاحم هوميروس والمسرح والتاريخ المكتوب، وظلت اليونانية لغة حية عبر قرون."],["العمارة","أثرت المعابد والأعمدة والنسب الكلاسيكية في عمارة أوروبا والعالم."]],sources:[["The British Museum – Greece","https://www.britishmuseum.org/collection/galleries/greek-and-roman-world"],["The Metropolitan Museum – Greece","https://www.metmuseum.org/toah/hd/grlg/hd_grlg.htm"],["UNESCO World Heritage Centre","https://whc.unesco.org/en/statesparties/gr"]] },
-{id:"it",name:"إيطاليا وروما",flag:"🇮🇹",region:"europe",period:"من الجمهورية الرومانية إلى إيطاليا الحديثة",facts:[["العاصمة","روما"],["اللغة","الإيطالية"],["الجذور","إترورية ولاتينية ورومانية"],["توحيد إيطاليا","1861م"]],summary:"بدأت روما مدينة في وسط شبه الجزيرة الإيطالية، ثم أصبحت جمهورية توسعية وإمبراطورية حكمت حوض المتوسط. ورثت أوروبا والعالم تقاليد رومانية في القانون والعمارة واللغة والإدارة، قبل تشكل إيطاليا الحديثة في القرن التاسع عشر.",timeline:[["القرن الثامن ق.م","التقاليد التأسيسية لروما"],["509 ق.م تقليدياً","بداية الجمهورية"],["264–146 ق.م","الحروب البونية"],["27 ق.م","بداية النظام الإمبراطوري"],["313م","مرسوم ميلانو"],["476م","نهاية الإمبراطورية الغربية"],["1861م","توحيد إيطاليا"]],eras:[["القرن الثامن – السادس ق.م","روما المبكرة","القرية والملكية والتأثير الإتروري","تطورت روما ضمن شبكة مدن إيطالية وتأثرت بجيرانها الإتروريين واللاتين.",[["الموقع والنهر","ساعد موقع روما على نهر التيبر في وصل الداخل بالساحل والطرق التجارية."],["المؤسسات المبكرة","تبلورت تقاليد سياسية واجتماعية حول الملكية ومجالس النخبة والجماعات المدنية."],["التأثير الإتروري","انعكست التأثيرات الإترورية في الطقوس والعمارة والرموز السياسية."]]],["509–27 ق.م","الجمهورية والتوسع","مجلس الشيوخ والمواطنة والحروب","اتسعت الجمهورية عبر التحالفات والحروب، وظهرت صراعات حول المواطنة والأرض والسلطة.",[["الحروب البونية","تنافست روما وقرطاج على غرب المتوسط، وانتهى الصراع بهيمنة روما."],["المؤسسات الجمهورية","توزعت السلطة بين magistrates ومجلس الشيوخ والجمعيات الشعبية مع تفاوت اجتماعي."],["أزمة الجمهورية","أدت التفاوتات والحروب الأهلية وصعود القادة العسكريين إلى انهيار النظام الجمهوري."]]],["27 ق.م – 476م","الإمبراطورية الرومانية","المدن والطرق والقانون والتحول الديني","حكم الأباطرة أقاليم واسعة، وربطتها طرق وجيوش ومدن وإدارة وضرائب.",[["الإدارة والطرق","ساعدت الطرق والموانئ والمدن على حركة الجيوش والتجارة والرسائل."],["القانون والمجتمع","تطور القانون الروماني وتنوعت أوضاع السكان والعبيد والمواطنين في أقاليم الإمبراطورية."],["التحول المسيحي والانقسام","انتشرت المسيحية وأصبحت ديناً معترفاً به ثم ديناً إمبراطورياً، وانقسمت السلطة لاحقاً بين الشرق والغرب."]]]],deepDive:[["القانون والمواطنة","تطور القانون الروماني عبر قرون، وأصبح مرجعاً مهماً لتقاليد قانونية أوروبية لاحقة."],["الاقتصاد والبنية التحتية","اعتمدت الإمبراطورية على الزراعة والضرائب والتجارة والطرق والموانئ وشبكات الإمداد."]],culture:[["اللغة","انتشرت اللاتينية في الغرب، بينما ظلت اليونانية لغة مهمة في شرق الإمبراطورية."],["العمارة","شملت الإنجازات القباب والقبوات والخرسانة والحمامات والمدرجات والطرق."],["التراث","تداخل الإرث الروماني مع تقاليد إيطالية وبيزنطية وعربية وأوروبية لاحقة."]],sources:[["The Metropolitan Museum – Roman Empire","https://www.metmuseum.org/toah/hd/roem/hd_roem.htm"],["The British Museum – Roman Empire","https://www.britishmuseum.org/collection/galleries/roman-empire"],["UNESCO – Italy","https://whc.unesco.org/en/statesparties/it"]] },
-{id:"in",name:"الهند وجنوب آسيا",flag:"🇮🇳",region:"asia",period:"من حضارة السند إلى الهند المعاصرة",facts:[["العاصمة","نيودلهي"],["اللغات","تنوع لغوي واسع"],["حضارات مبكرة","وادي السند"],["الاستقلال","1947م"]],summary:"شهدت شبه القارة الهندية حضارات مدينية قديمة وممالك وإمبراطوريات وتقاليد دينية وفلسفية متعددة. تفاعلت شبكات التجارة واللغة والهجرة مع البوذية والهندوسية والجاينية والإسلام، ثم مع الاستعمار الأوروبي وحركات الاستقلال.",timeline:[["2600–1900 ق.م","حضارة وادي السند"],["1500 ق.م تقريباً","تقاليد الفيدا"],["322 ق.م","الإمبراطورية الماورية"],["320م","عصر غوبتا"],["1206م","سلطنة دلهي"],["1526م","الإمبراطورية المغولية"],["1947م","الاستقلال والتقسيم"]],eras:[["2600–1500 ق.م","حضارة وادي السند","المدن والتجارة والحرف","ظهرت مدن مخططة مثل موهينجو دارو وهارابا، مع شبكات تبادل وأوزان ومقاييس موحدة.",[["التخطيط الحضري","تميزت المدن بشوارع منظمة ومبانٍ من الطوب وأنظمة صرف ومرافق عامة."],["التجارة","ارتبطت مجتمعات السند ببلاد الرافدين والخليج عبر شبكات برية وبحرية."],["الكتابة واللغز","لم تُفك رموز كتابة السند بصورة متفق عليها، وما زالت جوانب من مجتمعها محل بحث."]]],["القرن السادس ق.م – القرن السادس م","الممالك والإمبراطوريات","الفلسفات والبوذية والماورية وغوبتا","شهدت المنطقة ممالك كبرى وتطوراً في الفلسفة والرياضيات والأدب والديانات.",[["البوذية والجاينية","ظهرت حركات فكرية ودينية جديدة في سياق نقاشات حول الطقوس والأخلاق والتحرر."],["الإمبراطورية الماورية","وحّد أشوكا مناطق واسعة، وترك نقوشاً عن الحكم والأخلاق والرعاية."],["عصر غوبتا","شهدت فترات من الازدهار الأدبي والعلمي والفني، مع تنوع سياسي وإقليمي."]]],["القرن الثالث عشر – الحاضر","سلطنة دلهي والمغول والاستعمار","التنوع السياسي والاستقلال","تداخلت سلطات إقليمية وسلطنة دلهي والإمبراطورية المغولية ثم الحكم البريطاني وحركات الاستقلال.",[["المغول","أنتجت الإمبراطورية المغولية عمارة وفنوناً وإدارة وجباية واسعة، مع تنوع إقليمي."],["الاستعمار البريطاني","أعاد الحكم الاستعماري تشكيل الاقتصاد والإدارة والسكك والتعليم، وأثار مقاومة وحركات سياسية."],["الاستقلال والتقسيم","استقلت الهند وباكستان سنة 1947 وسط تقسيم صاحبه نزوح وعنف واسعان."]]]],deepDive:[["الأديان والفلسفات","تطورت في جنوب آسيا تقاليد هندوسية وبوذية وجاينية وسيخية وإسلامية ومسيحية وغيرها."],["الرياضيات والعلوم","ساهم علماء المنطقة في الجبر والحساب والفلك والطب، وانتقلت معارف عبر شبكات آسيوية وعالمية."]],culture:[["اللغات","تضم المنطقة لغات هندوأوروبية ودرافيدية وتقاليد أدبية شديدة التنوع."],["الفنون","تشمل العمارة المعبدّية والمنمنمات والموسيقى والرقص والسينما."],["المطبخ","تتباين الأطعمة بحسب الأقاليم والمناخ والتاريخ التجاري والديني."]],sources:[["The Metropolitan Museum – South Asia","https://www.metmuseum.org/toah/ht/05/ssa.html"],["British Museum – South Asia","https://www.britishmuseum.org/collection/galleries/south-asia"],["UNESCO – India","https://whc.unesco.org/en/statesparties/in"]] },
-{id:"jp",name:"اليابان",flag:"🇯🇵",region:"asia",period:"من مجتمعات جومون إلى اليابان المعاصرة",facts:[["العاصمة","طوكيو"],["اللغة","اليابانية"],["محطات مبكرة","جومون ويايوي وياماتو"],["الدستور الحديث","1947م"]],summary:"تطور التاريخ الياباني عبر جزر ومجتمعات زراعية وبلاط إمبراطوري ونظم محاربين وعصور انفتاح وتحول. تفاعلت اليابان مع الصين وكوريا والعالم البحري، ثم شهدت تحديث ميجي والتوسع العسكري والهزيمة في الحرب العالمية الثانية وإعادة البناء.",timeline:[["14,000 ق.م تقريباً","ثقافة جومون"],["300 ق.م تقريباً","انتشار زراعة الأرز ويايوي"],["القرن الرابع م","تبلور دولة ياماتو"],["794م","عصر هييان"],["1185م","بداية حكم الشوغونات"],["1603م","حكم توكوغاوا"],["1868م","إصلاح ميجي"],["1947م","الدستور الياباني"]],eras:[["ما قبل التاريخ – القرن الثامن","جومون ويايوي وياماتو","الاستقرار والزراعة وتكوين الدولة","شهد الأرخبيل أنماط عيش متنوعة، ثم توسعت زراعة الأرز وتطورت مراكز سياسية.",[["جومون","تميزت المجتمعات بصناعة فخار مبكر وصيد وجمع واستقرار متفاوت."],["يايوي","انتشرت زراعة الأرز المروي وأعمال المعادن والتجمعات الزراعية."],["دولة ياماتو","تطورت سلطة البلاط وتفاعلت مع شبه الجزيرة الكورية والصين في الدين والكتابة والمؤسسات."]]],["794–1868م","البلاط والمحاربون والشوغونات","هييان وكاماكورا وموروماشي وتوكوغاوا","تغير توزيع السلطة بين البلاط والأسر العسكرية، وازدهرت ثقافات أدبية وفنية.",[["عصر هييان","شهد البلاط في كيوتو تطور الأدب والفنون، ومن أشهر آثاره حكاية غينجي."],["حكم الساموراي","ظهرت حكومات عسكرية متعاقبة، مع أدوار متغيرة للمحاربين والإقطاعيين."],["عصر إيدو","حكمت توكوغاوا البلاد فترة طويلة من الاستقرار النسبي والنمو الحضري والثقافي."]]],["1868م – الحاضر","التحديث والحرب وإعادة البناء","ميجي والقرن العشرون واليابان المعاصرة","أعادت إصلاحات ميجي بناء الدولة والجيش والتعليم والصناعة، ثم مرت اليابان بحرب مدمرة وتحول دستوري واقتصادي.",[["إصلاح ميجي","ألغيت البنى الإقطاعية تدريجياً، وتوسعت مؤسسات الدولة والتعليم والتصنيع."],["الحرب العالمية الثانية","شهدت اليابان توسعاً عسكرياً وحرباً مدمرة انتهت بالاستسلام سنة 1945."],["إعادة البناء","أرسى دستور 1947 نظاماً جديداً، وشهدت العقود التالية نمواً صناعياً وتقنياً سريعاً."]]]],deepDive:[["التقنية والصناعة","جمعت اليابان بين استيعاب التقنيات العالمية وتطوير صناعات محلية في السفن والسيارات والإلكترونيات والروبوتات."],["الطبيعة والمجتمع","أثرت الجزر والزلازل والبراكين والمناخ الموسمي في العمران والزراعة والثقافة اليومية."]],culture:[["الفنون","تشمل الخط والحدائق والمسرح التقليدي والطباعة الخشبية والأنمي والمانغا."],["الأديان","تفاعلت الشنتوية والبوذية والكونفوشية وممارسات محلية متنوعة."],["الأدب","من الشعر الكلاسيكي والهايكو إلى الرواية والسينما الحديثة."]],sources:[["The Metropolitan Museum – Japan","https://www.metmuseum.org/toah/hd/japn/hd_japn.htm"],["British Museum – Japan","https://www.britishmuseum.org/collection/galleries/japan"],["UNESCO – Japan","https://whc.unesco.org/en/statesparties/jp"]] }
-);
-
-const deepDive={sa:[
-["الاقتصاد قبل النفط: القوافل والبحر والواحات","لم يكن اقتصاد الجزيرة العربية اقتصاداً صحراوياً مغلقاً. فقد ربطت قوافل البخور والسلع جنوب الجزيرة ببلاد الشام ومصر وبلاد الرافدين، فيما نشطت موانئ الخليج والبحر الأحمر في التجارة البحرية وصيد اللؤلؤ. اعتمدت الواحات على الزراعة والتمور والحبوب، وتكاملت هذه الأنشطة مع الرعي والأسواق الموسمية. اختلف وزن كل نشاط من منطقة إلى أخرى، وتبدل مع الأمن والمناخ والطرق والطلب العالمي."],
-["المجتمع والمدينة والقبيلة","تشكّلت الحياة الاجتماعية من علاقات متداخلة بين القبائل والبلدات والواحات والموانئ. كانت الروابط القبلية تؤدي أدواراً في الحماية والتحالف وتسوية النزاعات، بينما وفرت المدن والأسواق مؤسسات للتجارة والعلم والحرف. وفي الحجاز أضاف الحج حركة بشرية موسمية واسعة، حملت معها لغات ومعارف وسلعاً من مناطق بعيدة. لذلك لا يمكن وصف المجتمع التاريخي بنموذج واحد؛ فقد تنوعت أنماط العيش بين نجد والحجاز والشرق والجنوب والسواحل."],
-["المؤسسات والتحول الاجتماعي في الدولة الحديثة","رافق توحيد المملكة بناء مؤسسات مركزية للإدارة والأمن والمالية، ثم توسعت الوزارات والمدارس والجامعات والمستشفيات والطرق. غيّر النفط أنماط العمل والسكن والهجرة الداخلية، وانتقلت مجتمعات كثيرة من اقتصاد محلي متنوع إلى مدن وخدمات وصناعات مترابطة. وفي العقود الأخيرة دخلت قطاعات السياحة والثقافة والتقنية والترفيه ضمن مساعي تنويع الاقتصاد، مع استمرار النقاش حول فرص العمل والاستدامة والهوية والتراث."]
-],eg:[
-["الحياة اليومية والطبقات الاجتماعية","تباينت الحياة اليومية في مصر بين القرى الزراعية والمدن ومراكز الإدارة والمعابد والموانئ. عمل الناس في الزراعة والحرف والنقل والتجارة والكتابة والخدمة الدينية، وتغيرت مكانة الفئات الاجتماعية باختلاف العصر والنظام السياسي. تكشف المقابر والبرديات واللقى المنزلية عن تفاصيل الأسرة والطعام والملابس والعمل، لكنها لا تمثل جميع السكان بالتساوي؛ فالسجل الأثري أغزر عادةً لدى النخب والمؤسسات."],
-["العلم والطب والكتابة","أنتجت مصر تقاليد معرفية طويلة شملت الحساب والهندسة والطب والفلك وإدارة الزمن والموارد. احتاجت الدولة إلى كتبة لتسجيل المحاصيل والضرائب والمراسلات، فيما حفظت البرديات وصفات طبية وملاحظات إدارية وأدبية. وفي الإسكندرية البطلمية والرومانية ازدهرت مؤسسات العلم والترجمة والفلسفة، ثم استمرت القاهرة مركزاً للمعرفة في العصور الإسلامية والحديثة. ينبغي قراءة هذه الإنجازات ضمن سياقها التاريخي لا إسقاط مفاهيم العلم الحديث عليها."],
-["النيل والزراعة والاقتصاد","اعتمد الاقتصاد المصري تاريخياً على النيل والري والزراعة، مع اختلاف أنماط الإنتاج بين الدلتا والصعيد والواحات والسواحل. وفرت الحبوب والكتان والبردي والماشية موارد للتبادل والضرائب، وربطت التجارة مصر بالبحر المتوسط والبحر الأحمر وأفريقيا وغرب آسيا. غيرت مشروعات الري والسد العالي وقناة السويس بنية الاقتصاد والمشهد البيئي، وأصبحت المياه وإدارة الموارد من أهم القضايا الاستراتيجية المعاصرة."]
-],cn:[
-["البيروقراطية والامتحانات الإمبراطورية","تطورت في الصين مؤسسات إدارية واسعة اعتمدت على الكتبة والموظفين المحليين ومراكز الحكم. أصبحت الامتحانات الإمبراطورية، بعد تطورها عبر قرون، طريقاً مهماً لاختيار جزء من النخبة الإدارية، مع تفاوت فرص الوصول إليها بحسب الثروة والتعليم والمنطقة. أسهمت النصوص الكونفوشية في تشكيل ثقافة الموظف المتعلم، وربطت المعرفة الكلاسيكية بالخدمة العامة والشرعية السياسية."],
-["المدن والتجارة والابتكار","شهدت مدن الصين أسواقاً متخصصة وشبكات نقل داخلية وموانئ بحرية نشطة. تطورت الطباعة والورق والبارود والبوصلة في سياقات تاريخية متعددة، ثم ساعدت التجارة البرية والبحرية على انتقال التقنيات والسلع والأفكار. لم يكن الابتكار نتيجة اختراع منفرد فحسب؛ بل ارتبط بالحرفيين والتجار والطلب الحضري ورعاية الدولة والتبادل مع المجتمعات المجاورة."],
-["الأسرة والمجتمع والتنوع الإقليمي","تأثرت الحياة الاجتماعية الصينية بعلاقات الأسرة والقرابة والتعليم والتراتبية المحلية، لكن الممارسات اختلفت كثيراً بين الأقاليم والفترات. تنوعت اللغات والمطابخ والملابس والطقوس بين الشمال والجنوب والمناطق الساحلية والداخلية. وشكلت الأعياد الموسمية والأسواق والعبادات الشعبية فضاءات للتواصل الاجتماعي، فيما غير التصنيع والهجرة الداخلية والتحضر السريع ملامح المجتمع في العصر الحديث."]
-]};
-countries.forEach(c=>c.deepDive=deepDive[c.id]||[]);
-let region="all",selected=null;
-const grid=document.getElementById("grid"),detail=document.getElementById("detail"),search=document.getElementById("search");
-function renderGrid(){const q=search.value.trim().toLocaleLowerCase();const rows=countries.filter(c=>(region==="all"||c.region===region)&&[c.name,c.period].join(" ").toLocaleLowerCase().includes(q));grid.innerHTML=rows.length?rows.map(c=>'<button class="country '+(selected===c.id?'active':'')+'" data-id="'+c.id+'"><span class="flag">'+c.flag+'</span><h2>'+c.name+'</h2><p>'+c.period+'</p><span class="foot"><span>'+(window.wrldlineLang==='en'?c.eras.length+' historical eras':c.eras.length+' عصور تاريخية')+'</span><b>'+H('اكتشف التاريخ ←','Explore history ←')+'</b></span></button>').join(""):'<div style="color:var(--muted)">لا توجد دولة مطابقة للبحث.</div>';grid.querySelectorAll("[data-id]").forEach(b=>b.addEventListener("click",()=>openCountry(b.dataset.id)));}
-const historySites={
- sa:{center:[24.5,44.5],zoom:5,sites:[["Diriyah",24.733,46.576,2],["Hegra / AlUla",26.8,37.95,0],["Historic Jeddah",21.485,39.186,1],["Mecca",21.389,39.857,1],["Medina",24.467,39.611,1],["Al-Ahsa Oasis",25.4,49.6,0]],route:[[21.389,39.857],[24.467,39.611],[26.8,37.95]],routes:{0:[[17.49,44.13],[24.713,46.675],[26.8,37.95]],1:[[21.389,39.857],[24.467,39.611]],2:[[24.733,46.576],[24.713,46.675]],3:[[21.485,39.186],[24.733,46.576]],4:[[24.713,46.675],[21.389,39.857]],}},
- eg:{center:[26.5,30.5],zoom:5,sites:[["Giza",29.979,31.134,0],["Saqqara",29.871,31.216,0],["Luxor",25.687,32.639,1],["Karnak",25.718,32.657,1],["Alexandria",31.2,29.918,2],["Aswan",24.088,32.899,5]],route:[[31.2,29.918],[29.979,31.134],[25.687,32.639],[24.088,32.899]],routes:{0:[[29.979,31.134],[29.871,31.216]],1:[[25.687,32.639],[25.718,32.657]],2:[[31.2,29.918],[29.979,31.134]],3:[[31.2,29.918],[30.044,31.236]],4:[[30.044,31.236],[24.088,32.899]],5:[[30.044,31.236],[24.088,32.899]]}},
- cn:{center:[35,104],zoom:4,sites:[["Xi'an",34.3416,108.9398,2],["Luoyang",34.6197,112.454,3],["Beijing",39.9042,116.4074,4],["Anyang",36.0976,114.392,0],["Nanjing",32.0603,118.7969,3],["Hangzhou",30.2741,120.1551,4],["Kashgar",39.47,75.99,2],["Shanghai",31.2304,121.4737,6],["Shenzhen",22.5431,114.0579,6]],route:[[34.3416,108.9398],[36.06,103.8],[40.14,94.66],[39.47,75.99]],routes:{0:[[36.0976,114.392]],1:[[36.0976,114.392],[34.6197,112.454]],2:[[34.3416,108.9398],[36.06,103.8],[40.14,94.66],[39.47,75.99]],3:[[34.6197,112.454],[32.0603,118.7969]],4:[[39.9042,116.4074],[30.2741,120.1551]],5:[[39.9042,116.4074]],6:[[39.9042,116.4074],[31.2304,121.4737],[22.5431,114.0579]]}}
-};
-let historyMapInstance=null,historyMediaToken=0;
-function historyEscape(v){return String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
-function historyMediaUrl(v,kind){try{const u=new URL(v);if(u.protocol==="https:"&&(kind==="image"?u.hostname==="upload.wikimedia.org":u.hostname==="commons.wikimedia.org"))return u.href;}catch{}return "";}
-function H(ar,en){return window.wrldlineLang==="en"?en:ar;}
-const atlasEvents=[
-[-3000,"نشوء المدن في بلاد الرافدين","توسعت أور وأوروك ومدن سومر، وظهرت مؤسسات المدينة والكتابة المسمارية والإدارة المعقدة.","mesopotamia","بلاد الرافدين",31.32,45.64],
-[-2600,"بناء أهرامات الجيزة","شهدت مصر القديمة مشروعاً ملكياً ومعمارياً هائلاً في عصر الدولة القديمة.","egypt","مصر القديمة",29.979,31.134],
-[-2334,"قيام الإمبراطورية الأكدية","وحّد سرجون الأكدي مدناً واسعة في بلاد الرافدين ضمن سلطة إمبراطورية مبكرة.","mesopotamia","بلاد الرافدين",33.1,44.1],
-[-1754,"شريعة حمورابي","نقش ملك بابل مجموعة قوانين تعكس جوانب من القضاء والاقتصاد والمجتمع في عصره.","mesopotamia","بابل",32.54,44.42],
-[-1200,"تحولات شرق المتوسط","شهدت مناطق واسعة من شرق المتوسط انهياراً أو تحولاً في مراكز الحكم والتجارة خلال أزمة العصر البرونزي المتأخر.","egypt","شرق المتوسط",31.5,34.8],
-[-550,"نشوء الإمبراطورية الأخمينية","أسس كورش الكبير إمبراطورية امتدت من غرب آسيا إلى مناطق واسعة من الشرق الأدنى.","persia","فارس",32.65,51.67],
-[-508,"تطور الجمهورية الرومانية","ترسخت مؤسسات الجمهورية في روما، وبدأت قرون من التوسع والتحولات السياسية.","rome","روما",41.9,12.5],
-[-480,"الحروب اليونانية الفارسية","وقعت معارك كبرى مثل سلاميس وثرموبيلاي ضمن صراع أعاد تشكيل توازن القوى في شرق المتوسط.","greece","اليونان",37.94,23.64],
-[-221,"توحيد الصين في عهد تشين","وحّد تشين شي هوانغ الممالك المتحاربة وأرسى أسس دولة إمبراطورية مركزية.","china","الصين",34.26,108.94],
-[-146,"توسع روما في المتوسط","أنهت روما قرطاج كقوة منافسة كبرى ووسعت سيطرتها في غرب المتوسط.","rome","قرطاج",36.85,10.32],
-[1,"طرق التجارة عبر آسيا","تفاعلت طرق برية وبحرية متعددة بين الصين وآسيا الوسطى والهند وغرب آسيا، وتبادلت المجتمعات السلع والأفكار.","china","آسيا",39.9,75.9],
-[622,"الهجرة النبوية","مثّلت الهجرة من مكة إلى المدينة بداية مرحلة جديدة في تاريخ المجتمع الإسلامي والتقويم الهجري.","islamic","المدينة المنورة",24.467,39.611],
-[750,"قيام الدولة العباسية","انتقل مركز الخلافة إلى العباسيين، ثم ازدهرت بغداد لاحقاً مركزاً للعلم والترجمة والتجارة.","islamic","بغداد",33.315,44.366],
-[960,"بدايات عصر سونغ","شهدت الصين في عهد سونغ توسعاً حضرياً وتجاريًا وابتكارات في الطباعة والمال والتقنيات.","china","الصين",34.8,114.3],
-[1099,"الحروب الصليبية في القدس","دخلت القدس مرحلة صراع سياسي وعسكري ضمن حركة أوسع أثرت في شرق المتوسط لقرون.","islamic","القدس",31.778,35.235],
-[1258,"سقوط بغداد العباسية","دخل المغول بغداد، وانتهى الحكم العباسي فيها بعد قرون من مركزيتها السياسية والثقافية.","islamic","بغداد",33.315,44.366],
-[1453,"فتح القسطنطينية","استولى العثمانيون على القسطنطينية، وتحولت المدينة إلى مركز رئيسي لإمبراطوريتهم.","europe","القسطنطينية",41.008,28.978],
-[1492,"رحلات كولومبوس وبداية الاتصال الأطلسي","بدأ اتصال أوروبي دائم ومتسارع بالأمريكتين، أعقبه استعمار وتبادل بيئي وسكاني واقتصادي عميق.","americas","الكاريبي",19,-70],
-[1517,"الإصلاح الديني في أوروبا","أطلق مارتن لوثر جدلاً دينياً واسعاً أسهم في انقسام الكنيسة الغربية وتحولات سياسية وثقافية.","europe","أوروبا",51.96,11.3],
-[1750,"الثورة الصناعية","بدأت تحولات صناعية كبرى في بريطانيا ثم انتشرت تدريجياً، مغيرة العمل والطاقة والمدن والإنتاج.","europe","بريطانيا",53.48,-2.24],
-[1776,"إعلان استقلال الولايات المتحدة","أعلنت المستعمرات الثلاث عشرة استقلالها عن بريطانيا في وثيقة أصبحت محطة محورية في التاريخ السياسي الحديث.","americas","فيلادلفيا",39.95,-75.16],
-[1789,"الثورة الفرنسية","أطلقت الثورة الفرنسية تحولات عميقة في الحكم والمواطنة والحقوق والسياسة الأوروبية.","europe","باريس",48.856,2.352],
-[1868,"إصلاح ميجي في اليابان","بدأت إعادة بناء مؤسسات الدولة والجيش والاقتصاد في اليابان ضمن تحول سريع نحو التصنيع.","japan","طوكيو",35.676,139.65],
-[1914,"اندلاع الحرب العالمية الأولى","أشعل اغتيال ولي عهد النمسا أزمة دولية تحولت إلى حرب عالمية غيرت خرائط الإمبراطوريات.","europe","سراييفو",43.856,18.413],
-[1945,"نهاية الحرب العالمية الثانية","انتهت الحرب في أوروبا في مايو وفي آسيا في سبتمبر، وبدأ نظام دولي جديد وتأسست الأمم المتحدة.","europe","برلين",52.52,13.405],
-[1969,"هبوط أبولو 11 على القمر","وصل البشر إلى سطح القمر للمرة الأولى في مهمة شكلت ذروة بارزة في سباق الفضاء.","americas","مركز كينيدي",28.572,-80.649],
-[1989,"سقوط جدار برلين","فتح انهيار الجدار الطريق لإعادة توحيد ألمانيا وتسارع نهاية الحرب الباردة في أوروبا.","europe","برلين",52.52,13.405],
-[1991,"تفكك الاتحاد السوفيتي","انتهى الاتحاد السوفيتي وظهرت دول مستقلة، وتغير ميزان القوى العالمي.","europe","موسكو",55.755,37.617],
-[2001,"هجمات 11 سبتمبر","أدت الهجمات في الولايات المتحدة إلى تحولات واسعة في الأمن والسياسة الدولية.","americas","نيويورك",40.713,-74.006]
-];
-let atlasMap=null;
-function atlasYearLabel(y){return y<0?Math.abs(y)+" ق.م":y===0?"بداية التقويم الميلادي":y+"م";}
-function renderWorldAtlas(){
- const slider=document.getElementById("atlasYear"),year=Number(slider.value),civil=document.getElementById("atlasCivilization").value,q=document.getElementById("atlasSearch").value.trim().toLowerCase();
- document.getElementById("atlasYearLabel").textContent=atlasYearLabel(year);
- const rows=atlasEvents.filter(e=>(civil==="all"||e[3]===civil)&&Math.abs(e[0]-year)<=Math.max(260,Math.abs(year)*.09)&&(!q||e.slice(1,6).join(" ").toLowerCase().includes(q))).sort((a,b)=>Math.abs(a[0]-year)-Math.abs(b[0]-year));
- document.getElementById("atlasCount").textContent=rows.length+" حدث";
- document.getElementById("atlasEvents").innerHTML=rows.length?rows.map(e=>'<article class="atlas-event"><div class="atlas-event-year">'+atlasYearLabel(e[0])+'</div><div><h4>'+historyEscape(e[1])+'</h4><p>'+historyEscape(e[2])+'</p><small>'+historyEscape(e[4])+'</small></div></article>').join(""):'<div class="atlas-empty">لا توجد أحداث ضمن النطاق المختار. حرّك المؤشر أو غيّر الحضارة أو وسّع البحث.</div>';
- if(atlasMap){atlasMap.eachLayer(layer=>{if(layer instanceof L.CircleMarker||layer instanceof L.Marker)atlasMap.removeLayer(layer);});rows.forEach(e=>L.circleMarker([e[5],e[6]],{radius:7,color:"#e2bd7b",weight:2,fillColor:"#c58e3c",fillOpacity:.9}).addTo(atlasMap).bindPopup('<strong>'+historyEscape(e[1])+'</strong><br>'+atlasYearLabel(e[0])+' · '+historyEscape(e[4])));}
+if (location.hash.length > 2 && window.WLH && window.WLH.byId[location.hash.slice(1)]) {
+  location.replace("history-dossier.html?id=" + encodeURIComponent(location.hash.slice(1)));
 }
-function initWorldAtlas(){
- if(!document.getElementById("worldHistoryMap")||!window.L)return;
- atlasMap=L.map("worldHistoryMap",{scrollWheelZoom:false}).setView([27,25],2);
- L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:8,attribution:'&copy; OpenStreetMap'}).addTo(atlasMap);
- ["atlasYear","atlasCivilization","atlasSearch"].forEach(id=>document.getElementById(id).addEventListener(id==="atlasSearch"?"input":"input",renderWorldAtlas));
- document.querySelectorAll(".atlas-shortcuts [data-year]").forEach(b=>b.addEventListener("click",()=>{document.getElementById("atlasYear").value=b.dataset.year;renderWorldAtlas();}));
- renderWorldAtlas();
-}
-function historyText(ar){return window.wrldlineLang==="en"?(window.WRLDLINE_HISTORY_EN?.[ar]||ar):ar;}
-async function loadHistoryMedia(country){
- const token=++historyMediaToken,host=document.getElementById("historyGallery");if(!host)return;
- host.innerHTML='<div class="media-loading">'+H("جارٍ البحث عن صور تاريخية من ويكيميديا...","Loading historical images from Wikimedia Commons...")+'</div>';
- const q=historySites[country.id]?.query||country.name+" history monuments";
- try{
-  const url="https://commons.wikimedia.org/w/api.php?action=query&generator=search&gsrsearch="+encodeURIComponent(q)+"&gsrnamespace=6&gsrlimit=9&prop=imageinfo&iiprop=url|extmetadata&iiurlwidth=640&format=json&origin=*";
-  const response=await fetch(url);if(!response.ok)throw new Error("Wikimedia request failed");
-  const data=await response.json();if(token!==historyMediaToken)return;
-  const pages=Object.values(data.query?.pages||{}).filter(p=>p.imageinfo?.[0]?.thumburl);
-  host.innerHTML=pages.slice(0,6).map(p=>{const info=p.imageinfo[0],title=String(p.title||"").replace(/^File:/,""),img=historyMediaUrl(info.thumburl,"image"),page=historyMediaUrl(info.descriptionurl,"page");if(!img||!page)return "";return '<figure class="history-photo"><img loading="lazy" src="'+historyEscape(img)+'" alt="'+historyEscape(title)+'"><figcaption><p>'+historyEscape(title)+' · <a href="'+historyEscape(page)+'" target="_blank" rel="noopener noreferrer">Wikimedia ↗</a></p></figcaption></figure>';}).join("")||'<div class="media-loading">'+H("لم تتوفر صور مناسبة لهذا البحث حالياً.","No suitable images were found for this search.")+'</div>';
- }catch(error){if(token===historyMediaToken)host.innerHTML='<div class="media-loading">'+H("تعذر تحميل الصور الآن. حاول لاحقاً.","Images could not be loaded. Try again later.")+'</div>';}
-}
-function drawHistoryMap(country,era="all"){
- if(historyMapInstance){historyMapInstance.remove();historyMapInstance=null;}
- const config=historySites[country.id];if(!config||!window.L)return;
- historyMapInstance=L.map("historyMap",{scrollWheelZoom:false}).setView(config.center,config.zoom);
- L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:12,attribution:'&copy; OpenStreetMap'}).addTo(historyMapInstance);
- const sites=era==="all"?config.sites:config.sites.filter(site=>site[3]===Number(era));
- sites.forEach(([name,lat,lng])=>L.circleMarker([lat,lng],{radius:6,color:"#e2bd7b",weight:2,fillColor:"#c58e3c",fillOpacity:.9}).addTo(historyMapInstance).bindPopup("<strong>"+name+"</strong>"));
- const route=era==="all"?config.route:config.routes?.[era];if(route?.length>1)L.polyline(route,{color:"#c58e3c",weight:3,dashArray:"7 7",opacity:.8}).addTo(historyMapInstance);
- setTimeout(()=>historyMapInstance?.invalidateSize(),120);
-}
-
-function openCountry(id){const c=countries.find(x=>x.id===id);if(!c)return;selected=id;renderGrid();const facts=c.facts.map(f=>'<div class="fact"><small>'+f[0]+'</small><b>'+f[1]+'</b></div>').join("");const timeline=c.timeline.map(t=>'<div class="point"><b>'+t[0]+'</b><span>'+t[1]+'</span></div>').join("");const eras=c.eras.map((e,i)=>'<details class="era" '+(i===0?'open':'')+'><summary><span class="year">'+e[0]+'</span><span class="era-title">'+e[1]+'<span class="era-sub">'+e[2]+'</span></span><span class="arrow">⌄</span></summary><div class="era-body"><p class="intro">'+e[3]+'</p><div class="chapters">'+e[4].map(ch=>'<article class="chapter"><h4>'+ch[0]+'</h4><p>'+ch[1]+'</p></article>').join("")+'</div></div></details>').join("");const deepDiveCards=(c.deepDive||[]).map(x=>'<article class="chapter"><h4>'+x[0]+'</h4><p>'+x[1]+'</p></article>').join("");const culture=c.culture.map(x=>'<article class="culture"><h4>'+x[0]+'</h4><p>'+x[1]+'</p></article>').join("");const sources=c.sources.map(s=>'<li><a href="'+s[1]+'" target="_blank" rel="noopener noreferrer">'+s[0]+' ↗</a></li>').join("");detail.innerHTML='<div class="head"><div><div class="eyebrow">COUNTRY HISTORY DOSSIER</div><h2>'+c.name+'</h2><p>'+c.summary+'</p></div><div class="bigflag">'+c.flag+'</div></div><div class="facts">'+facts+'</div><div class="sect"><div><h3>الصور والمواقع التاريخية</h3><p>صور مرجعية من ويكيميديا كومنز ومواقع موثقة على الخريطة</p></div></div><div class="history-gallery" id="historyGallery"></div><label class="map-era-filter" for="historyEraFilter">'+H("اعرض الخريطة حسب العصر","Map this era")+' <select id="historyEraFilter"><option value="all">'+H("كل العصور","All eras")+'</option>'+c.eras.map((e,i)=>'<option value="'+i+'">'+historyText(e[0])+' · '+historyText(e[1])+'</option>').join("")+'</select></label><div class="history-map" id="historyMap"></div><p class="map-disclaimer">الخريطة تعرض مواقع أثرية ومدناً ومسارات توضيحية مرتبطة بالتاريخ، ولا تمثل حدوداً سياسية تاريخية دقيقة.</p><div class="sect"><div><h3>الخط الزمني الكبير</h3><p>محطات سريعة قبل الدخول في التفاصيل</p></div></div><div class="timeline">'+timeline+'</div><div class="sect"><div><h3>رحلة عبر العصور</h3><p>افتح أي عصر لتقرأ فصوله وموضوعاته</p></div><p>'+c.eras.length+' عصور · '+c.eras.reduce((n,e)=>n+e[4].length,0)+' فصول</p></div><div class="eras">'+eras+'</div><div class="sect"><div><h3>ملفات معمقة</h3><p>موضوعات اجتماعية واقتصادية وفكرية توسّع الصورة التاريخية</p></div></div><div class="chapters">'+deepDiveCards+'</div><div class="sect"><div><h3>الثقافة والحياة</h3><p>ما وراء السياسة: كيف عاش الناس وصنعوا هويتهم</p></div></div><div class="cultures">'+culture+'</div><div class="sources"><h4>مصادر للقراءة والتوسع</h4><ul>'+sources+'</ul></div>';detail.classList.add("open");loadHistoryMedia(c);drawHistoryMap(c);document.getElementById("historyEraFilter")?.addEventListener("change",e=>drawHistoryMap(c,e.target.value));detail.scrollIntoView({behavior:"smooth",block:"start"});}
-
-document.getElementById("filters").addEventListener("click",e=>{const b=e.target.closest("[data-region]");if(!b)return;region=b.dataset.region;document.querySelectorAll(".filter").forEach(x=>x.classList.toggle("active",x===b));renderGrid();});
-search.addEventListener("input",renderGrid);renderGrid();initWorldAtlas();
-document.addEventListener("wrldline:language",()=>{renderGrid();if(selected){const y=detail.getBoundingClientRect().top+window.scrollY;openCountry(selected);window.scrollTo({top:y,behavior:"auto"});}});
-</script><!-- WRLDLINE HISTORY LAB: embedded to avoid stale/missing external asset -->
-<script>
-(() => {
-  const mount = document.querySelector("main.container");
-  if (!mount || document.getElementById("historyLab")) return;
-  const style = document.createElement("style");
-  style.textContent = `
-  #historyLab{margin:34px 0 54px;padding:clamp(16px,3vw,28px);border:1px solid #344963;border-radius:20px;background:linear-gradient(145deg,#182c43,#0e1a2b);color:#f2f5f9}
-  #historyLab .lab-kicker{color:#d5ad69;font:700 10px Manrope,sans-serif;letter-spacing:.15em}
-  #historyLab h2{font-size:clamp(24px,4vw,36px);margin:7px 0}
-  #historyLab .lab-intro{color:#adbacb;font-size:12px;max-width:780px}
-  #historyLab .lab-tabs{display:flex;gap:7px;overflow:auto;padding:14px 0}
-  #historyLab button,#historyLab select,#historyLab input{font:inherit}
-  #historyLab .lab-tabs button,#historyLab .lab-btn{border:1px solid #40536b;border-radius:20px;padding:8px 13px;background:#13243a;color:#c9d4e1;font-size:11px;cursor:pointer;white-space:nowrap}
-  #historyLab .lab-tabs button.active,#historyLab .lab-btn.primary{background:#d5ad69;color:#142238;border-color:#d5ad69;font-weight:700}
-  #historyLab .lab-pane{display:none}#historyLab .lab-pane.active{display:block}
-  #historyLab .lab-search{width:100%;background:#0d1b2d;border:1px solid #344963;color:#fff;border-radius:10px;padding:11px}
-  #historyLab .lab-cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:12px}
-  #historyLab .lab-card{padding:14px;border:1px solid #344963;border-radius:12px;background:#12243a}
-  #historyLab .lab-card small{color:#d5ad69;font-size:10px}
-  #historyLab .lab-card h3{font-size:14px;margin:5px 0}
-  #historyLab .lab-card p{font-size:11px;color:#c2cddd;line-height:1.9;margin:0}
-  #historyLab .lab-card .lab-tags{display:flex;gap:5px;flex-wrap:wrap;margin-top:9px}
-  #historyLab .lab-tag{font-size:9px;color:#9fc4df;border:1px solid #344963;border-radius:20px;padding:2px 7px}
-  #historyLab .lab-compare{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 0}
-  #historyLab select{width:100%;background:#0d1b2d;border:1px solid #344963;border-radius:9px;color:#fff;padding:10px}
-  #historyLab .lab-table{width:100%;border-collapse:collapse;font-size:11px}
-  #historyLab .lab-table th,#historyLab .lab-table td{padding:10px;border-bottom:1px solid #344963;text-align:right;vertical-align:top}
-  #historyLab .lab-table th{color:#d5ad69}
-  #historyLab .lab-question{padding:18px;border:1px solid #344963;border-radius:13px;background:#12243a;margin:12px 0}
-  #historyLab .lab-question h3{font-size:16px;margin:0 0 12px}
-  #historyLab .lab-answer{display:block;width:100%;text-align:right;margin:7px 0;padding:10px;border:1px solid #40536b;border-radius:9px;background:#0d1b2d;color:#eaf0f6;cursor:pointer}
-  #historyLab .lab-answer.correct{border-color:#67c58b;background:#153729}
-  #historyLab .lab-answer.wrong{border-color:#df8b83;background:#3b2228}
-  #historyLab .lab-feedback{font-size:11px;color:#d5ad69;margin-top:10px}
-  #historyLab .lab-pager{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:12px}
-  @media(max-width:760px){#historyLab .lab-cards{grid-template-columns:1fr 1fr}}
-  @media(max-width:520px){#historyLab .lab-cards,#historyLab .lab-compare{grid-template-columns:1fr}#historyLab .lab-table{font-size:10px}}
-  `;
-  document.head.appendChild(style);
-  const section=document.createElement("section");section.id="historyLab";
-  section.innerHTML=`
-    <div class="lab-kicker">THE DEEP HISTORY LAB · WRLDLINE</div>
-    <h2>مختبر التاريخ: من الحضارات إلى الأفكار التي صنعت العالم</h2>
-    <p class="lab-intro">مساحة معرفية جديدة تتجاوز التسلسل الزمني: ملفات حضارية إضافية، مفاهيم كبرى تشرح كيف تغيّر العالم، أداة مقارنة بين المجتمعات، واختبار تفاعلي يقيس فهمك للتاريخ.</p>
-    <div class="lab-tabs" role="tablist">
-      <button class="active" data-pane="dossiers">أطلس الحضارات</button>
-      <button data-pane="ideas">أفكار غيّرت العالم</button>
-      <button data-pane="compare">قارن حضارتين</button>
-      <button data-pane="quiz">اختبر معرفتك</button>
-    </div>
-    <div class="lab-pane active" id="lab-dossiers">
-      <input class="lab-search" id="labSearch" type="search" placeholder="ابحث باسم حضارة أو مدينة أو حقبة أو فكرة...">
-      <div class="lab-cards" id="labDossiers"></div>
-    </div>
-    <div class="lab-pane" id="lab-ideas">
-      <p class="lab-intro">هذه الملفات تشرح التحولات التي لا تظهر دائمًا في قوائم الملوك والمعارك: كيف نشأت المؤسسات، وانتقلت المعرفة، وتغيّرت حياة الناس.</p>
-      <div class="lab-cards" id="labIdeas"></div>
-    </div>
-    <div class="lab-pane" id="lab-compare">
-      <p class="lab-intro">اختر حضارتين لمقارنة السياق التاريخي ومصادر القوة وأنماط التنظيم والإرث. المقارنة تعليمية ولا تفترض أن المجتمعات تسير في مسار واحد.</p>
-      <div class="lab-compare"><label>الحضارة الأولى<select id="labA"></select></label><label>الحضارة الثانية<select id="labB"></select></label></div>
-      <div id="labComparison" aria-live="polite"></div>
-    </div>
-    <div class="lab-pane" id="lab-quiz">
-      <div id="labQuizCard"></div>
-    </div>
-  `;
-  const atlas=mount.querySelector(".world-atlas");
-  if(atlas) atlas.insertAdjacentElement("afterend",section); else mount.prepend(section);
-
-  const dossiers=[
-    ["حضارة المايا","أمريكا الوسطى","من الألفية الثانية ق.م إلى القرن 16م","طوّرت مدنًا مستقلة نسبيًا، ونظام كتابة هيروغليفيًا، وتقويمات دقيقة ورصدًا فلكيًا متقدمًا. لم تكن إمبراطورية موحدة؛ بل شبكة ممالك ومدن تنافست وتحالفت.","مدن: تيكال وبالينكي وتشيتشن إيتزا","الكتابة والتقويم والعمارة","أمريكا"],
-    ["حضارة الأزتك","وادي المكسيك","القرنان 14–16م","نشأت القوة المكسيكية/الأزتكية حول تينوتشتيتلان، واعتمدت على تحالفات سياسية وجباية tribute وأسواق واسعة، قبل سقوط العاصمة سنة 1521 بعد حصار وتحالفات محلية وتفشي الأمراض.","تينوتشتيتلان","الأسواق والهندسة المائية","أمريكا"],
-    ["حضارة الإنكا","جبال الأنديز","القرنان 13–16م","أنشأت دولة واسعة ربطتها شبكة طرق جبلية ومخازن ومراكز إدارية، واستعملت الكيبو لتسجيل المعلومات الكمية. لم تعتمد على نظام كتابة أبجدي معروف.","كوسكو وشبكة قَپَق نيان","المدرجات الزراعية والطرق","أمريكا"],
-    ["مملكة أكسوم","القرن الأفريقي","نحو القرن 1–7م","كانت قوة تجارية تربط البحر الأحمر وشرق أفريقيا والبحر المتوسط، وسكّت عملة، واستخدمت كتابة الجعز، واعتمدت المسيحية في القرن الرابع تقريبًا.","موانئ البحر الأحمر ونقوش المسلات","التجارة والنقود والعمارة الحجرية","أفريقيا"],
-    ["إمبراطورية مالي","غرب أفريقيا","القرنان 13–16م","برزت على طرق الذهب والملح عبر الصحراء، وارتبط اسم مانسا موسى برحلة الحج سنة 1324 وما صاحبها من شهرة واسعة لثروة الدولة.","تمبكتو وجني","التجارة والتعليم ومراكز المخطوطات","أفريقيا"],
-    ["مملكة زيمبابوي الكبرى","جنوب أفريقيا","نحو 11–15م","مركز حضري وتجاري اشتهر بالعمارة الحجرية الجافة، وارتبط بشبكات تجارة المحيط الهندي والذهب والعاج. اسمها يعني تقريبًا البيوت الحجرية بلغة الشونا.","الجدران الحجرية الكبرى","التجارة والعمارة","أفريقيا"],
-    ["الفينيقيون","ساحل شرق المتوسط","نحو 1200–500 ق.م","شبكة مدن بحرية وتجارية، لا دولة موحدة، أسهمت في نشر الأبجدية الفينيقية التي أثّرت في أنظمة كتابة لاحقة عبر المتوسط.","صور وصيدا وقرطاج","الملاحة والأبجدية والتجارة","المتوسط"],
-    ["الحيثيون","الأناضول","نحو 1650–1200 ق.م","قوة ملكية في الأناضول تفاعلت مع مصر وميتاني وبلاد الرافدين، ومن أشهر محطاتها معركة قادش والمعاهدة المصرية الحيثية اللاحقة.","حاتوشا","الدبلوماسية والمعاهدات","غرب آسيا"],
-    ["الحضارة المينوية","جزيرة كريت","نحو 2000–1450 ق.م","مجتمع قصري بحري في بحر إيجه، عُرف بمراكز مثل كنوسوس وفنون الجداريات وشبكات التبادل. لا تزال قراءة نظام Linear A غير مكتملة.","كنوسوس","القصور والبحر والفنون","أوروبا"],
-    ["الإمبراطورية المغولية","أوراسيا","القرنان 13–14م","وحّدت فتوحات جنكيز خان وخلفائه مساحات شاسعة، ووسّعت حركة التجار والرسل عبر طرق أوراسيا، مع اختلاف الإدارة والنتائج من إقليم إلى آخر.","قراقورم وطرق البريد","الحركة العابرة للقارات والإدارة","أوراسيا"],
-    ["الإمبراطورية العثمانية","الأناضول والبلقان والشرق الأوسط","نحو 1299–1922م","توسعت من إمارة حدودية إلى دولة متعددة الأقاليم، واستمرت قرونًا مع نظم إدارية وعسكرية وقضائية متغيرة، وانتهت السلطنة عام 1922.","إسطنبول","الإدارة متعددة الأقاليم والعمارة","غرب آسيا"],
-    ["إمبراطورية الخمير","جنوب شرق آسيا","القرنان 9–15م","نشأت حول أنغكور، وطورت منظومة مائية واسعة من الخزانات والقنوات، وشهدت عمارة دينية ضخمة وتفاعلات بين الهندوسية والبوذية.","أنغكور وات وأنغكور ثوم","إدارة المياه والعمارة","آسيا"],
-    ["مملكة غانا القديمة","غرب أفريقيا","نحو 300–1200م","قوة سياسية وتجارية في غرب أفريقيا قبل إمبراطورية مالي، استفادت من موقعها على طرق الذهب والملح الصحراوية؛ ولا ينبغي الخلط بينها وبين دولة غانا الحديثة.","طرق التجارة الصحراوية","الذهب والملح والوساطة التجارية","أفريقيا"],
-    ["دولة السونغاي","حوض النيجر","القرنان 15–16م","اتسعت حول نهر النيجر، وبرزت مدن مثل غاو وتمبكتو وجني، وجمعت بين الزراعة النهرية والتجارة العابرة للصحراء ومؤسسات العلم.","غاو وتمبكتو","التجارة النهرية والتعليم","أفريقيا"],
-    ["مملكة تشولا","جنوب الهند","نحو 9–13م","قوة جنوب آسيوية اشتهرت بإدارة محلية ونقوش معابد وأساطيل وحركة بحرية باتجاه جنوب شرق آسيا، مع ازدهار فن البرونز والعمارة الدرافيدية.","ثانجافور","البحر والمعابد والإدارة","آسيا"],
-    ["اليابان في عصر هييآن","اليابان","794–1185م","مرحلة ازدهار البلاط في كيوتو، تطورت خلالها ثقافة أدبية وفنية يابانية مميزة، وكتبت موراساكي شيكيبو حكاية غنجي التي تعد من أقدم الروايات الطويلة.","كيوتو","الأدب والبلاط والكتابة","آسيا"],
-    ["الدولة العباسية","العالم الإسلامي","750–1258م في بغداد","جعلت بغداد مركزًا سياسيًا وثقافيًا كبيرًا، وتوسعت حركة الترجمة والعلوم والفقه والأدب، مع اختلاف النشاط العلمي والإداري باختلاف العصور والأقاليم.","بغداد وسامراء","الترجمة والعلوم والمدن","غرب آسيا"],
-    ["ممالك النوبة","وادي النيل","الألفية الأولى ق.م إلى العصور الوسطى","شهدت كوش ونبتة ومروي وممالك نوبية لاحقة تفاعلات عميقة مع مصر وأفريقيا والبحر الأحمر، وامتلكت مروي تقاليد كتابة وحديد وعمارة خاصة.","نبتة ومروي","الحديد والكتابة والتبادل النيلي","أفريقيا"]
-  ];
-  const ideas=[
-    ["من الصيد إلى الزراعة","التحول النيوليتي","منذ نحو 10,000 ق.م في مناطق متعددة","لم تقع الزراعة في مكان واحد أو لحظة واحدة؛ ظهرت تجارب مستقلة في الهلال الخصيب والصين وغينيا الجديدة والأمريكتين وغيرها. الاستقرار رفع القدرة على تخزين الغذاء، لكنه جلب أيضًا تفاوتًا اجتماعيًا وأمراضًا مرتبطة بالكثافة السكانية."],
-    ["ولادة المدن","التمدّن المبكر","الألفية الرابعة ق.م","ظهرت المدن الكبرى مع تداخل الزراعة المكثفة والتخصص الحرفي والتبادل والإدارة. أوروك في جنوب بلاد الرافدين من أبرز الأمثلة المبكرة، لكنها ليست المدينة الأولى الوحيدة بمعنى مطلق."],
-    ["الكتابة والإدارة","المعرفة المؤسسية","نحو 3400–3200 ق.م","ارتبطت أقدم الشواهد المسمارية المعروفة في جنوب بلاد الرافدين بالحساب وتسجيل السلع والإدارة، ثم توسعت الكتابة إلى الأدب والقانون والرسائل والعلوم."],
-    ["القانون المكتوب","السلطة والعدالة","الألفية الثانية ق.م","مجموعة حمورابي مثال شهير على تدوين الأحكام الملكية، لكنها ليست أول قانون في التاريخ. تعكس نصوصها مجتمعًا هرميًا وتفاوتًا في العقوبات بحسب المكانة الاجتماعية."],
-    ["النقود والأسواق","الثقة والتبادل","الألفية الأولى ق.م","ظهرت أشكال متعددة من النقود والسبائك المعيارية، ومن أقدم العملات المسكوكة المعروفة عملات ليديا في غرب الأناضول. سهّلت المعايير النقدية التسعير والضرائب والتجارة."],
-    ["المواطنة والسياسة","المدينة والدولة","أثينا الكلاسيكية","تطورت المشاركة السياسية في أثينا ضمن نظام استبعد النساء والعبيد والأجانب المقيمين من المواطنة السياسية. لذلك لا يصح مساواة ديمقراطيتها القديمة بالمفهوم الحديث للمساواة الشاملة."],
-    ["طرق الحرير","شبكات أوراسيا","منذ أواخر الألفية الأولى ق.م","لم يكن طريقًا واحدًا بل مسارات برية وبحرية متغيرة ربطت شرق آسيا بوسطها وغربها والمتوسط. انتقلت عبرها السلع والأديان والتقنيات والأوبئة والأفكار."],
-    ["المحيط الهندي","عالم من الموانئ","العصور القديمة والوسطى","شكلت الرياح الموسمية إيقاع الملاحة بين شرق أفريقيا والجزيرة العربية والهند وجنوب شرق آسيا. لم تكن التجارة البحرية هامشًا؛ بل شبكة حضارية لها لغاتها ومجتمعاتها ومراكزها."],
-    ["الورق والطباعة","توسيع المعرفة","الصين ثم مناطق أخرى","تطورت صناعة الورق في الصين وانتقلت تقنياتها غربًا عبر شبكات التبادل. كما ظهرت الطباعة بالقوالب في شرق آسيا قبل الطباعة بالحروف المتحركة في أوروبا الحديثة."],
-    ["الطاعون الأسود","المرض والمجتمع","1347–1353م في أوروبا وغرب آسيا وشمال أفريقيا","أحدث الطاعون الدبلي صدمة سكانية واقتصادية هائلة، لكنه لم ينهِ العصور الوسطى وحده. اختلفت آثاره بحسب المناطق وأسواق العمل والبنى الاجتماعية."],
-    ["الثورة العلمية","القياس والتجربة","القرنان 16–17م","لم تكن لحظة أوروبية منعزلة؛ استفادت من تراكمات رياضية وفلكية وطبية عبر ثقافات متعددة. تبلورت أدوات جديدة للرصد والتجربة والرياضيات في سياقات مؤسسية متباينة."],
-    ["الثورة الصناعية","الطاقة والإنتاج","من أواخر القرن 18م","بدأت في بريطانيا ضمن ظروف من الفحم ورأس المال والأسواق والمؤسسات والابتكار، ثم انتشرت بصورة غير متساوية. أعادت تشكيل المدن والعمل والبيئة والعلاقات الإمبراطورية."],
-    ["الاستعمار وإعادة تشكيل العالم","القوة والاقتصاد","القرنان 15–20م","توسعت الإمبراطوريات البحرية الأوروبية عبر الاحتلال والتجارة القسرية والاستيطان واستخراج الموارد. تختلف التجارب المحلية، لكن آثار الحدود والاقتصاد السياسي ما زالت حاضرة."],
-    ["حركات الاستقلال","تقرير المصير","القرنان 19–20م","تعددت مسارات إنهاء الاستعمار بين الثورات والتفاوض والحروب والتحولات الدولية. لم يكن الاستقلال نهاية التحديات؛ إذ واجهت الدول الجديدة بناء المؤسسات والاقتصاد والهوية."],
-    ["المدن الحديثة","التحضر والهجرة","القرنان 19–21م","توسعت المدن مع الصناعة والنقل والهجرة والخدمات. حمل التحضر فرصًا للتعليم والعمل، لكنه طرح أسئلة السكن والصحة العامة والتلوث واللامساواة."],
-    ["الثورة الرقمية","المعلومة والشبكات","من النصف الثاني للقرن 20م","حوّلت الحوسبة والإنترنت والهواتف الذكية إنتاج المعرفة والاقتصاد والإعلام. كما خلقت تحديات الخصوصية والمراقبة والفجوة الرقمية وتضليل المعلومات."]
-  ];
-  const dossierHost=document.getElementById("labDossiers"),ideasHost=document.getElementById("labIdeas");
-  const escapeHTML=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-  function renderDossiers(filter=""){
-    const q=filter.trim().toLowerCase();
-    const list=dossiers.filter(d=>d.join(" ").toLowerCase().includes(q));
-    dossierHost.innerHTML=list.map(d=>`<article class="lab-card"><small>${escapeHTML(d[1])} · ${escapeHTML(d[2])}</small><h3>${escapeHTML(d[0])}</h3><p>${escapeHTML(d[3])}</p><div class="lab-tags"><span class="lab-tag">${escapeHTML(d[4])}</span><span class="lab-tag">${escapeHTML(d[5])}</span></div></article>`).join("")||'<div class="lab-card">لا توجد نتائج مطابقة. جرّب كلمة أخرى.</div>';
-  }
-  dossierHost && renderDossiers();
-  document.getElementById("labSearch").addEventListener("input",e=>renderDossiers(e.target.value));
-  ideasHost.innerHTML=ideas.map(d=>`<article class="lab-card"><small>${escapeHTML(d[1])} · ${escapeHTML(d[2])}</small><h3>${escapeHTML(d[0])}</h3><p>${escapeHTML(d[3])}</p></article>`).join("");
-  const compareRows=[
-    ["الإطار الزمني",2],["النطاق الجغرافي",6],["مدن ومراكز بارزة",4],["أبرز ملامح الإرث",5]
-  ];
-  const a=document.getElementById("labA"),b=document.getElementById("labB");
-  const opts=dossiers.map((d,i)=>`<option value="${i}">${escapeHTML(d[0])}</option>`).join("");
-  a.innerHTML=opts;b.innerHTML=opts;b.value="4";
-  function compare(){
-    const x=dossiers[Number(a.value)],y=dossiers[Number(b.value)];
-    document.getElementById("labComparison").innerHTML=`<table class="lab-table"><thead><tr><th>محور المقارنة</th><th>${escapeHTML(x[0])}</th><th>${escapeHTML(y[0])}</th></tr></thead><tbody>${compareRows.map(([label,index])=>`<tr><th>${label}</th><td>${escapeHTML(x[index])}</td><td>${escapeHTML(y[index])}</td></tr>`).join("")}</tbody></table><p class="lab-intro">تختلف جودة الأدلة المتاحة بين الحضارات؛ بعض التواريخ تقريبية وبعض التفاصيل محل نقاش بحثي.</p>`;
-  }
-  a.addEventListener("change",compare);b.addEventListener("change",compare);compare();
-  section.querySelectorAll(".lab-tabs button").forEach(button=>button.addEventListener("click",()=>{
-    section.querySelectorAll(".lab-tabs button").forEach(x=>x.classList.toggle("active",x===button));
-    section.querySelectorAll(".lab-pane").forEach(p=>p.classList.toggle("active",p.id==="lab-"+button.dataset.pane));
-  }));
-  const questions=[
-    ["ما الوظيفة التي ارتبطت بها أقدم الشواهد المسمارية المعروفة؟",["تسجيل السلع والحساب والإدارة","كتابة الروايات المطبوعة","تدوين قوانين دول حديثة"],0,"تطورت الكتابة المسمارية المبكرة في جنوب بلاد الرافدين ضمن سياقات الحساب والإدارة، ثم اتسعت استخداماتها."],
-    ["أي وصف أدق لطريق الحرير؟",["طريق بري واحد ثابت","شبكة مسارات برية وبحرية متغيرة","طريق أنشأته دولة واحدة"],1,"كان شبكة واسعة ومتغيرة ربطت مناطق أوراسيا وتبادلت عبرها السلع والأفكار والأديان."],
-    ["هل كانت حضارة المايا إمبراطورية موحدة؟",["نعم، عاصمة واحدة حكمت الجميع","لا، كانت مدنًا وممالك متعددة","كانت مستعمرة رومانية"],1,"تكون العالم السياسي للمايا من مدن وممالك تنافست وتحالفت، لا من دولة مركزية واحدة طوال تاريخها."],
-    ["ما الذي ميّز شبكة طرق الإنكا؟",["ربطت مناطق جبلية واسعة","اعتمدت على السكك الحديدية","كانت بحرية فقط"],0,"ربطت شبكة الطرق الإمبراطورية مراكز الأنديز عبر تضاريس صعبة، ودعمت الإدارة والاتصال."],
-    ["أي مدينة ارتبطت بمركز تجاري وعلمي بارز في إمبراطورية مالي؟",["تمبكتو","قرطاج","أثينا"],0,"برزت تمبكتو ضمن شبكات التجارة والتعليم والمخطوطات في غرب أفريقيا."],
-    ["ما أحد أسباب أهمية الرياح الموسمية في المحيط الهندي؟",["حددت مواسم الملاحة البحرية","منعت التجارة بين القارات","ألغت الحاجة للموانئ"],0,"ساعدت دورات الرياح الموسمية البحارة على التخطيط للرحلات بين شرق أفريقيا والجزيرة العربية والهند وجنوب شرق آسيا."],
-    ["متى سقطت تينوتشتيتلان؟",["1066م","1453م","1521م"],2,"سقطت بعد حصار طويل سنة 1521 في سياق تحالفات محلية والغزو الإسباني والأوبئة."],
-    ["أي عبارة عن الثورة الصناعية أكثر دقة؟",["بدأت في بريطانيا أواخر القرن 18 ثم انتشرت بشكل غير متساوٍ","بدأت في كل العالم في السنة نفسها","كانت تحولًا تقنيًا بلا أثر اجتماعي"],0,"ارتبطت بالطاقة والإنتاج والعمل والتحضر والبيئة، وانتشرت على مراحل متفاوتة."],
-    ["هل مجموعة حمورابي أول قانون مكتوب في التاريخ؟",["نعم قطعًا","لا، سبقتها مجموعات قانونية أخرى","هي قانون روماني"],1,"توجد مجموعات قانونية أقدم، لكن نص حمورابي من أشهر الأمثلة وأكثرها دراسة."],
-    ["ما الذي يصف مملكة أكسوم؟",["قوة تجارية في القرن الأفريقي والبحر الأحمر","مدينة يونانية في إيطاليا","إمبراطورية في أمريكا الجنوبية"],0,"كانت أكسوم قوة تجارية مهمة في القرن الأفريقي، ولها عملة ونقوش وعلاقات بحرية."],
-    ["أي وصف للديمقراطية الأثينية القديمة أدق؟",["شملت جميع السكان بالتساوي","اقتصرت المشاركة على فئة من المواطنين الذكور","كانت انتخابات عالمية حديثة"],1,"استبعد النظام النساء والعبيد والأجانب المقيمين من المواطنة السياسية."],
-    ["ما المقصود بالكيبو في حضارة الإنكا؟",["أداة تسجيل بعقد الحبال","عملة ذهبية","سفينة حربية"],0,"استخدمت حبالًا وعقدًا لتنظيم وتسجيل معلومات، خاصة الكمية والإدارة."]
-  ];
-  let qi=0,score=0,answered=false;
-  const quiz=document.getElementById("labQuizCard");
-  function drawQuestion(){
-    answered=false;const q=questions[qi];
-    quiz.innerHTML=`<div class="lab-kicker">QUESTION ${qi+1} / ${questions.length}</div><div class="lab-question"><h3>${escapeHTML(q[0])}</h3>${q[1].map((option,i)=>`<button class="lab-answer" data-answer="${i}">${escapeHTML(option)}</button>`).join("")}<div class="lab-feedback" id="labFeedback"></div></div><div class="lab-pager"><span>النتيجة: ${score} / ${questions.length}</span><button class="lab-btn primary" id="labNext" disabled>${qi===questions.length-1?"عرض النتيجة":"السؤال التالي"}</button></div>`;
-    quiz.querySelectorAll("[data-answer]").forEach(btn=>btn.addEventListener("click",()=>{
-      if(answered)return;answered=true;const choice=Number(btn.dataset.answer),correct=choice===q[2];if(correct)score++;
-      quiz.querySelectorAll("[data-answer]").forEach(x=>{x.disabled=true;if(Number(x.dataset.answer)===q[2])x.classList.add("correct");else if(x===btn)x.classList.add("wrong");});
-      quiz.querySelector("#labFeedback").textContent=(correct?"إجابة صحيحة. ":"ليست الإجابة الصحيحة. ")+q[3];
-      quiz.querySelector("#labNext").disabled=false;
-    }));
-    quiz.querySelector("#labNext").addEventListener("click",()=>{
-      if(!answered)return;
-      if(qi===questions.length-1){quiz.innerHTML=`<div class="lab-question"><h3>أنهيت الجولة التاريخية</h3><p class="lab-intro">نتيجتك: ${score} من ${questions.length}. ${score>=10?"ممتاز! معرفة تاريخية قوية.":score>=7?"أداء جيد، واصل الاستكشاف.":"ارجع إلى ملفات الأطلس والأفكار ثم أعد الاختبار."}</p><button class="lab-btn primary" id="labRestart">إعادة الاختبار</button></div>`;quiz.querySelector("#labRestart").addEventListener("click",()=>{qi=0;score=0;drawQuestion();});}
-      else{qi++;drawQuestion();}
-    });
-  }
-  drawQuestion();
-})();
-</script><script src="history-usa.js?v=20261113-1" defer></script>
-<script src="history-people.js?v=20261113-1" defer></script>
-<script src="history-expansion.js?v=20261113-6" defer></script>
-<script src="history-world-expansion.js?v=20261113-1" defer></script>
-<script src="history-executive.js?v=20261113-1" defer></script>
-<script src="history-lab.js?v=20261113-1" defer></script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="history-research.js?v=20261113-2" defer></script><script src="language.js?v=20261113-2" defer></script>
-<script src="history-europeana.js?v=20261113-1" defer></script>\n<script src="share.js?v=20261113-4" defer></script>
-<script src="analytics-config.js?v=20261114-1"></script>
-<script src="analytics.js?v=20261114-1" defer></script>
-</body></html>
+</script>
+</body>
+</html>

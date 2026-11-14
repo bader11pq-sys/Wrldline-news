@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>أطلس الحضارات — موسوعة WRLDLINE التاريخية</title>
+<meta name="description" content="استكشف الدول والحضارات حسب المنطقة والعصر، وابحث في الخط الزمني العالمي.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=Noto+Kufi+Arabic:wght@400;500;600;700;800&family=Amiri:wght@400;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="wrld.css?v=20261114-3">
+<link rel="stylesheet" href="history.css?v=20261114-1">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+</head>
+<body class="hx-page" data-history-page="explore">
+<a class="skip-link" href="#main">تجاوز إلى المحتوى</a>
+<header id="siteHeader"></header>
+<main id="main">
+  <section class="hx-hero" style="padding-block:36px 30px">
+    <div class="hx-wrap">
+      <span class="hx-kicker">ATLAS · EXPLORE</span>
+      <h1 style="font-size:clamp(26px,3.6vw,42px)">أطلس الحضارات والدول</h1>
+      <p>ابحث، صفِّ، وقارن. كل ملف يفتح على فصوله ومصادره وخلافاته، لا على مقال واحد.</p>
+    </div>
+  </section>
+  <div class="hx-wrap">
+    <div class="hx-tabs">
+      <button class="hx-tab is-active" data-explore-tab="atlas">الأطلس</button>
+      <button class="hx-tab" data-explore-tab="timeline">الخط الزمني</button>
+    </div>
+
+    <section id="atlasPanel">
+      <div class="hx-regions" id="regionAtlas"></div>
+      <div class="hx-toolbar">
+        <input id="exploreSearch" type="search" placeholder="ابحث بالاسم أو الوصف…" aria-label="بحث">
+        <select class="hx-select" id="exploreRegion" aria-label="المنطقة">
+          <option value="all">كل المناطق</option>
+          <option value="middle-east">الشرق الأوسط</option>
+          <option value="asia">آسيا</option>
+          <option value="africa">أفريقيا</option>
+          <option value="europe">أوروبا</option>
+          <option value="americas">الأمريكتان</option>
+          <option value="oceania">أوقيانوسيا</option>
+        </select>
+        <select class="hx-select" id="exploreType" aria-label="النوع">
+          <option value="all">كل الأنواع</option>
+          <option value="state">دولة</option>
+          <option value="civilization">حضارة</option>
+          <option value="empire">إمبراطورية</option>
+        </select>
+        <select class="hx-select" id="exploreEra" aria-label="العصر">
+          <option value="all">كل العصور</option>
+          <option value="prehistoric">ما قبل التاريخ</option>
+          <option value="ancient">العالم القديم</option>
+          <option value="late-antique">العصور المتأخرة القديمة</option>
+          <option value="medieval">العصور الوسطى</option>
+          <option value="early-modern">بدايات العصر الحديث</option>
+          <option value="industrial">العصر الصناعي</option>
+          <option value="world-wars">الحروب العالمية</option>
+          <option value="cold-war">الحرب الباردة</option>
+          <option value="contemporary">العالم المعاصر</option>
+        </select>
+        <select class="hx-select" id="exploreSort" aria-label="الترتيب">
+          <option value="rich">الأكثر ثراءً</option>
+          <option value="old">الأقدم أولاً</option>
+          <option value="new">الأحدث أولاً</option>
+          <option value="name">أبجدياً</option>
+        </select>
+        <span class="hx-count" id="exploreCount"></span>
+      </div>
+      <div class="hx-grid" id="exploreGrid"></div>
+      <div style="text-align:center;margin-top:18px"><button class="wl-btn wl-btn--ghost" id="exploreMore" type="button">عرض المزيد</button></div>
+    </section>
+
+    <section id="timelinePanel" hidden>
+      <div class="hx-toolbar">
+        <input id="eventSearch" type="search" placeholder="ابحث في الأحداث…" aria-label="بحث في الأحداث">
+        <select class="hx-select" id="eventRegion" aria-label="منطقة الحدث">
+          <option value="all">كل المناطق</option>
+          <option value="middle-east">الشرق الأوسط</option>
+          <option value="asia">آسيا</option>
+          <option value="africa">أفريقيا</option>
+          <option value="europe">أوروبا</option>
+          <option value="americas">الأمريكتان</option>
+          <option value="oceania">أوقيانوسيا</option>
+          <option value="global">عالمي</option>
+        </select>
+        <span class="hx-count" id="eventCount"></span>
+      </div>
+      <div class="hx-timeline" id="eventTimeline"></div>
+    </section>
+  </div>
+</main>
+<footer id="siteFooter"></footer>
+<script src="site-shell.js"></script>
+<script src="history-data.js"></script>
+<script src="history-entities-a.js"></script>
+<script src="history-entities-b.js"></script>
+<script src="history-entities-c.js"></script>
+<script src="history-events.js"></script>
+<script src="history-learning.js"></script>
+<script src="history-app.js"></script>
+</body>
+</html>
