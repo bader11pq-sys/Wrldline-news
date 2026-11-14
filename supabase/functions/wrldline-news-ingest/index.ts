@@ -61,7 +61,7 @@ function parseGeneral(xml: string,feed: any) {
   const summary=tag(block,["description","summary","content:encoded","content"]);
   const date=tag(block,["pubDate","published","updated","dc:date"]);
   const arabic=/[\u0600-\u06FF]/.test(title);
-  return {url,title:title.slice(0,500),summary:summary.slice(0,5000),image_url:entryImage(block),category:feed.category&&feed.category!=="world"?feed.category:"uncategorized",country:"غير محدد",source_name:feed.name,source_url:feed.url,lang:arabic?"ar":(feed.lang||"en"),verification:"unconfirmed",published_at:parsedDate(date),ai_classification_status:"pending",editorial_status:"published"};
+  return {url,title:title.slice(0,500),summary:summary.slice(0,5000),image_url:entryImage(block),category:["politics","economy","security","tech","sports","culture","health","world"].includes(feed.category)?feed.category:"world",feed_id:feed.id||null,country:"غير محدد",source_name:feed.name,source_url:feed.url,lang:arabic?"ar":(feed.lang||"en"),verification:"unconfirmed",published_at:parsedDate(date),ai_classification_status:"classified",editorial_status:"published"};
  }).filter(Boolean);
 }
 async function dbRequest(path: string,init: RequestInit & {headers?: Record<string,string>} = {}) {
@@ -84,7 +84,7 @@ async function processGeneralFeed(feed: any) {
    const xml=await requestText(candidates[i],7000);
    const rows=parseGeneral(xml,feed);
    if(!rows.length) throw new Error("Feed returned no parseable RSS/Atom entries");
-   const saved=await dbRequest("articles?on_conflict=url",{method:"POST",headers:{"Prefer":"resolution=ignore-duplicates,return=minimal"},body:JSON.stringify(rows)});
+   const mergeCategory=["politics","economy","security","tech","sports","culture","health"].includes(feed.category);\n   const saved=await dbRequest("articles?on_conflict=url",{method:"POST",headers:{"Prefer":(mergeCategory?"resolution=merge-duplicates":"resolution=ignore-duplicates")+",return=minimal"},body:JSON.stringify(rows)});
    if(!saved.ok) throw new Error("Database HTTP "+saved.status+" "+(await saved.text()).slice(0,160));
    return {ok:true,name:feed.name,parsed:rows.length,usedFallback:i>0};
   } catch(e: any) { lastError=String(e?.message||e).slice(0,200); }
@@ -98,7 +98,7 @@ async function setFeedHealth(feed: any,result: any) {
  return r.ok;
 }
 async function runGeneral() {
- const r=await dbRequest("feeds?select=name,url,lang,category,active&active=eq.true&order=name.asc");
+ const r=await dbRequest("feeds?select=id,name,url,lang,category,active&active=eq.true&order=name.asc");
  if(!r.ok) throw new Error("Could not load feeds: "+r.status+" "+(await r.text()).slice(0,160));
  const feeds=await r.json();
  const runId=await beginRun("general");
@@ -198,7 +198,7 @@ function urgentRow(title: string,url: string,summary: string,date: string,feed: 
  if(!normalizedTitle||!/^https?:\/\//i.test(url)||!URGENT.test(normalizedTitle)) return null;
  const dt=new Date(date||Date.now());
  if(Number.isNaN(dt.getTime())||Date.now()-dt.getTime()>2*60*60*1000||dt.getTime()>Date.now()+5*60*1000) return null;
- return {url,title:title.slice(0,500),summary:(summary||"").slice(0,3000),source_name:feed.publisher+" Breaking Desk",source_url:feed.type==="telegram"?"https://t.me/"+feed.handle:feed.url,category:"uncategorized",country:"غير محدد",lang:feed.lang,verification:"unconfirmed",published_at:dt.toISOString(),editorial_status:"published",ai_classification_status:"pending",is_breaking:true};
+ return {url,title:title.slice(0,500),summary:(summary||"").slice(0,3000),source_name:feed.publisher+" Breaking Desk",source_url:feed.type==="telegram"?"https://t.me/"+feed.handle:feed.url,category:"world",country:"غير محدد",lang:feed.lang,verification:"unconfirmed",published_at:dt.toISOString(),editorial_status:"published",ai_classification_status:"classified",is_breaking:true};
 }
 function parseTelegram(html: string,feed: any) {
  const starts=[...html.matchAll(/<div class="tgme_widget_message\b/g)].map(m=>m.index),out=[];
