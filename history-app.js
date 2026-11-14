@@ -72,6 +72,21 @@
   const quizzes = H.quizzes || [];
 
   function dossierHref(e) { return "history-dossier.html?id=" + encodeURIComponent(e.id); }
+  function portraitAvatar(f) {
+    const name = f.name || "؟";
+    return '<div class="hx-person-avatar" data-portrait-name="' + esc(name) + '"><span>' + esc(name.slice(0, 1)) + '</span></div>';
+  }
+  async function hydratePortraits(scope) {
+    if (!window.WLPortraits) return;
+    const nodes = [...scope.querySelectorAll('[data-portrait-name]')].slice(0, 30);
+    await Promise.all(nodes.map(async node => {
+      const name = node.dataset.portraitName;
+      const image = await window.WLPortraits.find(name);
+      if (!image || !node.isConnected) return;
+      node.innerHTML = '<img class="hx-person-photo" src="' + esc(image) + '" alt="صورة ' + esc(name) + '" loading="lazy">';
+      node.classList.add('has-photo');
+    }));
+  }
 
   function dossierCard(e, opts = {}) {
     const r = regionOf(e);
@@ -320,7 +335,7 @@
       '<div class="hx-chapter-body"><p class="hx-chapter-summary">' + esc(c.summary || "") + "</p>" +
       (c.sections || []).map(s => '<div class="hx-section-block"><h4>' + esc(s[0]) + "</h4><p>" + esc(s[1]) + "</p></div>").join("") + "</div></section>").join("");
 
-    const figuresHtml = localFigures.length ? '<div class="hx-people">' + localFigures.map(f => '<div class="hx-person"><div class="hx-person-avatar">' + esc((f.name || "؟").slice(0, 1)) + '</div><div><h4>' + esc(f.name) + '</h4><small>' + esc([f.life, f.role].filter(Boolean).join(" · ")) + "</small><p>" + esc(f.note || "") + "</p></div></div>").join("") + "</div>" : '<div class="hx-empty">لم تُضف شخصيات لهذا الملف بعد.</div>';
+    const figuresHtml = localFigures.length ? '<div class="hx-people">' + localFigures.map(f => '<div class="hx-person">' + portraitAvatar(f) + '<div><h4>' + esc(f.name) + '</h4><small>' + esc([f.life, f.role].filter(Boolean).join(" · ")) + "</small><p>" + esc(f.note || "") + "</p></div></div>").join("") + "</div>" : '<div class="hx-empty">لم تُضف شخصيات لهذا الملف بعد.</div>';
 
     const debatesHtml = localDebates.length ? localDebates.map(d => '<div class="hx-debate"><h3>' + esc(d.question) + '</h3><div class="hx-debate-positions">' + (d.positions || []).map(p => '<div class="hx-position"><b>' + esc(p.view) + "</b><p>" + esc(p.evidence) + "</p></div>").join("") + '</div><div class="hx-debate-note">' + esc(d.note || "خلاف تفسيري؛ لا يوجد إجماع.") + "</div></div>").join("") : '<div class="hx-empty">لا توجد خلافات مسجلة.</div>';
 
@@ -352,6 +367,7 @@
       '<div class="hx-side-card"><h4>اقتباس جاهز</h4><div class="hx-cite" id="citeText">' + esc(citation(e)) + '</div><button class="wl-btn wl-btn--ghost" type="button" id="copyCite" style="width:100%;margin-top:7px;min-height:34px;font-size:10.5px">انسخ الاقتباس</button></div>' +
       '<div class="hx-side-card"><h4>ملفات مرتبطة</h4><div class="hx-related">' + localConnections.slice(0, 4).map(c => { const t = byId[c.id]; return t ? '<a href="' + dossierHref(t) + '"><span>' + esc(t.flag || "🏛️") + "</span>" + esc(t.name) + "</a>" : ""; }).join("") + "</div></div></aside></div>";
 
+    hydratePortraits(host);
     $$("[data-chapter]").forEach(head => {
       const toggle = () => head.parentElement.classList.toggle("is-open");
       head.addEventListener("click", toggle);
@@ -447,7 +463,7 @@
         host.innerHTML = rows.length ? '<div class="hx-library-grid">' + rows.slice(0, 90).map(s => '<div class="hx-lib-card"><h4>' + esc(s.title) + "</h4><small>" + esc([s.author, s.year, s.type].filter(Boolean).join(" · ")) + "</small><p>" + esc(s.note || "") + "</p>" + (s.url ? '<a href="' + esc(s.url) + '" target="_blank" rel="noopener noreferrer" style="font-size:9.5px;color:var(--gold-strong)">المصدر ↗</a>' : "") + "</div>").join("") + "</div>" : '<div class="hx-empty">لا مصادر مطابقة.</div>';
       } else if (tab === "figures") {
         const rows = figures.filter(f => !q || (f.name + " " + (f.note || "")).toLowerCase().includes(q));
-        host.innerHTML = rows.length ? '<div class="hx-people">' + rows.slice(0, 90).map(f => '<div class="hx-person"><div class="hx-person-avatar">' + esc((f.name || "؟").slice(0, 1)) + '</div><div><h4>' + esc(f.name) + "</h4><small>" + esc([f.life, f.role].filter(Boolean).join(" · ")) + "</small><p>" + esc(f.note || "") + "</p></div></div>").join("") + "</div>" : '<div class="hx-empty">لا شخصيات مطابقة.</div>';
+        host.innerHTML = rows.length ? '<div class="hx-people">' + rows.slice(0, 90).map(f => '<div class="hx-person">' + portraitAvatar(f) + '<div><h4>' + esc(f.name) + "</h4><small>" + esc([f.life, f.role].filter(Boolean).join(" · ")) + "</small><p>" + esc(f.note || "") + "</p></div></div>").join("") + "</div>" : '<div class="hx-empty">لا شخصيات مطابقة.</div>';
       } else if (tab === "glossary") {
         const rows = glossary.filter(g => !q || (g.term + " " + (g.definition || "")).toLowerCase().includes(q));
         host.innerHTML = rows.length ? rows.slice(0, 120).map(g => '<div class="hx-glossary-item"><b>' + esc(g.term) + "</b><span>" + esc(g.en || "") + "</span><p>" + esc(g.definition) + "</p></div>").join("") : '<div class="hx-empty">لا مصطلحات مطابقة.</div>';
@@ -457,6 +473,7 @@
       } else {
         drawQuiz();
       }
+      if (tab === "figures") hydratePortraits(host);
     };
     nav?.addEventListener("click", ev => {
       const btn = ev.target.closest("[data-lib-tab]");

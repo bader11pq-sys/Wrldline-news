@@ -251,3 +251,11 @@
   .hx-debate-positions{grid-template-columns:1fr}
   .hx-section-head{flex-direction:column;align-items:flex-start}
 }
+
+/* Historical portraits: real Commons images when available, graceful initials otherwise. */
+.hx-person{position:relative;display:grid;grid-template-columns:64px 1fr;gap:14px;align-items:start}
+.hx-person-avatar{width:64px;height:78px;border-radius:14px;display:grid;place-items:center;overflow:hidden;background:linear-gradient(145deg,#d9b878,#9d7333);color:#fff;font-size:27px;font-weight:800;box-shadow:inset 0 0 0 1px #fff5,0 7px 18px #13223818}
+.hx-person-avatar.has-photo{background:#d9d4ca}
+.hx-person-photo{width:100%;height:100%;display:block;object-fit:cover;filter:saturate(.82) contrast(1.02)}
+.hx-person-avatar.has-photo:after{content:"";position:absolute;inset:auto 0 0;height:24px;background:linear-gradient(transparent,#101b2d55);pointer-events:none}
+@media(max-width:600px){.hx-person{grid-template-columns:52px 1fr;gap:10px}.hx-person-avatar{width:52px;height:66px;border-radius:11px}}

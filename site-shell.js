@@ -37,6 +37,7 @@
     </div>
     <div class="wl-nav-wrap" id="mainNav"><nav class="wl-nav" aria-label="التنقل الرئيسي"><div class="wl-nav-scroll">
       <a class="wl-nav-link" href="index.html">الرئيسية</a>
+      <a class="wl-nav-link wl-nav-link--shorts" href="shorts.html">▶ Shorts</a>
       <a class="wl-nav-link" href="context.html">غرفة السياق</a>
       <a class="wl-nav-link" href="balance.html">ميزان الروايات</a>
       <a class="wl-nav-link" href="impact.html">أطلس التأثير</a>

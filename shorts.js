@@ -9,6 +9,9 @@
   const date=v=>{const d=new Date(v);return Number.isNaN(d.getTime())?"":new Intl.DateTimeFormat(lang==="ar"?"ar-SA":"en-US",{dateStyle:"medium",timeStyle:"short"}).format(d);};
   function setLanguage(){document.documentElement.lang=lang;document.documentElement.dir=lang==="ar"?"rtl":"ltr";langButton.textContent=lang==="ar"?"English":"العربية";}
   function currentStoryId(){return feed.querySelector(".shorts-slide[data-index='"+active+"']")?.dataset.id||"";}
+  const savedKey="wrldline:shorts:saved";
+  function savedSet(){try{return new Set(JSON.parse(localStorage.getItem(savedKey)||"[]"));}catch{return new Set();}}
+  function saveStory(id){const set=savedSet();set.has(id)?set.delete(id):set.add(id);try{localStorage.setItem(savedKey,JSON.stringify([...set]));}catch{}return set.has(id);}
   function updateCounter(){const slides=[...feed.querySelectorAll(".shorts-slide")];if(!slides.length){counter.textContent="— / —";return;}const top=feed.getBoundingClientRect().top;let best=0,dist=Infinity;slides.forEach((s,i)=>{const d=Math.abs(s.getBoundingClientRect().top-top);if(d<dist){dist=d;best=i;}});active=best;counter.textContent=(best+1)+" / "+slides.length;}
   function render(preserveId=""){
     if(!stories.length){feed.innerHTML='<div class="shorts-state"><strong>'+t("لا توجد أخبار منشورة حاليًا","No published stories right now")+'</strong><span>'+t("سيظهر هنا كل خبر منشور في أقسام الموقع.","Every published story from every site section will appear here.")+'</span><button id="shortsRetry">'+t("إعادة المحاولة","Retry")+'</button></div>';document.getElementById("shortsRetry").onclick=loadAll;updateCounter();return;}
@@ -17,10 +20,12 @@
       const story=stories[index],footer=slide.querySelector(".shorts-footer");if(!story||!footer)return;
       const share=document.createElement("button");share.type="button";share.className="shorts-share";share.textContent=t("مشاركة الخبر","Share story");
       share.addEventListener("click",async()=>{
-        if(window.WRLDLINE_SHARE){await window.WRLDLINE_SHARE.share({title:story.title,description:story.summary||"",category:category,source:story.source_name||"WRLDLINE NEWS",image:story.image_url||"",button:share});return;}
+        if(window.WRLDLINE_SHARE){await window.WRLDLINE_SHARE.share({title:story.title,description:story.summary||"",category:story.category||"world",source:story.source_name||"WRLDLINE NEWS",image:story.image_url||"",button:share});return;}
         share.textContent=t("جارٍ تجهيز الصورة…","Preparing image…");
       });
-      footer.append(share);
+      const save=document.createElement("button");save.type="button";save.className="shorts-save";const already=savedSet().has(String(story.id));save.textContent=already?t("محفوظ ✓","Saved ✓"):t("حفظ","Save");save.setAttribute("aria-pressed",String(already));
+      save.addEventListener("click",()=>{const on=saveStory(String(story.id));save.textContent=on?t("محفوظ ✓","Saved ✓"):t("حفظ","Save");save.setAttribute("aria-pressed",String(on));});
+      footer.append(save,share);
     });
     if(preserveId){const target=[...feed.querySelectorAll(".shorts-slide")].find(el=>el.dataset.id===preserveId);if(target)target.scrollIntoView({block:"start"});}
     feed.querySelectorAll(".shorts-video-play").forEach(button=>{
@@ -34,7 +39,7 @@
       video.addEventListener("error",()=>{button.textContent=t("تعذر تحميل الفيديو","Video failed to load");button.hidden=false;});
     });
     updateCounter();appendMoreButton();
-    if("IntersectionObserver" in window){const observer=new IntersectionObserver(entries=>entries.forEach(e=>{if(e.isIntersecting&&e.intersectionRatio>=.6){active=Number(e.target.dataset.index||0);counter.textContent=(active+1)+" / "+stories.length;}}),{root:feed,threshold:[.6]});feed.querySelectorAll(".shorts-slide").forEach(s=>observer.observe(s));}
+    if("IntersectionObserver" in window){const observer=new IntersectionObserver(entries=>entries.forEach(e=>{if(e.isIntersecting&&e.intersectionRatio>=.6){active=Number(e.target.dataset.index||0);feed.querySelectorAll(".shorts-slide").forEach(x=>x.classList.remove("is-active"));e.target.classList.add("is-active");counter.textContent=(active+1)+" / "+stories.length;}}),{root:feed,threshold:[.6]});feed.querySelectorAll(".shorts-slide").forEach(s=>observer.observe(s));}
   }
   async function configure(){if(!apiUrl||!apiKey)throw new Error("Public API configuration not found");}
   async function fetchPage(offset,limit){
@@ -78,11 +83,14 @@
     try{const rows=await fetchPage(0,50);const preserve=currentStoryId();if(mergeRows(rows))render(preserve);}
     catch(error){console.warn("WRLDLINE Shorts refresh:",error);}
   }
+  let lastTap=0;
+  feed.addEventListener("pointerup",e=>{const slide=e.target.closest(".shorts-slide");if(!slide)return;const now=Date.now();if(now-lastTap<320){const btn=slide.querySelector(".shorts-save");if(btn)btn.click();}lastTap=now;},{passive:true});
+  function jumpToHash(){const id=decodeURIComponent(location.hash.slice(1));if(!id)return;const slide=[...feed.querySelectorAll(".shorts-slide")].find(x=>x.dataset.id===id);slide?.scrollIntoView({behavior:"smooth",block:"start"});}
   langButton.addEventListener("click",()=>{const preserve=currentStoryId();lang=lang==="ar"?"en":"ar";localStorage.setItem("wrldline:language",lang);setLanguage();render(preserve);});
   themeButton.addEventListener("click",()=>{const next=document.documentElement.dataset.theme==="dark"?"light":"dark";document.documentElement.dataset.theme=next;localStorage.setItem("wrldline:theme",next);themeButton.textContent=next==="dark"?"☀":"☾";});
   document.addEventListener("keydown",e=>{if(!["ArrowDown","ArrowUp"].includes(e.key))return;const slides=feed.querySelectorAll(".shorts-slide");if(!slides.length)return;e.preventDefault();const next=Math.max(0,Math.min(slides.length-1,active+(e.key==="ArrowDown"?1:-1)));slides[next]?.scrollIntoView({behavior:"smooth",block:"start"});});
   feed.addEventListener("scroll",()=>hint.classList.add("is-hidden"),{passive:true});
   document.addEventListener("visibilitychange",()=>{if(!document.hidden)refreshLatest();});
   setLanguage();const theme=localStorage.getItem("wrldline:theme")||"light";document.documentElement.dataset.theme=theme;themeButton.textContent=theme==="dark"?"☀":"☾";setTimeout(()=>hint.classList.add("is-hidden"),5000);
-  loadAll();setInterval(refreshLatest,60000);
+  loadAll().then(()=>setTimeout(jumpToHash,250));window.addEventListener("hashchange",jumpToHash);setInterval(refreshLatest,60000);
 })();

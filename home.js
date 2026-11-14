@@ -209,6 +209,21 @@
     ).join("");
   }
 
+  function renderShortsPreview(articles) {
+    const host = $("#shortsPreviewRail");
+    if (!host) return;
+    const esc = NR.escapeHTML;
+    const labels = {politics:"سياسة",economy:"اقتصاد",security:"أمن ودفاع",tech:"تقنية",sports:"رياضة",culture:"ثقافة",health:"صحة",world:"حول العالم"};
+    const items = articles.filter(a => !a.isNewsDataOnly && a.title).slice(0, 5);
+    host.innerHTML = items.length ? items.map((a, i) => {
+      const image = NR.safeURL(a.img || a.image_url || "");
+      const href = "shorts.html#" + encodeURIComponent(a.id || "");
+      return '<a class="shorts-preview-card" href="' + href + '">' +
+        (image ? '<img src="' + esc(image) + '" alt="" loading="lazy">' : '<span class="shorts-preview-no-image">W</span>') +
+        '<span class="shorts-preview-shade"></span><span class="shorts-preview-index">' + String(i + 1).padStart(2, "0") + '</span>' +
+        '<span class="shorts-preview-copy"><small>' + esc(labels[a.cat] || a.categoryName || "حول العالم") + '</small><strong>' + esc(a.title) + '</strong><em>افتح الخبر العمودي ↗</em></span></a>';
+    }).join("") : '<div class="shorts-preview-empty">سيظهر موجز Shorts هنا مع أول تحديث للأخبار.</div>';
+  }
   function renderRisk(articles) {
     const score = NR.riskScore(articles);
     const value = $("#riskValue"), label = $("#riskLabel"), needle = $("#riskNeedle");
@@ -227,6 +242,7 @@
     const articles = await NR.fetchArticles(400);
     if (articles.length) {
       renderRooms(articles);
+      renderShortsPreview(articles);
       renderContext(articles);
       renderBalance(articles);
       renderMirror(articles);
@@ -247,6 +263,7 @@
     const articles = e.detail?.articles || [];
     if (articles.length) {
       renderRooms(articles);
+      renderShortsPreview(articles);
       renderRisk(articles);
     }
   });
