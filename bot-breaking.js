@@ -104,7 +104,7 @@ const ADDED_SOURCE_NAMES=["dw عربية","trt عربي","يورونيوز عر�
 if(new Set(ADDED_SOURCE_HOSTS).size!==ADDED_SOURCE_HOSTS.length||new Set(ADDED_SOURCE_NAMES).size!==ADDED_SOURCE_NAMES.length)throw new Error("Duplicate source in added breaking-news batch");
 
 const urgent=/\bBREAKING\b|\bJUST IN\b|\bLIVE\b|عاجل|الآن|قبل قليل|تطور عاجل|نبأ عاجل/i;
-function dec(s=""){return String(s).replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g,"$1").replace(/&amp;/g,"&").replace(/&quot;/g,'"').replace(/&#39;|&#x27;/g,"'").replace(/&lt;/g,"<").replace(/&gt;/g,">").replace(/&#(\d+);/g,(_,n)=>String.fromCodePoint(+n)).replace(/&#x([0-9a-f]+);/gi,(_,n)=>String.fromCodePoint(parseInt(n,16))).replace(/<br\s*\/?\s*>/gi," ").replace(/<[^>]*>/g," ").replace(/\s+/g," ").trim();}
+function dec(s="",preserveLines=false){let value=String(s).replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g,"$1").replace(/&amp;/g,"&").replace(/&quot;/g,'"').replace(/&#39;|&#x27;/g,"'").replace(/&lt;/g,"<").replace(/&gt;/g,">").replace(/&#(\d+);/g,(_,n)=>String.fromCodePoint(+n)).replace(/&#x([0-9a-f]+);/gi,(_,n)=>String.fromCodePoint(parseInt(n,16)));if(preserveLines)value=value.replace(/<br\s*\/?\s*>/gi,"\n").replace(/<\/(?:div|p|li)>/gi,"\n").replace(/<[^>]*>/g," ").replace(/[\t\f\v ]+/g," ").replace(/ *\n */g,"\n").replace(/\n{2,}/g,"\n").trim();else value=value.replace(/<br\s*\/?\s*>/gi," ").replace(/<[^>]*>/g," ").replace(/\s+/g," ").trim();return value;}
 function tag(b,n){const m=b.match(new RegExp("<"+n+"(?:\\s[^>]*)?>([\\s\\S]*?)</"+n+">","i"));return m?dec(m[1]):"";}
 function rssRows(xml,f){
  const blocks=xml.match(/<item\b[\s\S]*?<\/item>/gi)||xml.match(/<entry\b[\s\S]*?<\/entry>/gi)||[];
@@ -127,8 +127,8 @@ function telegramRows(html,f){
   const text=(b.match(/<div class="tgme_widget_message_text[^"]*"[^>]*>([\s\S]*?)<\/div>/i)||[])[1]||"";
   const date=(b.match(/<time[^>]*datetime=["']([^"']+)["']/i)||[])[1];
   const post=(b.match(/href=["'](https?:\/\/t\.me\/[^/"']+\/\d+)["']/i)||[])[1];
-  const clean=dec(text);if(!clean||!date||!post)continue;
-  const title=clean.split(/\n|\s{2,}/)[0].slice(0,500)||clean.slice(0,500);
+  const clean=dec(text,true);if(!clean||!date||!post)continue;
+  const title=(clean.split(/\n+/).map(line=>line.trim()).find(Boolean)||clean).slice(0,500);
   const item=row(title,post,clean,date,f,true);if(item){item.summary=clean.slice(0,3000);out.push(item);}
  }
  return out.slice(0,20);
