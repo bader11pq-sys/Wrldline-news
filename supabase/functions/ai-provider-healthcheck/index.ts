@@ -57,8 +57,15 @@ async function callBazaarlink(key: string) {
  const keyPayload=await keyResponse.json(),keyInfo=keyPayload?.data||keyPayload;
  if(keyInfo?.is_management_key===true)throw new Error("BazaarLink management keys cannot be used for model inference.");
  const model=Deno.env.get("BAZAARLINK_MODEL")||"auto:free";
- const response=await fetch("https://api.bazaarlink.ai/v1/chat/completions",{method:"POST",headers:{"Authorization":"Bearer "+key,"Content-Type":"application/json","X-Free-Fallback":"false"},signal:AbortSignal.timeout(25000),body:JSON.stringify({model,messages:[{role:"system",content:"Return a valid JSON object only."},{role:"user",content:'Return exactly this JSON object: {"status":"ok"}'}],response_format:{type:"json_object"},temperature:0,max_tokens:80})});
- if(!response.ok)throw new Error("BazaarLink inference HTTP "+response.status+": "+(await response.text()).slice(0,250));
+ let response:Response|null=null,lastDetail="";
+ for(let attempt=0;attempt<3;attempt++){
+  response=await fetch("https://api.bazaarlink.ai/v1/chat/completions",{method:"POST",headers:{"Authorization":"Bearer "+key,"Content-Type":"application/json","X-Free-Fallback":"false"},signal:AbortSignal.timeout(25000),body:JSON.stringify({model,messages:[{role:"system",content:"Return a valid JSON object only."},{role:"user",content:'Return exactly this JSON object: {"status":"ok"}'}],response_format:{type:"json_object"},temperature:0,max_tokens:80})});
+  if(response.ok)break;
+  lastDetail=(await response.text()).slice(0,250);
+  if(response.status===429&&/too many concurrent|in.?flight/i.test(lastDetail)&&attempt<2){await new Promise(resolve=>setTimeout(resolve,1500*(attempt+1)));continue;}
+  throw new Error("BazaarLink inference HTTP "+response.status+": "+lastDetail);
+ }
+ if(!response?.ok)throw new Error("BazaarLink inference did not complete: "+lastDetail);
  const payload=await response.json(),raw=payload.choices?.[0]?.message?.content;
  if(typeof raw!=="string"||!raw.trim())throw new Error("BazaarLink returned an empty test response.");
  let parsed:any;try{parsed=JSON.parse(raw)}catch{throw new Error("BazaarLink did not return valid JSON.");}
