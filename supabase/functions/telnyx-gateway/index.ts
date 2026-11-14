@@ -95,8 +95,9 @@ Deno.serve(async (req) => {
       return json({ok:true});
     }
     return json({error:"Unknown action"},400);
-  } catch(e) {
-    console.error("TELNYX_GATEWAY_ERROR",String(e).slice(0,500));
-    return json({error:String(e?.message||e).slice(0,300)},502);
+  } catch(e: unknown) {
+    const message=e instanceof Error ? e.message : String(e);
+    console.error("TELNYX_GATEWAY_ERROR",message.slice(0,500));
+    return json({error:message.slice(0,300)},502);
   }
 });
