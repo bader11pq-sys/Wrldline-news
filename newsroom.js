@@ -7,6 +7,7 @@
 
   const SUPABASE_URL = "https://vmaxbnogmmfyrcucapnq.supabase.co";
   const SUPABASE_ANON_KEY = "sb_publishable_D3c88u75_LcEN460Y3Jcpw__EfqUnBx";
+  const PUBLIC_NEWS_API = "https://api.al-ghaib.us.ci";
   const CACHE_KEY = "wrldline:newsroom-cache:v1";
   const CACHE_TTL = 4 * 60 * 1000;
 
@@ -90,7 +91,7 @@
       if (cached && Date.now() - cached.at < CACHE_TTL && Array.isArray(cached.rows)) return cached.rows;
     } catch {}
     const select = "select=id,title,summary,category,country,source_name,url,source_url,published_at,image_url,ai_risk_level,ai_country_code,is_breaking,content_type,editorial_status";
-    const url = SUPABASE_URL + "/rest/v1/articles?" + select + "&editorial_status=eq.published&order=published_at.desc&limit=" + Math.min(1000, limit);
+    const url = PUBLIC_NEWS_API + "/rest/v1/articles?" + select + "&editorial_status=eq.published&order=published_at.desc&limit=" + Math.min(1000, limit);
     try {
       const token = await window.WRLDLINE_AUTH?.getAccessToken?.();
       const headers = { apikey: SUPABASE_ANON_KEY, ...(token ? { Authorization: "Bearer " + token } : {}) };
