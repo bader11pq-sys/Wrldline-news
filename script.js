@@ -117,7 +117,7 @@ const initialCategory = requestedCategory && Object.hasOwn(CATEGORY_NAMES.ar, re
 const state = { articles:[], missedArticles:[], filtered:[], category:initialCategory, country:"all", lang:localStorage.getItem("wrldline:language")==="en"?"en":"ar", limit:PAGE_SIZE, saved:new Set(readSaved()), query:"", sort:"newest", loading:false, db:null, user:null, preferences:null, follows:{category:[],country:[]}, followOnly:false, realtime:null,  pendingLocalSaved:new Set(readSaved()), breakingTickerIndex:0, breakingTickerCurrentId:null, missedLimit:8, refetchAfterCurrent:false,lastFetchAt:0 };
 
 document.addEventListener("DOMContentLoaded", () => {
-  initPreferences(); bindEvents(); updateClock(); fetchNews(); initPersonalization(); setInterval(()=>{if(!document.hidden&&Date.now()-state.lastFetchAt>=90000)fetchNews();},30000); setInterval(updateBreaking, 15000);
+  initPreferences(); bindEvents(); if (state.category !== "all") selectCategory(state.category); updateClock(); fetchNews(); initPersonalization(); setInterval(()=>{if(!document.hidden&&Date.now()-state.lastFetchAt>=90000)fetchNews();},30000); setInterval(updateBreaking, 15000);
   registerServiceWorker(); setupAppInstall();
 });
 
