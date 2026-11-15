@@ -169,4 +169,82 @@ grant execute on function public.public_home_news_recent_v2(
   integer, timestamptz, timestamptz, integer, boolean, boolean, boolean
 ) to anon, authenticated;
 
+-- Public aggregate only: never expose session IDs or individual reading events.
+-- Require at least three distinct sessions before a story can appear as popular.
+create or replace function public.public_top_read_articles(
+  p_days integer default 7,
+  p_limit integer default 5
+)
+returns table (
+  id uuid,
+  title text,
+  summary text,
+  image_url text,
+  lang text,
+  category text,
+  country text,
+  event_country text,
+  source_language text,
+  source_scope text,
+  language_detection text,
+  source_name text,
+  source_url text,
+  url text,
+  published_at timestamptz,
+  is_breaking boolean,
+  content_type text,
+  ai_summary text,
+  ai_reader_impact text,
+  ai_watch_next text,
+  ai_risk_level text,
+  ai_risk_score integer,
+  view_count bigint
+)
+language sql
+stable
+security definer
+set search_path = pg_catalog
+as $
+  select
+    a.id,
+    left(a.title::text, 1000),
+    left(a.summary::text, 12000),
+    left(a.image_url::text, 4096),
+    a.lang::text,
+    a.category::text,
+    a.country::text,
+    a.event_country::text,
+    a.source_language::text,
+    a.source_scope::text,
+    a.language_detection::text,
+    left(a.source_name::text, 300),
+    left(a.source_url::text, 4096),
+    left(a.url::text, 4096),
+    a.published_at,
+    a.is_breaking,
+    a.content_type::text,
+    left(a.ai_summary::text, 1200),
+    left(a.ai_reader_impact::text, 900),
+    left(a.ai_watch_next::text, 900),
+    a.ai_risk_level::text,
+    a.ai_risk_score,
+    count(*)::bigint
+  from public.audience_events e
+  join public.articles a on a.id = e.article_id
+  where e.event_name = 'view_article'
+    and e.article_id is not null
+    and e.session_id is not null
+    and e.occurred_at >= now() - make_interval(days => greatest(1, least(coalesce(p_days, 7), 30)))
+    and a.editorial_status = 'published'
+    and a.published_at is not null
+    and a.published_at <= now()
+  group by a.id
+  having count(distinct e.session_id) >= 3
+  order by count(*) desc, max(e.occurred_at) desc, a.id asc
+  limit greatest(1, least(coalesce(p_limit, 5), 10));
+$;
+
+revoke all on function public.public_top_read_articles(integer, integer) from public;
+grant execute on function public.public_top_read_articles(integer, integer) to anon, authenticated;
+
 commit;
