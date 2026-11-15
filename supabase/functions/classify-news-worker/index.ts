@@ -29,8 +29,10 @@ Deno.serve(async (req: Request) => {
 
   // Maintenance is deliberately idempotent. The first run expires the legacy
   // backlog; subsequent runs are cheap because the queue indexes cover it.
-  await db.rpc("expire_stale_classification_queue");
-  await db.rpc("release_stale_classification_claims");
+  const expired = await db.rpc("expire_stale_classification_queue");
+  if (expired.error) return json({ error: "Could not expire out-of-window queue rows", detail: expired.error.message }, 500);
+  const released = await db.rpc("release_stale_classification_claims");
+  if (released.error) return json({ error: "Could not release stale claims", detail: released.error.message }, 500);
 
   const claimed = await db.rpc("claim_classification_batch", { p_limit: 10 });
   if (claimed.error) {
@@ -88,7 +90,9 @@ Deno.serve(async (req: Request) => {
 
     const results = Array.isArray(payload.results) ? payload.results : [];
     summary.processed += results.length;
+    const returnedIds = new Set<string>();
     for (const item of results) {
+      if (typeof item.id === "string") returnedIds.add(item.id);
       if (item.status === "classified") summary.classified++;
       else if (item.status === "needs_review") summary.needs_review++;
       else if (item.status === "failed") summary.failed++;
@@ -96,10 +100,20 @@ Deno.serve(async (req: Request) => {
       else if (item.status === "expired_ignored") summary.expired_ignored++;
       else if (item.status === "telegram_ticker_only") summary.telegram_ticker_only++;
     }
-    // A provider-wide quota signal should stop this run, not burn the rest of
-    // the batch. The remaining claims will be retried by the stale-claim sweep.
-    if (payload.rate_limited || response.status === 429 || response.status === 503) {
-      summary.deferred += batch.length - results.length;
+
+    // If the classifier stopped early (for example, all providers were rate
+    // limited), release every claimed ID that did not receive an explicit
+    // result. Do not strand those articles in "processing" for 15 minutes.
+    const unreturnedIds = batch.filter((article: any) => !returnedIds.has(article.id)).map((article: any) => article.id);
+    if (unreturnedIds.length) {
+      const releaseMissing = await db.rpc("release_classification_claims", { p_ids: unreturnedIds });
+      summary.deferred += unreturnedIds.length;
+      if (releaseMissing.error) summary.errors.push("release unreturned claims: " + releaseMissing.error.message.slice(0, 180));
+    }
+
+    // Stop after a partial result or provider-wide quota signal. The next
+    // minute's run will retry only stories still inside the 60-minute window.
+    if (payload.rate_limited || response.status === 429 || response.status === 503 || unreturnedIds.length > 0) {
       break;
     }
   }
