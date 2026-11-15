@@ -119,7 +119,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 async function registerServiceWorker(){
  if(!("serviceWorker" in navigator))return;
- const workerBuild="v57";
+ const workerBuild="v60";
  navigator.serviceWorker.addEventListener("controllerchange",()=>{
   if(sessionStorage.getItem("wrldline:sw-build")!==workerBuild){
    sessionStorage.setItem("wrldline:sw-build",workerBuild);
@@ -127,7 +127,7 @@ async function registerServiceWorker(){
   }
  });
  try{
-  const registration=await navigator.serviceWorker.register("/sw.js?v=v57",{scope:"/"});
+  const registration=await navigator.serviceWorker.register("/sw.js?v=v60",{scope:"/"});
   registration.update().catch(()=>{});
   registration.addEventListener("updatefound",()=>{
    const worker=registration.installing;if(!worker)return;
@@ -211,18 +211,27 @@ async function fetchNews(manual=false){
  try{
   const token=await window.WRLDLINE_AUTH?.getAccessToken?.();
   const headers={apikey:SUPABASE_ANON_KEY,...(token?{Authorization:"Bearer "+token}:{})};
-  const select="select=id,title,summary,category,country,event_country,source_scope,source_language,language_detection,source_name,url,source_url,published_at,received_at,lang,media_type,image_url,is_breaking,content_type,sponsor_name,sponsor_url,correction_note,corrected_at,editorial_status,verification,verification_source_count,verification_independent_count,verification_field_count,verification_official_count,verification_conflict_count,verification_correction_count,verification_retraction_count,verification_updated_at,verification_note,ai_country_code,ai_summary,ai_risk_level,ai_risk_score,ai_confidence,is_exclusive,exclusive_type,exclusive_reason,exclusive_confidence,newsdata_article_id,newsdata_categories,newsdata_ai_tags,newsdata_sentiment,newsdata_ai_summary,newsdata_fetched_at,newsdata_only,article_translations(lang,title,summary,ai_summary,translation_status,translation_source)";
-  const base=WRLDLINE_PUBLIC_NEWS_API+"/rest/v1/articles?"+select+"&editorial_status=eq.published";
+  const rpcURL=WRLDLINE_PUBLIC_NEWS_API+"/rest/v1/rpc/public_home_news_recent";
+  const now=new Date().toISOString();
   const since24h=new Date(Date.now()-24*60*60*1000).toISOString();
-  const getRows=async(url,required=false)=>{
-   try{const response=await fetch(url,{headers,signal:AbortSignal.timeout(12000)});if(!response.ok)throw new Error("HTTP "+response.status);const data=await response.json();if(!Array.isArray(data))throw new Error("Invalid response");return data;}
-   catch(error){if(required)throw error;console.warn("WRLDLINE supplemental section fetch:",url.split("?")[1],error);return [];}
+  const getRows=async(params,required=false)=>{
+   try{
+    const response=await fetch(rpcURL,{method:"POST",headers:{...headers,"Content-Type":"application/json","Accept":"application/json"},body:JSON.stringify(params),signal:AbortSignal.timeout(12000)});
+    if(!response.ok)throw new Error("HTTP "+response.status);
+    const data=await response.json();
+    if(!Array.isArray(data))throw new Error("Invalid response");
+    return data;
+   }catch(error){
+    if(required)throw error;
+    console.warn("WRLDLINE supplemental section RPC:",error);
+    return [];
+   }
   };
   const [mainRows,missedRows,breakingRows,exclusiveRows]=await Promise.all([
-   getRows(base+"&newsdata_only=eq.false&order=published_at.desc&limit=1000",true),
-   getRows(base+"&newsdata_only=eq.true&order=published_at.desc&limit=100"),
-   getRows(base+"&is_breaking=eq.true&published_at=gte."+encodeURIComponent(since24h)+"&order=published_at.desc&limit=200"),
-   getRows(base+"&is_exclusive=eq.true&order=published_at.desc&limit=100")
+   getRows({p_limit:1000,p_before:now,p_since:null,p_offset:0,p_newsdata_only:false},true),
+   getRows({p_limit:100,p_before:now,p_since:null,p_offset:0,p_newsdata_only:true}),
+   getRows({p_limit:200,p_before:now,p_since:since24h,p_offset:0,p_is_breaking:true}),
+   getRows({p_limit:100,p_before:now,p_since:null,p_offset:0,p_is_exclusive:true})
   ]);
   const unique=new Map();[...mainRows,...missedRows,...breakingRows,...exclusiveRows].forEach(row=>{if(row?.id)unique.set(String(row.id),row);});
   const rows=[...unique.values()];

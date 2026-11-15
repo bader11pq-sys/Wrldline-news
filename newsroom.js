@@ -90,12 +90,16 @@
       const cached = JSON.parse(sessionStorage.getItem(cacheKey) || "null");
       if (cached && Date.now() - cached.at < CACHE_TTL && Array.isArray(cached.rows)) return cached.rows;
     } catch {}
-    const select = "select=id,title,summary,category,country,source_name,url,source_url,published_at,image_url,ai_risk_level,ai_country_code,is_breaking,content_type,editorial_status";
-    const url = PUBLIC_NEWS_API + "/rest/v1/articles?" + select + "&editorial_status=eq.published&order=published_at.desc&limit=" + Math.min(1000, limit);
+    const url = PUBLIC_NEWS_API + "/rest/v1/rpc/public_home_news_recent";
     try {
       const token = await window.WRLDLINE_AUTH?.getAccessToken?.();
-      const headers = { apikey: SUPABASE_ANON_KEY, ...(token ? { Authorization: "Bearer " + token } : {}) };
-      const res = await fetch(url, { headers, signal: AbortSignal.timeout(12000) });
+      const headers = { apikey: SUPABASE_ANON_KEY, ...(token ? { Authorization: "Bearer " + token } : {}), "Content-Type": "application/json", "Accept": "application/json" };
+      const res = await fetch(url, {
+        method: "POST",
+        headers,
+        body: JSON.stringify({ p_limit: Math.min(1000, limit), p_before: new Date().toISOString(), p_since: null, p_offset: 0 }),
+        signal: AbortSignal.timeout(12000)
+      });
       if (!res.ok) throw new Error("HTTP " + res.status);
       const rows = await res.json();
       const clean = (Array.isArray(rows) ? rows : []).filter(a => a && a.title && a.title.length > 12);
