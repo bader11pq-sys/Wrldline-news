@@ -20,6 +20,6 @@ test("public pages disclose that model context is not human verification or advi
   assert.match(worker, /public_news_article_intelligence/);
   assert.match(worker, /ai_reader_impact/);
   assert.match(worker, /ai_watch_next/);
-  assert.match(worker, /ليست تحققاً بشرياً أو تنبؤاً أو نصيحة مالية شخصية/);
+  assert.ok(worker.includes("لا يُعد تحققاً بشرياً أو تنبؤاً أو نصيحة مالية شخصية"));
   assert.match(worker, /rows\[0\]\.id === id/);
 });
