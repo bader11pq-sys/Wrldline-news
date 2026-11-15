@@ -47,9 +47,9 @@ test('initial HTML contains published summary, reader impact context, canonical 
   assert.ok(html.includes(a.ai_summary));
   assert.ok(html.includes(a.ai_reader_impact));
   assert.ok(html.includes(a.ai_watch_next));
-  assert.match(html, /وش يعني لك\\؟/);
-  assert.match(html, /ما الذي نراقبه تالياً\\؟/);
-  assert.match(html, /ليست تحققاً بشرياً أو تنبؤاً/);
+  assert.ok(html.includes("وش يعني لك؟"));
+  assert.ok(html.includes("ما الذي نراقبه تالياً؟"));
+  assert.ok(html.includes("لا يُعد تحققاً بشرياً أو تنبؤاً أو نصيحة مالية شخصية"));
   assert.match(html, new RegExp('<link rel="canonical" href="' + ORIGIN + '/news/' + a.id + '">'));
   assert.ok(html.includes('href="' + a.source_url + '"'));
   assert.ok(html.includes('id="articleTrust" data-article-id="' + a.id + '"'));
@@ -78,7 +78,7 @@ test('missing or unavailable reader-context RPC never blocks the attributed publ
   assert.equal(response.status, 200);
   assert.ok(html.includes(a.summary));
   assert.ok(html.includes(a.source_url));
-  assert.doesNotMatch(html, /وش يعني لك\\؟/);
+  assert.ok(!html.includes("وش يعني لك؟"));
 });
 
 test('unknown/malformed UUID and unpublished, future, undated or missing records are true noindex 404s', async () => {
