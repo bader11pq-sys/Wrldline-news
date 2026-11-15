@@ -28,3 +28,18 @@ test("public feed migration does not grant anonymous table access", () => {
   assert.match(migration, /grant execute on function[\s\S]*?to anon, authenticated/i);
   assert.doesNotMatch(migration, /grant\s+select\s+on\s+public\.articles\s+to\s+anon/i);
 });
+
+test("homepage consumes the backward-compatible v2 feed and exposes bounded reader-context fields", () => {
+  const homepage = read("script.js");
+  const newsroom = read("newsroom.js");
+  const migration = read("supabase/migrations/20261115100000_reader_impact_intelligence.sql");
+  assert.match(homepage, /rpc\\/public_home_news_recent_v2/);
+  assert.match(newsroom, /rpc\\/public_home_news_recent_v2/);
+  assert.match(homepage, /ai_reader_impact/);
+  assert.match(homepage, /ai_watch_next/);
+  assert.match(migration, /create or replace function public\\.public_home_news_recent_v2/);
+  assert.match(migration, /security definer\\s+set search_path = pg_catalog/i);
+  assert.match(migration, /grant execute on function public\\.public_home_news_recent_v2[\\s\\S]*?to anon, authenticated/i);
+  assert.match(migration, /public_news_article_intelligence/);
+  assert.doesNotMatch(migration, /grant\\s+select\\s+on\\s+public\\.articles\\s+to\\s+anon/i);
+});
