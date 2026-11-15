@@ -21,17 +21,17 @@ Set these in Cloudflare Dashboard → Workers & Pages → `wrldline-jobs` → Se
 
 The publishable API key is already configured as a non-secret Worker binding because it is a public client key. Never use a Supabase service-role or secret key in this Worker. Do not put the cron secret in this repository or in frontend code.
 
-## Activation order
+## Production cutover status — verified 15 November 2026
 
-1. Add the two secrets above.
-2. Enable these Cron Triggers on the Worker:
-   - `* * * * *`
-   - `*/2 * * * *`
-   - `*/3 * * * *`
-   - `*/5 * * * *`
-3. Confirm queue messages are consumed and Supabase functions return successful responses.
-4. Only after successful verification, unschedule Supabase Cron jobs `wrldline-general-ingestion`, `wrldline-breaking-ingestion`, and `wrldline-ai-classification-worker` (job IDs 1, 2, and 8 at the time of rollout). Do not remove other Cron jobs.
-5. Translation currently has no active row in `cron.job`; the 5-minute Cloudflare trigger activates the existing `translation` mode after verification.
+The Cloudflare cutover is already active in production; do not repeat it or enable duplicate Supabase schedules.
+
+- `wrldline-jobs` has four active Cron Triggers: `* * * * *` (classification), `*/2 * * * *` (breaking), `*/3 * * * *` (general ingestion), and `*/5 * * * *` (translation draft generation).
+- All four queues have a single serialized consumer using `wrldline-jobs`; the dead-letter queue is configured. Queue metrics were checked and showed no sustained backlog; short-lived one-message backlogs can appear between scheduled triggers and consumers.
+- The `WRLDLINE_CRON_SECRET` secret binding and `SUPABASE_PUBLISHABLE_KEY` binding are present on the Worker. The secret value must never be put in this repository or exposed to a browser.
+- Cloudflare-to-Supabase requests were observed successfully for `wrldline-news-ingest` and `classify-news-worker` (HTTP 200). Ingestion summaries reported successful general/breaking runs, and the translation mode generated review drafts.
+- The duplicate Supabase Cron classifier job was removed after Cloudflare classification calls were confirmed. The remaining Supabase Cron jobs are support tasks only: audience retention, daily global briefing, NewsData sync, notification dispatch, security counter retention, and source freshness. Do not remove these without a separate review.
+
+To audit the live schedule, inspect the Worker Cron Triggers and each queue consumer, then compare with `cron.job`. Never run the same ingestion/classification/translation schedule in both Cloudflare and Supabase Cron at the same time.
 
 ## Safety
 
