@@ -25,6 +25,6 @@ test("homepage and newsroom use the restricted public feed RPC", () => {
 test("public feed migration does not grant anonymous table access", () => {
   const migration = read("supabase/migrations/20261115070000_public_home_news_rpc.sql");
   assert.match(migration, /security definer\s+set search_path = pg_catalog/i);
-  assert.match(migration, /grant execute on function[\\s\\S]*?to anon, authenticated/i);
+  assert.match(migration, /grant execute on function[\s\S]*?to anon, authenticated/i);
   assert.doesNotMatch(migration, /grant\s+select\s+on\s+public\.articles\s+to\s+anon/i);
 });
