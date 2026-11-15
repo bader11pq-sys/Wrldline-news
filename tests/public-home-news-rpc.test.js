@@ -33,8 +33,8 @@ test("homepage consumes the backward-compatible v2 feed and exposes bounded read
   const homepage = read("script.js");
   const newsroom = read("newsroom.js");
   const migration = read("supabase/migrations/20261115100000_reader_impact_intelligence.sql");
-  assert.match(homepage, /rpc\\/public_home_news_recent_v2/);
-  assert.match(newsroom, /rpc\\/public_home_news_recent_v2/);
+  assert.ok(homepage.includes("/rest/v1/rpc/public_home_news_recent_v2"));
+  assert.ok(newsroom.includes("/rest/v1/rpc/public_home_news_recent_v2"));
   assert.match(homepage, /ai_reader_impact/);
   assert.match(homepage, /ai_watch_next/);
   assert.match(migration, /create or replace function public\\.public_home_news_recent_v2/);
