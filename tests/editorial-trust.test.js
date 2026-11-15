@@ -124,11 +124,17 @@ test("all current browser article and embedded translation projections fit safe 
   for(const column of projection.split(",").map(x=>x.trim()).filter(Boolean))assert.ok(articles.has(column),label+" article "+column);
  };
  const main=read("script.js");
- check(main.match(/const select="select=([^"]+)"/)[1],"script.js main");
- const saved=main.match(/\.select\("article_id, article:articles\(([^"]+)\)"\)/)[1];
- check(saved,"script.js saved-library embed");
- check(read("newsroom.js").match(/const select\s*=\s*"select=([^"]+)"/)[1],"newsroom.js");
- check(read("intelligence-sources.js").match(/const select="([^"]+)"/)[1],"intelligence-sources.js");
+  assert.match(main,/\/rest\/v1\/rpc\/public_home_news_recent/,"script.js must use the public homepage RPC");
+  assert.match(read("newsroom.js"),/\/rest\/v1\/rpc\/public_home_news_recent/,"newsroom.js must use the public homepage RPC");
+  const publicRpc=read("supabase/migrations/20261115070000_public_home_news_rpc.sql");
+  const projection=publicRpc.match(/returns table\s*\(([\s\S]*?)\)\s*language sql/i)?.[1];
+  assert.ok(projection,"public homepage RPC has an explicit return projection");
+  for(const privateColumn of ["received_at","ai_confidence","verification_source_count","verification_note","exclusive_reason","exclusive_confidence","trust_review_note","trust_reviewed_by","human_translation_note","human_translation_reviewed_by"]) {
+    assert.doesNotMatch(projection,new RegExp("\\b"+privateColumn+"\\b"),"public RPC must not expose "+privateColumn);
+  }
+  const saved=main.match(/\.select\("article_id, article:articles\(([^"]+)\)"\)/)[1];
+  check(saved,"script.js saved-library embed");
+  check(read("intelligence-sources.js").match(/const select="([^"]+)"/)[1],"intelligence-sources.js");
  for(const file of ["map.js","shorts.js"])check(read(file).match(/articles\?select=([^"&]+)/)[1],file);
  const admin=read("admin.js");
  check(admin.match(/const core="([^"]+)"/)[1],"admin.js core");
