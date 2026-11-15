@@ -22,6 +22,7 @@ A focused Arabic newsroom for political and economic developments in the Arab re
 | `/news/` | Crawlable public news archive |
 | `/news/{uuid}` | Standalone article page: summary, original source, verification context and reader impact |
 | `/topics.html` | Topic directory with shareable politics/economy/category filters |
+| `/tags.html` | Public tag directory mapped to existing article categories; no invented tag counts |
 | `/context.html` | Background and key actors for important files |
 | `/balance.html` | Compare how different sources report the same event |
 | `/impact.html` | Trace potential economic and social consequences |
