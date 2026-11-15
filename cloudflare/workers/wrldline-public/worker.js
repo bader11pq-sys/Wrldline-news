@@ -214,7 +214,7 @@ function atom(articles, now) {
 }
 
 /** @param {{fetchImpl?: typeof fetch, now?: () => Date}} [options] */
-export function createWorker({ fetchImpl = globalThis.fetch, now = () => new Date() } = {}) {
+export function createWorker({ fetchImpl = globalThis.fetch.bind(globalThis), now = () => new Date() } = {}) {
   return {
   /** @param {Request} request @param {WorkerEnv} env */
   async fetch(request, env) {
@@ -235,10 +235,13 @@ export function createWorker({ fetchImpl = globalThis.fetch, now = () => new Dat
       if (remaining <= 0) throw new Error("Backend deadline exceeded");
       const response = await fetchImpl(`${baseURL.origin}/rest/v1/rpc/${name}`, {
         method: "POST", headers: { apikey: env.SUPABASE_ANON_KEY, "Content-Type": "application/json", Accept: "application/json" },
-        body: JSON.stringify(args), signal: AbortSignal.timeout(Math.min(remaining, 8000)), redirect: "error"
+        body: JSON.stringify(args), signal: AbortSignal.timeout(Math.min(remaining, 8000)), redirect: "manual"
       });
       // Never forward caller cookies or Authorization; publishable sb_* keys use apikey only.
-      if (!response.ok) throw new Error("Public backend failed");
+      if (!response.ok) {
+        console.warn(JSON.stringify({ event: "public_rpc_failure", rpc: name, status: response.status }));
+        throw new Error("Public backend failed");
+      }
       if (Number(response.headers.get("content-length") || 0) > 20000000) throw new Error("Projection too large");
       const raw = await response.text();
       if (raw.length > 20000000) throw new Error("Projection too large");
@@ -310,7 +313,10 @@ export function createWorker({ fetchImpl = globalThis.fetch, now = () => new Dat
       const rows = projection.map(row => sitemapRow(row, clock));
       for (let i = 0; i < rows.length; i++) if ((i && rows[i].id <= rows[i - 1].id) || (boundary.after_id && rows[i].id <= boundary.after_id.toLowerCase())) throw new Error("Unordered sitemap projection");
       return finish(xmlResponse(`<urlset ${SITEMAP_NS}>${rows.map(row => `<url><loc>${articleURL(row.id)}</loc><lastmod>${modified(row, clock)}</lastmod></url>`).join("")}</urlset>`));
-    } catch {
+    } catch (error) {
+      const safeReasons = ["Public backend unconfigured", "Invalid backend origin", "Backend deadline exceeded", "Public backend failed", "Projection too large", "Invalid trust projection", "Invalid bounded projection", "Invalid public projection", "Invalid sitemap index", "Invalid sitemap boundary", "Unordered sitemap projection"];
+      const reason = error instanceof Error && safeReasons.includes(error.message) ? error.message : error instanceof Error ? error.name : "Unknown";
+      console.warn(JSON.stringify({ event: "public_route_failure", reason }));
       // Backend details, keys and error payloads never enter public HTML or logs.
       return finish(errorPage(503));
     }

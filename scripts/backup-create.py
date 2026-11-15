@@ -9,10 +9,12 @@ import tempfile
 from datetime import datetime, timezone
 from pathlib import Path
 from urllib.parse import parse_qs, urlparse
-from backup_common import IMAGE, SCHEMAS, fingerprints, forbid_repository_output, metadata_sql, run
+from backup_common import IMAGE, SCHEMAS, fingerprints, forbid_repository_output, metadata_sql, public_schema_acl, run, validate_manifest
 
 
 def create_backup(output, recipient, label="production_read_only_backup"):
+    if label != "production_read_only_backup":
+        raise ValueError("Read-only export must retain its production backup label")
     import psycopg
     from psycopg import sql
     url = os.environ.get("DATABASE_URL", "")
@@ -43,7 +45,9 @@ def create_backup(output, recipient, label="production_read_only_backup"):
                         "schemas": list(SCHEMAS), "row_counts": counts,
                         "structure_hashes": fingerprints(metadata["structure"]),
                         "roles": metadata["roles"], "extensions": metadata["extensions"],
+                        "public_schema_acl": public_schema_acl(metadata),
                         "limitations": ["Application-schema logical backup, not provider/PITR backup", "Storage rows do not include bucket object bytes", "External extensions/services/secrets require separate recovery"]}
+            validate_manifest(manifest)
             (tmp / "manifest.json").write_text(json.dumps(manifest, sort_keys=True))
             env = {**os.environ, "PGDATABASE": url}
             command = ["docker", "run", "--rm", "--network", "host", "--env", "PGDATABASE", IMAGE,

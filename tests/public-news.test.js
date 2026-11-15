@@ -241,3 +241,14 @@ test('optional trust RPC supports human-stamped confirmation only; stale review,
   const r = await get(await workerFor(f), '/news/' + a.id, {}, { ...ENV, PUBLIC_TRUST_ENABLED: 'true' }), html = await r.text();
   assert.equal(r.status, 200); assert.ok(html.includes(a.summary)); assert.match(html, /Human confirmation not established/); assert.ok(!html.includes('not applied yet'));
 });
+
+
+test('public RPC uses Worker-compatible manual redirects and never follows a 3xx to another origin', async () => {
+  const f = fixture([article()], { public_news_article: () => new Response(null, { status: 302, headers: { Location: 'https://other.example/private' } }) });
+  const response = await get(await workerFor(f), '/news/' + id(1));
+  assert.equal(response.status, 503);
+  assert.equal(f.calls.length, 1);
+  assert.equal(f.calls[0].options.redirect, 'manual');
+  assert.equal(new URL(f.calls[0].url).origin, ENV.SUPABASE_URL);
+  assert.ok(!(await response.text()).includes('other.example'));
+});
