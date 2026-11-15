@@ -1,6 +1,7 @@
 /* WRLDLINE NEWS — editorial frontend */
 const SUPABASE_URL = "https://vmaxbnogmmfyrcucapnq.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_D3c88u75_LcEN460Y3Jcpw__EfqUnBx";
+const WRLDLINE_PUBLIC_NEWS_API = "https://api.al-ghaib.us.ci";
 const PAGE_SIZE = 24;
 const WRLDLINE_TAXONOMY = window.WRLDLINE_TAXONOMY || null;
 const CATEGORY_NAMES = WRLDLINE_TAXONOMY?.CATEGORY_NAMES || { ar:{politics:"سياسة",economy:"اقتصاد",security:"أمن ودفاع",tech:"تكنولوجيا",sports:"رياضة",culture:"ثقافة",health:"صحة",science:"علوم",environment:"بيئة",society:"مجتمع",world:"حول العالم",uncategorized:"غير مصنف"}, en:{politics:"Politics",economy:"Economy",security:"Security & Defence",tech:"Technology",sports:"Sports",culture:"Culture",health:"Health",science:"Science",environment:"Environment",society:"Society",world:"Around the world",uncategorized:"Uncategorized"} };
@@ -211,7 +212,7 @@ async function fetchNews(manual=false){
   const token=await window.WRLDLINE_AUTH?.getAccessToken?.();
   const headers={apikey:SUPABASE_ANON_KEY,...(token?{Authorization:"Bearer "+token}:{})};
   const select="select=id,title,summary,category,country,event_country,source_scope,source_language,language_detection,source_name,url,source_url,published_at,received_at,lang,media_type,image_url,is_breaking,content_type,sponsor_name,sponsor_url,correction_note,corrected_at,editorial_status,verification,verification_source_count,verification_independent_count,verification_field_count,verification_official_count,verification_conflict_count,verification_correction_count,verification_retraction_count,verification_updated_at,verification_note,ai_country_code,ai_summary,ai_risk_level,ai_risk_score,ai_confidence,is_exclusive,exclusive_type,exclusive_reason,exclusive_confidence,newsdata_article_id,newsdata_categories,newsdata_ai_tags,newsdata_sentiment,newsdata_ai_summary,newsdata_fetched_at,newsdata_only,article_translations(lang,title,summary,ai_summary,translation_status,translation_source)";
-  const base=SUPABASE_URL+"/rest/v1/articles?"+select+"&editorial_status=eq.published";
+  const base=WRLDLINE_PUBLIC_NEWS_API+"/rest/v1/articles?"+select+"&editorial_status=eq.published";
   const since24h=new Date(Date.now()-24*60*60*1000).toISOString();
   const getRows=async(url,required=false)=>{
    try{const response=await fetch(url,{headers,signal:AbortSignal.timeout(12000)});if(!response.ok)throw new Error("HTTP "+response.status);const data=await response.json();if(!Array.isArray(data))throw new Error("Invalid response");return data;}
