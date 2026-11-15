@@ -1,7 +1,9 @@
 /* WRLDLINE NEWS — editorial frontend */
 const SUPABASE_URL = "https://vmaxbnogmmfyrcucapnq.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_D3c88u75_LcEN460Y3Jcpw__EfqUnBx";
-const WRLDLINE_PUBLIC_NEWS_API = "https://api.al-ghaib.us.ci";
+// The custom API proxy currently rejects the POST used by the public RPC.
+// Use Supabase directly so the homepage remains available while that proxy is repaired.
+const WRLDLINE_PUBLIC_NEWS_API = SUPABASE_URL;
 const PAGE_SIZE = 24;
 const WRLDLINE_TAXONOMY = window.WRLDLINE_TAXONOMY || null;
 const CATEGORY_NAMES = WRLDLINE_TAXONOMY?.CATEGORY_NAMES || { ar:{politics:"سياسة",economy:"اقتصاد",security:"أمن ودفاع",tech:"تكنولوجيا",sports:"رياضة",culture:"ثقافة",health:"صحة",science:"علوم",environment:"بيئة",society:"مجتمع",world:"حول العالم",uncategorized:"غير مصنف"}, en:{politics:"Politics",economy:"Economy",security:"Security & Defence",tech:"Technology",sports:"Sports",culture:"Culture",health:"Health",science:"Science",environment:"Environment",society:"Society",world:"Around the world",uncategorized:"Uncategorized"} };

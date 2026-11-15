@@ -7,7 +7,9 @@
 
   const SUPABASE_URL = "https://vmaxbnogmmfyrcucapnq.supabase.co";
   const SUPABASE_ANON_KEY = "sb_publishable_D3c88u75_LcEN460Y3Jcpw__EfqUnBx";
-  const PUBLIC_NEWS_API = "https://api.al-ghaib.us.ci";
+  // The custom API proxy currently rejects the POST used by the public RPC.
+  // Use Supabase directly so newsroom widgets keep loading while it is repaired.
+  const PUBLIC_NEWS_API = SUPABASE_URL;
   const CACHE_KEY = "wrldline:newsroom-cache:v1";
   const CACHE_TTL = 4 * 60 * 1000;
 
