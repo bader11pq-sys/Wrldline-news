@@ -89,10 +89,10 @@ async function firecrawlArticleText(article: any, apiKey: string | null, db: any
  }
 }
 
-function isWithinAiWindow(article:any,allowBacklog=false) {
+function isWithinAiWindow(article:any) {
  const ts=Date.parse(article.published_at||"");
  const age=Date.now()-ts;
- const maxAge=allowBacklog?48*60*60*1000:60*60*1000;
+ const maxAge=60*60*1000;
  return Number.isFinite(ts)&&age>=-300000&&age<=maxAge;
 }
 function isTelegram(a: any) {
@@ -346,7 +346,6 @@ Deno.serve(async (req: Request) => {
 
   let body: any;
   try { body = await req.json(); } catch { return json({ error: "Invalid JSON body." }, 400); }
-  const allowBacklog = body.allow_backlog === true;
   const ids = Array.isArray(body.article_ids) ? [...new Set(body.article_ids.filter((id: unknown) => typeof id === "string"))].slice(0, 10) : [];
   if (!ids.length) return json({ error: "Send 1 to 10 article_ids." }, 400);
 
@@ -361,7 +360,7 @@ Deno.serve(async (req: Request) => {
   const providerCooldowns = new Set<string>((cooldownRows||[]).filter((row:any)=>Date.parse(row.disabled_until)>Date.now()).map((row:any)=>row.provider));
   const results: any[] = [];
   for (const article of articles || []) {
-    if (!isWithinAiWindow(article,allowBacklog)) {
+    if (!isWithinAiWindow(article)) {
       await db.from("articles").update({ ai_classification_status: "expired", classification_claimed_at: null, classification_last_error: "expired: outside the allowed AI window" }).eq("id", article.id);
       results.push({ id: article.id, status: "expired_ignored" }); continue;
     }
