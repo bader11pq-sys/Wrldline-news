@@ -285,7 +285,7 @@ export function createWorker({ fetchImpl = globalThis.fetch.bind(globalThis), no
         let intelligence = null;
         try {
           const rows = await rpc("public_news_article_intelligence", { p_id: id }, 1);
-          intelligence = rows[0] || null;
+          intelligence = rows[0] && rows[0].id === id ? rows[0] : null;
         } catch { /* New reader context is optional until its migration is deployed. */ }
         return finish(renderArticle(intelligence ? { ...article, ...intelligence } : article, clock, trust));
       }
