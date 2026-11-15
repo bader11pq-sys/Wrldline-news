@@ -204,7 +204,7 @@ language sql
 stable
 security definer
 set search_path = pg_catalog
-as $
+as $$
   select
     a.id,
     left(a.title::text, 1000),
@@ -242,7 +242,7 @@ as $
   having count(distinct e.session_id) >= 3
   order by count(*) desc, max(e.occurred_at) desc, a.id asc
   limit greatest(1, least(coalesce(p_limit, 5), 10));
-$;
+$$;
 
 revoke all on function public.public_top_read_articles(integer, integer) from public;
 grant execute on function public.public_top_read_articles(integer, integer) to anon, authenticated;
