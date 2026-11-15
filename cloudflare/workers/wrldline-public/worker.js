@@ -46,7 +46,7 @@ function language(value) {
 /** @param {string} lang */
 function labels(lang) {
   const en = !/^(ar|fa|he|ur)(-|$)/.test(lang);
-  return { en, home: en ? "Newsroom" : "غرفة الأخبار", news: en ? "Published news" : "الأخبار المنشورة", source: en ? "Original source" : "المصدر الأصلي", published: en ? "Published" : "تاريخ النشر", author: en ? "By" : "الكاتب", correction: en ? "Published correction" : "تصحيح منشور", share: en ? "Share story" : "مشاركة الخبر", copy: en ? "Copy article link" : "نسخ رابط الخبر", original: en ? "Read at the original source" : "قراءة الخبر لدى المصدر الأصلي", missing: en ? "Original source link unavailable; no substitute link is invented." : "رابط المصدر الأصلي غير متوفر؛ لا نستبدله برابط وهمي.", disclosure: en ? "This page publishes a summary, not the full source story. Full reporting and subsequent updates remain with the attributed source." : "تنشر هذه الصفحة ملخصاً، لا النص الكامل للخبر لدى المصدر. التغطية الكاملة وتحديثاتها متاحة لدى المصدر المنسوب إليه الخبر." };
+  return { en, home: en ? "Newsroom" : "غرفة الأخبار", news: en ? "Published news" : "الأخبار المنشورة", source: en ? "Original source" : "المصدر الأصلي", published: en ? "Published" : "تاريخ النشر", author: en ? "By" : "الكاتب", correction: en ? "Published correction" : "تصحيح منشور", share: en ? "Share story" : "مشاركة الخبر", copy: en ? "Copy article link" : "نسخ رابط الخبر", original: en ? "Read at the original source" : "قراءة الخبر لدى المصدر الأصلي", missing: en ? "Original source link unavailable; no substitute link is invented." : "رابط المصدر الأصلي غير متوفر؛ لا نستبدله برابط وهمي.", reading: en ? "WRLDLINE Arabic reader note" : "قراءة WRLDLINE للقارئ العربي", impact: en ? "Why it may matter" : "وش يعني لك؟", watch: en ? "What to watch next" : "ما الذي نراقبه تالياً؟", aiNotice: en ? "AI-assisted context based on the available article text. It is not human verification, a prediction, or personal financial advice." : "سياق مساعد بالذكاء الاصطناعي مستند إلى نص الخبر المتاح؛ لا يُعد تحققاً بشرياً أو تنبؤاً أو نصيحة مالية شخصية.", disclosure: en ? "This page publishes a summary, not the full source story. Full reporting and subsequent updates remain with the attributed source." : "تنشر هذه الصفحة ملخصاً، لا النص الكامل للخبر لدى المصدر. التغطية الكاملة وتحديثاتها متاحة لدى المصدر المنسوب إليه الخبر." };
 }
 /** @param {string} id */
 function articleURL(id) { return `${PUBLIC_ORIGIN}/news/${id.toLowerCase()}`; }
@@ -180,6 +180,7 @@ export function renderArticle(article, now, trust = null) {
 <h1>${escapeHTML(title)}</h1><div class="public-news-meta"><span>${l.published}: <time datetime="${article.published_at}">${escapeHTML(dateLabel(article.published_at, lang))}</time></span>${by.length ? `<span>${l.author}: ${escapeHTML(by.join(" · "))}</span>` : ""}${original.name ? `<span>${l.source}: ${escapeHTML(original.name)}</span>` : ""}</div>
 ${image ? `<figure class="public-news-image"><img src="${escapeHTML(image)}" alt="${escapeHTML(title)}" fetchpriority="high" decoding="async" referrerpolicy="no-referrer"></figure>` : ""}
 <div class="public-news-summary">${summary ? summary.split(/\n\s*\n/).filter(Boolean).map(p => `<p>${escapeHTML(p)}</p>`).join("") : `<p>${l.en ? "A published summary is not available. Consult the original source for the story." : "الملخص المنشور غير متوفر. يُرجى الرجوع إلى المصدر الأصلي للخبر."}</p>`}</div>
+${(text(article.ai_summary, 1200) || text(article.ai_reader_impact, 900) || text(article.ai_watch_next, 900)) ? `<section class="public-news-intelligence"><h2>${l.reading}</h2>${text(article.ai_summary, 1200) ? `<div><h3>${l.en ? "Analysis" : "القراءة التحليلية"}</h3><p>${escapeHTML(text(article.ai_summary, 1200))}</p></div>` : ""}${text(article.ai_reader_impact, 900) ? `<div><h3>${l.impact}</h3><p>${escapeHTML(text(article.ai_reader_impact, 900))}</p></div>` : ""}${text(article.ai_watch_next, 900) ? `<div><h3>${l.watch}</h3><p>${escapeHTML(text(article.ai_watch_next, 900))}</p></div>` : ""}<small>${l.aiNotice}</small></section>` : ""}
 ${correction ? `<section class="public-news-correction" role="note"><h2>${l.correction}</h2><p>${escapeHTML(correction)}</p>${iso(article.corrected_at) ? `<time datetime="${escapeHTML(iso(article.corrected_at))}">${escapeHTML(dateLabel(article.corrected_at, lang))}</time>` : ""}</section>` : ""}
 <section class="public-news-source"><h2>${l.source}</h2>${original.name ? `<p>${escapeHTML(original.name)}</p>` : ""}${original.url ? `<a href="${escapeHTML(original.url)}" target="_blank" rel="noopener noreferrer">${l.original} ↗</a>` : `<p>${l.missing}</p>`}</section>
 <p class="public-news-disclosure">${l.disclosure}</p>
@@ -281,7 +282,12 @@ export function createWorker({ fetchImpl = globalThis.fetch.bind(globalThis), no
           try { trust = await rpc("get_public_article_trust", { p_article_id: id, p_lang: language(article.lang) }, 1, true); }
           catch { /* Optional credibility data must not remove the public summary. */ }
         }
-        return finish(renderArticle(article, clock, trust));
+        let intelligence = null;
+        try {
+          const rows = await rpc("public_news_article_intelligence", { p_id: id }, 1);
+          intelligence = rows[0] || null;
+        } catch { /* New reader context is optional until its migration is deployed. */ }
+        return finish(renderArticle(intelligence ? { ...article, ...intelligence } : article, clock, trust));
       }
       if (path === "/news-sitemap.xml") return finish(newsSitemap(await recent(1000, new Date(clock.getTime() - 48 * 60 * 60 * 1000).toISOString()), clock));
       if (path === "/rss.xml" || path === "/atom.xml") {
