@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="robots" content="noindex,nofollow,noarchive">
+  <meta name="referrer" content="no-referrer">
+  <meta name="theme-color" content="#0b1421">
+  <title>قياس الجمهور الموافق | WRLDLINE</title>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/audience.css">
+  <script src="/vendor/supabase-2.119.0.js" defer></script>
+  <script src="/audience.js" defer></script>
+</head>
+<body>
+  <header class="top"><a class="brand" href="/index.html" lang="en" dir="ltr">WRLD<span>LINE</span> <small>NEWSROOM</small></a><nav aria-label="تنقل التحرير"><a href="/admin.html">لوحة التحرير</a><a href="/account.html">الحساب</a></nav></header>
+  <main class="wrap">
+    <div class="heading"><div><p class="eyebrow" lang="en" dir="ltr">AUDIENCE / CONSENTED MEASUREMENT</p><h1>القراءة وراء الأرقام</h1><p class="muted">زيارات وتفاعل المتصفحات التي وافقت على القياس فقط. ليست إحصاءً لجميع الزوار، ولا عددًا للأشخاص الفريدين.</p></div><span class="badge">وصول تحريري محمي</span></div>
+    <p id="audienceStatus" class="status" role="status" aria-live="polite">جارٍ التحقق من الحساب والصلاحية…</p>
+    <section id="audienceAccess" class="panel" hidden><h2>حساب محرر مطلوب</h2><p>هذه اللوحة متاحة للمحرر أو المسؤول فقط. البيانات لا تُقرأ بمفتاح النشر العام.</p><a class="button" href="/account.html?next=%2Faudience.html">تسجيل الدخول</a></section>
+    <section id="audienceDashboard" hidden>
+      <div class="toolbar"><label for="audienceDays">نافذة القياس <select id="audienceDays"><option value="1">آخر ٢٤ ساعة</option><option value="7" selected>آخر ٧ أيام</option><option value="30">آخر ٣٠ يومًا</option></select></label><button type="button" id="audienceRefresh">تحديث الآن</button><button type="button" class="secondary" id="audienceSignout">تسجيل الخروج</button><small id="audienceUpdated" class="muted"></small></div>
+      <div id="audienceMetrics" class="metrics"></div>
+      <section class="panel insight"><h2>قراءة سريعة</h2><p id="audienceInsight">—</p><p class="muted">الوقت يُحسب حين يكون الخبر ظاهرًا والنافذة نشطة، ويتوقف بعد دقيقة بلا نشاط. هو قياس تقريبي من المتصفح، وليس إثباتًا لقراءة النص.</p></section>
+      <section class="panel"><div class="section-heading"><h2>أخبار تستحق وقت القارئ</h2><small class="muted">مرتبة حسب مجموع القراءة النشطة</small></div><div class="table-wrap"><table><caption class="sr-only">أكثر الأخبار قراءة ضمن المتصفحات الموافقة</caption><thead><tr><th>الخبر</th><th>فتح الخبر</th><th>جلسات القراءة</th><th>وقت نشط</th><th>متوسط / جلسة قارئة</th></tr></thead><tbody id="audienceNews"></tbody></table></div></section>
+      <div class="columns"><section class="panel"><h2>مصادر الوصول</h2><p class="muted">تصنيف من اسم مضيف الإحالة فقط. لا تُحفظ الروابط أو معلماتها. قد يُخفي المتصفح الإحالة.</p><div id="audienceArrivals" class="list"></div></section><section class="panel"><h2>اهتمام الأقسام</h2><div id="audienceCategories" class="list"></div></section></div>
+      <div class="columns"><section class="panel"><h2>التفاعل المقاس</h2><div id="audienceEngagement" class="list"></div><small class="muted">الحفظ والمشاركة والمتابعة لا تُحسب إلا حين يُرسل التطبيق حدث نجاحها. أرقام البحث لا تحتوي نص البحث.</small></section><section class="panel"><h2>من الاهتمام إلى التسجيل</h2><div id="audienceFunnel" class="list"></div><p class="muted">اهتمام PLUS ليس شراءً. تفعيل PLUS يُتحقق منه على الخادم من اشتراك نشط مرتبط بمزود الدفع، ويستبعد الفترة التجريبية. الرصد هو أول تحقق خلال فترة الاحتفاظ، وليس تاريخ الشراء.</p></section></div>
+      <section class="panel billing"><h2>سجل الفوترة — نطاق مستقل</h2><div id="audienceBilling" class="list"></div><p class="muted">هذه لقطة لجميع الحسابات وليست مجموعة القرّاء الموافقين. سجل الاشتراكات الحالي لا يتضمن إيصال مبلغ مسدد؛ لذلك لا نعرض «تحويلًا مدفوعًا مؤكدًا» أو معدل تحويل من النقر إلى الدفع. يلزم سجل فواتير موثوق لتفعيل ذلك.</p></section>
+      <p class="footnote" id="audienceRetention">الأحداث ٣٠ يومًا؛ روابط العودة العشوائية ٧ أيام فقط؛ تنظيف كل ساعة.</p>
+    </section>
+    <noscript><section class="panel">يلزم JavaScript وتسجيل دخول تحريري لقراءة المجاميع المحمية.</section></noscript>
+  </main>
+</body>
+</html>

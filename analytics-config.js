@@ -1,9 +1,8 @@
-/* WRLDLINE analytics configuration.
-   Leave both values empty to keep analytics disabled.
-   ga4MeasurementId: e.g. "G-XXXXXXXXXX"
-   endpoint: optional first-party collector URL that accepts a JSON POST.
-   This file is public; never place a service-role key or secret here. */
-window.WRLDLINE_ANALYTICS_CONFIG = Object.assign(
-  { ga4MeasurementId: "", endpoint: "" },
-  window.WRLDLINE_ANALYTICS_CONFIG || {}
-);
+/* Public configuration, not a deployment status. Never put a service-role key here. */
+window.WRLDLINE_ANALYTICS_CONFIG = Object.assign({
+  enabled: true,
+  endpoint: "https://vmaxbnogmmfyrcucapnq.supabase.co/functions/v1/audience-events",
+  publishableKey: "sb_publishable_D3c88u75_LcEN460Y3Jcpw__EfqUnBx",
+  browserRetentionDays: 7,
+  sessionIdleMinutes: 30
+}, window.WRLDLINE_ANALYTICS_CONFIG || {});

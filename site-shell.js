@@ -60,6 +60,7 @@
     </div>
     <div class="wl-nav-wrap" id="mainNav"><nav class="wl-nav" aria-label="${t("navHome")}"><div class="wl-nav-scroll">
       <a class="wl-nav-link" href="index.html">${t("navHome")}</a>
+      <a class="wl-nav-link" href="/news/">${lang === "ar" ? "الأخبار العامة" : "Public news"}</a>
       <a class="wl-nav-link wl-nav-link--shorts" href="shorts.html">${t("shorts")}</a>
       <a class="wl-nav-link" href="context.html">${t("context")}</a>
       <a class="wl-nav-link" href="balance.html">${t("balance")}</a>
@@ -81,6 +82,7 @@
       <div class="footer-col"><h3>${t("newsrooms")}</h3><a href="index.html">${t("navHome")}</a><a href="context.html">${t("context")}</a><a href="balance.html">${t("balance")}</a><a href="impact.html">${t("impact")}</a></div>
       <div class="footer-col"><h3>${t("knowledge")}</h3><a href="history.html">${t("history")}</a><a href="mirror.html">${t("mirror")}</a><a href="explainers.html">${t("explainers")}</a><a href="promises.html">${t("promises")}</a></div>
       <div class="footer-col"><h3>${t("encyclopediaCol")}</h3><a href="history-explore.html">${t("atlas")}</a><a href="history-compare.html">${t("compare")}</a><a href="history-library.html">${t("library")}</a><a href="about.html">${t("aboutLink")}</a></div>
+      <div class="footer-col"><h3>${lang === "ar" ? "تابع الأخبار" : "Follow news"}</h3><a href="/news/">${lang === "ar" ? "كل الأخبار العامة" : "Public news"}</a><a href="/newsletter.html">${lang === "ar" ? "النشرة البريدية" : "Newsletter"}</a><a href="/rss.xml">RSS</a><a href="/atom.xml">Atom</a><button type="button" data-analytics-settings>${lang === "ar" ? "إعدادات الخصوصية" : "Privacy settings"}</button></div>
     </div>
     <div class="footer-bottom"><span>${t("copyright")}</span><span>${t("editorial")}</span></div>
   </div>

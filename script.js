@@ -354,22 +354,9 @@ async function savePreferenceArrays(){
  const {error}=await state.db.from("user_preferences").upsert({user_id:state.user.id,...state.preferences},{onConflict:"user_id"});
  if(error)console.warn("WRLDLINE preferences sync:",error.message);
 }
-function notificationMatches(article){
- const p=state.preferences;if(!p||!p.browser_notifications)return false;
- const category=normalizeCategory(article?.category||article?.cat||"");
- const country=article?.country||article?.event_country||"";
- if(article?.is_breaking&&p.notify_breaking)return true;
- const cats=Array.isArray(p.notify_categories)&&p.notify_categories.length?p.notify_categories:(p.followed_categories||[]);
- const countries=Array.isArray(p.notify_countries)&&p.notify_countries.length?p.notify_countries:(p.followed_countries||[]);
- return cats.includes(category)||countries.includes(country);
-}
-function notifyForArticle(article){
- if(!notificationMatches(article)||!("Notification" in window)||Notification.permission!=="granted")return;
- const key="wrldline:notified:"+String(article.id||article.title||"");
- if(sessionStorage.getItem(key))return;
- sessionStorage.setItem(key,"1");
- try{new Notification(article.is_breaking?"WRLDLINE · خبر عاجل":"WRLDLINE · خبر يهمك",{body:String(article.title||"").slice(0,140),tag:key});}catch(error){console.warn("WRLDLINE notification:",error);}
-}
+// Delivery is centralized in notification-dispatch and the owner-bound Service
+// Worker. Realtime continues to refresh the feed, never duplicates notifications.
+function notifyForArticle(_article){}
 async function toggleFollow(type,value){
  if(!state.user||!["category","country"].includes(type))return;
  const exists=state.follows[type].includes(value);
@@ -377,6 +364,7 @@ async function toggleFollow(type,value){
  if(result.error){showToast(ui("تعذر حفظ المتابعة: ","Could not save follow: ")+result.error.message);return;}
  state.follows[type]=exists?state.follows[type].filter(x=>x!==value):[...state.follows[type],value];
  await savePreferenceArrays();
+ window.WRLDLINE_ANALYTICS?.track("engagement",{action:"follow",category:type==="category"?value:"world"});
  renderFollowPanel();if(state.followOnly)applyFilters();showToast(exists?ui("تم إلغاء المتابعة","Unfollowed"):ui("تمت إضافة المتابعة","Added to following"));
 }
 function selectCategory(cat){state.category=cat;state.limit=PAGE_SIZE;document.querySelectorAll(".nav-link,.chip").forEach(el=>el.classList.toggle("active",el.dataset.category===cat));document.getElementById("feedTitle").textContent=cat==="all"?ui("أحدث الأخبار","Latest news"):categoryName(cat);applyFilters();document.getElementById("mainNav").classList.remove("mobile-open");document.getElementById("menuButton").setAttribute("aria-expanded","false");}
@@ -560,6 +548,11 @@ function updateBreaking(){
  }
  title.title=ui("عاجل خلال آخر 15 دقيقة — الأحدث أولاً","Breaking in the last 15 minutes — newest first");if(time)time.textContent=ui("عاجل · ","Breaking · ")+timeAgo(item.published_at);
 }
+function publicArticleURL(article){
+ const id=String(article?.id||"");
+ const status=article?.editorialStatus||article?.raw?.editorial_status;
+ return status==="published"&&/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)?"https://al-ghaib.us.ci/news/"+id.toLowerCase():"";
+}
 function openArticle(id,updateUrl=true){
  const a=state.articles.find(x=>x.id===id);if(!a)return;
  if(updateUrl){const url=new URL(location.href);url.searchParams.set("article",id);history.pushState({article:id},"",url);}
@@ -570,6 +563,8 @@ function openArticle(id,updateUrl=true){
  document.getElementById("modalSave").addEventListener("click",()=>{toggleSaved(a.id);document.getElementById("modalSave").textContent=state.saved.has(a.id)?ui("★ إزالة من المحفوظات","★ Remove saved"):ui("☆ حفظ الخبر","☆ Save story");});
  document.getElementById("modalShare").addEventListener("click",()=>shareArticle(a));
  document.getElementById("modalListen").addEventListener("click",()=>playArticleAudio(a));
+ const publicURL=publicArticleURL(a);
+ if(publicURL)host.querySelector(".article-actions")?.insertAdjacentHTML("beforeend",'<a class="outline-button" href="'+escapeHTML(publicURL)+'">↗ '+ui("فتح صفحة الخبر المستقلة","Open article page")+'</a>');
  showModal("articleModal");
  try{document.dispatchEvent(new CustomEvent("wrldline:article-opened",{detail:{article:a}}));}catch(error){console.warn("WRLDLINE intelligence:",error);}
 }
@@ -601,7 +596,7 @@ async function playArticleAudio(article){
  finally{if(button.isConnected){button.disabled=false;button.textContent=original;}}
 }
 function closeArticle(updateUrl=true){hideModal("articleModal");if(updateUrl&&new URLSearchParams(location.search).has("article")){const url=new URL(location.href);url.searchParams.delete("article");history.replaceState(null,"",url);}}
-async function shareArticle(article){if(window.WRLDLINE_SHARE){return window.WRLDLINE_SHARE.share({title:article.title,description:article.summary||article.aiSummary||"",category:categoryName(article.cat)+" · "+countryName(article.country,article.aiCountryCode),source:article.src,image:article.img||""});}showToast(ui("أداة المشاركة لم تجهز بعد. أعد المحاولة بعد لحظة.","Sharing is still loading. Please try again."));}
+async function shareArticle(article){if(window.WRLDLINE_SHARE){return window.WRLDLINE_SHARE.share({title:article.title,description:article.summary||article.aiSummary||"",category:categoryName(article.cat)+" · "+countryName(article.country,article.aiCountryCode),source:article.src,image:article.img||"",url:publicArticleURL(article)||"https://al-ghaib.us.ci/"});}showToast(ui("أداة المشاركة لم تجهز بعد. أعد المحاولة بعد لحظة.","Sharing is still loading. Please try again."));}
 async function toggleSaved(id){
  const wasSaved=state.saved.has(id);
  if(state.user&&state.db){

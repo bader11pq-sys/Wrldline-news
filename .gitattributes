@@ -1,0 +1,2 @@
+# Preserve the exact upstream generated UMD bytes and checksum.
+vendor/*.js whitespace=-blank-at-eol

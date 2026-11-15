@@ -1,0 +1,19 @@
+{
+  "name": "wrldline-public",
+  "main": "worker.js",
+  "compatibility_date": "2026-11-15",
+  "workers_dev": false,
+  "vars": {
+    "SUPABASE_URL": "https://vmaxbnogmmfyrcucapnq.supabase.co",
+    "SUPABASE_ANON_KEY": "sb_publishable_D3c88u75_LcEN460Y3Jcpw__EfqUnBx",
+    "PUBLIC_TRUST_ENABLED": "true"
+  },
+  "routes": [
+    {"pattern": "al-ghaib.us.ci/news", "zone_name": "al-ghaib.us.ci"},
+    {"pattern": "al-ghaib.us.ci/news/*", "zone_name": "al-ghaib.us.ci"},
+    {"pattern": "al-ghaib.us.ci/news-sitemap.xml*", "zone_name": "al-ghaib.us.ci"},
+    {"pattern": "al-ghaib.us.ci/article-sitemap*", "zone_name": "al-ghaib.us.ci"},
+    {"pattern": "al-ghaib.us.ci/rss.xml*", "zone_name": "al-ghaib.us.ci"},
+    {"pattern": "al-ghaib.us.ci/atom.xml*", "zone_name": "al-ghaib.us.ci"}
+  ]
+}

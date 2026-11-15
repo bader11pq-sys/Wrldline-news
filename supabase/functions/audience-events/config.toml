@@ -1,0 +1,4 @@
+# Parent must merge this block into supabase/config.toml before normal CLI deploy,
+# or deploy audience-events with --no-verify-jwt. This nested file is documentation.
+[functions.audience-events]
+verify_jwt = false

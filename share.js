@@ -4,6 +4,8 @@ if(window.WRLDLINE_SHARE)return;
 const isEN=()=>localStorage.getItem("wrldline:language")==="en";
 const tr=(ar,en)=>isEN()?en:ar;
 const clean=s=>String(s||"").replace(/[\u0000-\u001f\u007f]/g," ").replace(/\s+/g," ").trim();
+function shareURL(value){try{const raw=String(value||"").trim();if(!/^https?:\/\//i.test(raw)||/[\s\\]/.test(raw))return "";const url=new URL(raw);return ["http:","https:"].includes(url.protocol)&&!url.username&&!url.password?url.href:"";}catch{return "";}}
+function canonicalShareURL(value){return shareURL(value)||shareURL(document.querySelector('link[rel="canonical"]')?.href)||shareURL(location.href);}
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 function toast(message){let n=document.getElementById("wrldlineShareToast");if(!n){n=document.createElement("div");n.id="wrldlineShareToast";n.setAttribute("role","status");document.body.appendChild(n);}n.textContent=message;n.classList.add("show");clearTimeout(n._timer);n._timer=setTimeout(()=>n.classList.remove("show"),3600);}
 function payloadFrom(el){
@@ -14,7 +16,7 @@ function payloadFrom(el){
  const meta=clean(el.dataset.shareMeta||el.querySelector(".risk,.category-label,.briefing-tag,.eu-meta,.event-top,.shorts-category,.eyebrow,.year")?.textContent||document.querySelector("main .eyebrow")?.textContent||"");
  const source=clean(el.dataset.shareSource||el.querySelector(".card-byline,.story-byline,.shorts-footer,.eu-card-foot small,small")?.textContent||"");
  const img=el.dataset.shareImage||el.querySelector("img[src]")?.currentSrc||el.querySelector("img[src]")?.src||"";
- return {title,description:desc,category:meta,source,image:img};
+ return {title,description:desc,category:meta,source,image:img,url:canonicalShareURL(el.dataset.shareUrl)};
 }
 function rounded(ctx,x,y,w,h,r){ctx.beginPath();ctx.roundRect(x,y,w,h,r);ctx.fill();}
 function wrap(ctx,text,x,y,maxWidth,lineHeight,maxLines,align="right"){
@@ -53,16 +55,17 @@ async function renderCard(data){
  c.textAlign="right";c.fillText(new Date().toLocaleDateString(isEN()?"en-US":"ar-SA"),1106,610);
  return await new Promise((resolve,reject)=>canvas.toBlob(b=>b?resolve(b):reject(new Error("PNG generation failed")),"image/png",.94));
 }
-function caption(data){return [data.title,data.description,data.category?"\n"+data.category:"",data.source?"\n"+data.source:"","\n#WRLDLINE"].filter(Boolean).join("\n").slice(0,1800);}
+function caption(data){const url=canonicalShareURL(data.url),suffix=url?"\n\n"+url:"";return [data.title,data.description,data.category?"\n"+data.category:"",data.source?"\n"+data.source:"","\n#WRLDLINE"].filter(Boolean).join("\n").slice(0,Math.max(0,1800-suffix.length))+suffix;}
 function download(blob,name){const u=URL.createObjectURL(blob),a=document.createElement("a");a.href=u;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(u),15000);}
 async function share(data){
- const payload={title:clean(data.title)||"WRLDLINE NEWS",description:clean(data.description),category:clean(data.category),source:clean(data.source),image:data.image||""};
+ const payload={title:clean(data.title)||"WRLDLINE NEWS",description:clean(data.description),category:clean(data.category),source:clean(data.source),image:data.image||"",url:canonicalShareURL(data.url)};
  const button=data.button;if(button){button.disabled=true;button.dataset.busy="1";}
  try{
   const blob=await renderCard(payload),file=new File([blob],"wrldline-share.png",{type:"image/png"}),text=caption(payload);
   if(navigator.share&&navigator.canShare&&navigator.canShare({files:[file]})){
-   await navigator.share({files:[file],title:payload.title,text});toast(tr("تم فتح المشاركة بالصورة والنص","Image and caption ready to share"));return true;
+   await navigator.share({files:[file],title:payload.title,text,...(payload.url?{url:payload.url}:{})});toast(tr("تم فتح المشاركة بالصورة والنص","Image and caption ready to share"));return true;
   }
+  if(navigator.share&&payload.url){await navigator.share({title:payload.title,text,url:payload.url});toast(tr("تم فتح مشاركة رابط الخبر","Article link ready to share"));return true;}
   download(blob,"wrldline-share.png");
   if(navigator.clipboard?.writeText){await navigator.clipboard.writeText(text);toast(tr("حُفظت الصورة ونُسخ النص. أرفق الصورة في التطبيق الذي تريده.","Image saved and caption copied. Attach the image in your app."));}
   else {toast(tr("حُفظت الصورة. انسخ النص من نافذة المشاركة التالية.","Image saved. Copy the caption from the next prompt."));window.prompt(tr("النص المرافق للصورة","Image caption"),text);}

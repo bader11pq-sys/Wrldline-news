@@ -1,60 +1,80 @@
 name: WRLDLINE Code Quality
 on:
   push:
-    branches: [main]
   pull_request:
-    branches: [main]
+  workflow_dispatch:
 permissions:
   contents: read
+concurrency:
+  group: code-quality-${{ github.ref }}
+  cancel-in-progress: true
 jobs:
   syntax-and-assets:
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
-          node-version: '24'
-      - name: Check JavaScript syntax
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: '22.23.0'
+      - name: Check every JavaScript module
         shell: bash
         run: |
           set -euo pipefail
-          while IFS= read -r file; do
-            echo "Checking $file"
-            node --check "$file"
-          done < <(git ls-files '*.js')
+          while IFS= read -r -d '' file; do node --check "$file"; done < <(git ls-files -z '*.js' '*.mjs' '*.cjs')
+      - name: Install reproducible isolated test-only tooling
+        shell: bash
+        run: |
+          set -euo pipefail
+          tools="$RUNNER_TEMP/wrldline-check-tools"
+          mkdir -p "$tools"
+          cp tests/reliability-tooling/package*.json "$tools/"
+          npm ci --ignore-scripts --no-audit --no-fund --prefix "$tools"
+          echo "NODE_PATH=$tools/node_modules" >>"$GITHUB_ENV"
+      - name: Run all isolated Node test modules, including security
+        shell: bash
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+          tests=(tests/*.test.js tests/*.test.mjs tests/*.test.cjs)
+          test "${#tests[@]}" -gt 0
+          node --test "${tests[@]}"
       - uses: denoland/setup-deno@v2
         with:
-          deno-version: v2.x
-      - name: Type-check Supabase Edge Functions
+          deno-version: 'v2.5.6'
+      - name: Type-check every Supabase Edge function
         shell: bash
         run: |
           set -euo pipefail
-          for file in supabase/functions/*/index.ts; do
-            echo "Checking $file"
-            deno check --no-lock "$file"
-          done
-      - name: Validate JSON configuration
-        run: node -e "JSON.parse(require('node:fs').readFileSync('manifest.json','utf8')); console.log('manifest.json is valid JSON')"
-      - name: Verify local HTML assets exist
+          for file in supabase/functions/*/index.ts; do deno check --no-lock "$file"; done
+          deno check --no-lock tests/reliability-edge_test.ts
+      - name: Test protected endpoints and consent with no network permissions
+        run: deno test --no-lock --allow-env --allow-read tests/reliability-edge_test.ts tests/audience-collector.test.ts tests/notifications-edge_test.ts
+      - name: Test editorial and newsletter RLS in disposable databases
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq postgresql-16 postgresql-client-16
+          export PGBIN=/usr/lib/postgresql/16/bin
+          bash tests/editorial-trust-db.sh
+          bash tests/notifications-db.sh
+      - name: Validate committed JSON and local HTML script/style assets
+        shell: bash
         run: |
           node <<'NODE'
-          const fs = require('node:fs');
-          const path = require('node:path');
-          const pages = ['index.html','account.html','admin.html','history.html','map.html'];
-          const missing = [];
-          for (const page of pages) {
-            const html = fs.readFileSync(page, 'utf8');
-            const refs = [...html.matchAll(/<(?:script|link)\b[^>]*(?:src|href)=["']([^"']+)["']/gi)];
-            for (const [, raw] of refs) {
+          const fs = require('node:fs'), path = require('node:path'), cp = require('node:child_process');
+          for (const file of cp.execFileSync('git', ['ls-files', '*.json'], {encoding:'utf8'}).trim().split('\n').filter(Boolean)) JSON.parse(fs.readFileSync(file,'utf8'));
+          const missing=[];
+          for (const page of fs.readdirSync('.').filter(f=>f.endsWith('.html'))) {
+            const html=fs.readFileSync(page,'utf8');
+            for (const [,raw] of html.matchAll(/<(?:script|link)\b[^>]*(?:src|href)=["']([^"']+)["']/gi)) {
               if (/^(?:https?:|data:|mailto:|#|\/\/)/i.test(raw)) continue;
-              const local = raw.split(/[?#]/, 1)[0];
-              if (!local || !fs.existsSync(path.resolve(local))) missing.push(page + ' -> ' + raw);
+              const local=raw.split(/[?#]/)[0].replace(/^\//,'');
+              if (local && !fs.existsSync(path.resolve(local))) missing.push(page+' -> '+raw);
             }
           }
-          if (missing.length) {
-            console.error('Missing local assets:\n' + missing.join('\n'));
-            process.exit(1);
-          }
-          console.log('All local HTML assets exist.');
+          if(missing.length) { console.error(missing.join('\n')); process.exit(1); }
           NODE

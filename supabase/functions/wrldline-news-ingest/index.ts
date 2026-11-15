@@ -183,6 +183,15 @@ async function runProviderHealthcheck() {
  return {pipeline:"provider-healthcheck",...body};
 }
 
+// Keep this pure decision aligned with translate-articles. Publication/rejection
+// belongs to human editors, not the generation queue. AI context is optional.
+function translationGenerationState(existing: any) {
+ if(existing?.translation_status==="rejected") return "rejected";
+ if(existing?.translation_status==="published") return "already_translated";
+ if(String(existing?.title||"").trim()&&String(existing?.summary||"").trim()) return "awaiting_human_review";
+ return "missing";
+}
+
 async function runTranslation() {
  const lockResponse=await dbRequest("rpc/claim_translation_worker",{method:"POST",headers:{"Content-Type":"application/json"},body:"{}"});
  if(!lockResponse.ok) throw new Error("Could not acquire translation worker lock: "+lockResponse.status+" "+(await lockResponse.text()).slice(0,180));
@@ -213,8 +222,7 @@ async function runTranslation() {
     const sourceLang=declared.startsWith("ar")?"ar":(declared.startsWith("en")?"en":(/[\u0600-\u06FF]/.test(article.title)?"ar":"en"));
     const target=sourceLang==="ar"?"en":"ar";
     const existing=(article.article_translations||[]).find((item:any)=>item.lang===target);
-    const complete=!!(existing?.title&&existing?.summary&&existing?.translation_status==="published"&&(!article.ai_summary||existing?.ai_summary));
-    if(!complete && perTarget[target as "ar"|"en"]<10) {
+    if(translationGenerationState(existing)==="missing" && perTarget[target as "ar"|"en"]<10) {
      pending.push({id:article.id,target,sourceLang,title:String(article.title).slice(0,100)});
      perTarget[target as "ar"|"en"]++;
     }
@@ -224,7 +232,7 @@ async function runTranslation() {
   }
   if(!pending.length) {
    await updateRun(runId,{source_count:0,successful_sources:0,failed_sources:0,parsed_items:0,error_summary:null});
-   return {pipeline:"translation",scanned,selected:0,translated:0,already_translated:0,failed:0,deferred:0};
+   return {pipeline:"translation",scanned,selected:0,translated:0,generated:0,awaiting_human_review:0,rejected_ignored:0,translation_changed:0,already_translated:0,failed:0,deferred:0};
   }
   const response=await fetch(SUPABASE_URL+"/functions/v1/translate-articles",{
    method:"POST",
@@ -237,8 +245,11 @@ async function runTranslation() {
   const results=Array.isArray(body.results)?body.results:[];
   const returnedIds=new Set(results.map((item:any)=>String(item.id)));
   const missing=pending.filter(item=>!returnedIds.has(String(item.id)));
-  const translated=results.filter((item:any)=>item.status==="translated").length;
+  const translated=results.filter((item:any)=>item.status==="translated"||(item.status==="awaiting_human_review"&&item.generated===true)).length;
   const already=results.filter((item:any)=>item.status==="already_translated").length;
+  const awaiting=results.filter((item:any)=>item.status==="awaiting_human_review").length;
+  const rejected=results.filter((item:any)=>item.status==="rejected").length;
+  const changed=results.filter((item:any)=>item.status==="translation_changed").length;
   const failed=results.filter((item:any)=>item.status==="failed").length;
   const deferred=results.filter((item:any)=>item.status==="deferred").length+missing.length;
   await updateRun(runId,{
@@ -248,7 +259,7 @@ async function runTranslation() {
    parsed_items:pending.length,
    error_summary:[...results.filter((item:any)=>item.status==="failed"||item.status==="deferred").map((item:any)=>String(item.id)+": "+String(item.error||item.status)),...missing.map((item:any)=>String(item.id)+": not returned by translator")].slice(0,8).join(" | ")||null
   });
-  return {pipeline:"translation",scanned,selected:pending.length,translated,already_translated:already,failed,deferred,targets:pending.map(item=>item.target),providers:body.providers_configured||null,deepl_quota_exhausted:body.deepl_quota_exhausted||false,deepl_disabled_until:body.deepl_disabled_until||null,translation_priority:body.translation_priority||null,concurrency:body.concurrency||null};
+  return {pipeline:"translation",scanned,selected:pending.length,translated,generated:translated,awaiting_human_review:awaiting,rejected_ignored:rejected,translation_changed:changed,already_translated:already,failed,deferred,targets:pending.map(item=>item.target),providers:body.providers_configured||null,deepl_quota_exhausted:body.deepl_quota_exhausted||false,deepl_disabled_until:body.deepl_disabled_until||null,translation_priority:body.translation_priority||null,concurrency:body.concurrency||null};
  } finally {
   await dbRequest("rpc/release_translation_worker",{method:"POST",headers:{"Content-Type":"application/json"},body:"{}"}).catch(()=>null);
  }

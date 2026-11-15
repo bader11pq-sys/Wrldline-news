@@ -1,0 +1,17 @@
+# Secrets and encrypted backup material remain outside the repository.
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.age
+age-identity*
+# Local tooling and diagnostic output.
+node_modules/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+coverage/
+test-results/
+playwright-report/
+.DS_Store

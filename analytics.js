@@ -1,85 +1,239 @@
-/* WRLDLINE privacy-first event layer. No PII, no analytics before consent. */
+/* WRLDLINE: measures consenting browsers, never the site's total audience. */
 (function () {
   "use strict";
-  const CONFIG = window.WRLDLINE_ANALYTICS_CONFIG || {};
-  const CONSENT_KEY = "wrldline:analytics-consent";
-  const SESSION_KEY = "wrldline:analytics-session";
-  const ALLOWED = new Set(["page_view","view_article","outbound_source_click","search","market_view","newsletter_signup","sponsor_contact","plus_interest"]);
-  const SAFE_KEYS = new Set(["article_id","content_type","category","source_domain","has_source_link","results_count","has_query","plan","page_path","device_type","locale","event_id","session_id"]);
-  const queue = [];
-  let consent = readConsent();
-  let initialized = false;
-  let pageViewSent = false;
-  let bannerShown = false;
+  const config = window.WRLDLINE_ANALYTICS_CONFIG || {};
+  const CONSENT = "wrldline:analytics-consent-v2";
+  const BROWSER = "wrldline:analytics-browser-v2";
+  const SESSION = "wrldline:analytics-session-v2";
+  const DAY = 86400000;
+  const categories = new Set(["politics", "economy", "security", "tech", "sports", "culture", "health", "science", "environment", "society", "world", "uncategorized"]);
+  const names = new Set(["page_view", "view_article", "article_read", "engagement", "signup", "outbound_source_click", "search", "market_view", "newsletter_signup", "sponsor_contact", "plus_interest"]);
+  const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+  const ARTICLE_UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+  let choice = stored(localStorage, CONSENT);
+  if (!choice || choice.version !== 2 || choice.expires <= Date.now() || !["granted", "denied"].includes(choice.state)) choice = null;
+  let queue = [], running = false, reading = null, interval = null, flushTimer = null;
+  let cleanup = [], controllers = new Set(), generation = 0, dialog = null, session = null;
+  let recent = Date.now(), budgetStart = Date.now(), sentInMinute = 0;
+  let lastPageSession = "";
 
-  function readConsent(){try{return localStorage.getItem(CONSENT_KEY)==="granted"?"granted":(localStorage.getItem(CONSENT_KEY)==="denied"?"denied":null);}catch{return null;}}
-  function writeConsent(value){consent=value;try{localStorage.setItem(CONSENT_KEY,value);}catch{}}
-  function sessionId(){try{let id=sessionStorage.getItem(SESSION_KEY);if(!id){id=randomId();sessionStorage.setItem(SESSION_KEY,id);}return id;}catch{return "";}}
-  function randomId(){try{return crypto.randomUUID();}catch{return "s-"+Date.now().toString(36)+"-"+Math.random().toString(36).slice(2,10);}}
-  function deviceType(){const ua=navigator.userAgent||"";if(/iPad|Tablet|Android(?!.*Mobile)/i.test(ua))return "tablet";if(/Mobi|iPhone|Android/i.test(ua))return "mobile";return "desktop";}
-  function pagePath(){return location.pathname.replace(/\/index\.html$/,"/")||"/";}
-  function sanitize(params={}){
-    const out={};
-    for(const [key,value] of Object.entries(params||{})){
-      if(!SAFE_KEYS.has(key)||value===undefined||value===null)continue;
-      if(typeof value==="boolean"||typeof value==="number"){out[key]=value;continue;}
-      const text=String(value).replace(/[\w.+-]+@[\w.-]+\.[A-Za-z]{2,}/g,"[redacted]").replace(/\+?\d[\d\s()-]{6,}\d/g,"[redacted]").slice(0,120);
-      if(text)out[key]=text;
+  function stored(storage, key) { try { return JSON.parse(storage.getItem(key)); } catch { return null; } }
+  function save(storage, key, value) { try { storage.setItem(key, JSON.stringify(value)); } catch { /* memory-only */ } }
+  function remove(storage, key) { try { storage.removeItem(key); } catch { /* denied storage */ } }
+  function uuid() { try { return crypto.randomUUID(); } catch { return null; } }
+  function granted() {
+    if (choice?.state === "granted" && choice.expires > Date.now()) return true;
+    if (running) stop();
+    return false;
+  }
+  function identifiers() {
+    const now = Date.now();
+    const idle = Math.max(5, Math.min(30, Number(config.sessionIdleMinutes) || 30)) * 60000;
+    session = session || stored(sessionStorage, SESSION);
+    if (!session || !UUID.test(session.id) || now - session.last > idle || now < session.last) session = { id: uuid(), last: now };
+    if (!session.id) return null;
+    session.last = now;
+    save(sessionStorage, SESSION, session);
+    const out = { session_id: session.id };
+    if (choice?.returning === true) {
+      let browser = stored(localStorage, BROWSER);
+      const ttl = Math.max(1, Math.min(7, Number(config.browserRetentionDays) || 7)) * DAY;
+      if (!browser || !UUID.test(browser.id) || now - browser.created >= ttl || now < browser.created) browser = { id: uuid(), created: now };
+      if (browser.id) { save(localStorage, BROWSER, browser); out.browser_id = browser.id; }
     }
-    out.page_path=pagePath();
-    out.device_type=deviceType();
-    out.locale=document.documentElement.lang||"ar";
-    out.session_id=sessionId();
     return out;
   }
-  function initGa4(){
-    if(!CONFIG.ga4MeasurementId||initialized)return;
-    initialized=true;
-    window.dataLayer=window.dataLayer||[];
-    window.gtag=window.gtag||function(){window.dataLayer.push(arguments);};
-    window.gtag("js",new Date());
-    window.gtag("config",CONFIG.ga4MeasurementId,{send_page_view:false,anonymize_ip:true});
-    if(!document.querySelector('script[data-wrldline-ga4]')){
-      const script=document.createElement("script");script.async=true;script.dataset.wrldlineGa4="true";script.src="https://www.googletagmanager.com/gtag/js?id="+encodeURIComponent(CONFIG.ga4MeasurementId);document.head.appendChild(script);
+  function page() {
+    const path = location.pathname;
+    if (/^\/news\/[0-9a-f-]{36}\/?$/i.test(path)) return "news";
+    const file = path.split("/").pop() || "index.html";
+    const known = { "index.html": "home", "account.html": "account", "markets.html": "markets", "map.html": "map", "history.html": "history", "newsletter.html": "newsletter", "contact.html": "contact", "about.html": "about", "privacy.html": "privacy", "terms.html": "terms", "sources.html": "sources", "daily-briefing.html": "briefing" };
+    return known[file] || "other";
+  }
+  // Parse only hostname. Never transmit or persist document.referrer or a URL/query.
+  function arrival() {
+    if (!document.referrer) return "direct";
+    try {
+      const host = new URL(document.referrer).hostname.toLowerCase();
+      if (host === location.hostname) return "internal";
+      const matches = list => list.some(domain => host === domain || host.endsWith("." + domain));
+      if (matches(["mail.google.com", "outlook.live.com", "outlook.office.com", "mail.yahoo.com"])) return "email";
+      if (matches(["google.com", "google.co.uk", "google.ae", "google.com.sa", "bing.com", "duckduckgo.com", "yahoo.com", "yandex.com"])) return "search";
+      if (matches(["facebook.com", "instagram.com", "x.com", "twitter.com", "linkedin.com", "tiktok.com", "reddit.com"])) return "social";
+      if (matches(["t.me", "telegram.org", "web.whatsapp.com", "whatsapp.com"])) return "messaging";
+      return "other";
+    } catch { return "other"; }
+  }
+  function device() { return matchMedia("(max-width: 600px)").matches ? "mobile" : matchMedia("(max-width: 1024px)").matches ? "tablet" : "desktop"; }
+  function event(name, params) {
+    const ids = identifiers(), id = uuid();
+    if (!ids || !id) return null;
+    const out = { event_id: id, name, occurred_at: new Date().toISOString(), ...ids, page: page(), device_type: device(), locale: document.documentElement.lang === "en" ? "en" : "ar", referrer_category: arrival() };
+    if (ARTICLE_UUID.test(params.article_id || "")) out.article_id = params.article_id;
+    if (categories.has(params.category)) out.category = params.category;
+    if (["news", "editorial", "analysis", "opinion", "sponsored", "unknown"].includes(params.content_type)) out.content_type = params.content_type;
+    for (const key of ["has_source_link", "has_query"]) if (typeof params[key] === "boolean") out[key] = params[key];
+    if (Number.isInteger(params.results_count) && params.results_count >= 0) out.results_count = Math.min(1000, params.results_count);
+    if (["free", "plus", "monthly", "yearly", "newsletter", "sponsorship"].includes(params.plan)) out.plan = params.plan;
+    if (name === "article_read" && Number.isInteger(params.active_ms) && params.active_ms > 0) out.active_ms = Math.min(60000, params.active_ms);
+    if (name === "engagement" && ["scroll_50", "scroll_90", "share", "save", "follow", "reaction"].includes(params.engagement_type)) out.engagement_type = params.engagement_type;
+    if (name === "signup" && ["account", "newsletter"].includes(params.signup_type)) out.signup_type = params.signup_type;
+    if (["view_article", "article_read", "outbound_source_click"].includes(name) && !out.article_id) return null;
+    if (name === "article_read" && !out.active_ms) return null;
+    if (name === "engagement" && !out.engagement_type) return null;
+    if (name === "signup" && !out.signup_type) return null;
+    return out;
+  }
+  function track(name, params = {}) {
+    if (!granted() || !running || !names.has(name)) return false;
+    if (Date.now() - budgetStart >= 60000) { budgetStart = Date.now(); sentInMinute = 0; }
+    if (sentInMinute >= 30 || queue.length >= 40) return false;
+    const item = event(name, params || {});
+    if (!item) return false;
+    sentInMinute++; queue.push(item);
+    if (queue.length >= 10) flush();
+    return true;
+  }
+  async function transport(body, token) {
+    if (!granted() || !running || !config.endpoint || config.enabled === false) return null;
+    const controller = new AbortController(), epoch = generation;
+    controllers.add(controller);
+    try {
+      const headers = { "Content-Type": "application/json" };
+      if (config.publishableKey) headers.apikey = config.publishableKey;
+      if (token) headers.Authorization = "Bearer " + token;
+      const response = await fetch(config.endpoint, { method: "POST", headers, body: JSON.stringify(body), mode: "cors", credentials: "omit", referrerPolicy: "no-referrer", signal: controller.signal });
+      if (epoch !== generation || !granted()) return null;
+      return response.ok ? await response.json() : null;
+    } catch { return null; } finally { controllers.delete(controller); }
+  }
+  function flush() {
+    if (!granted() || !running) { queue.length = 0; return; }
+    // No persistent queue/retry and no sendBeacon/keepalive: withdrawal can abort transport.
+    if (!queue.length) return;
+    const batch = queue.splice(0, 10);
+    void transport({ version: 1, consent: true, operation: "events", events: batch });
+  }
+  function on(target, name, handler, options) { target.addEventListener(name, handler, options); cleanup.push(() => target.removeEventListener(name, handler, options)); }
+  function visible(element) {
+    if (!element?.isConnected || element.closest("[hidden], [aria-hidden='true']")) return false;
+    const rect = element.getBoundingClientRect();
+    return rect.bottom > 0 && rect.top < innerHeight && rect.right > 0 && rect.left < innerWidth;
+  }
+  function active() { return !document.hidden && document.hasFocus() && Date.now() - recent < 60000 && reading && visible(reading.element); }
+  function sample() {
+    if (!reading) return;
+    const now = performance.now(), elapsed = Math.max(0, Math.min(2000, now - reading.tick));
+    if (reading.active) reading.pending += elapsed;
+    reading.tick = now; reading.active = !!active();
+    if (reading.pending >= 15000) reportReading();
+  }
+  function reportReading() {
+    if (!reading || reading.pending < 1000) return;
+    const amount = Math.min(60000, Math.round(reading.pending));
+    track("article_read", { ...reading.params, active_ms: amount }); reading.pending = 0;
+  }
+  function endArticle() { if (granted() && reading) { sample(); reportReading(); } reading = null; }
+  function beginArticle(article, element) {
+    if (!granted() || !running || !article) return false;
+    const id = article.article_id || article.id;
+    if (!ARTICLE_UUID.test(id || "")) return false;
+    if (reading?.params.article_id === id) return true;
+    endArticle();
+    element = element || document.querySelector("[data-audience-article], #modalContent .modal-article-body, article[data-article-id]");
+    if (!element) return false;
+    reading = { params: { article_id: id, category: article.category || article.cat }, element, pending: 0, tick: performance.now(), active: false, depths: new Set() };
+    recent = Date.now(); reading.active = !!active();
+    return true;
+  }
+  function start() {
+    if (running || !granted() || config.enabled === false || !config.endpoint) return;
+    running = true; recent = Date.now();
+    const ids = identifiers();
+    if (ids && lastPageSession !== ids.session_id) { lastPageSession = ids.session_id; track("page_view"); }
+    const canonicalArticle = document.querySelector("article[data-article-id], main[data-article-id], [data-audience-article][data-article-id]");
+    if (canonicalArticle && /^\/news\/[0-9a-f-]{36}\/?$/i.test(location.pathname)) {
+      const article = { article_id: canonicalArticle.dataset.articleId, category: canonicalArticle.dataset.category };
+      if (beginArticle(article, canonicalArticle)) track("view_article", article);
     }
+    on(document, "wrldline:article-opened", e => beginArticle(e.detail?.article, e.detail?.element));
+    on(document, "wrldline:article-closed", endArticle);
+    on(document, "visibilitychange", () => { sample(); if (document.hidden) { reportReading(); flush(); } });
+    on(window, "blur", () => { sample(); if (reading) reading.active = false; });
+    on(window, "focus", () => { recent = Date.now(); sample(); });
+    for (const type of ["pointerdown", "keydown", "touchstart"]) on(document, type, () => { recent = Date.now(); }, { passive: true });
+    on(document, "scroll", () => {
+      recent = Date.now();
+      if (!reading || !active()) return;
+      const el = reading.element, scroller = el.closest(".modal") || document.scrollingElement;
+      const height = scroller.scrollHeight - scroller.clientHeight;
+      const depth = height > 0 ? scroller.scrollTop / height : 0;
+      for (const threshold of [50, 90]) if (depth * 100 >= threshold && !reading.depths.has(threshold)) {
+        reading.depths.add(threshold); track("engagement", { ...reading.params, engagement_type: "scroll_" + threshold });
+      }
+    }, { capture: true, passive: true });
+    on(window, "pagehide", () => { endArticle(); flush(); });
+    interval = setInterval(() => {
+      if (!granted()) return;
+      if (reading && !visible(reading.element)) { sample(); reportReading(); reading.active = false; }
+      else sample();
+    }, 1000);
+    flushTimer = setInterval(flush, 5000);
+    flush();
   }
-  function send(name,params){
-    if(consent!=="granted"||!ALLOWED.has(name))return;
-    initGa4();
-    const payload={event:name,...sanitize(params),event_id:randomId()};
-    if(window.gtag)window.gtag("event",name,payload);
-    if(CONFIG.endpoint){
-      try{
-        const body=JSON.stringify(payload);
-        if(navigator.sendBeacon&&navigator.sendBeacon(CONFIG.endpoint,new Blob([body],{type:"application/json"})))return;
-        fetch(CONFIG.endpoint,{method:"POST",headers:{"Content-Type":"application/json"},body,keepalive:true}).catch(()=>{});
-      }catch(error){console.warn("WRLDLINE analytics transport:",error);}
-    }
+  function clearIdentifiers() {
+    remove(localStorage, BROWSER); remove(sessionStorage, SESSION);
+    remove(localStorage, "wrldline:analytics-consent"); remove(sessionStorage, "wrldline:analytics-session");
+    try { for (let i = sessionStorage.length - 1; i >= 0; i--) { const key = sessionStorage.key(i); if (key?.startsWith("wrldline:analytics-pageview:")) sessionStorage.removeItem(key); } } catch { /* no storage */ }
+    session = null; lastPageSession = "";
   }
-  function flush(){while(queue.length){const item=queue.shift();send(item.name,item.params||{});}}
-  function track(name,params={}){
-    if(!ALLOWED.has(name))return;
-    if(consent==="granted"){send(name,params);return;}
-    if(consent===null&&queue.length<20)queue.push({name,params});
+  function stop() {
+    running = false; generation++; queue.length = 0; reading = null;
+    clearInterval(interval); clearInterval(flushTimer); interval = flushTimer = null;
+    cleanup.splice(0).forEach(fn => fn());
+    controllers.forEach(controller => controller.abort()); controllers.clear(); clearIdentifiers();
   }
-  function pageView(){
-    if(pageViewSent)return;pageViewSent=true;
-    const key="wrldline:analytics-pageview:"+pagePath();
-    try{const last=Number(sessionStorage.getItem(key)||0);if(Date.now()-last<5000)return;sessionStorage.setItem(key,String(Date.now()));}catch{}
-    track("page_view",{});
+  function setConsent(state, options = {}) {
+    if (!["granted", "denied"].includes(state)) return;
+    stop();
+    choice = { version: 2, state, returning: state === "granted" && options.returning === true, expires: Date.now() + 180 * DAY };
+    save(localStorage, CONSENT, choice); dialog?.remove(); dialog = null;
+    if (state === "granted") start();
   }
-  function banner(){
-    if(consent!==null||bannerShown)return;
-    bannerShown=true;
-    const style=document.createElement("style");
-    style.textContent='.wrldline-consent{position:fixed;inset-inline:14px;bottom:14px;z-index:300;width:calc(100% - 28px);max-width:620px;margin:auto;box-sizing:border-box;overflow-wrap:anywhere;background:#101b2d;color:#f3f6fb;border:1px solid #3b506a;border-radius:14px;padding:14px 16px;box-shadow:0 16px 50px #0006;font:13px/1.8 "IBM Plex Sans Arabic",sans-serif}.wrldline-consent p{margin:0 0 9px}.wrldline-consent a{color:#f0c36d}.wrldline-consent .actions{display:flex;gap:8px;flex-wrap:wrap}.wrldline-consent button{border:1px solid #3b506a;border-radius:8px;padding:7px 12px;background:#172941;color:#fff;font:700 12px inherit;cursor:pointer}.wrldline-consent button.primary{background:#e0b96f;color:#172234;border-color:#e0b96f}@media(max-width:520px){.wrldline-consent{inset-inline:8px;bottom:8px;padding:12px;width:calc(100vw - 16px);max-width:calc(100vw - 16px)}}@media(max-width:340px){.wrldline-consent{font-size:12px;line-height:1.65}.wrldline-consent .actions{gap:6px}.wrldline-consent button{padding:7px 9px;font-size:11px}}';
+  function openSettings() {
+    if (dialog) return;
+    dialog = document.createElement("aside"); dialog.className = "wrldline-consent";
+    dialog.setAttribute("role", "dialog"); dialog.setAttribute("aria-label", "إعداد القياس والخصوصية"); dialog.setAttribute("dir", "rtl");
+    dialog.innerHTML = '<p><strong>الخصوصية أولًا.</strong> القياس اختياري للقرّاء الموافقين فقط: الزيارات ووقت القراءة النشط والتفاعل. لا نحفظ نص البحث أو عنوان الخبر أو البريد أو الهاتف أو الروابط الكاملة أو عنوان IP.</p><label><input type="checkbox" data-returning> السماح بقياس عودة هذا المتصفح بمعرّف عشوائي يتغير خلال ٧ أيام (اختياري منفصل)</label><p>يمكنك سحب الموافقة في أي وقت. السحب يوقف القياس الجديد ولا يحذف تلقائياً أحداثاً سابقة تُمحى بعد ٣٠ يوماً.</p><div class="actions"><button type="button" data-choice="granted" data-consent="granted">قبول القياس</button><button type="button" data-choice="denied" data-consent="denied">رفض / سحب الموافقة</button><button type="button" data-close>إغلاق</button><a href="/privacy.html">الخصوصية</a></div>';
+    dialog.querySelector("[data-returning]").checked = choice?.returning === true;
+    dialog.addEventListener("click", e => {
+      const button = e.target.closest("[data-choice]");
+      if (button) setConsent(button.dataset.choice, { returning: dialog.querySelector("[data-returning]").checked });
+      else if (e.target.closest("[data-close]")) { dialog.remove(); dialog = null; }
+    });
+    document.body.appendChild(dialog); dialog.querySelector("button").focus();
+  }
+  async function confirmPlus(accessToken) {
+    // A checkout click is never a conversion. JWT + trusted billing record are required.
+    if (!granted() || !running) return null;
+    const epoch = generation;
+    const token = accessToken || await window.WRLDLINE_AUTH?.getAccessToken?.();
+    if (!token || epoch !== generation || !granted()) return null;
+    const ids = identifiers();
+    return ids ? transport({ version: 1, consent: true, operation: "verify_plus", event_id: uuid(), ...ids }, token) : null;
+  }
+  function boot() {
+    const style = document.createElement("style");
+    style.textContent = '.wrldline-consent{position:fixed;inset-inline:12px;bottom:12px;z-index:5000;max-width:620px;max-height:85vh;overflow:auto;margin:auto;padding:18px;border:1px solid #3b506a;border-radius:14px;background:#101b2d;color:#f3f6fb;font:13px/1.85 "IBM Plex Sans Arabic",sans-serif;box-shadow:0 16px 50px #0006}.wrldline-consent p{margin:0 0 10px}.wrldline-consent label{display:block;margin:8px 0}.wrldline-consent a{color:#e0b96f}.wrldline-consent .actions{display:flex;gap:8px;flex-wrap:wrap}.wrldline-consent button,.wrldline-privacy-settings{cursor:pointer;font:inherit;padding:8px 12px;border:1px solid #58708b;border-radius:8px;background:#172941;color:#fff}.wrldline-consent button:first-child{background:#e0b96f;color:#172234}.wrldline-consent :focus-visible,.wrldline-privacy-settings:focus-visible{outline:3px solid #e0b96f;outline-offset:3px}.wrldline-privacy-settings{display:block;margin:16px auto;font-size:12px}';
     document.head.appendChild(style);
-    const el=document.createElement("aside");el.className="wrldline-consent";el.setAttribute("role","dialog");el.setAttribute("aria-label","إعداد القياس والخصوصية");
-    el.innerHTML='<p><strong>الخصوصية أولًا.</strong> نستخدم قياسًا مجهولًا لمعرفة الصفحات والأحداث الأكثر استخدامًا. لا نرسل البريد أو الاسم أو نص البحث. يمكنك الرفض والمتابعة دون قياس.</p><div class="actions"><button type="button" class="primary" data-consent="granted">قبول القياس</button><button type="button" data-consent="denied">رفض</button><a href="privacy.html">سياسة الخصوصية</a></div>';
-    el.addEventListener("click",event=>{const button=event.target.closest("[data-consent]");if(!button)return;writeConsent(button.dataset.consent);el.remove();if(consent==="granted"){initGa4();flush();pageView();}else{queue.length=0;}});
-    document.body.appendChild(el);
+    const button = document.createElement("button"); button.type = "button"; button.className = "wrldline-privacy-settings"; button.textContent = "إعدادات قياس الجمهور والخصوصية"; button.addEventListener("click", openSettings); document.body.appendChild(button);
+    document.addEventListener("click", e => { if (e.target.closest?.("[data-analytics-settings]")) { e.preventDefault(); openSettings(); } });
+    if (!choice) { clearIdentifiers(); openSettings(); } else if (choice.state === "granted") start(); else clearIdentifiers();
+    window.addEventListener("storage", e => {
+      if (e.key !== CONSENT) return;
+      choice = stored(localStorage, CONSENT); stop(); if (granted()) start();
+    });
   }
-  window.WRLDLINE_ANALYTICS={track,consent:()=>consent,setConsent:value=>{if(value!=="granted"&&value!=="denied")return;writeConsent(value);if(value==="granted"){initGa4();flush();pageView();}},config:CONFIG};
-  document.addEventListener("DOMContentLoaded",()=>{banner();if(consent==="granted"){initGa4();flush();pageView();}});
-  if(document.readyState!=="loading"){banner();if(consent==="granted"){initGa4();flush();pageView();}}
+  window.WRLDLINE_ANALYTICS = Object.freeze({ track, flush, beginArticle, endArticle, confirmPlus, consent: () => granted() ? "granted" : choice?.state === "denied" ? "denied" : null, setConsent, withdraw: () => setConsent("denied"), openSettings, config: Object.freeze({ ...config }) });
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot, { once: true }); else boot();
 })();

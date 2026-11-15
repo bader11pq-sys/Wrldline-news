@@ -1,3 +1,10 @@
 User-agent: *
 Allow: /
+Disallow: /admin.html
+Disallow: /audience.html
+Disallow: /account.html
+Disallow: /api/
+Disallow: /*?article=
 Sitemap: https://al-ghaib.us.ci/sitemap.xml
+Sitemap: https://al-ghaib.us.ci/article-sitemap.xml
+Sitemap: https://al-ghaib.us.ci/news-sitemap.xml

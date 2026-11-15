@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="ar" dir="rtl" data-theme="light">
 <head>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="/vendor/supabase-2.119.0.js"></script>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#0d1a2b">
@@ -9,6 +9,8 @@
   <meta name="description" content="ورلدلاين نيوز — غرفة أخبار عالمية تضع الخبر في سياقه: تغطية مباشرة، ميزان روايات، أطلس تأثير، مرآة تاريخية، وموسوعة تاريخية مرجعية.">
   <meta name="robots" content="index,follow,max-image-preview:large">
   <link rel="canonical" href="https://al-ghaib.us.ci/">
+  <link rel="alternate" type="application/rss+xml" title="WRLDLINE RSS" href="https://al-ghaib.us.ci/rss.xml">
+  <link rel="alternate" type="application/atom+xml" title="WRLDLINE Atom" href="https://al-ghaib.us.ci/atom.xml">
   <meta property="og:type" content="website">
   <meta property="og:title" content="WRLDLINE NEWS | ورلدلاين نيوز">
   <meta property="og:description" content="العالم أمامك — أخبار موثوقة، سياق أعمق، وأدوات لفهم ما يحدث.">
@@ -90,6 +92,7 @@
       <nav class="wl-container wl-nav" aria-label="الأقسام الرئيسية">
         <div class="wl-nav-scroll">
           <a class="wl-nav-link nav-link is-active" href="index.html" data-category="all">الرئيسية</a>
+          <a class="wl-nav-link" href="/news/">الأخبار العامة</a>
           <a class="wl-nav-link nav-link wl-nav-link--live" href="#breakingSection"><i class="wl-live-dot" aria-hidden="true"></i> عاجل</a>
           <a class="wl-nav-link nav-link wl-nav-link--shorts" href="shorts.html"><span aria-hidden="true">▶</span> Shorts</a>
           <a class="wl-nav-link nav-link" href="context.html">غرفة السياق</a>
@@ -452,7 +455,7 @@
   <button class="back-to-top" id="backToTop" type="button" aria-label="العودة إلى أعلى الصفحة"><svg aria-hidden="true"><use href="#i-up"/></svg></button>
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
   <script src="taxonomy.js?v=20261114-contract1" defer></script>
   <script src="language.js?v=20261114-contract1" defer></script>
   <script src="script.js?v=20261115-edge1" defer></script>

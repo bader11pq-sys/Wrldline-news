@@ -4,7 +4,7 @@
   const SUPABASE_URL = "https://vmaxbnogmmfyrcucapnq.supabase.co";
   const SUPABASE_ANON_KEY = "sb_publishable_D3c88u75_LcEN460Y3Jcpw__EfqUnBx";
   const path = location.pathname.split("/").pop() || "index.html";
-  const publicPages = new Set(["account.html", "privacy.html", "terms.html"]);
+  const publicPages = new Set(["account.html", "privacy.html", "terms.html", "about.html", "contact.html", "corrections.html", "newsletter.html", "sources.html"]);
   if (publicPages.has(path)) return;
 
   document.documentElement.classList.add("wl-auth-pending");
@@ -16,11 +16,25 @@
     if (window.supabase?.createClient) return Promise.resolve();
     return new Promise((resolve, reject) => {
       const script = document.createElement("script");
-      script.src = "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2";
+      script.src = "/vendor/supabase-2.119.0.js";
       script.onload = resolve;
       script.onerror = reject;
       document.head.appendChild(script);
     });
+  }
+  async function observeNotifications(client) {
+    try {
+      for (const src of ["/notification-config.js", "/notification-client.js"]) {
+        if (src.includes("config") && window.WRLDLINE_NOTIFICATION_CONFIG) continue;
+        if (src.includes("client") && window.WRLDLINE_NOTIFICATIONS) continue;
+        await new Promise((resolve, reject) => {
+          const script = document.createElement("script");
+          script.src = src; script.onload = resolve; script.onerror = reject;
+          document.head.appendChild(script);
+        });
+      }
+      window.WRLDLINE_NOTIFICATIONS?.observeAuth(client);
+    } catch { /* Optional Push failure must not prevent authentication/reading. */ }
   }
   function gate() {
     if (!document.body) { document.addEventListener("DOMContentLoaded", gate, { once: true }); return; }
@@ -37,7 +51,7 @@
         '<span class="wl-auth-gate__eyebrow">WRLDLINE · PRIVATE NEWSROOM</span>' +
         '<h1>غرفة الأخبار لك بعد تسجيل الدخول</h1>' +
         '<p>أنشئ حساباً مجانياً أو سجّل الدخول لترى الأخبار، السياق، المرصد، والمحتوى المخصص لك.</p>' +
-        '<div class="wl-auth-gate__actions"><a class="wl-auth-gate__primary" href="account.html?next=' + encodeURIComponent(location.pathname + location.search) + '">تسجيل الدخول أو إنشاء حساب</a><a class="wl-auth-gate__secondary" href="privacy.html">اقرأ سياسة الخصوصية</a></div>' +
+        '<div class="wl-auth-gate__actions"><a class="wl-auth-gate__primary" href="account.html?next=' + encodeURIComponent(location.pathname + location.search) + '">تسجيل الدخول أو إنشاء حساب</a><a class="wl-auth-gate__secondary" href="/news/">تصفح الأخبار العامة</a><a class="wl-auth-gate__secondary" href="privacy.html">اقرأ سياسة الخصوصية</a></div>' +
         '<small>نحمي تجربة القراءة ونستخدم اختياراتك لترتيب الأخبار التي تهمك.</small>';
       document.body.appendChild(el);
     }
@@ -61,6 +75,7 @@
     try {
       await loadSupabase();
       const client = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, { auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true } });
+      void observeNotifications(client);
       const { data, error } = await client.auth.getSession();
       if (error || !data.session) gate();
       else allow(data.session, client);

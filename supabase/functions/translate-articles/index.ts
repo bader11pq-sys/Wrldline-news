@@ -56,6 +56,28 @@ function isWithinAiWindow(article:any) {
  return Number.isFinite(timestamp)&&ageMs>=-300000&&ageMs<=3600000;
 }
 
+// Keep this pure decision aligned with wrldline-news-ingest. Never retry a
+// rejected row, or replace legacy published output to fill optional AI context.
+function translationGenerationState(existing: any) {
+ if(existing?.translation_status==="rejected") return "rejected";
+ if(existing?.translation_status==="published") return "already_translated";
+ if(String(existing?.title||"").trim()&&String(existing?.summary||"").trim()) return "awaiting_human_review";
+ return "missing";
+}
+
+async function saveMachineDraft(db: any, existing: any, draft: any) {
+ // Compare-and-set prevents a publication/rejection made during provider work
+ // from being overwritten. A concurrent insert is preserved, never upserted.
+ if(existing) {
+  return await db.from("article_translations").update(draft)
+   .eq("id",existing.id).eq("translation_status",existing.translation_status)
+   .neq("translation_status","published").neq("translation_status","rejected")
+   .select("id").maybeSingle();
+ }
+ return await db.from("article_translations").upsert(draft,{onConflict:"article_id,lang",ignoreDuplicates:true})
+  .select("id").maybeSingle();
+}
+
 function extractJsonObject(raw: string) {
  const cleaned=String(raw||"").replace(/<think>[\s\S]*?<\/think>/gi,"").split(String.fromCharCode(96)).join("").replace(/<\|[^|]*\|>/g,"").trim();
  const candidates:string[]=[];
@@ -409,7 +431,8 @@ Deno.serve(async(req:Request)=>{
    const sourceSummary=String(article.summary||article.ai_summary||article.title||"").trim();
    const existing=await db.from("article_translations").select("id,ai_summary,title,summary,translation_status,translation_source").eq("article_id",article.id).eq("lang",target).maybeSingle();
    if(existing.error) throw existing.error;
-   if(existing.data?.title&&existing.data?.summary&&(!article.ai_summary||existing.data?.ai_summary)) return {id:article.id,status:"already_translated",lang:target,translation_status:existing.data.translation_status||"published"};
+   const generationState=translationGenerationState(existing.data);
+   if(generationState!=="missing") return {id:article.id,status:generationState,generated:false,lang:target,translation_status:existing.data?.translation_status||"review"};
    let sourceContent=sourceSummary;
    if(sourceContent.length<350) {
     const scraped=await firecrawlArticleText(article,firecrawlKey,db,4000);
@@ -456,15 +479,16 @@ Deno.serve(async(req:Request)=>{
    const title=String(translated.title||"").trim();
    const summary=String(translated.summary||"").trim();
    if(!title||!summary) throw new Error("AI returned an empty translated title or summary.");
-   const {error:upsertError}=await db.from("article_translations").upsert({
+   const {data:saved,error:upsertError}=await saveMachineDraft(db,existing.data,{
     article_id:article.id,lang:target,title:title.slice(0,500),summary:summary.slice(0,4000),
     ai_summary:String(translated.ai_summary||"").slice(0,2000),
     translation_status:"review",translation_source:"machine_draft",provider:provider,model:provider,
     reviewed_at:null,reviewed_by:null,published_at:null
-   },{onConflict:"article_id,lang"});
+   });
    if(upsertError) throw upsertError;
+   if(!saved) return {id:article.id,status:"translation_changed",generated:false,lang:target};
    await db.from("articles").update({translation_attempts:0,translation_retry_after:null,translation_last_error:null}).eq("id",article.id);
-   return {id:article.id,status:"translated",lang:target,provider,deepl_fallback_reason:provider==="deepl"?undefined:deeplError};
+   return {id:article.id,status:"awaiting_human_review",generated:true,translation_status:"review",lang:target,provider,deepl_fallback_reason:provider==="deepl"?undefined:deeplError};
   } catch(error) {
    if((error as any)?.deferred) {
     const attempts=Number(article.translation_attempts||0)+1;
