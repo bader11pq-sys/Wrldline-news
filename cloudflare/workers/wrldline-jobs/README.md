@@ -17,10 +17,9 @@ All queues use one consumer at a time, batch size 1, three retries, 30-second ba
 
 Set these in Cloudflare Dashboard → Workers & Pages → `wrldline-jobs` → Settings → Variables and Secrets → Add secret:
 
-- `SUPABASE_PUBLISHABLE_KEY`: copy the value of the existing Supabase Vault secret `wrldline_news_publishable_key_20261113`.
 - `WRLDLINE_CRON_SECRET`: copy the value of the existing Supabase Vault secret `wrldline_news_cron_secret_20261113`.
 
-Do not put either value in this repository or in frontend code.
+The publishable API key is already configured as a non-secret Worker binding because it is a public client key. Never use a Supabase service-role or secret key in this Worker. Do not put the cron secret in this repository or in frontend code.
 
 ## Activation order
 
