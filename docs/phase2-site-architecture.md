@@ -8,7 +8,7 @@ A focused Arabic newsroom for political and economic developments in the Arab re
 
 ## Navigation hierarchy
 
-1. **News:** الرئيسية، سياسة، اقتصاد، عاجل، أحدث الأخبار، الأرشيف.
+1. **News:** الرئيسية، سياسة، اقتصاد، عاجل، أحدث الأخبار، الأكثر قراءة، الأرشيف.
 2. **Understanding a story:** غرفة السياق، ميزان الروايات، أطلس التأثير.
 3. **Reference:** الموضوعات، دليل المصادر، افهمها في دقيقة، مرآة التاريخ، الموسوعة التاريخية.
 4. **Daily return:** الموجز اليومي، Shorts، النشرة المجانية.
