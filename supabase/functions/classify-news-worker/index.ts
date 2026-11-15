@@ -32,7 +32,7 @@ Deno.serve(async (req: Request) => {
   await db.rpc("expire_stale_classification_queue");
   await db.rpc("release_stale_classification_claims");
 
-  const claimed = await db.rpc("claim_classification_batch", { p_limit: 20 });
+  const claimed = await db.rpc("claim_classification_batch", { p_limit: 10 });
   if (claimed.error) {
     return json({ error: "Could not claim classification batch", detail: claimed.error.message }, 500);
   }
@@ -68,7 +68,7 @@ Deno.serve(async (req: Request) => {
           "apikey": serviceKey,
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ article_ids: batch.map((article: any) => article.id), allow_backlog: true }),
+        body: JSON.stringify({ article_ids: batch.map((article: any) => article.id) }),
         signal: AbortSignal.timeout(115000),
       });
     } catch (error) {
