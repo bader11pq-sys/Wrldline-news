@@ -12,7 +12,7 @@ async def main():
    await c.close()
   # failure state
   c=await b.new_context(viewport={'width':1280,'height':800})
-  await c.route('**/rest/v1/articles**',lambda r: r.abort())
+  await c.route('**/rest/v1/rpc/public_home_news_recent**',lambda r: r.abort())
   pg=await c.new_page();await pg.goto(BASE+'/',wait_until='domcontentloaded');await pg.wait_for_timeout(13500)
   out['failure']={'hero':await pg.locator('#heroLayout').inner_text(),'retry':await pg.locator('#heroLayout button').count()}
   await c.close()
