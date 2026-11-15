@@ -23,6 +23,7 @@ function fixture(records = [article()], overrides = {}) {
     calls.push({ url, name, args, options });
     if (overrides[name]) return overrides[name](args, calls);
     if (name === 'public_news_article') return json(eligible().filter(a => a.id === args.p_id).slice(0, 1));
+    if (name === 'public_news_article_intelligence') return json(eligible().filter(a => a.id === args.p_id).slice(0, 1).map(a => ({ id: a.id, ai_summary: a.ai_summary || null, ai_reader_impact: a.ai_reader_impact || null, ai_watch_next: a.ai_watch_next || null })));
     if (name === 'public_news_recent') return json(eligible().filter(a => Date.parse(a.published_at) <= Date.parse(args.p_before) && (!args.p_since || Date.parse(a.published_at) >= Date.parse(args.p_since))).sort((a, b) => b.published_at.localeCompare(a.published_at) || a.id.localeCompare(b.id)).slice(args.p_offset, args.p_offset + args.p_limit));
     if (name === 'public_news_sitemap_index') return json(boundaries().filter(p => !args.p_page || p.page === args.p_page).slice(args.p_offset, args.p_offset + 1000));
     if (name === 'public_news_sitemap') return json(sorted().filter(a => !args.p_after || a.id > args.p_after).slice(0, 1000).map(a => ({ id: a.id, published_at: a.published_at, corrected_at: a.corrected_at || null })));
@@ -35,14 +36,20 @@ async function get(worker, pathname, options = {}, env = ENV) { return worker.fe
 function urls(xml) { return [...xml.matchAll(/<loc>([^<]+)<\/loc>/g)].map(m => m[1]); }
 function schema(html) { return JSON.parse(html.match(/<script[^>]*type="application\/ld\+json">([\s\S]*?)<\/script>/)[1]); }
 
-test('initial HTML contains published summary, own canonical metadata, attribution and optional trust enhancement without auth gate', async () => {
-  const a = article(1, { author: ['Real Reporter'], image_url: 'https://source.example/actual.jpg' });
+test('initial HTML contains published summary, reader impact context, canonical metadata, attribution and optional trust without auth gate', async () => {
+  const a = article(1, { author: ['Real Reporter'], image_url: 'https://source.example/actual.jpg', ai_summary: 'قراءة تحليلية موجزة.', ai_reader_impact: 'قد يؤثر القرار في تكاليف التجارة الإقليمية إذا دخل حيز التنفيذ.', ai_watch_next: 'راقب نشر النص التنفيذي والجدول الزمني الرسمي.' });
   const f = fixture([a]), response = await get(await workerFor(f), '/news/' + a.id, { headers: { Cookie: 'private=session', Authorization: 'Bearer private-session' } });
   const html = await response.text(), ld = schema(html);
   assert.equal(response.status, 200);
   assert.match(html, /<html lang="ar" dir="rtl" data-theme="dark">/);
   assert.ok(html.includes('<h1>' + a.title + '</h1>'));
   assert.ok(html.includes(a.summary));
+  assert.ok(html.includes(a.ai_summary));
+  assert.ok(html.includes(a.ai_reader_impact));
+  assert.ok(html.includes(a.ai_watch_next));
+  assert.match(html, /وش يعني لك\\؟/);
+  assert.match(html, /ما الذي نراقبه تالياً\\؟/);
+  assert.match(html, /ليست تحققاً بشرياً أو تنبؤاً/);
   assert.match(html, new RegExp('<link rel="canonical" href="' + ORIGIN + '/news/' + a.id + '">'));
   assert.ok(html.includes('href="' + a.source_url + '"'));
   assert.ok(html.includes('id="articleTrust" data-article-id="' + a.id + '"'));
@@ -55,10 +62,23 @@ test('initial HTML contains published summary, own canonical metadata, attributi
   assert.deepEqual(ld.author, [{ '@type': 'Person', name: 'Real Reporter' }]);
   assert.equal(ld.articleBody, a.summary);
   assert.equal(response.headers.get('cache-control'), 'no-store');
-  assert.equal(f.calls.length, 1);
+  assert.equal(f.calls.length, 2);
   assert.equal(f.calls[0].options.headers.apikey, ENV.SUPABASE_ANON_KEY);
+  assert.equal(f.calls[1].name, 'public_news_article_intelligence');
+  assert.deepEqual(f.calls[1].args, { p_id: a.id });
   assert.equal(f.calls[0].options.headers.Authorization, undefined);
   assert.equal(f.calls[0].options.headers.Cookie, undefined);
+});
+
+test('missing or unavailable reader-context RPC never blocks the attributed public summary', async () => {
+  const a = article(101, { ai_reader_impact: 'أثر محتمل.', ai_watch_next: 'إشارة لاحقة.' });
+  const f = fixture([a], { public_news_article_intelligence: () => json({ error: 'not deployed' }, 404) });
+  const response = await get(await workerFor(f), '/news/' + a.id);
+  const html = await response.text();
+  assert.equal(response.status, 200);
+  assert.ok(html.includes(a.summary));
+  assert.ok(html.includes(a.source_url));
+  assert.doesNotMatch(html, /وش يعني لك\\؟/);
 });
 
 test('unknown/malformed UUID and unpublished, future, undated or missing records are true noindex 404s', async () => {
