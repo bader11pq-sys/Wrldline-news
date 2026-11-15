@@ -47,13 +47,14 @@ New machine translations are written as `review` and are hidden from anonymous r
 
 The single scheduled path is the Supabase cron job `wrldline-ai-classification-worker`, which runs every minute and calls `classify-news-worker`. The worker:
 
-1. Expires queue rows older than 48 hours.
-2. Releases claims older than 15 minutes.
-3. Claims up to 20 rows atomically with `FOR UPDATE SKIP LOCKED`.
-4. Calls `classify-news` in batches of 10 with `allow_backlog: true`.
-5. Records `classification_attempts`, `classification_retry_after`, and `classification_last_error`.
+1. Expires all `pending`, `failed`, or stale `processing` rows older than 60 minutes.
+2. Releases claims older than 15 minutes only while the story is still inside the 60-minute window.
+3. Claims up to 10 rows atomically with `FOR UPDATE SKIP LOCKED`, prioritizing the newest eligible publication time.
+4. Calls `classify-news` once with up to 10 IDs. No `allow_backlog` override is sent or accepted.
+5. The classification function independently rejects every story older than 60 minutes, regardless of caller or role.
+6. Records `classification_attempts`, `classification_retry_after`, and `classification_last_error`.
 
-Queue states are `pending`, `processing`, `failed`, `classified`, `needs_review`, `expired`, and `skipped`. Rows older than 48 hours become `expired`; Telegram ticker rows become `skipped`; failed rows use bounded exponential backoff and stop at five attempts.
+Queue states are `pending`, `processing`, `failed`, `classified`, `needs_review`, `expired`, and `skipped`. Stories older than one hour become `expired`; Telegram ticker rows become `skipped`; failed rows use bounded exponential backoff and stop at five attempts.
 
 GitHub Actions `bot.yml` and `ai-backlog.yml` are now manual `workflow_dispatch` fallbacks only. They no longer run on a schedule, so they cannot race the Supabase cron.
 
