@@ -231,19 +231,20 @@ async function fetchNews(manual=false){
     return [];
    }
   };
-  const [mainRows,missedRows,breakingRows,exclusiveRows]=await Promise.all([
+  const [mainRows,missedRows,breakingRows,exclusiveRows,popularRows]=await Promise.all([
    getRows({p_limit:1000,p_before:now,p_since:null,p_offset:0,p_newsdata_only:false},true),
    getRows({p_limit:100,p_before:now,p_since:null,p_offset:0,p_newsdata_only:true}),
    getRows({p_limit:200,p_before:now,p_since:since24h,p_offset:0,p_is_breaking:true}),
-   getRows({p_limit:100,p_before:now,p_since:null,p_offset:0,p_is_exclusive:true})
+   getRows({p_limit:100,p_before:now,p_since:null,p_offset:0,p_is_exclusive:true}),
+   getRows({p_days:7,p_limit:5})
   ]);
-  const unique=new Map();[...mainRows,...missedRows,...breakingRows,...exclusiveRows].forEach(row=>{if(row?.id)unique.set(String(row.id),row);});
+  const unique=new Map();[...mainRows,...missedRows,...breakingRows,...exclusiveRows,...popularRows].forEach(row=>{if(row?.id)unique.set(String(row.id),row);});
   const rows=[...unique.values()];
   state.lastFetchAt=Date.now();
   const normalized=rows.map(normalizeArticle).filter(a=>a.title&&!BLOCKED_EDITORIAL_STATUSES.has(a.editorialStatus)&&!isLowQualityArticle(a)&&(!isTelegramArticle(a.raw)||(a.isBreaking===true&&isDedicatedBreakingSource(a.src))));
   state.articles=dedupeArticles(normalized);
   state.missedArticles=dedupeArticles(state.articles.filter(a=>a.isNewsDataOnly));
-  populateCountries();renderMissedStories();applyFilters();renderCoveragePulse();renderExclusive();updateBreaking();if(state.user)syncLocalSavedToCloud();const linkedId=new URLSearchParams(location.search).get("article");if(linkedId)openArticle(linkedId,false);
+  populateCountries();renderMissedStories();applyFilters();renderCoveragePulse();renderExclusive();renderPopularStories(popularRows);updateBreaking();if(state.user)syncLocalSavedToCloud();const linkedId=new URLSearchParams(location.search).get("article");if(linkedId)openArticle(linkedId,false);
   document.getElementById("lastUpdated").textContent=ui("آخر تحديث: ","Last updated: ")+formatDate(new Date());
   document.getElementById("connectionLabel").textContent=ui("الأخبار محدثة","News updated");
   document.getElementById("newsStatus")?.classList.remove("is-updating","is-error");
@@ -476,6 +477,17 @@ function renderMissedStories(){
  host.innerHTML=items.map(a=>'<article class="news-card missed-news-card content-card-'+a.contentType+'"><div class="card-open" role="button" tabindex="0" data-open="'+escapeHTML(a.id)+'">'+imageMarkup(a,"card-image")+'<div class="card-content"><div class="story-meta"><span class="category-label">'+escapeHTML(categoryName(a.cat))+'</span><span>'+escapeHTML(countryName(a.country,a.aiCountryCode))+'</span><span class="read-time">'+wlReadingTime(a)+'</span>'+wlSaveMarkup(a)+'</div><h3>'+escapeHTML(a.title)+'</h3>'+sourceLineMarkup(a)+'</div></div></article>').join("");
  host.querySelectorAll("[data-open]").forEach(el=>el.addEventListener("click",()=>openArticle(el.dataset.open)));
  host.querySelectorAll("[data-save]").forEach(el=>el.addEventListener("click",e=>{e.stopPropagation();toggleSaved(el.dataset.save);}));
+}
+function renderPopularStories(rows){
+ const host=document.getElementById("popularStoriesGrid");
+ if(!host)return;
+ const items=dedupeArticles((Array.isArray(rows)?rows:[]).map(normalizeArticle).filter(a=>a.title&&!BLOCKED_EDITORIAL_STATUSES.has(a.editorialStatus)&&!isLowQualityArticle(a)));
+ if(!items.length){
+  host.innerHTML='<p class="wl-popular-empty">لا توجد بيانات قراءة كافية بعد. سيظهر هذا القسم عندما يسجل الخبر قراءات فعلية من ثلاثة قراء مميزين على الأقل خلال آخر 7 أيام.</p>';
+  return;
+ }
+ host.innerHTML=items.slice(0,5).map((a,index)=>'<button type="button" class="wl-popular-item" data-open="'+escapeHTML(a.id)+'"><span class="wl-popular-rank">'+String(index+1).padStart(2,"0")+'</span><span class="wl-popular-copy"><strong>'+escapeHTML(a.title)+'</strong><small>'+escapeHTML(categoryName(a.cat))+' · '+escapeHTML(a.src||"WRLDLINE")+' · '+escapeHTML(timeAgo(a.published_at))+'</small></span><span class="wl-popular-arrow" aria-hidden="true">←</span></button>').join("");
+ host.querySelectorAll("[data-open]").forEach(el=>el.addEventListener("click",()=>openArticle(el.dataset.open)));
 }
 function renderExclusive(){
  const host=document.getElementById("exclusiveNewsGrid");if(!host)return;
