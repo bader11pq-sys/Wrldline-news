@@ -44,3 +44,18 @@ test("homepage consumes the backward-compatible v2 feed and exposes bounded read
   assert.match(migration, /public_news_article_intelligence/);
   assert.ok(!migration.includes("grant select on public.articles to anon"));
 });
+
+test("most-read module is backed by published article views and a minimum distinct-reader threshold", () => {
+  const homepage = read("index.html");
+  const script = read("script.js");
+  const migration = read("supabase/migrations/20261115100000_reader_impact_intelligence.sql");
+  assert.ok(homepage.includes('id="popularStoriesSection"'));
+  assert.ok(homepage.includes("الأكثر قراءة"));
+  assert.ok(script.includes("getRows({p_days:7,p_limit:5})"));
+  assert.ok(script.includes("renderPopularStories(popularRows)"));
+  assert.ok(migration.includes("create or replace function public.public_top_read_articles"));
+  assert.ok(migration.includes("e.event_name = 'view_article'"));
+  assert.ok(migration.includes("having count(distinct e.session_id) >= 3"));
+  assert.ok(!migration.includes("session_id, event_id"));
+  assert.ok(migration.includes("grant execute on function public.public_top_read_articles(integer, integer) to anon, authenticated;"));
+});
