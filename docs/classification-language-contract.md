@@ -45,14 +45,15 @@ New machine translations are written as `review` and are hidden from anonymous r
 
 ## Classification queue
 
-The single scheduled path is the Supabase cron job `wrldline-ai-classification-worker`, which runs every minute and calls `classify-news-worker`. The worker:
+The single production scheduled path is Cloudflare Worker `wrldline-jobs`: its `* * * * *` trigger enqueues one message to `wrldline-news-classification`, whose serialized consumer calls `classify-news-worker`. The duplicate Supabase Cron job `wrldline-ai-classification-worker` was unscheduled after Cloudflare delivery was verified. Do not recreate it while the Cloudflare schedule is active. The worker:
 
-1. Expires all `pending`, `failed`, or stale `processing` rows older than 60 minutes.
+1. Expires all `pending`, `failed`, or `processing` rows older than 60 minutes.
 2. Releases claims older than 15 minutes only while the story is still inside the 60-minute window.
 3. Claims up to 10 rows atomically with `FOR UPDATE SKIP LOCKED`, prioritizing the newest eligible publication time.
 4. Calls `classify-news` once with up to 10 IDs. No `allow_backlog` override is sent or accepted.
 5. The classification function independently rejects every story older than 60 minutes, regardless of caller or role.
-6. Records `classification_attempts`, `classification_retry_after`, and `classification_last_error`.
+6. Releases claimed IDs with no returned result when a provider defers a partial batch; do not leave them in `processing` unnecessarily.
+7. Records `classification_attempts`, `classification_retry_after`, and `classification_last_error`.
 
 Queue states are `pending`, `processing`, `failed`, `classified`, `needs_review`, `expired`, and `skipped`. Stories older than one hour become `expired`; Telegram ticker rows become `skipped`; failed rows use bounded exponential backoff and stop at five attempts.
 
@@ -84,6 +85,10 @@ select source_scope, count(*) from public.articles group by source_scope;
 select translation_status, translation_source, count(*) from public.article_translations group by 1,2;
 select public.classification_queue_stats();
 ```
+
+## Translation draft worker
+
+Cloudflare `wrldline-jobs` triggers the `translation` mode every five minutes. The ingestion function selects published articles from the previous 60 minutes and the `translate-articles` function independently enforces the same one-hour limit. DeepL is primary; configured AI providers are used as fallback. Generated translations are saved as `review` / `machine_draft` and require human approval before they become public. This is a draft pipeline, not automatic translation publication.
 
 ## Deployment
 
