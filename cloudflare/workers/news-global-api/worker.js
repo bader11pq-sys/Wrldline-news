@@ -20,7 +20,7 @@ export default {async fetch(request,env){
  if(!Number.isInteger(requestedLimit)||requestedLimit<1||requestedLimit>1000)return jsonError("Invalid article limit",400);
  if(url.searchParams.has("order")&&url.searchParams.get("order")!=="published_at.desc")return jsonError("Unsupported article ordering",400);
  for(const key of ["newsdata_only","is_breaking","is_exclusive"])if(url.searchParams.has(key)&&!["eq.true","eq.false"].includes(url.searchParams.get(key)))return jsonError("Invalid article filter",400);
- if(url.searchParams.has("published_at")&&!/^gte\\.\\d{4}-\\d{2}-\\d{2}T/.test(url.searchParams.get("published_at")))return jsonError("Invalid publication date filter",400);
+ if(url.searchParams.has("published_at")&&!/^gte\.\d{4}-\d{2}-\d{2}T/.test(url.searchParams.get("published_at")))return jsonError("Invalid publication date filter",400);
  if(!env.SUPABASE_ANON_KEY){console.error(JSON.stringify({event:"missing_supabase_key"}));return jsonError("News service is not configured",503);}
  const cacheable=!request.headers.has("Authorization"),cache=caches.default;
  const cacheKey=new Request(new URL(url.pathname+url.search,"https://wrldline-public-cache.internal").toString(),{method:"GET",headers:{Accept:request.headers.get("Accept")||"application/json"}});
