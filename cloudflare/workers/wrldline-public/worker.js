@@ -174,6 +174,10 @@ export function renderArticle(article, now, trust = null) {
   if (original.url) schema.isBasedOn = original.url;
   if (text(article.category, 120)) schema.articleSection = text(article.category, 120);
   const correction = text(article.correction_note, 4000);
+  const shareUrl = encodeURIComponent(canonical);
+  const shareTitle = encodeURIComponent(title);
+  const shareCaption = encodeURIComponent(`${title} — ${description}`);
+  const socialShare = `<div class="public-news-social" aria-label="${l.en ? "Share on social networks" : "مشاركة عبر الشبكات"}"><a href="https://wa.me/?text=${shareCaption}%20${shareUrl}" target="_blank" rel="noopener noreferrer">WhatsApp</a><a href="https://twitter.com/intent/tweet?text=${shareTitle}&url=${shareUrl}" target="_blank" rel="noopener noreferrer">X</a><a href="https://t.me/share/url?url=${shareUrl}&text=${shareTitle}" target="_blank" rel="noopener noreferrer">Telegram</a></div>`;
   const body = `<nav class="public-news-breadcrumb" aria-label="${l.en ? "Breadcrumb" : "مسار الصفحة"}"><a href="/news/">${l.news}</a> / ${escapeHTML(text(article.category, 120))}</nav>
 <article data-public-article data-audience-article data-article-id="${article.id}" data-category="${escapeHTML(text(article.category, 120))}" data-share-title="${escapeHTML(title)}" data-share-text="${escapeHTML(description)}" data-share-source="${escapeHTML(original.name)}" data-share-image="${escapeHTML(image)}" data-share-url="${canonical}">
 <p class="public-news-kicker">${escapeHTML([text(article.category, 120), text(article.event_country || article.country, 120)].filter(Boolean).join(" · "))}</p>
@@ -185,7 +189,7 @@ ${correction ? `<section class="public-news-correction" role="note"><h2>${l.corr
 <section class="public-news-source"><h2>${l.source}</h2>${original.name ? `<p>${escapeHTML(original.name)}</p>` : ""}${original.url ? `<a href="${escapeHTML(original.url)}" target="_blank" rel="noopener noreferrer">${l.original} ↗</a>` : `<p>${l.missing}</p>`}</section>
 <p class="public-news-disclosure">${l.disclosure}</p>
 <div id="articleTrust" data-article-id="${article.id}" data-trust-ssr="1">${trustSummary(article, trust, lang, now)}</div>
-<div class="public-news-actions"><button type="button" id="publicNewsShare">${l.share}</button><button type="button" id="publicNewsCopy">${l.copy}</button><a href="${canonical}">${l.en ? "Permanent article link" : "الرابط الدائم للخبر"}</a></div><span class="public-news-status" id="publicNewsStatus" role="status" aria-live="polite"></span>
+<div class="public-news-actions"><button type="button" id="publicNewsShare">${l.share}</button><button type="button" id="publicNewsCopy">${l.copy}</button><a href="${canonical}">${l.en ? "Permanent article link" : "الرابط الدائم للخبر"}</a></div>${socialShare}<span class="public-news-status" id="publicNewsStatus" role="status" aria-live="polite"></span>
 <noscript><p class="public-news-disclosure">${l.en ? "This published summary and source link are available without JavaScript." : "الملخص المنشور ورابط المصدر متاحان دون جافاسكريبت."}</p></noscript></article>`;
   return htmlResponse({ title: `${title} | WRLDLINE NEWS`, description, canonical, lang, image, body, schema, enhance: true });
 }
