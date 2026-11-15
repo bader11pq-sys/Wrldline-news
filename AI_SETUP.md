@@ -2,7 +2,7 @@
 
 ## Automatic background classification
 
-The repository includes a background worker (`classify-pending.js`) and GitHub Actions workflow. It checks newly published non-Telegram articles every 10 minutes and also runs after the regional/world ingestion workflows. It only sends rows whose AI status is empty or pending; low-confidence stories remain in editorial review and are not repeatedly billed.
+The production classification path is a Supabase Cron job (`wrldline-ai-classification-worker`) that invokes `classify-news-worker` every minute. GitHub Actions `ai-backlog.yml` and `bot.yml` are manual operator fallbacks only. Classification is strictly limited to stories published within the previous 60 minutes (with a five-minute future-clock tolerance); older stories are marked `expired` and must never be sent to an LLM.
 
 ### Required secrets — never commit or paste keys into chat
 
@@ -22,7 +22,7 @@ The Edge Function reads provider keys from the Supabase Edge Function environmen
 
 ## Operation
 
-Supabase Cron invokes the classification worker. It selects only published, non-Telegram articles from the last hour and sends up to ten IDs per run. The worker authenticates server-to-server and calls `classify-news`.
+Supabase Cron invokes the classification worker every minute. The database queue claims at most ten published, non-Telegram articles from the last 60 minutes; the Edge Function independently enforces the same 60-minute ceiling, so no request flag or manual caller can widen the window. Items older than one hour are marked `expired`. The worker authenticates server-to-server and calls `classify-news` once per run.
 
 Provider fallback order: Gemini → Groq → NVIDIA → Gonka → OpenRouter. Gonka uses `https://proxy.gonkabroker.com/v1`, discovers available models through `/models`, and sends JSON-only prompts because Gonka Broker does not currently support JSON mode / structured outputs. Healthcheck attempts `/test-auth` when the broker exposes it, discovers models, and verifies the credential with a real small classification+translation generation (the live `/chat/completions` response is the definitive auth check). NVIDIA requests use the OpenAI-compatible `/v1/chat/completions` endpoint with JSON output and disabled reasoning mode for predictable structured classification. The provider-healthcheck tests classification/translation-shaped JSON and reports the overall service healthy when at least one configured provider passes.
 
