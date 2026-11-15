@@ -2,8 +2,25 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url><loc>https://al-ghaib.us.ci/</loc></url>
   <url><loc>https://al-ghaib.us.ci/news/</loc></url>
-  <url><loc>https://al-ghaib.us.ci/about.html</loc></url>
+  <url><loc>https://al-ghaib.us.ci/topics.html</loc></url>
+  <url><loc>https://al-ghaib.us.ci/tags.html</loc></url>
+  <url><loc>https://al-ghaib.us.ci/markets.html</loc></url>
+  <url><loc>https://al-ghaib.us.ci/map.html</loc></url>
+  <url><loc>https://al-ghaib.us.ci/context.html</loc></url>
+  <url><loc>https://al-ghaib.us.ci/balance.html</loc></url>
+  <url><loc>https://al-ghaib.us.ci/impact.html</loc></url>
+  <url><loc>https://al-ghaib.us.ci/mirror.html</loc></url>
+  <url><loc>https://al-ghaib.us.ci/history.html</loc></url>
+  <url><loc>https://al-ghaib.us.ci/history-explore.html</loc></url>
+  <url><loc>https://al-ghaib.us.ci/history-compare.html</loc></url>
+  <url><loc>https://al-ghaib.us.ci/history-library.html</loc></url>
+  <url><loc>https://al-ghaib.us.ci/shorts.html</loc></url>
+  <url><loc>https://al-ghaib.us.ci/daily-briefing.html</loc></url>
+  <url><loc>https://al-ghaib.us.ci/explainers.html</loc></url>
+  <url><loc>https://al-ghaib.us.ci/promises.html</loc></url>
   <url><loc>https://al-ghaib.us.ci/sources.html</loc></url>
+  <url><loc>https://al-ghaib.us.ci/about.html</loc></url>
+  <url><loc>https://al-ghaib.us.ci/advertise.html</loc></url>
   <url><loc>https://al-ghaib.us.ci/contact.html</loc></url>
   <url><loc>https://al-ghaib.us.ci/privacy.html</loc></url>
   <url><loc>https://al-ghaib.us.ci/terms.html</loc></url>

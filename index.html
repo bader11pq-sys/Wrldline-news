@@ -6,15 +6,15 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#0d1a2b">
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
-  <meta name="description" content="ورلدلاين نيوز — غرفة أخبار عالمية تضع الخبر في سياقه: تغطية مباشرة، ميزان روايات، أطلس تأثير، مرآة تاريخية، وموسوعة تاريخية مرجعية.">
+  <meta name="description" content="WRLDLINE: الخبر، سياقه، وأثره عليك. تغطية عربية للسياسة والاقتصاد والأحداث العالمية، مع مقارنة الروايات وشرح ما يهم القارئ العربي.">
   <meta name="robots" content="index,follow,max-image-preview:large">
   <link rel="canonical" href="https://al-ghaib.us.ci/">
   <link rel="alternate" type="application/rss+xml" title="WRLDLINE RSS" href="https://al-ghaib.us.ci/rss.xml">
   <link rel="alternate" type="application/atom+xml" title="WRLDLINE Atom" href="https://al-ghaib.us.ci/atom.xml">
   <meta property="og:type" content="website">
-  <meta property="og:title" content="WRLDLINE NEWS | ورلدلاين نيوز">
-  <meta property="og:description" content="العالم أمامك — أخبار موثوقة، سياق أعمق، وأدوات لفهم ما يحدث.">
-  <title>WRLDLINE NEWS | ورلدلاين نيوز</title>
+  <meta property="og:title" content="WRLDLINE | أخبار السياسة والاقتصاد وسياقها">
+  <meta property="og:description" content="الخبر. سياقه. أثره عليك. تغطية سياسية واقتصادية عربية تشرح ما حدث ولماذا يهمك.">
+  <title>WRLDLINE | أخبار السياسة والاقتصاد وسياقها</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=Noto+Kufi+Arabic:wght@400;500;600;700;800&family=Amiri:wght@400;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -92,7 +92,9 @@
       <nav class="wl-container wl-nav" aria-label="الأقسام الرئيسية">
         <div class="wl-nav-scroll">
           <a class="wl-nav-link nav-link is-active" href="index.html" data-category="all">الرئيسية</a>
-          <a class="wl-nav-link" href="/news/">الأخبار العامة</a>
+          <a class="wl-nav-link nav-link" href="#newsSection" data-category="politics">سياسة</a>
+          <a class="wl-nav-link nav-link" href="#newsSection" data-category="economy">اقتصاد</a>
+          <a class="wl-nav-link" href="/news/">الأرشيف</a>
           <a class="wl-nav-link nav-link wl-nav-link--live" href="#breakingSection"><i class="wl-live-dot" aria-hidden="true"></i> عاجل</a>
           <a class="wl-nav-link nav-link wl-nav-link--shorts" href="shorts.html"><span aria-hidden="true">▶</span> Shorts</a>
           <a class="wl-nav-link nav-link" href="context.html">غرفة السياق</a>
@@ -112,6 +114,8 @@
             <a href="promises.html"><span class="wl-more-icon"><svg aria-hidden="true"><use href="#i-promise"/></svg></span><span>ذاكرة الوعود<small>هل نُفّذ ما وُعد به؟</small></span></a>
             <a href="explainers.html"><span class="wl-more-icon"><svg aria-hidden="true"><use href="#i-bolt"/></svg></span><span>افهمها في دقيقة<small>شرح سريع للمصطلحات والملفات</small></span></a>
             <a href="daily-briefing.html"><span class="wl-more-icon"><svg aria-hidden="true"><use href="#i-clock"/></svg></span><span>ملخص العالم اليومي<small>العالم في 24 ساعة</small></span></a>
+            <a href="topics.html"><span class="wl-more-icon"><svg aria-hidden="true"><use href="#i-layers"/></svg></span><span>الموضوعات<small>تصفّح التغطية حسب اهتمامك</small></span></a>
+            <a href="tags.html"><span class="wl-more-icon"><svg aria-hidden="true"><use href="#i-layers"/></svg></span><span>الوسوم<small>انتقل مباشرة إلى أخبار الموضوع</small></span></a>
             <a href="shorts.html"><span class="wl-more-icon"><svg aria-hidden="true"><use href="#i-bolt"/></svg></span><span>WRLDLINE Shorts<small>موجز عمودي سريع</small></span></a>
           </div>
         </div>
@@ -133,9 +137,9 @@
       <div class="wl-container">
         <div class="wl-hero-top">
           <div class="wl-hero-title">
-            <span class="wl-kicker">THE WORLD. IN CONTEXT.</span>
-            <h1>العالم أمامك، <em>بسياقه.</em></h1>
-            <p>لا نكتفي بما حدث. نضيف الخلفية، ونقارن الروايات، ونوضح الأثر، ونربط الحاضر بذاكرة التاريخ.</p>
+            <span class="wl-kicker">THE NEWS. ITS CONTEXT. ITS IMPACT.</span>
+            <h1>الخبر. <em>سياقه. أثره عليك.</em></h1>
+            <p>نشرح السياسة والاقتصاد والأحداث العالمية من زاوية تهم القارئ العربي: ماذا حدث؟ لماذا يهم؟ وما الذي لا نعرفه بعد؟</p>
           </div>
           <div class="wl-hero-side">
             <div class="wl-edition">
@@ -274,11 +278,18 @@
         </div>
         <div id="exclusiveNewsGrid" class="exclusive-news-grid"><div class="exclusive-empty">جارٍ التحقق من الأخبار الحصرية…</div></div>
       </section>
+      <section class="wl-section wl-popular-section" id="popularStoriesSection" aria-labelledby="popularStoriesHeading">
+        <div class="wl-section-head">
+          <div><span class="wl-kicker">READER SIGNAL</span><h2 id="popularStoriesHeading">الأكثر قراءة</h2><p>قصص قرأها ثلاثة قراء مميزين على الأقل خلال آخر 7 أيام. لا نرتب الأخبار بمشاهدات تجريبية أو بيانات فردية.</p></div>
+          <span class="wl-badge wl-badge--outline">آخر 7 أيام</span>
+        </div>
+        <div id="popularStoriesGrid" class="wl-popular-grid" aria-live="polite"><p class="wl-popular-empty">ستظهر هنا القصص الأكثر قراءة عند توفر بيانات قراءة كافية.</p></div>
+      </section>
     </div>
 
     <div class="wl-container wl-main">
       <div class="wl-main-grid">
-        <div class="wl-feed">
+        <div class="wl-feed" id="newsSection">
           <div class="wl-feed-head">
             <div><span class="wl-kicker">CONTINUOUS COVERAGE</span><h2 id="feedTitle">أحدث الأخبار</h2></div>
             <div class="wl-feed-controls">
@@ -402,6 +413,10 @@
         <div><span class="wl-kicker">GLOBAL DAILY BRIEFING</span><h2>العالم في 24 ساعة</h2><p>ملخص موسّع لأبرز أحداث اليوم، مع السياق والتأثير وروابط المصادر الأصلية.</p></div>
         <a class="wl-btn wl-btn--ghost" href="daily-briefing.html">اقرأ الملخص <svg aria-hidden="true"><use href="#i-arrow"/></svg></a>
       </section>
+      <section class="wl-newsletter-banner" aria-labelledby="newsletterBannerTitle">
+        <div><span class="wl-kicker">WRLDLINE BRIEFING</span><h2 id="newsletterBannerTitle">لا تتابع العناوين فقط. افهم ما وراءها.</h2><p>موجز يومي أو أسبوعي تختار فيه السياسة والاقتصاد والدول التي تهمك. الاشتراك مجاني، ولا يبدأ الإرسال إلا بعد تأكيد بريدك.</p></div>
+        <a class="wl-btn wl-btn--ghost" href="newsletter.html">خصص نشرتك المجانية <svg aria-hidden="true"><use href="#i-arrow"/></svg></a>
+      </section>
     </div>
   </main>
 
@@ -411,7 +426,7 @@
       <div class="footer-main">
         <div>
           <a class="wl-brand footer-brand" href="index.html"><span class="wl-brand-mark">W</span><span class="wl-brand-copy"><strong>WRLDLINE</strong><small>GLOBAL NEWS NETWORK</small></span></a>
-          <p class="footer-about">منصة إخبارية رقمية تضع العالم في سياقه: تغطية متعددة المصادر، أدوات للمقارنة والفهم، وموسوعة تاريخية مرجعية مفتوحة.</p>
+          <p class="footer-about">منصة عربية تشرح أخبار السياسة والاقتصاد والعالم: الخبر، سياقه، أثره المحتمل على القارئ، وما تؤيده الأدلة المتاحة.</p>
         </div>
         <div class="footer-col">
           <h3>غرف الأخبار</h3>
@@ -423,7 +438,7 @@
         </div>
         <div class="footer-col">
           <h3>الموقع</h3>
-          <a href="about.html">عن الموقع</a><a href="contact.html">التواصل</a><a href="privacy.html">الخصوصية</a><a href="terms.html">الشروط</a><a href="corrections.html">التصحيح</a><a href="newsletter.html">النشرة</a>
+          <a href="about.html">عن الموقع</a><a href="topics.html">الموضوعات</a><a href="tags.html">الوسوم</a><a href="advertise.html">للمعلنين</a><a href="contact.html">التواصل</a><a href="privacy.html">الخصوصية</a><a href="terms.html">الشروط</a><a href="corrections.html">التصحيح</a><a href="newsletter.html">النشرة</a>
         </div>
       </div>
       <div class="footer-bottom">

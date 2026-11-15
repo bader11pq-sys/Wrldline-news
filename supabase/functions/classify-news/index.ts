@@ -22,6 +22,8 @@ const schema = {
     risk_score: { type: "integer" },
     confidence: { type: "number" },
     summary: { type: "string" },
+    reader_impact: { type: "string" },
+    watch_next: { type: "string" },
     location_name: { type: ["string","null"] },
     latitude: { type: ["number","null"] },
     longitude: { type: ["number","null"] },
@@ -35,7 +37,7 @@ const schema = {
     topic_confidence: { type: "number" },
     topic_reason: { type: "string" }
   },
-  required: ["country","country_code","region","event_type","risk_level","risk_score","confidence","summary","location_name","latitude","longitude","is_exclusive","exclusive_type","exclusive_confidence","exclusive_reason","topic","secondary_topics","geographic_scope","topic_confidence","topic_reason"]
+  required: ["country","country_code","region","event_type","risk_level","risk_score","confidence","summary","reader_impact","watch_next","location_name","latitude","longitude","is_exclusive","exclusive_type","exclusive_confidence","exclusive_reason","topic","secondary_topics","geographic_scope","topic_confidence","topic_reason"]
 };
 
 function json(body: unknown, status = 200) {
@@ -247,7 +249,7 @@ async function gonkaGenerate(prompt:string,apiKey:string,maxOutputTokens:number)
  return extractJsonObject(raw);
 }
 async function generateWithPrimaryModels(prompt: string, groqKey: string | null, nvidiaKey: string | null, bazaarlinkKey: string | null, bazaarlinkModel: string, maxOutputTokens: number, db: any, cooldowns: Set<string>) {
- const groqPrompt=prompt+"\\n\\nمهمتك الأساسية والحصرية في هذا الطلب: التصنيف التحريري. أعطِ الأولوية لدقة country وcountry_code وregion وevent_type وsummary وconfidence وtopic وsecondary_topics وgeographic_scope وtopic_confidence وtopic_reason. لا تخمّن عند غياب الدليل. أخرج كائن JSON بالمخطط الكامل المطلوب.";
+ const groqPrompt=prompt+"\\n\\nمهمتك الأساسية والحصرية في هذا الطلب: التصنيف التحريري. أعطِ الأولوية لدقة country وcountry_code وregion وevent_type وsummary وreader_impact وwatch_next وconfidence وtopic وsecondary_topics وgeographic_scope وtopic_confidence وtopic_reason. لا تخمّن عند غياب الدليل. أخرج كائن JSON بالمخطط الكامل المطلوب.";
  const nvidiaPrompt=prompt+"\\n\\nمهمتك الأساسية والحصرية في هذا الطلب: تحليل المخاطر والجغرافيا والحصرية. أعطِ الأولوية لدقة risk_level وrisk_score وlocation_name وlatitude وlongitude وis_exclusive وexclusive_type وexclusive_confidence وexclusive_reason. لا تخمّن عند غياب الدليل. أخرج كائن JSON بالمخطط الكامل المطلوب.";
  async function runPrimary(name:"groq"|"nvidia",key:string|null,taskPrompt:string,call:typeof groqGenerate) {
   if(!key)return {data:null,provider:null,error:name+" API key is not configured"};
@@ -392,12 +394,14 @@ Deno.serve(async (req: Request) => {
         "إذا لم يظهر دليل صريح في العنوان والملخص، اجعل is_exclusive=false وexclusive_type=none وexclusive_confidence أقل من 0.60. لا تستنتج الحصرية من سمعة المصدر أو صياغة العنوان وحدها.",
         "exclusive_type: exclusive_scoop لسبق محدد، investigation لتحقيق معمق/استقصائي، original_reporting لتقرير أصلي موثق غير معلن كسبق. exclusive_reason جملة قصيرة تذكر القرينة النصية أو سبب الاستبعاد.",
         "أعد ملخصاً عربياً موجزاً ومحايداً.",
+        "reader_impact: فقرة عربية قصيرة تشرح الصلة المحتملة للقارئ العربي اعتماداً على وقائع هذا الخبر فقط. ميّز بين الأثر المؤكد والاحتمال. لا تقدم نصيحة استثمارية أو شخصية ولا تعمم أثراً على كل القراء. إذا لم يظهر أثر مباشر مدعوم فاكتب: لا يظهر من المادة المتاحة أثر مباشر محدد على القارئ العربي.",
+        "watch_next: اذكر مؤشراً أو تطوراً محدداً يستحق المتابعة مما يدعمه الخبر. لا تخترع موعداً أو حدثاً مستقبلياً أو سيناريو جازماً. إذا لم تتوفر إشارة محددة فاكتب: لا يوجد تطور محدد يمكن الجزم بمراقبته بعد.",
         "المصدر: " + (article.source_name || "غير معروف"),
         "العنوان: " + (article.title || ""),
         "نص الخبر المستخرج من المصدر (قد يكون أطول من مقتطف RSS): " + articleBody,
         "لا تعتمد على أي تصنيف أو دولة محفوظة مسبقاً؛ استنتجها من نص الخبر والعنوان فقط."
       ].join("\\n");
-      const generated = await generateWithPrimaryModels(prompt + "\n\nأعد كائن JSON فقط بهذه المفاتيح: country,country_code,region,event_type,risk_level,risk_score,confidence,summary,location_name,latitude,longitude,is_exclusive,exclusive_type,exclusive_confidence,exclusive_reason,topic,secondary_topics,geographic_scope,topic_confidence,topic_reason. country_code وregion وlocation_name وlatitude وlongitude تقبل null. exclusive_type إحدى القيم none أو exclusive_scoop أو investigation أو original_reporting. topic وgeographic_scope من القوائم المذكورة أعلاه.", groqKey, nvidiaKey, bazaarlinkKey, bazaarlinkModel, 1500, db, providerCooldowns);
+      const generated = await generateWithPrimaryModels(prompt + "\n\nأعد كائن JSON فقط بهذه المفاتيح: country,country_code,region,event_type,risk_level,risk_score,confidence,summary,reader_impact,watch_next,location_name,latitude,longitude,is_exclusive,exclusive_type,exclusive_confidence,exclusive_reason,topic,secondary_topics,geographic_scope,topic_confidence,topic_reason. country_code وregion وlocation_name وlatitude وlongitude تقبل null. exclusive_type إحدى القيم none أو exclusive_scoop أو investigation أو original_reporting. topic وgeographic_scope من القوائم المذكورة أعلاه.", groqKey, nvidiaKey, bazaarlinkKey, bazaarlinkModel, 1500, db, providerCooldowns);
       const parsed = generated.data;
       const confidence = clamp(Number(parsed.confidence) || 0, 0, 1);
       const riskScore = clamp(Math.round(Number(parsed.risk_score) || 0), 0, 100);
@@ -437,6 +441,8 @@ Deno.serve(async (req: Request) => {
         ai_risk_score: riskLevel === "unknown" ? 0 : riskScore,
         ai_confidence: confidence,
         ai_summary: String(parsed.summary || "").slice(0, 500),
+        ai_reader_impact: String(parsed.reader_impact || "").slice(0, 900),
+        ai_watch_next: String(parsed.watch_next || "").slice(0, 900),
         ai_location_name: typeof parsed.location_name === "string" ? parsed.location_name.slice(0, 160) : null,
         ai_latitude: validCoords ? lat : null,
         ai_longitude: validCoords ? lng : null,

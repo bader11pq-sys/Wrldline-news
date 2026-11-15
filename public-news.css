@@ -33,3 +33,9 @@
 #wrldlineShareToast.show{opacity:1}
 @media(max-width:560px){.public-news-header .wl-masthead{gap:10px}.public-news-header .wl-account{padding:0 10px}.public-news-main{margin-top:24px}.public-news-source,.public-news-correction{padding:16px}.public-news-nav{gap:10px 18px}.public-news-meta{gap:8px 14px}}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+
+/* Reader value layer: summary remains separate from AI-assisted context. */
+.public-news-intelligence{margin:26px 0;padding:22px;border:1px solid var(--line);border-inline-start:4px solid var(--gold);border-radius:var(--radius-sm);background:var(--surface-2)}.public-news-intelligence>h2{font-size:20px;margin:0 0 14px}.public-news-intelligence>div{padding-block:10px;border-top:1px solid var(--line)}.public-news-intelligence h3{font-size:15px;margin:0 0 6px}.public-news-intelligence p{font-size:14px;line-height:1.95;margin:0;color:var(--ink-2)}.public-news-intelligence small{display:block;margin-top:12px;color:var(--muted);font-size:11px;line-height:1.8}
+
+/* Direct social links remain available when native sharing is unavailable. */
+.public-news-social{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0 24px}.public-news-social a{display:inline-flex;align-items:center;justify-content:center;min-height:38px;padding:7px 13px;border:1px solid var(--line);border-radius:9px;text-decoration:none;color:var(--ink);font-size:12px;font-weight:650}.public-news-social a:hover{border-color:var(--gold);background:var(--surface-2)}
