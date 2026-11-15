@@ -48,6 +48,9 @@ test('initial HTML contains published summary, reader impact context, canonical 
   assert.ok(html.includes(a.ai_reader_impact));
   assert.ok(html.includes(a.ai_watch_next));
   assert.ok(html.includes("وش يعني لك؟"));
+  assert.ok(html.includes("https://wa.me/?text="));
+  assert.ok(html.includes("https://twitter.com/intent/tweet?text="));
+  assert.ok(html.includes("https://t.me/share/url?url="));
   assert.ok(html.includes("ما الذي نراقبه تالياً؟"));
   assert.ok(html.includes("لا يُعد تحققاً بشرياً أو تنبؤاً أو نصيحة مالية شخصية"));
   assert.match(html, new RegExp('<link rel="canonical" href="' + ORIGIN + '/news/' + a.id + '">'));
