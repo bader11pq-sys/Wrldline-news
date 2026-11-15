@@ -37,9 +37,10 @@ test("homepage consumes the backward-compatible v2 feed and exposes bounded read
   assert.ok(newsroom.includes("/rest/v1/rpc/public_home_news_recent_v2"));
   assert.match(homepage, /ai_reader_impact/);
   assert.match(homepage, /ai_watch_next/);
-  assert.match(migration, /create or replace function public\\.public_home_news_recent_v2/);
+  assert.ok(migration.includes("create or replace function public.public_home_news_recent_v2"));
   assert.match(migration, /security definer\\s+set search_path = pg_catalog/i);
-  assert.match(migration, /grant execute on function public\\.public_home_news_recent_v2[\\s\\S]*?to anon, authenticated/i);
+  assert.ok(migration.includes("grant execute on function public.public_home_news_recent_v2("));
+  assert.ok(migration.includes("to anon, authenticated;"));
   assert.match(migration, /public_news_article_intelligence/);
   assert.doesNotMatch(migration, /grant\\s+select\\s+on\\s+public\\.articles\\s+to\\s+anon/i);
 });
