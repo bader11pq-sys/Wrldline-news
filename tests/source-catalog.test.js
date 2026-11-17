@@ -30,6 +30,8 @@ test("breaking collection monitors exactly 20 sources from the same 80-source ca
   assert.equal(new Set(breakingSources.map((source) => source.breaking_domain)).size, 20);
   assert.match(breaking, /catalog\.length!==80/);
   assert.match(breaking, /urgentSources\.length!==20/);
+  assert.match(breaking, /urgentSources\.some\(f=>f\.lang!=="ar"\)/);
+  assert.match(breaking, /GOOGLE\(f\.breaking_domain,"ar"\)/);
   assert.doesNotMatch(breaking, /batchSize=250|catalog\.length>=1000|recordBreakingFeed|STATIC_FEEDS/);
 });
 
