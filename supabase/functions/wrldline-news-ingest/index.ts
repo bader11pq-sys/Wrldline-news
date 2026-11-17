@@ -113,24 +113,42 @@ async function setFeedHealth(feed: any,result: any) {
  return r.ok;
 }
 async function ensureSourceCatalog() {
- const current=await dbRequest("feeds?select=url&pipeline=eq.general&active=eq.true&limit=1001");
- if(current.ok && (await current.json()).length>=1000) return;
  const response=await fetch(SOURCE_CATALOG_URL,{signal:AbortSignal.timeout(15000)});
  if(!response.ok) throw new Error("Source catalog HTTP "+response.status);
  const catalog=await response.json();
- if(!Array.isArray(catalog)||catalog.length<1000) throw new Error("Source catalog is incomplete");
- const rows=catalog.slice(0,1000).map((feed:any)=>({name:String(feed.name||feed.url).slice(0,180),url:feed.url,lang:feed.lang||"en",category:normalizeCategory(feed.category),country:feed.country||null,active:true,pipeline:"general",source_kind:"publisher_feed"}));
- for(let offset=0;offset<rows.length;offset+=100) {
-  const saved=await dbRequest("feeds?on_conflict=url",{method:"POST",headers:{"Prefer":"resolution=merge-duplicates,return=minimal"},body:JSON.stringify(rows.slice(offset,offset+100))});
-  if(!saved.ok) throw new Error("Source catalog write HTTP "+saved.status);
+ if(!Array.isArray(catalog)||catalog.length!==80) throw new Error("Source catalog must contain exactly 80 sources");
+ const urls=catalog.map((feed:any)=>String(feed?.url||""));
+ if(urls.some((url:string)=>!(url.startsWith("https://")||url.startsWith("http://")) )||new Set(urls).size!==80) throw new Error("Source catalog contains invalid or duplicate URLs");
+ const breakingSources=catalog.filter((feed:any)=>feed?.breaking===true);
+ if(breakingSources.length!==20||breakingSources.some((feed:any)=>!String(feed?.breaking_domain||"").trim())) throw new Error("Source catalog must define exactly 20 breaking-monitor sources with publisher domains");
+ const rows=catalog.map((feed:any)=>({
+  name:String(feed.name||feed.url).slice(0,180),
+  url:String(feed.url),
+  lang:feed.lang==="ar"?"ar":"en",
+  category:normalizeCategory(feed.category),
+  country:feed.country||null,
+  active:true,
+  pipeline:"general",
+  source_scope:normalizeScope(feed.source_scope||inferSourceScope(feed)),
+  source_kind:"publisher_feed"
+ }));
+ for(let offset=0;offset<rows.length;offset+=40) {
+  const saved=await dbRequest("feeds?on_conflict=url",{
+   method:"POST",
+   headers:{"Prefer":"resolution=merge-duplicates,return=minimal"},
+   body:JSON.stringify(rows.slice(offset,offset+40))
+  });
+  if(!saved.ok) throw new Error("Source catalog write HTTP "+saved.status+" "+(await saved.text()).slice(0,180));
  }
+ return {configured_sources:80,breaking_monitors:20};
 }
 async function runGeneral() {
- await ensureSourceCatalog();
- const batchSize=250, offset=(Math.floor(Date.now()/120000)*batchSize)%1000;
- const r=await dbRequest("feeds?select=id,name,url,lang,category,source_scope,active&pipeline=eq.general&active=eq.true&order=name.asc&limit="+batchSize+"&offset="+offset);
+ const catalog=await ensureSourceCatalog();
+ const r=await dbRequest("feeds?select=id,name,url,lang,category,source_scope,active&pipeline=eq.general&active=eq.true&order=name.asc&limit=81");
  if(!r.ok) throw new Error("Could not load feeds: "+r.status+" "+(await r.text()).slice(0,160));
  const feeds=await r.json();
+ const uniqueUrls=new Set(feeds.map((feed:any)=>feed.url));
+ if(feeds.length!==80||uniqueUrls.size!==80) throw new Error("RSS registry must have exactly 80 active unique sources; found "+feeds.length);
  const runId=await beginRun("general");
  let next=0; const results=new Array(feeds.length);
  async function worker() {
@@ -139,15 +157,21 @@ async function runGeneral() {
    await setFeedHealth(feeds[i],result).catch(()=>false);
   }
  }
- await Promise.all(Array.from({length:16},worker));
- const summary={pipeline:"general",feeds:feeds.length,successful:results.filter(x=>x?.ok).length,failed:results.filter(x=>!x?.ok).length,parsed_items:results.reduce((n,x)=>n+(x?.parsed||0),0),fallbacks:results.filter(x=>x?.usedFallback).length};
+ await Promise.all(Array.from({length:12},worker));
+ const summary={
+  pipeline:"general",
+  configured_sources:catalog.configured_sources,
+  breaking_monitors:catalog.breaking_monitors,
+  feeds:feeds.length,
+  successful:results.filter(x=>x?.ok).length,
+  failed:results.filter(x=>!x?.ok).length,
+  parsed_items:results.reduce((n,x)=>n+(x?.parsed||0),0),
+  fallbacks:results.filter(x=>x?.usedFallback).length
+ };
  await updateRun(runId,{source_count:summary.feeds,successful_sources:summary.successful,failed_sources:summary.failed,parsed_items:summary.parsed_items,error_summary:results.filter(x=>!x?.ok).slice(0,12).map(x=>String(x?.name||"unknown")+": "+String(x?.error||"failed")).join(" | ")||null});
  return summary;
 }
 
-// Dedicated 90-source urgent polling runs in bot-breaking.js through GitHub Actions.
-// This cron worker classifies urgent headlines already collected by the 146-feed newsroom,
-// avoiding a second burst of 90 external requests from the Supabase Edge runtime.
 async function runBreaking() {
  const runId=await beginRun("breaking");
  const cutoff=new Date(Date.now()-2*60*60*1000).toISOString();
