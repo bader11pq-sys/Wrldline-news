@@ -67,8 +67,8 @@ async function requestText(url: string,timeout=7000) {
  throw new Error("Request failed after retries");
 }
 function isFeedDocument(xml: string) {
- const value=String(xml||"").replace(/^\\uFEFF/,"").trimStart().replace(/^<\\?xml[^>]*\\?>\\s*/i,"").trimStart();
- return /^<(?:rss|feed|rdf:RDF)\\b/i.test(value);
+ const value=String(xml||"").replace(/^\uFEFF/,"").trimStart().replace(/^<\?xml[^>]*\?>\s*/i,"").trimStart();
+ return /^<(?:rss|feed|rdf:RDF)\b/i.test(value);
 }
 function googleFallback(feed: any) {
  try {
