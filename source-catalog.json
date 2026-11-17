@@ -469,7 +469,7 @@
     "lang": "en",
     "source_scope": "international",
     "pipeline": "general",
-    "breaking": false,
+    "breaking": true,
     "breaking_domain": "tass.com"
   },
   {
@@ -645,8 +645,8 @@
     "lang": "en",
     "source_scope": "international",
     "pipeline": "general",
-    "breaking": true,
-    "breaking_domain": "ft.com"
+    "breaking": false,
+    "breaking_domain": null
   },
   {
     "name": "Los Angeles Times World",
@@ -656,8 +656,8 @@
     "lang": "en",
     "source_scope": "international",
     "pipeline": "general",
-    "breaking": true,
-    "breaking_domain": "wsj.com"
+    "breaking": false,
+    "breaking_domain": null
   },
   {
     "name": "Financial Times",
@@ -667,8 +667,8 @@
     "lang": "en",
     "source_scope": "international",
     "pipeline": "general",
-    "breaking": false,
-    "breaking_domain": null
+    "breaking": true,
+    "breaking_domain": "ft.com"
   },
   {
     "name": "The Wall Street Journal",
@@ -678,8 +678,8 @@
     "lang": "en",
     "source_scope": "international",
     "pipeline": "general",
-    "breaking": false,
-    "breaking_domain": null
+    "breaking": true,
+    "breaking_domain": "wsj.com"
   },
   {
     "name": "The Economist",
@@ -711,7 +711,7 @@
     "lang": "en",
     "source_scope": "international",
     "pipeline": "general",
-    "breaking": true,
+    "breaking": false,
     "breaking_domain": null
   },
   {
