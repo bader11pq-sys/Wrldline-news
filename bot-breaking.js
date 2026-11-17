@@ -66,11 +66,12 @@ async function main(){
  if(uniqueUrls.size!==80||catalog.some(f=>!f.url||!f.name||!f.lang))throw new Error("The 80-source catalog contains missing or duplicate source records");
  const urgentSources=catalog.filter(f=>f.breaking===true);
  if(urgentSources.length!==20)throw new Error("Expected exactly 20 breaking-monitor sources in the 80-source catalog");
+ if(urgentSources.some(f=>f.lang!=="ar"))throw new Error("Breaking-monitor sources must be Arabic-only");
  if(urgentSources.some(f=>!f.breaking_domain))throw new Error("Every breaking-monitor source needs an explicit publisher domain");
  FEEDS=urgentSources.map(f=>({
   publisher:f.name,
-  url:GOOGLE(f.breaking_domain,f.lang||"en"),
-  lang:f.lang||"en",
+  url:GOOGLE(f.breaking_domain,"ar"),
+  lang:"ar",
   category:f.category||"world",
   country:f.country||null,
   source_scope:f.source_scope||"international",
