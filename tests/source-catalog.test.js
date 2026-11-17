@@ -25,6 +25,7 @@ test("breaking collection monitors exactly 20 sources from the same 80-source ca
   const breakingSources = catalog.filter((source) => source.breaking === true);
   assert.equal(breakingSources.length, 20);
   assert.ok(breakingSources.every((source) => typeof source.breaking_domain === "string" && source.breaking_domain.length > 0));
+  assert.equal(new Set(breakingSources.map((source) => source.breaking_domain)).size, 20);
   assert.match(breaking, /catalog\.length!==80/);
   assert.match(breaking, /urgentSources\.length!==20/);
   assert.doesNotMatch(breaking, /batchSize=250|catalog\.length>=1000|recordBreakingFeed|STATIC_FEEDS/);
