@@ -118,7 +118,7 @@ async function ensureSourceCatalog() {
  const catalog=await response.json();
  if(!Array.isArray(catalog)||catalog.length!==80) throw new Error("Source catalog must contain exactly 80 sources");
  const urls=catalog.map((feed:any)=>String(feed?.url||""));
- if(urls.some((url:string)=>!/^https?:\\/\\//i.test(url))||new Set(urls).size!==80) throw new Error("Source catalog contains invalid or duplicate URLs");
+ if(urls.some((url:string)=>!(url.startsWith("https://")||url.startsWith("http://")) )||new Set(urls).size!==80) throw new Error("Source catalog contains invalid or duplicate URLs");
  const breakingSources=catalog.filter((feed:any)=>feed?.breaking===true);
  if(breakingSources.length!==20||breakingSources.some((feed:any)=>!String(feed?.breaking_domain||"").trim())) throw new Error("Source catalog must define exactly 20 breaking-monitor sources with publisher domains");
  const rows=catalog.map((feed:any)=>({
