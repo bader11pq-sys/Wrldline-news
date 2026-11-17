@@ -39,4 +39,9 @@ test("general ingestion rejects a registry or source catalog larger than the app
   assert.match(ingest, /catalog\.length!==80/);
   assert.match(ingest, /RSS registry must have exactly 80 active unique sources/);
   assert.doesNotMatch(ingest, /catalog\.length<1000|slice\(0,1000\)|batchSize=250/);
+  assert.match(ingest, /\[408,425,429,500,502,503,504\]/, "transient provider errors must be retried");
+  assert.match(ingest, /retry-after/i, "honour Retry-After when providers rate-limit");
+  assert.match(ingest, /function isFeedDocument/);
+  assert.match(ingest, /entries.length===0&&isFeedDocument\(xml\)/, "valid empty RSS/Atom feeds are healthy no-new-story polls");
+  assert.match(ingest, /no_new_items:true/);
 });
