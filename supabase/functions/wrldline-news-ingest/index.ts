@@ -46,9 +46,29 @@ function parsedDate(value: string | null | undefined) {
  return Number.isNaN(d.getTime())?null:d.toISOString();
 }
 async function requestText(url: string,timeout=7000) {
- const r=await fetch(url,{headers:{"User-Agent":"Mozilla/5.0 (compatible; WRLDLINE-News/3.0; +https://al-ghaib.us.ci)","Accept":"application/rss+xml, application/atom+xml, application/xml, text/xml, */*"},signal:AbortSignal.timeout(timeout)});
- if(!r.ok) throw new Error("HTTP "+r.status);
- return await r.text();
+ const headers={"User-Agent":"Mozilla/5.0 (compatible; WRLDLINE-News/3.0; +https://al-ghaib.us.ci)","Accept":"application/rss+xml, application/atom+xml, application/xml, text/xml, */*"};
+ for(let attempt=0;attempt<3;attempt++) {
+  const r=await fetch(url,{headers,signal:AbortSignal.timeout(timeout)});
+  if(r.ok) return await r.text();
+  const retryable=[408,425,429,500,502,503,504].includes(r.status);
+  if(!retryable||attempt===2) throw new Error("HTTP "+r.status);
+  const retryAfter=r.headers.get("retry-after");
+  let delay=600*(attempt+1);
+  if(retryAfter) {
+   const seconds=Number(retryAfter);
+   if(Number.isFinite(seconds)) delay=Math.min(8000,Math.max(500,seconds*1000));
+   else {
+    const retryAt=Date.parse(retryAfter);
+    if(!Number.isNaN(retryAt)) delay=Math.min(8000,Math.max(500,retryAt-Date.now()));
+   }
+  }
+  await new Promise(resolve=>setTimeout(resolve,delay));
+ }
+ throw new Error("Request failed after retries");
+}
+function isFeedDocument(xml: string) {
+ const value=String(xml||"").replace(/^\\uFEFF/,"").trimStart().replace(/^<\\?xml[^>]*\\?>\\s*/i,"").trimStart();
+ return /^<(?:rss|feed|rdf:RDF)\\b/i.test(value);
 }
 function googleFallback(feed: any) {
  try {
@@ -96,9 +116,13 @@ async function processGeneralFeed(feed: any) {
  for(let i=0;i<candidates.length;i++) {
   try {
    const xml=await requestText(candidates[i],7000);
+   const entries=xmlEntries(xml);
    const parsedRows=parseGeneral(xml,feed);
    const rows=[...new Map(parsedRows.map((row:any)=>[row.url,row])).values()];
-   if(!rows.length) throw new Error("Feed returned no parseable RSS/Atom entries");
+   if(!rows.length) {
+    if(entries.length===0&&isFeedDocument(xml)) return {ok:true,name:feed.name,parsed:0,usedFallback:i>0,no_new_items:true};
+    throw new Error("Feed returned no parseable RSS/Atom entries");
+   }
    const saved=await dbRequest("articles?on_conflict=url",{method:"POST",headers:{"Prefer":"resolution=ignore-duplicates,return=minimal"},body:JSON.stringify(rows)});
    if(!saved.ok) throw new Error("Database HTTP "+saved.status+" "+(await saved.text()).slice(0,160));
    return {ok:true,name:feed.name,parsed:rows.length,usedFallback:i>0};
