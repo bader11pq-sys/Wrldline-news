@@ -1,4 +1,4 @@
-// WRLDLINE dedicated breaking-news desk. Separate from the 100 general-news feeds.
+// WRLDLINE breaking-news desk. Monitors 20 urgent publishers selected from the canonical 80-source RSS catalog.
 const taxonomy=require("./taxonomy.js");
 const fs=require("fs");
 const URL=process.env.SUPABASE_URL,KEY=process.env.SUPABASE_SERVICE_ROLE_KEY;
