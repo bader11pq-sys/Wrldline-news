@@ -77,7 +77,7 @@
     try { const url = new URL(u); if (!["http:", "https:"].includes(url.protocol)) return ""; return url.href; } catch { return ""; }
   }
 
-  async function fetchArticles(limit = 400) {
+  async function fetchArticles(limit = 80) {
     if (!window.WRLDLINE_AUTH) {
       await new Promise(resolve => {
         let settled = false;
@@ -99,7 +99,7 @@
       const res = await fetch(url, {
         method: "POST",
         headers,
-        body: JSON.stringify({ p_limit: Math.min(1000, limit), p_before: new Date().toISOString(), p_since: null, p_offset: 0 }),
+        body: JSON.stringify({ p_limit: Math.max(1, Math.min(80, limit)), p_before: new Date().toISOString(), p_since: null, p_offset: 0 }),
         signal: AbortSignal.timeout(12000)
       });
       if (!res.ok) throw new Error("HTTP " + res.status);

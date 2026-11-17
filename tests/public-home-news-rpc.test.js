@@ -51,7 +51,8 @@ test("most-read module is backed by published article views and a minimum distin
   const migration = read("supabase/migrations/20261115100000_reader_impact_intelligence.sql");
   assert.ok(homepage.includes('id="popularStoriesSection"'));
   assert.ok(homepage.includes("الأكثر قراءة"));
-  assert.ok(script.includes("getRows({p_days:7,p_limit:5})"));
+  assert.ok(script.includes("/rest/v1/rpc/public_top_read_articles"));
+  assert.ok(script.includes("p_days:7,p_limit:5"));
   assert.ok(script.includes("renderPopularStories(popularRows)"));
   assert.ok(migration.includes("create or replace function public.public_top_read_articles"));
   assert.ok(migration.includes("e.event_name = 'view_article'"));

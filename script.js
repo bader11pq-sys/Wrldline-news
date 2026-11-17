@@ -5,6 +5,10 @@ const SUPABASE_ANON_KEY = "sb_publishable_D3c88u75_LcEN460Y3Jcpw__EfqUnBx";
 // Use Supabase directly so the homepage remains available while that proxy is repaired.
 const WRLDLINE_PUBLIC_NEWS_API = SUPABASE_URL;
 const PAGE_SIZE = 24;
+// Keep public reads small: the RPC also builds published-translation JSON per row.
+// Large parallel projections were saturating the Data API and leaving the homepage loading.
+const MAIN_FEED_LIMIT = 80;
+const SUPPLEMENTAL_FEED_LIMIT = 32;
 const WRLDLINE_TAXONOMY = window.WRLDLINE_TAXONOMY || null;
 const CATEGORY_NAMES = WRLDLINE_TAXONOMY?.CATEGORY_NAMES || { ar:{politics:"سياسة",economy:"اقتصاد",security:"أمن ودفاع",tech:"تكنولوجيا",sports:"رياضة",culture:"ثقافة",health:"صحة",science:"علوم",environment:"بيئة",society:"مجتمع",world:"حول العالم",uncategorized:"غير مصنف"}, en:{politics:"Politics",economy:"Economy",security:"Security & Defence",tech:"Technology",sports:"Sports",culture:"Culture",health:"Health",science:"Science",environment:"Environment",society:"Society",world:"Around the world",uncategorized:"Uncategorized"} };
 function normalizeCategory(value){if(WRLDLINE_TAXONOMY?.normalizeCategory)return WRLDLINE_TAXONOMY.normalizeCategory(value);const key=String(value||"").trim().toLowerCase();return CATEGORY_NAMES.ar[key]?key:"uncategorized";}
@@ -123,7 +127,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 async function registerServiceWorker(){
  if(!("serviceWorker" in navigator))return;
- const workerBuild="v60";
+  const workerBuild="v61";
  navigator.serviceWorker.addEventListener("controllerchange",()=>{
   if(sessionStorage.getItem("wrldline:sw-build")!==workerBuild){
    sessionStorage.setItem("wrldline:sw-build",workerBuild);
@@ -131,7 +135,7 @@ async function registerServiceWorker(){
   }
  });
  try{
-  const registration=await navigator.serviceWorker.register("/sw.js?v=v60",{scope:"/"});
+  const registration=await navigator.serviceWorker.register("/sw.js?v=v61",{scope:"/"});
   registration.update().catch(()=>{});
   registration.addEventListener("updatefound",()=>{
    const worker=registration.installing;if(!worker)return;
@@ -228,15 +232,25 @@ async function fetchNews(manual=false){
    }catch(error){
     if(required)throw error;
     console.warn("WRLDLINE supplemental section RPC:",error);
-    return [];
+   return [];
    }
   };
-  const [mainRows,missedRows,breakingRows,exclusiveRows,popularRows]=await Promise.all([
-   getRows({p_limit:1000,p_before:now,p_since:null,p_offset:0,p_newsdata_only:false},true),
-   getRows({p_limit:100,p_before:now,p_since:null,p_offset:0,p_newsdata_only:true}),
-   getRows({p_limit:200,p_before:now,p_since:since24h,p_offset:0,p_is_breaking:true}),
-   getRows({p_limit:100,p_before:now,p_since:null,p_offset:0,p_is_exclusive:true}),
-   getRows({p_days:7,p_limit:5})
+  const getPopularRows=async()=>{
+   try{
+    const response=await fetch(WRLDLINE_PUBLIC_NEWS_API+"/rest/v1/rpc/public_top_read_articles",{method:"POST",headers:{...headers,"Content-Type":"application/json","Accept":"application/json"},body:JSON.stringify({p_days:7,p_limit:5}),signal:AbortSignal.timeout(8000)});
+    if(!response.ok)throw new Error("HTTP "+response.status);
+    const data=await response.json();
+    return Array.isArray(data)?data:[];
+   }catch(error){console.warn("WRLDLINE popular stories RPC:",error);return [];}
+  };
+  // Fetch the critical feed first. Optional sections must not compete with it for
+  // database connections when the public API is under pressure.
+  const mainRows=await getRows({p_limit:MAIN_FEED_LIMIT,p_before:now,p_since:null,p_offset:0,p_newsdata_only:false},true);
+  const [missedRows,breakingRows,exclusiveRows,popularRows]=await Promise.all([
+   getRows({p_limit:SUPPLEMENTAL_FEED_LIMIT,p_before:now,p_since:null,p_offset:0,p_newsdata_only:true}),
+   getRows({p_limit:SUPPLEMENTAL_FEED_LIMIT,p_before:now,p_since:since24h,p_offset:0,p_is_breaking:true}),
+   getRows({p_limit:SUPPLEMENTAL_FEED_LIMIT,p_before:now,p_since:null,p_offset:0,p_is_exclusive:true}),
+   getPopularRows()
   ]);
   const unique=new Map();[...mainRows,...missedRows,...breakingRows,...exclusiveRows,...popularRows].forEach(row=>{if(row?.id)unique.set(String(row.id),row);});
   const rows=[...unique.values()];
