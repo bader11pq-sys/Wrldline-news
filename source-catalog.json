@@ -452,7 +452,7 @@
   },
   {
     "name": "اليوم",
-    "url": "https://www.alyaum.com/rss",
+    "url": "https://www.alyaum.com/rssFeed/1005",
     "category": "world",
     "country": "السعودية",
     "lang": "ar",
@@ -463,7 +463,7 @@
   },
   {
     "name": "الوطن السعودية",
-    "url": "https://www.alwatan.com.sa/rss",
+    "url": "https://www.alwatan.com.sa/rssFeed/2",
     "category": "world",
     "country": "السعودية",
     "lang": "ar",
@@ -496,7 +496,7 @@
   },
   {
     "name": "مكة",
-    "url": "https://makkahnewspaper.com/rss",
+    "url": "https://makkahnewspaper.com/rssFeed/0",
     "category": "world",
     "country": "السعودية",
     "lang": "ar",
@@ -572,7 +572,7 @@
     "breaking_domain": null
   },
   {
-    "name": "النهار اللبنانية",
+    "name": "الأخبار اللبنانية",
     "url": "https://al-akhbar.com/rss",
     "category": "world",
     "country": "لبنان",
@@ -584,7 +584,7 @@
   },
   {
     "name": "لبنان 24",
-    "url": "https://www.lebanon24.com/rss",
+    "url": "https://www.lebanon24.com/Rss/News/4/عربي-دولي",
     "category": "world",
     "country": "لبنان",
     "lang": "ar",
