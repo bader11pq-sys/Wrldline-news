@@ -1,7 +1,7 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.119.0";
 import { classifyCronVerifierResult } from "../_shared/cron-auth.mjs";
-import { resolveSupabaseServiceKey } from "../_shared/service-key.mjs";
+import { resolveSupabaseServiceKey, serviceApiHeaders, serviceClientOptions } from "../_shared/service-key.mjs";
 
 const cors = {
   "Access-Control-Allow-Origin": Deno.env.get("SITE_URL") || "https://al-ghaib.us.ci",
@@ -27,7 +27,7 @@ Deno.serve(async (req: Request) => {
   });
   if (!url || !serviceKey) return json({ error: "Server configuration is incomplete" }, 500);
 
-  const db = createClient(url, serviceKey, { auth: { persistSession: false, autoRefreshToken: false } });
+  const db = createClient(url, serviceKey, serviceClientOptions(serviceKey));
   const secret = req.headers.get("x-wrldline-cron-secret") || "";
   const { data: authorized, error: authError } = await db.rpc("verify_wrldline_cron_secret", { p_secret: secret });
   const authResult = classifyCronVerifierResult({ ok: !authError, value: authorized });
@@ -72,11 +72,7 @@ Deno.serve(async (req: Request) => {
     try {
       response = await fetch(url + "/functions/v1/classify-news", {
         method: "POST",
-        headers: {
-          "Authorization": "Bearer " + serviceKey,
-          "apikey": serviceKey,
-          "Content-Type": "application/json",
-        },
+        headers: serviceApiHeaders(serviceKey),
         body: JSON.stringify({ article_ids: batch.map((article: any) => article.id) }),
         signal: AbortSignal.timeout(115000),
       });
