@@ -1,7 +1,7 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.119.0";
 import { normalizeCategory, normalizeScope, TAXONOMY_VERSION } from "../_shared/taxonomy.ts";
-import { resolveSupabaseServiceKey } from "../_shared/service-key.mjs";
+import { resolveSupabaseServiceKey, serviceClientOptions } from "../_shared/service-key.mjs";
 
 const cors = {
   "Access-Control-Allow-Origin": Deno.env.get("SITE_URL") || "https://al-ghaib.us.ci",
@@ -335,12 +335,12 @@ Deno.serve(async (req: Request) => {
 
   const authHeader = req.headers.get("Authorization") || "";
   const token = authHeader.replace(/^Bearer\s+/i, "");
-  if (!token) return json({ error: "Authentication required." }, 401);
-
+  const apiKey = req.headers.get("apikey") || "";
   // Background workers authenticate with the exact server-side service-role key.
   // Browser/editor requests still require a real user session with trusted app_metadata.
-  const isTrustedWorker = token === serviceKey;
+  const isTrustedWorker = token === serviceKey || apiKey === serviceKey;
   if (!isTrustedWorker) {
+    if (!token) return json({ error: "Authentication required." }, 401);
     const authClient = createClient(supabaseUrl, anonKey, { auth: { persistSession: false, autoRefreshToken: false } });
     const { data: userData, error: userError } = await authClient.auth.getUser(token);
     if (userError || !userData.user) return json({ error: "Invalid session." }, 401);
@@ -353,7 +353,7 @@ Deno.serve(async (req: Request) => {
   const ids = Array.isArray(body.article_ids) ? [...new Set(body.article_ids.filter((id: unknown) => typeof id === "string"))].slice(0, 10) : [];
   if (!ids.length) return json({ error: "Send 1 to 10 article_ids." }, 400);
 
-  const db = createClient(supabaseUrl, serviceKey, { auth: { persistSession: false, autoRefreshToken: false } });
+  const db = createClient(supabaseUrl, serviceKey, serviceClientOptions(serviceKey));
   const { data: articles, error: fetchError } = await db.from("articles")
     .select("id,title,summary,source_name,source_url,url,published_at,received_at,country,category,source_scope,classification_attempts")
     .in("id", ids);
