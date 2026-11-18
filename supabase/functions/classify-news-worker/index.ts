@@ -51,7 +51,10 @@ Deno.serve(async (req: Request) => {
   const released = await db.rpc("release_stale_classification_claims");
   if (released.error) return json({ error: "Could not release stale claims", detail: released.error.message }, 500);
 
-  const claimed = await db.rpc("claim_classification_batch", { p_limit: 10 });
+  // Keep each Edge invocation to one story. The classifier runs Firecrawl
+  // and two primary models, with a fallback; ten sequential stories can
+  // exceed the Worker-to-Edge request budget and force-release the whole batch.
+  const claimed = await db.rpc("claim_classification_batch", { p_limit: 1 });
   if (claimed.error) {
     return json({ error: "Could not claim classification batch", detail: claimed.error.message }, 500);
   }
@@ -74,9 +77,9 @@ Deno.serve(async (req: Request) => {
     errors: [] as string[],
   };
 
-  // classify-news accepts at most 10 ids per request.
-  for (let offset = 0; offset < rows.length; offset += 10) {
-    const batch = rows.slice(offset, offset + 10);
+  // The claim RPC is intentionally limited to one article per invocation.
+  for (let offset = 0; offset < rows.length; offset += 1) {
+    const batch = rows.slice(offset, offset + 1);
     summary.batches++;
     let response: Response;
     try {
@@ -84,7 +87,7 @@ Deno.serve(async (req: Request) => {
         method: "POST",
         headers: serviceApiHeaders(serviceKey),
         body: JSON.stringify({ article_ids: batch.map((article: any) => article.id) }),
-        signal: AbortSignal.timeout(115000),
+        signal: AbortSignal.timeout(105000),
       });
     } catch (error) {
       await db.rpc("release_classification_claims", { p_ids: batch.map((article: any) => article.id) });
