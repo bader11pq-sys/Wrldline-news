@@ -35,35 +35,59 @@ export default {
   async scheduled(controller, env) {
     const cron = controller.cron;
     const scheduledTime = controller.scheduledTime;
-    // Fail closed: do not add to paused/backlogged queues unless an operator
-    // explicitly opts in after the queue consumers and Supabase handlers are healthy.
-    if (env.WRLDLINE_PRODUCERS_ENABLED !== "true") {
+    const routes = {
+      "* * * * *": {
+        binding: "CLASSIFICATION_QUEUE",
+        task: "classification",
+        switchName: "WRLDLINE_CLASSIFICATION_PRODUCER_ENABLED",
+      },
+      "*/2 * * * *": {
+        binding: "BREAKING_QUEUE",
+        task: "breaking",
+        switchName: "WRLDLINE_BREAKING_PRODUCER_ENABLED",
+      },
+      "*/3 * * * *": {
+        binding: "GENERAL_QUEUE",
+        task: "general",
+        switchName: "WRLDLINE_GENERAL_PRODUCER_ENABLED",
+      },
+      "*/5 * * * *": {
+        binding: "TRANSLATION_QUEUE",
+        task: "translation",
+        switchName: "WRLDLINE_TRANSLATION_PRODUCER_ENABLED",
+      },
+    };
+    const route = routes[cron];
+    if (!route) {
+      console.warn(JSON.stringify({ event: "unknown_cron", cron }));
+      return;
+    }
+
+    // The global opt-in remains supported, but each pipeline can now be
+    // enabled independently. Missing switches always fail closed.
+    const enabled = env.WRLDLINE_PRODUCERS_ENABLED === "true" ||
+      env[route.switchName] === "true";
+    if (!enabled) {
       console.warn(JSON.stringify({
         event: "producers_paused",
         cron,
+        task: route.task,
+        queue_binding: route.binding,
         enabled: false,
-        reason: "WRLDLINE_PRODUCERS_ENABLED is not explicitly true",
+        reason: route.switchName + " is not explicitly true (global override also disabled)",
         scheduled_at: new Date(scheduledTime).toISOString(),
       }));
       return;
     }
-    switch (cron) {
-      case "* * * * *":
-        await enqueue(env.CLASSIFICATION_QUEUE, "classification", scheduledTime);
-        break;
-      case "*/2 * * * *":
-        await enqueue(env.BREAKING_QUEUE, "breaking", scheduledTime);
-        break;
-      case "*/3 * * * *":
-        await enqueue(env.GENERAL_QUEUE, "general", scheduledTime);
-        break;
-      case "*/5 * * * *":
-        await enqueue(env.TRANSLATION_QUEUE, "translation", scheduledTime);
-        break;
-      default:
-        console.warn(JSON.stringify({ event: "unknown_cron", cron }));
-    }
-    console.log(JSON.stringify({ event: "jobs_enqueued", cron, scheduled_at: new Date(scheduledTime).toISOString() }));
+
+    await enqueue(env[route.binding], route.task, scheduledTime);
+    console.log(JSON.stringify({
+      event: "jobs_enqueued",
+      cron,
+      task: route.task,
+      queue_binding: route.binding,
+      scheduled_at: new Date(scheduledTime).toISOString(),
+    }));
   },
 
   async queue(batch, env) {
