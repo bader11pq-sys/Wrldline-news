@@ -434,3 +434,44 @@ test("provider-healthcheck task is rejected on breaking and translation queues",
     output.restore();
   }
 });
+
+
+test("per-pipeline producer switches isolate general ingestion", async () => {
+  const output = interceptConsole("warn");
+  const sent = [];
+  const queue = name => ({
+    async send(message) { sent.push({ name, message }); }
+  });
+  const env = {
+    WRLDLINE_GENERAL_PRODUCER_ENABLED: "true",
+    GENERAL_QUEUE: queue("general"),
+    BREAKING_QUEUE: queue("breaking"),
+    CLASSIFICATION_QUEUE: queue("classification"),
+    TRANSLATION_QUEUE: queue("translation")
+  };
+  const schedules = [
+    ["*/3 * * * *", "general"],
+    ["*/2 * * * *", "breaking"],
+    ["* * * * *", "classification"],
+    ["*/5 * * * *", "translation"]
+  ];
+
+  try {
+    for (let index = 0; index < schedules.length; index += 1) {
+      await worker.scheduled({
+        cron: schedules[index][0],
+        scheduledTime: Date.parse("2026-11-18T17:42:00Z") + index * 1000
+      }, env);
+    }
+
+    assert.equal(sent.length, 1);
+    assert.equal(sent[0].name, "general");
+    assert.equal(sent[0].message.task, "general");
+    assert.deepEqual(
+      output.entries.filter(entry => entry.event === "producers_paused").map(entry => entry.task).sort(),
+      ["breaking", "classification", "translation"]
+    );
+  } finally {
+    output.restore();
+  }
+});
