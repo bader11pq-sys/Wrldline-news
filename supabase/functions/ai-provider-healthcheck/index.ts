@@ -106,13 +106,13 @@ Deno.serve(async(req:Request)=>{
  console.info("AI_PROVIDER_HEALTHCHECK_AUTH",JSON.stringify({
   service_key_configured:!!serviceKey,
   service_request:authorized,
-  cron_secret_present:cronSecret.length>=32
+  cron_secret_present:cronSecret.length>0
  }));
  if(!serviceKey&&!authorized){
   return json({ok:false,error:"Service authorization is not configured"},503);
  }
  if(!authorized&&serviceKey){
-  if(cronSecret.length>=32){
+  if(cronSecret.length>0){
    try{
     const check=await fetch(base+"/rest/v1/rpc/verify_wrldline_cron_secret",{
      method:"POST",
