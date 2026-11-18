@@ -338,8 +338,11 @@ Deno.serve(async (req) => {
  let mode="unknown";
  try {
   const body=await req.json(); mode=body?.mode;
+  // No-write authenticated probe used before resuming queue consumers.
+  // Reaching this branch proves the Vault-backed cron verifier accepted the caller.
+  if(mode==="auth-check") return Response.json({ok:true,mode:"auth-check"});
   const result=mode==="general"?await runGeneral():mode==="breaking"?await runBreaking():mode==="translation"?await runTranslation():mode==="provider-healthcheck"?await runProviderHealthcheck():null;
-  if(!result) return Response.json({error:"mode must be general, breaking, translation, or provider-healthcheck"},{status:400});
+  if(!result) return Response.json({error:"mode must be auth-check, general, breaking, translation, or provider-healthcheck"},{status:400});
   console.log("WRLDLINE_CRON_SUMMARY "+JSON.stringify(result));
   return Response.json({ok:true,...result});
  } catch(e: any) {
