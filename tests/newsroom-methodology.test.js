@@ -41,3 +41,16 @@ test("impact pages label the displayed chains as editorial reference models", ()
   assert.match(detail, /سلسلة أثر مرجعية عامة/);
   assert.match(detail, /ليست نتيجة تحليل خاص بهذا الخبر/);
 });
+
+test("homepage balance preview never labels publisher names as independent sources", () => {
+  const home = fs.readFileSync(require.resolve("../home.js"), "utf8");
+  const start = home.indexOf("function renderBalance(articles)");
+  const end = home.indexOf("function renderMirror(articles)", start);
+  assert.ok(start >= 0 && end > start);
+  const balance = home.slice(start, end);
+  assert.match(balance, /جهات النشر المسجلة/);
+  assert.match(balance, /أسماء جهات النشر في العينة/);
+  assert.match(balance, /تجميع عناوين آلي/);
+  assert.match(balance, /لا يثبت أن العناوين تصف الحدث نفسه/);
+  assert.doesNotMatch(balance, /مصادر مستقلة في العينة|حدث متعدد الروايات|عدد المصادر المستقلة/);
+});
