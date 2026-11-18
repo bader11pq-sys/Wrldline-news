@@ -206,10 +206,10 @@ Useful current references:
 A short read-only activity snapshot at `2026-11-18 14:44:27 UTC` showed 6 other database sessions and 0 active queries at that instant. PostgreSQL cumulative counters since the last statistics reset (`2026-10-29 12:49:05 UTC`) showed 6,434 temp files / 14 GB written and 5 deadlocks. This is not enough to attribute the historical 503/57014 incident to a single resource. The zero-active query count is only a point-in-time observation; the cumulative temporary-write count warrants query-plan and workload review.
 
 ### Deno checker dependency pin
-The first Deno run after dependency pinning reached the restored `ops-dashboard` source and found 13 strict type errors: implicit-any function parameters, an `unknown` caught error's `message` property, implicit-any query result callbacks, and an inferred classification stats type missing `pending`. The branch now uses explicit row/result types for feeds, ingestion runs, provider states, query results, and classification stats; caught values are handled as `unknown` safely. A fresh Deno type-check on the newest commit is pending.
+Historical diagnostic (resolved): the first Deno run after restoring `ops-dashboard` found 13 strict type errors involving implicit-any callbacks and unsafe `unknown` handling. The branch added explicit row/result types and safe caught-error handling. The completed Code Quality run on code head `403be590` subsequently passed Deno type-check for every Supabase Edge Function.
 
 
-The Code Quality job completed all 146 Node tests successfully, then Deno type-check stopped before reaching most Edge Functions because the npm registry lookup for `@supabase/storage-js@2.119.1` returned a missing tarball. The published Supabase JS and Storage SDK release displayed by npm is `2.119.0`. The branch now pins the five generic `npm:@supabase/supabase-js@2` imports to `2.119.0`, matching the already-pinned shared notification SDK and avoiding floating minor/patch resolution. Deno type-check must be rerun to confirm this removes the external resolution failure and to expose any real type errors.
+Historical dependency-resolution issue (resolved): an earlier Code Quality run stopped during Deno checking after a registry 404 for `@supabase/storage-js@2.119.1`. The branch pins six Supabase JS imports to `2.119.0`. The later complete Code Quality run on `403be590` passed all Deno Edge Function checks and 151 Node tests (151 passed, 0 failed).
 
 ### PR code refinement
 
@@ -235,8 +235,8 @@ The PR's `ops-dashboard` source no longer runs a second full-table `articles` co
 5. Resume queues only after a controlled approval, with backlog, retry rate, 401/5xx, and DLQ growth monitored.
 
 ### P0 — Repair classification data hygiene
-1. Investigate the 2017 oldest-pending record and whether stale items are eligible for expiry or retention cleanup.
-2. Identify why there are 8,756 pending items and zero processing items.
+1. The pending backlog is predominantly recent: 8,609/8,756 (98.3%) of published pending articles are from the last seven days; only 103 are older than 30 days (78 older than one year). Prioritize the recent window under low concurrency and separately inspect/age-review the 103 older records, including the 2017 oldest item.
+2. Determine why 8,756 pending and zero processing remain after queue delivery resumes; prove progress from consecutive snapshots rather than relying on Worker HTTP 200 alone.
 3. Review recent `classification_last_error` rows and provider responses.
 4. Prove progress using consecutive snapshots: pending decreases, classified increases, oldest age decreases, and deferred=0 or declines.
 
@@ -368,9 +368,9 @@ The classification RPC remained pending 8,756, processing 0, failed 45, expired 
 
 All six tracked cron rows remained `active=false`: notification dispatch, NewsData sync, source freshness, audience retention, security counters, and daily briefing. No scheduler was re-enabled.
 
-## CI verification (last fully tested code head: `403be590`; the subsequent `5840f5d` commit only refreshes this report)
+## CI verification (last fully tested code head: `403be590`; subsequent commits `5840f5d`, `fcd8ec7`, and `4038578` update documentation only)
 
-All CI workflows for the latest PR head completed successfully:
+All five CI workflows for the code-identical tested head `403be590` completed successfully:
 - **Ops dashboard contract:** success.
 - **WRLDLINE Code Quality:** success. JavaScript syntax passed; all 151 Node tests passed (151 passed, 0 failed, 0 skipped); all Supabase Edge Function Deno type checks passed; protected-endpoint/consent tests passed (43 passed, 0 failed); disposable-database editorial/newsletter RLS checks passed; JSON and local HTML asset validation passed.
 - **WRLDLINE Production Readiness:** success. Browser regressions passed for consent, mobile layout/analytics, outage layout and briefing duplication, and anonymous account/admin protection. The new cached-homepage outage regression also passed: a seeded public article remained visible during mocked Supabase RPC 503, the UI clearly said it was showing a saved snapshot, and no retry button was displayed.
