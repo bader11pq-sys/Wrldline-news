@@ -41,7 +41,7 @@
     $("intelNewCount") && ($("intelNewCount").textContent = fresh.length);
     $("intelLastVisit") && ($("intelLastVisit").textContent = last ? `منذ ${fmt(last)}` : "هذه أول زيارة مسجلة");
     const counts = articles.reduce((m, a) => { const k = reliability(a)[0]; m[k] = (m[k] || 0) + 1; return m; }, {});
-    $("intelReliabilitySummary") && ($("intelReliabilitySummary").textContent = `${counts["مؤكد بمصدرين"] || 0} قصص متعددة المصادر · ${counts["تأكيد رسمي + مصادر مستقلة"] || 0} تأكيدات رسمية`);
+    $("intelReliabilitySummary") && ($("intelReliabilitySummary").textContent = `${counts["محل خلاف"] || 0} قصص محل خلاف · ${counts["لم يُسجل تحقق بشري"] || 0} دون سجل مراجعة بشرية`);
     $("intelNewButton")?.addEventListener("click", () => { document.querySelector("#newsGrid")?.scrollIntoView({behavior:"smooth"}); document.querySelectorAll(".news-card").forEach(card => card.classList.toggle("is-new-since-visit", fresh.some(a => card.textContent.includes(a.title.slice(0, 24))))); });
     $("intelVisitButton")?.addEventListener("click", () => { localStorage.setItem(VISIT_KEY, String(Date.now())); renderDashboard(); });
     document.querySelectorAll("[data-reading-mode]").forEach(btn => btn.addEventListener("click", () => { localStorage.setItem(READ_KEY, btn.dataset.readingMode); document.documentElement.dataset.readingMode = btn.dataset.readingMode; document.querySelectorAll("[data-reading-mode]").forEach(x => x.classList.toggle("is-active", x === btn)); }));
