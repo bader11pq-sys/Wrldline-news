@@ -1,7 +1,7 @@
 // Resolve the privileged Supabase API key across the supported Edge Function
 // environment layouts. Never accept a publishable key as a service credential.
 function isSecretKey(value) {
-  return typeof value === "string" && value.startsWith("sb_secret_") && value.length > 20;
+  return typeof value === "string" && /^sb_secret_[A-Za-z0-9_-]{22}_[A-Za-z0-9_-]{8}$/.test(value);
 }
 
 function readDefaultSecretKeys(value) {
