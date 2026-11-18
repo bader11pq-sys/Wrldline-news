@@ -1,6 +1,6 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.119.0";
-import { resolveSupabaseServiceKey, serviceClientOptions } from "../_shared/service-key.mjs";
+import { resolveSupabaseServiceKey, isSupabaseServiceRequest, serviceClientOptions } from "../_shared/service-key.mjs";
 
 const cors={"Access-Control-Allow-Origin":Deno.env.get("SITE_URL")||"https://al-ghaib.us.ci","Access-Control-Allow-Headers":"authorization, apikey, content-type, x-client-info, x-wrldline-cron-secret","Access-Control-Allow-Methods":"POST, OPTIONS","Content-Type":"application/json","Vary":"Origin"};
 const schema={type:"object",additionalProperties:false,properties:{title:{type:"string"},summary:{type:"string"},ai_summary:{type:"string"}},required:["title","summary","ai_summary"]};
@@ -398,8 +398,7 @@ Deno.serve(async(req:Request)=>{
  if(!url||!anon||!service)return json({error:"Supabase server configuration is incomplete."},500);
  if(!deeplKey&&!gemini&&!groqKey&&!nvidiaKey&&!gonkaKey&&!openRouterKey&&!bazaarlinkKey)return json({error:"Configure DEEPL_API_KEY or an AI translation provider."},503);
  const token=(req.headers.get("Authorization")||"").replace(/^Bearer\s+/i,"");
- const apiKey=req.headers.get("apikey")||"";
- const isTrustedWorker=token===service||apiKey===service;
+ const isTrustedWorker=isSupabaseServiceRequest(req.headers,service);
  if(!isTrustedWorker){
   if(!token)return json({error:"Authentication required."},401);
   const auth=createClient(url,anon,{auth:{persistSession:false,autoRefreshToken:false}});
