@@ -27,13 +27,16 @@ test("summarizes ingestion successes and failures independently", () => {
   const summary = summarizeRuns([
     { pipeline: "general", started_at: "2026-11-18T10:00:00Z", finished_at: "2026-11-18T10:01:00Z", source_count: 5, successful_sources: 5, failed_sources: 0, parsed_items: 12 },
     { pipeline: "general", started_at: "2026-11-18T10:02:00Z", finished_at: "2026-11-18T10:03:00Z", source_count: 5, successful_sources: 3, failed_sources: 2, parsed_items: 4, error_summary: "2 feeds failed" },
-    { pipeline: "breaking", started_at: "2026-11-18T10:04:00Z", finished_at: null, source_count: 0, successful_sources: 0, failed_sources: 0, parsed_items: 0 }
+    { pipeline: "breaking", started_at: "2026-11-18T10:04:00Z", finished_at: null, source_count: 0, successful_sources: 0, failed_sources: 0, parsed_items: 0 },
+    { pipeline: "translation", started_at: "2026-11-18T10:19:00Z", finished_at: "2026-11-18T10:20:00Z", source_count: 2, successful_sources: 2, failed_sources: 0, parsed_items: 2 }
   ]);
   assert.equal(summary.pipelines.general.runs, 2);
   assert.equal(summary.pipelines.general.failed, 2);
   assert.equal(summary.pipelines.general.parsed, 16);
   assert.equal(summary.last_success_at, "2026-11-18T10:01:00Z");
   assert.equal(summary.last_failure_at, "2026-11-18T10:03:00Z");
+  assert.notEqual(summary.last_success_at, "2026-11-18T10:20:00Z");
+  assert.equal(summarizeRuns([{ pipeline: "translation", started_at: "2026-11-18T10:19:00Z", finished_at: "2026-11-18T10:20:00Z", successful_sources: 2, failed_sources: 0 }]).last_success_at, null);
 });
 
 test("merges provider state and identifies active cooldowns", () => {
