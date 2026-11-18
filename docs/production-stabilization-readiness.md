@@ -164,6 +164,14 @@ The live advisors returned no health lints, plus items that require a deliberate
 
 No advisor-driven SQL change was applied. Unused indexes should not be dropped during incident recovery.
 
+### Current database snapshot
+
+A short read-only activity snapshot at `2026-11-18 14:44:27 UTC` showed 6 other database sessions and 0 active queries at that instant. PostgreSQL cumulative counters since the last statistics reset (`2026-10-29 12:49:05 UTC`) showed 6,434 temp files / 14 GB written and 5 deadlocks. This is not enough to attribute the historical 503/57014 incident to a single resource. The zero-active query count is only a point-in-time observation; the cumulative temporary-write count warrants query-plan and workload review.
+
+### Deno checker dependency pin
+
+The Code Quality job completed all 146 Node tests successfully, then Deno type-check stopped before reaching most Edge Functions because the npm registry lookup for `@supabase/storage-js@2.119.1` returned a missing tarball. The published Supabase JS and Storage SDK release displayed by npm is `2.119.0`. The branch now pins the five generic `npm:@supabase/supabase-js@2` imports to `2.119.0`, matching the already-pinned shared notification SDK and avoiding floating minor/patch resolution. Deno type-check must be rerun to confirm this removes the external resolution failure and to expose any real type errors.
+
 ### PR code refinement
 
 The PR's `ops-dashboard` source no longer runs a second full-table `articles` count as a fallback when `classification_queue_stats()` fails. It now reports the classification metric as unavailable instead of adding another broad count query during a database incident. The helper and contract tests also keep translation success from being misreported as ingestion success.
