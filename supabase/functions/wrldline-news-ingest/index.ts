@@ -1,7 +1,12 @@
 import { classifyCronVerifierResult } from "../_shared/cron-auth.mjs";
+import { resolveSupabaseServiceKey } from "../_shared/service-key.mjs";
 import { normalizeCategory, resolveSourceLanguage, normalizeScope, inferSourceScope, TAXONOMY_VERSION } from "../_shared/taxonomy.ts";
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL") || "https://vmaxbnogmmfyrcucapnq.supabase.co";
-const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || Deno.env.get("SUPABASE_SECRET_KEY") || "";
+const SERVICE_KEY = resolveSupabaseServiceKey({
+  SUPABASE_SECRET_KEY: Deno.env.get("SUPABASE_SECRET_KEY") || "",
+  SUPABASE_SECRET_KEYS: Deno.env.get("SUPABASE_SECRET_KEYS") || "",
+  SUPABASE_SERVICE_ROLE_KEY: Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "",
+});
 const DB_HEADERS = { apikey: SERVICE_KEY, Authorization: "Bearer " + SERVICE_KEY, "Content-Type": "application/json" };
 const SOURCE_CATALOG_URL = "https://raw.githubusercontent.com/bader11pq-sys/Wrldline-news/main/source-catalog.json";
 const URGENT = /\bBREAKING(?: NEWS)?\b|\bJUST IN\b|\bLIVE\b|عاجل|الآن|قبل قليل|تطور عاجل|نبأ عاجل|خبر عاجل/i;
