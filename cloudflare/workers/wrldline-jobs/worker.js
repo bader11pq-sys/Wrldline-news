@@ -1,4 +1,5 @@
 const SUPABASE_URL = "https://vmaxbnogmmfyrcucapnq.supabase.co";
+const MAX_QUEUE_MESSAGE_AGE_MS = 15 * 60 * 1000;
 
 const QUEUE_TASKS = {
   "wrldline-news-general": { functionName: "wrldline-news-ingest", body: { mode: "general" } },
@@ -67,9 +68,14 @@ export default {
 
   async queue(batch, env) {
     for (const message of batch.messages) {
-      const task = QUEUE_TASKS[batch.queue];
-      if (!task || (message.body?.task && message.body.task !== "healthcheck" &&
-          !["general", "breaking", "classification", "translation"].includes(message.body.task))) {
+      const authCheck = message.body?.task === "auth-check";
+      const validTasks = ["general", "breaking", "classification", "translation"];
+      const task = authCheck && batch.queue === "wrldline-news-general"
+        ? { functionName: "wrldline-news-ingest", body: { mode: "auth-check" } }
+        : QUEUE_TASKS[batch.queue];
+      if (!task || (authCheck && batch.queue !== "wrldline-news-general") ||
+          (message.body?.task && message.body.task !== "healthcheck" &&
+           message.body.task !== "auth-check" && !validTasks.includes(message.body.task))) {
         console.error(JSON.stringify({ event: "invalid_queue_message", queue: batch.queue, message_id: message.id }));
         message.ack();
         continue;
@@ -78,6 +84,30 @@ export default {
       if (message.body?.task === "healthcheck") {
         message.ack();
         console.log(JSON.stringify({ event: "queue_healthcheck", queue: batch.queue, message_id: message.id }));
+        continue;
+      }
+
+      const scheduledAt = Date.parse(String(message.body?.scheduled_at || ""));
+      if (!Number.isFinite(scheduledAt)) {
+        console.error(JSON.stringify({
+          event: "invalid_queue_schedule_timestamp",
+          queue: batch.queue,
+          message_id: message.id,
+        }));
+        message.ack();
+        continue;
+      }
+      const ageMs = Date.now() - scheduledAt;
+      if (ageMs > MAX_QUEUE_MESSAGE_AGE_MS) {
+        message.ack();
+        console.warn(JSON.stringify({
+          event: "stale_schedule_message_skipped",
+          queue: batch.queue,
+          message_id: message.id,
+          task: message.body?.task,
+          scheduled_at: new Date(scheduledAt).toISOString(),
+          age_seconds: Math.floor(ageMs / 1000),
+        }));
         continue;
       }
 
