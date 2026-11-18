@@ -13,7 +13,7 @@ This phase is being prepared on a dedicated GitHub branch. No production Worker,
 
 ### Cloudflare Queues
 
-All four production queues reported `settings.delivery_paused = true` in the Cloudflare Queue API. The four consumers still exist, are attached to `wrldline-jobs`, and route failed messages to `wrldline-jobs-dead-letter`.
+All four production queues reported `settings.delivery_paused = true` in the Cloudflare Queue API. The four consumers still exist, are attached to `wrldline-jobs`, and route failed messages to `wrldline-jobs-dead-letter`. The Cloudflare account audit log records successful `patch_queue` actions setting `delivery_paused=true` at 2026-11-17 15:09:08.283Z (breaking), 15:09:10.117Z (general), 15:09:11.378Z (translation), and 15:19:30.575Z (classification). The audit record confirms the setting change but does not provide an operational reason.
 
 Observed metrics at 2026-11-18 14:16:53 UTC:
 
@@ -26,6 +26,10 @@ Observed metrics at 2026-11-18 14:16:53 UTC:
 | dead-letter | 1,429 | 150,975 | unavailable (Cloudflare returned timestamp 0) | unknown |
 
 Queue consumer settings remain batch_size=1, max_retries=3, retry_delay=30 seconds, max_concurrency=1, max_wait_time_ms=1000. All four Cron schedules exist. Worker settings show log sampling at 20% and trace sampling at 10%; sampled logs must not be treated as a complete event count.
+
+### Worker release
+
+Cloudflare reports Worker deployment version 7 (`9c39fcc5-405c-4d7c-a54b-6dbe33c514df`), deployed 2026-11-15 03:46:52 UTC. The deployed `worker.js` content was compared byte-for-byte with `main:cloudflare/workers/wrldline-jobs/worker.js` and matched. Worker observability is enabled, with log sampling at 20% and trace sampling at 10%.
 
 ### Supabase
 
