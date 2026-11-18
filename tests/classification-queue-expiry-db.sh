@@ -42,23 +42,32 @@ select 'draft','pending',now()-interval '3 days'-(g*interval '1 second')
 from generate_series(1,10) g;
 SQL
 
-"${PSQL[@]}" -f "$ROOT/supabase/migrations/20261118172000_batch_classification_queue_expiry.sql" >"$TMP/migration.log" 2>&1 || { cat "$TMP/migration.log"; exit 1; }
+"${PSQL[@]}" -f "$ROOT/supabase/migrations/20261118170600_batch_stale_classification_expiry_50.sql" >"$TMP/migration.log" 2>&1 || { cat "$TMP/migration.log"; exit 1; }
 
 "${PSQL[@]}" <<'SQL'
-select public.expire_stale_classification_queue();
+do $$
+declare
+  v_expected integer;
+  v_actual integer;
+  v_pass integer;
+begin
+  for v_pass in 1..6 loop
+    perform public.expire_stale_classification_queue();
+    v_expected := least(v_pass * 50, 295);
+    select count(*) into v_actual
+    from public.articles
+    where editorial_status='published'
+      and ai_classification_status='expired';
+    if v_actual <> v_expected then
+      raise exception 'Pass % expected % expired rows; got %', v_pass, v_expected, v_actual;
+    end if;
+  end loop;
+end $$;
+
 do $$
 begin
-  if (select count(*) from public.articles where editorial_status='published' and ai_classification_status='pending' and published_at<now()-interval '1 hour') <> 120 then
-    raise exception 'First pass must expire exactly 100 old pending rows';
-  end if;
-  if (select count(*) from public.articles where editorial_status='published' and ai_classification_status='failed') <> 0 then
-    raise exception 'First pass must expire all 55 old failed rows';
-  end if;
-  if (select count(*) from public.articles where editorial_status='published' and ai_classification_status='processing') <> 0 then
-    raise exception 'First pass must expire all 20 old processing rows';
-  end if;
-  if (select count(*) from public.articles where ai_classification_status='expired') <> 175 then
-    raise exception 'First pass should update 175 rows (100 pending + 55 failed + 20 processing)';
+  if (select count(*) from public.articles where editorial_status='published' and ai_classification_status='pending' and published_at<now()-interval '1 hour') <> 0 then
+    raise exception 'All old published queue rows should be expired after six 50-row passes';
   end if;
   if (select count(*) from public.articles where editorial_status='published' and ai_classification_status='pending' and published_at>=now()-interval '1 hour') <> 25 then
     raise exception 'Recent pending rows must remain eligible';
@@ -66,34 +75,15 @@ begin
   if (select count(*) from public.articles where editorial_status='draft' and ai_classification_status='pending') <> 10 then
     raise exception 'Non-published rows must not be modified';
   end if;
-end $$;
-
-select public.expire_stale_classification_queue();
-do $$
-begin
-  if (select count(*) from public.articles where editorial_status='published' and ai_classification_status='pending' and published_at<now()-interval '1 hour') <> 20 then
-    raise exception 'Second pass must expire another 100 pending rows';
-  end if;
-  if (select count(*) from public.articles where ai_classification_status='expired') <> 275 then
-    raise exception 'Second pass total should be 275 expired rows';
+  if exists(select 1 from public.articles where ai_classification_status='expired' and classification_last_error is distinct from 'expired: published more than 1 hour ago') then
+    raise exception 'Expired rows must retain the documented reason';
   end if;
 end $$;
 
 select public.expire_stale_classification_queue();
 do $$
 begin
-  if (select count(*) from public.articles where editorial_status='published' and ai_classification_status='pending' and published_at<now()-interval '1 hour') <> 0 then
-    raise exception 'Third pass must expire the remaining 20 old pending rows';
-  end if;
-  if (select count(*) from public.articles where ai_classification_status='expired') <> 295 then
-    raise exception 'All 295 old published rows should now be expired';
-  end if;
-end $$;
-
-select public.expire_stale_classification_queue();
-do $$
-begin
-  if (select count(*) from public.articles where ai_classification_status='expired') <> 295 then
+  if (select count(*) from public.articles where editorial_status='published' and ai_classification_status='expired') <> 295 then
     raise exception 'Repeated expiry calls must be idempotent';
   end if;
 end $$;
