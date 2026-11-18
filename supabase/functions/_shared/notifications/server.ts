@@ -2,7 +2,7 @@ import { createClient, type SupabaseClient } from "npm:@supabase/supabase-js@2.1
 import { createECDH } from "node:crypto";
 import { Buffer } from "node:buffer";
 import { keyedHash, ready } from "./core.ts";
-import { resolveSupabaseServiceKey } from "../service-key.mjs";
+import { resolveSupabaseServiceKey, serviceClientOptions } from "../service-key.mjs";
 // This repository has no generated Database types; match the documented live schema explicitly in projections.
 // deno-lint-ignore no-explicit-any
 export type DB = SupabaseClient<any>;
@@ -23,7 +23,7 @@ export function environment(): Env {
 }
 export function database(env: Env): DB {
   if (!env.SUPABASE_URL || !env.SUPABASE_SERVICE_ROLE_KEY) throw new Error("service_unavailable");
-  return createClient(env.SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY, { auth: { persistSession: false, autoRefreshToken: false } });
+  return createClient(env.SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY, serviceClientOptions(env.SUPABASE_SERVICE_ROLE_KEY));
 }
 export function headers(env: Env): Record<string, string> {
   return { "Access-Control-Allow-Origin": env.SITE_URL || "https://al-ghaib.us.ci", "Access-Control-Allow-Headers": "authorization, apikey, content-type", "Access-Control-Allow-Methods": "GET, POST, OPTIONS", "Vary": "Origin", "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store", "Referrer-Policy": "no-referrer", "X-Content-Type-Options": "nosniff" };
