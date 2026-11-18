@@ -244,7 +244,8 @@ async function loadOpsDashboard(){
    if(!classification.available){
     classificationHost.textContent="إحصاءات التصنيف غير متاحة من قاعدة البيانات في هذا التحديث.";
    }else{
-    const age=Number(classification.oldest_pending_age_minutes);
+    const rawAge=classification.oldest_pending_age_minutes;
+    const age=rawAge===null||rawAge===undefined||rawAge===""?null:Number(rawAge);
     const ageLabel=Number.isFinite(age)?(age>=1440?Math.floor(age/1440)+" يوم":"أقل من يوم"): "غير متاح";
     const rows=[
      ["منتظر",classification.pending],["قيد المعالجة",classification.processing],
