@@ -47,7 +47,11 @@ export function summarizeRuns(rows = []) {
     pipelines[key] = current;
   }
 
-  const ordered = [...rows].sort((a, b) =>
+  // Translation is a separate pipeline and must not make ingestion look healthy.
+  const ingestionRows = rows.filter((run) =>
+    /general|breaking|ingest|feed|newsdata/i.test(String(run.pipeline || ""))
+  );
+  const ordered = [...ingestionRows].sort((a, b) =>
     String(b.finished_at || b.started_at || "").localeCompare(
       String(a.finished_at || a.started_at || "")
     )
