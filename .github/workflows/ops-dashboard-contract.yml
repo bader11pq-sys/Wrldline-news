@@ -22,4 +22,4 @@ jobs:
         with:
           node-version: "22"
       - name: Test monitoring metric contracts
-        run: node --test tests/ops-dashboard-metrics.test.mjs
+        run: node --test tests/ops-dashboard-metrics.test.mjs tests/cron-auth.test.mjs
