@@ -1,3 +1,4 @@
+import { classifyCronVerifierResult } from "../_shared/cron-auth.mjs";
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL") || "https://vmaxbnogmmfyrcucapnq.supabase.co";
 const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || Deno.env.get("SUPABASE_SECRET_KEY") || "";
 const NEWSDATA_KEY = Deno.env.get("NEWSDATA_API_KEY") || "";
@@ -52,8 +53,18 @@ async function dbRequest(path: string,init: RequestInit = {}) {
   return await fetch(SUPABASE_URL+"/rest/v1/"+path,{...init,headers:{...DB_HEADERS,...(init.headers||{})}});
 }
 async function authorize(req: Request) {
-  const response=await dbRequest("rpc/verify_wrldline_cron_secret",{method:"POST",body:JSON.stringify({p_secret:req.headers.get("x-wrldline-cron-secret")||""})});
-  return response.ok && (await response.json())===true;
+  let response: Response;
+  try {
+    response=await dbRequest("rpc/verify_wrldline_cron_secret",{method:"POST",body:JSON.stringify({p_secret:req.headers.get("x-wrldline-cron-secret")||""})});
+  } catch {
+    return classifyCronVerifierResult({ok:false,value:null});
+  }
+  if(!response.ok) return classifyCronVerifierResult({ok:false,value:null});
+  try {
+    return classifyCronVerifierResult({ok:true,value:await response.json()});
+  } catch {
+    return classifyCronVerifierResult({ok:false,value:null});
+  }
 }
 async function health() {
   const body=await newsdataRequest("latest",{size:"10",category:"sports",language:"en"});
@@ -142,7 +153,9 @@ async function discoverSources() {
 Deno.serve(async (req: Request) => {
   if(req.method!=="POST") return Response.json({error:"POST required"},{status:405});
   if(!SERVICE_KEY) return Response.json({error:"Supabase service key missing"},{status:500});
-  if(!await authorize(req)) return Response.json({error:"Unauthorized"},{status:401});
+  const authResult=await authorize(req);
+   if(authResult.status===503) return Response.json({error:"Authorization verifier temporarily unavailable"},{status:503});
+   if(!authResult.authorized) return Response.json({error:"Unauthorized"},{status:401});
   try {
     const body=await req.json().catch(()=>({}));
     const mode=body?.mode||"health";
