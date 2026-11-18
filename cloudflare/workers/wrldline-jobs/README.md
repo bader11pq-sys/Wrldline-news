@@ -76,3 +76,10 @@ Total: **4,473 messages** (3,044 in the main queues and 1,429 in DLQ). The four 
 
 No queue delivery was resumed, no Cron schedule was changed, and no DLQ message was replayed during this read-only recheck. The PR branch now also includes a reviewed Supabase service-key compatibility helper; it is not deployed. New `sb_secret_...` keys must use `apikey` only, with no Authorization Bearer copy. Legacy `service_role` keys remain supported during the migration window. Do not rotate or deactivate keys as part of queue recovery.
 
+
+## Separate urgent-source and SMS pipeline
+
+The GitHub Actions workflow `.github/workflows/breaking.yml` remains a dedicated scheduled path (every five minutes) in addition to the Cloudflare queue system. It runs `bot-breaking.js` against the 20 Arabic urgent-source monitors in the canonical catalog, upserts recent urgent articles, then calls `telnyx-gateway` to dispatch opted-in SMS. This is not the same operation as the Cloudflare breaking queue consumer, which scans already-ingested articles and flags urgent titles but does not send SMS.
+
+Do not remove the GitHub schedule until the dedicated urgent-source collection and SMS delivery are replaced and tested. The current Telnyx sender claims an article by setting `sms_notification_sent_at` before contacting the provider; provider failures may therefore leave an article marked as sent without a retry. A future queue-based SMS migration needs per-recipient idempotency and retry-safe delivery state.
+
