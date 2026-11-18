@@ -25,11 +25,11 @@ The publishable API key is already configured as a non-secret Worker binding bec
 
 The Worker deployment and the queue consumers are in different states. Do not infer consumer health from the existence of Cron Triggers.
 
-- Deployed Worker: `wrldline-jobs` version 7, 100% traffic, deployed 2026-11-15 03:46:52 UTC. The four Cron Triggers remain configured: every minute (classification), every 2 minutes (breaking), every 3 minutes (general), every 5 minutes (translation). Cloudflare observed successful scheduled invocations through 2026-11-18 14:56:38 UTC.
+- Deployed Worker: `wrldline-jobs` version 7, 100% traffic, deployed 2026-11-15 03:46:52 UTC. The four Cron Triggers remain configured: every minute (classification), every 2 minutes (breaking), every 3 minutes (general), every 5 minutes (translation). Cloudflare telemetry observed successful scheduled invocations through 2026-11-18 15:26:16 UTC.
 - Main queue delivery: all four consumers currently have `delivery_paused=true`. Their consumer configuration remains serialized (batch size 1, max concurrency 1, three retries, 30-second base retry delay). Do not unpause all four together.
-- Fresh queue snapshot at 2026-11-18 15:13:46 UTC: general 513, breaking 756, classification 1,496, translation 289, and DLQ 1,429 (4,483 total). The four main queues contain 3,054 messages. The DLQ has no consumer.
+- Fresh queue snapshot at 2026-11-18 15:26:23 UTC: general 511, breaking 745, classification 1,504, translation 292, and DLQ 1,429 (4,481 total). The four main queues contain 3,052 messages. The DLQ has no consumer.
 - Six support `pg_cron` jobs are inactive: NewsData sync, notification dispatch, source freshness, audience retention, security counters, and daily global briefing. PostgreSQL audit logs show an explicit administrative statement called `cron.alter_job(..., active=false)` for all six on 2026-11-17 15:39:15.901 UTC. The record does not identify the human operator or reason.
-- Because the Cloudflare producer schedules remain active while main queue delivery is paused, new scheduled messages can continue to accumulate. The nominal schedule rate is about 122 messages/hour, before retries.
+- Because the Cloudflare producer schedules remain active while main queue delivery is paused, new scheduled messages can continue to accumulate. The nominal schedule rate is about 122 messages/hour, before retries. Supabase reports 8,756 classification items pending: 8,609 (98.3%) were published within the last seven days, while 103 are older than 30 days. Prioritize the recent feed under low concurrency; separately review older items without bulk-deleting them.
 
 ### Producer pause switch in the review branch
 
