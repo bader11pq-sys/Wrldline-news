@@ -1,3 +1,4 @@
+import { classifyCronVerifierResult } from "../_shared/cron-auth.mjs";
 import { normalizeCategory, resolveSourceLanguage, normalizeScope, inferSourceScope, TAXONOMY_VERSION } from "../_shared/taxonomy.ts";
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL") || "https://vmaxbnogmmfyrcucapnq.supabase.co";
 const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || Deno.env.get("SUPABASE_SECRET_KEY") || "";
@@ -315,8 +316,20 @@ async function runTranslation() {
 Deno.serve(async (req) => {
  if(req.method!=="POST") return Response.json({error:"POST required"},{status:405});
  if(!SERVICE_KEY) return Response.json({error:"Missing service key"},{status:500});
- const authCheck=await dbRequest("rpc/verify_wrldline_cron_secret",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({p_secret:req.headers.get("x-wrldline-cron-secret")||""})});
- if(!authCheck.ok || (await authCheck.json())!==true) return Response.json({error:"Unauthorized"},{status:401});
+ let authCheck: Response;
+ try {
+  authCheck=await dbRequest("rpc/verify_wrldline_cron_secret",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({p_secret:req.headers.get("x-wrldline-cron-secret")||""})});
+ } catch {
+  return Response.json({error:"Authorization verifier temporarily unavailable"},{status:503});
+ }
+ let authValue: unknown = null;
+ if(authCheck.ok) {
+  try { authValue=await authCheck.json(); }
+  catch { return Response.json({error:"Authorization verifier temporarily unavailable"},{status:503}); }
+ }
+ const authResult=classifyCronVerifierResult({ok:authCheck.ok,value:authValue});
+ if(authResult.status===503) return Response.json({error:"Authorization verifier temporarily unavailable"},{status:503});
+ if(!authResult.authorized) return Response.json({error:"Unauthorized"},{status:401});
  let mode="unknown";
  try {
   const body=await req.json(); mode=body?.mode;
