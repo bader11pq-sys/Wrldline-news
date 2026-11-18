@@ -112,12 +112,12 @@
       const rows = state.q ? clusters.filter(c => c.articles.some(a => (a.title || "").includes(state.q)) || c.tokens.some(t => t.includes(state.q))) : clusters;
       const sources = new Set(rows.flatMap(c => c.sources));
       if ($("#balCount")) $("#balCount").textContent = rows.length + " تقاطعاً · " + sources.size + " ناشراً";
-      stats([[rows.length, "تقاطعاً"], [sources.size, "ناشراً"], [rows.length ? Math.round(rows.reduce((n, c) => n + c.sourceCount, 0) / rows.length) : 0, "متوسط جهات النشر"]]);
+      stats([[rows.length, "تقاطعاً"], [sources.size, "جهة نشر مسجلة"], [rows.length ? Math.round(rows.reduce((n, c) => n + c.sourceCount, 0) / rows.length) : 0, "متوسط أسماء جهات النشر"]]);
       if (!rows.length) {
         root.innerHTML = '<p class="nr-note" role="note">تجميع آلي أولي لعناوين متشابهة زمنياً ولغوياً. عدد الناشرين لا يثبت استقلالهم، ولا يؤكد وحده أن العناوين تصف الحدث نفسه أو أن الروايات متوازنة.</p>' + empty("لا تقاطعات كافية الآن", "قد تكون التغطية الحالية من ناشر واحد، أو خارج النافذة الزمنية. وسّع النافذة أو قلّل الحد الأدنى للناشرين.");
         return;
       }
-      root.innerHTML = rows.map(c => {
+      root.innerHTML = '<p class="nr-note" role="note">تجميع آلي أولي لعناوين متشابهة زمنياً ولغوياً. عدد أسماء جهات النشر لا يثبت استقلالها، ولا يؤكد وحده أن العناوين تصف الحدث نفسه أو أن الروايات متوازنة.</p>' + rows.map(c => {
         const label = (c.articles.find(a => /[\u0600-\u06FF]/.test(a.title)) || c.articles[0])?.title || c.tokens.join(" · ");
         return '<article class="nr-cluster"><div class="nr-cluster-head"><div><span class="nr-tag">تجميع عناوين أولي</span><h3>' + esc(label) + '</h3></div><div class="nr-balance"><b>' + c.sourceCount + "</b><small>ناشرون</small></div></div>" +
           '<div class="nr-headlines">' + c.articles.slice(0, 6).map(a => {
