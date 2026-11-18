@@ -667,7 +667,7 @@ function openArticle(id,updateUrl=true){
  document.getElementById("modalShare").addEventListener("click",()=>shareArticle(a));
  document.getElementById("modalListen").addEventListener("click",()=>playArticleAudio(a));
  const publicURL=publicArticleURL(a);
- if(publicURL)host.querySelector(".article-actions")?.insertAdjacentHTML("beforeend",'<a class="outline-button" href="'+escapeHTML(publicURL)+'">↗ '+ui("فتح صفحة الخبر وسياق التحقق","Open article and verification context")+'</a>');
+ if(publicURL)host.querySelector(".article-actions")?.insertAdjacentHTML("beforeend",'<a class="outline-button" href="'+escapeHTML(publicURL)+'">↗ '+ui("فتح صفحة الخبر المستقلة وسياق التحقق","Open article page — verification context")+'</a>');
  showModal("articleModal");
  try{document.dispatchEvent(new CustomEvent("wrldline:article-opened",{detail:{article:a}}));}catch(error){console.warn("WRLDLINE intelligence:",error);}
 }
