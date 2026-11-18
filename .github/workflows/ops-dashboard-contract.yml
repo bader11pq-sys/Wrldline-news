@@ -1,0 +1,25 @@
+name: Ops dashboard contract
+
+on:
+  pull_request:
+    paths:
+      - "supabase/functions/ops-dashboard/**"
+      - "tests/ops-dashboard-metrics.test.mjs"
+      - ".github/workflows/ops-dashboard-contract.yml"
+  push:
+    branches: [main]
+    paths:
+      - "supabase/functions/ops-dashboard/**"
+      - "tests/ops-dashboard-metrics.test.mjs"
+      - ".github/workflows/ops-dashboard-contract.yml"
+
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Test monitoring metric contracts
+        run: node --test tests/ops-dashboard-metrics.test.mjs
