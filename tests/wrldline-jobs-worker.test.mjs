@@ -356,3 +356,81 @@ test("classification queue auth-check invokes only the no-write classifier verif
     output.restore();
   }
 });
+
+
+test("provider-healthcheck task invokes the provider diagnostics only on the general queue", async () => {
+  const originalFetch = globalThis.fetch;
+  const output = interceptConsole("log");
+  let acked = false;
+  let requestedUrl = "";
+  let requestedBody = null;
+  let requestedHeaders = null;
+  globalThis.fetch = async (url, init) => {
+    requestedUrl = String(url);
+    requestedBody = JSON.parse(init.body);
+    requestedHeaders = new Headers(init.headers);
+    return new Response(JSON.stringify({
+      ok: true,
+      results: [
+        { provider: "groq", status: "passed" },
+        { provider: "nvidia", status: "passed" }
+      ]
+    }), { status: 200, headers: { "Content-Type": "application/json" } });
+  };
+
+  try {
+    await worker.queue({
+      queue: "wrldline-news-general",
+      messages: [{
+        id: "fixture-provider-healthcheck",
+        body: { task: "provider-healthcheck", scheduled_at: new Date().toISOString() },
+        attempts: 0,
+        ack() { acked = true; },
+        retry() { assert.fail("provider healthcheck should not retry on success"); }
+      }]
+    }, env);
+
+    assert.equal(requestedUrl, "https://vmaxbnogmmfyrcucapnq.supabase.co/functions/v1/ai-provider-healthcheck");
+    assert.deepEqual(requestedBody, {});
+    assert.equal(requestedHeaders.get("apikey"), env.SUPABASE_PUBLISHABLE_KEY);
+    assert.equal(requestedHeaders.get("x-wrldline-cron-secret"), env.WRLDLINE_CRON_SECRET);
+    assert.equal(requestedHeaders.has("authorization"), false);
+    assert.equal(acked, true);
+    const event = output.entries.find(entry => entry.event === "supabase_job_completed");
+    assert.equal(event?.task, "provider-healthcheck");
+    assert.equal(event?.status, 200);
+    assert.match(event?.response_excerpt || "", /"groq","status":"passed"/);
+  } finally {
+    globalThis.fetch = originalFetch;
+    output.restore();
+  }
+});
+
+test("provider-healthcheck task is rejected on non-general queues", async () => {
+  const originalFetch = globalThis.fetch;
+  const output = interceptConsole("error");
+  let acked = false;
+  let fetches = 0;
+  globalThis.fetch = async () => { fetches += 1; return new Response("unexpected", { status: 200 }); };
+
+  try {
+    await worker.queue({
+      queue: "wrldline-news-classification",
+      messages: [{
+        id: "fixture-provider-healthcheck-wrong-queue",
+        body: { task: "provider-healthcheck", scheduled_at: new Date().toISOString() },
+        attempts: 0,
+        ack() { acked = true; },
+        retry() { assert.fail("invalid task must be acknowledged"); }
+      }]
+    }, env);
+
+    const event = output.entries.find(entry => entry.event === "invalid_queue_message");
+    assert.equal(event?.message_id, "fixture-provider-healthcheck-wrong-queue");
+    assert.equal(acked, true);
+    assert.equal(fetches, 0);
+  } finally {
+    globalThis.fetch = originalFetch;
+    output.restore();
+  }
+});
