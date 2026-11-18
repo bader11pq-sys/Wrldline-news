@@ -252,6 +252,30 @@ The PR's `ops-dashboard` source no longer runs a second full-table `articles` co
 4. Verify current migrations, deployed function versions, Worker version, bindings, queues, schedules, and website deployment against one commit.
 5. Test Stripe in sandbox end-to-end and verify server-side entitlement enforcement before any paid launch.
 
+## Supabase new API key migration gate (separate from the November outage)
+
+Supabase's current migration guide (updated 2026-10-29) states that legacy `anon` and `service_role` keys are deprecated by the end of 2026; new `sb_publishable_...` and `sb_secret_...` keys coexist with legacy keys during migration. It specifies that Edge Functions receive the new keys as JSON maps in `SUPABASE_PUBLISHABLE_KEYS` and `SUPABASE_SECRET_KEYS`, keyed by names such as `default`. A new secret key is not a JWT and must be sent in `apikey` only; putting it in `Authorization: Bearer` causes JWT parsing failure. See:
+- https://supabase.com/docs/guides/getting-started/migrating-to-new-api-keys
+- https://supabase.com/docs/guides/functions/auth
+
+### Observed WRLDLINE compatibility gaps
+
+- Deployed `wrldline-news-ingest` v62 reads `SUPABASE_SERVICE_ROLE_KEY` or singular `SUPABASE_SECRET_KEY`, but does not parse `SUPABASE_SECRET_KEYS.default`. It builds a shared DB header set with both `apikey` and `Authorization: Bearer <key>`, including for any future secret-key fallback.
+- Deployed `classify-news-worker` v37 reads `SUPABASE_SECRET_KEYS.default` as a fallback but passes the selected key to `createClient` and forwards it as both `apikey` and `Authorization: Bearer` to `classify-news`. If the fallback is an `sb_secret_...` key, that Bearer usage conflicts with Supabase's new-key rules.
+- `newsdata-integration` v12 and `source-freshness` v1 still rely on legacy/singular key variables. They also need a deliberate new-key header/auth migration before the legacy variable is disabled.
+- Other server paths (classification, translation, notification server helpers, AI health checks and billing integrations) have different key parsing and caller-auth models. A global environment-variable replacement would break service-to-service calls; migrate each path with its own request contract.
+
+These are confirmed source-level compatibility gaps, **not proof that the current November incident was caused by new API keys**. The deployed ingest still prioritizes the legacy `SUPABASE_SERVICE_ROLE_KEY` environment variable, which remains supported during the documented coexistence period. No secret value or runtime key type was read. No key variable was changed.
+
+### Safe migration sequence before the legacy-key deprecation date
+
+1. Inventory every Supabase server caller and classify its credential contract: user JWT, service secret on `apikey`, or WRLDLINE's custom cron-secret RPC. Do not conflate those credentials.
+2. Implement `sb_secret` support with `apikey` only. For Edge Functions, use `@supabase/server` with `auth: 'secret'` when the function is supposed to authenticate a secret-key caller; retain the separate WRLDLINE cron-secret check where required.
+3. For internal function-to-function calls, update both caller and callee together. Do not send an `sb_secret` value on `Authorization: Bearer`, and do not treat a publishable key as an admin credential.
+4. Add tests for legacy JWT mode and new secret-key mode, including negative tests proving an `sb_secret` value never appears in an Authorization header.
+5. Deploy to a controlled environment, verify ingest → classification → translation and NewsData/notifications, then observe real request success and RLS/authorization behavior.
+6. Only after every server caller is accounted for and observed successfully should the legacy `service_role` key be deactivated. Do not remove it as part of the current queue recovery.
+
 ## Correlated shutdown timeline and scheduler/consumer split
 
 ### Confirmed administrative Cron disable
