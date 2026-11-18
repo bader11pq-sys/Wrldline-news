@@ -252,6 +252,22 @@ The PR's `ops-dashboard` source no longer runs a second full-table `articles` co
 4. Verify current migrations, deployed function versions, Worker version, bindings, queues, schedules, and website deployment against one commit.
 5. Test Stripe in sandbox end-to-end and verify server-side entitlement enforcement before any paid launch.
 
+## Latest operational snapshot (2026-11-18 14:54:26 UTC)
+
+The final read-only check during this phase still showed all four production delivery queues paused, all six observed pg_cron rows individually inactive, and the classification backlog unchanged.
+
+| Queue | Paused | Backlog | Oldest message (UTC) | Age |
+|---|---:|---:|---|---:|
+| general | yes | 512 | 2026-11-18 00:45:35 | 14h 08m |
+| breaking | yes | 746 | 2026-11-17 20:22:39 | 18h 31m |
+| classification | yes | 1,496 | 2026-11-16 15:08:15 | 47h 46m |
+| translation | yes | 286 | 2026-11-18 06:50:33 | 8h 03m |
+| dead-letter | n/a | 1,429 | 2026-11-15 14:29:56 | 72h 24m |
+
+Total observed queue backlog: 4,469 messages including DLQ. The classification RPC remained at pending 8,756, processing 0, failed 45, expired 51,427, classified 2,105, needs_review 21, with oldest pending record 2017-04-20.
+
+All six tracked cron rows remained `active=false`: notification dispatch, NewsData sync, source freshness, audience retention, security counters, and daily briefing. No scheduler was re-enabled.
+
 ## CI verification (current PR head: 2026-11-18)
 
 The latest CI runs for the PR head completed successfully:
