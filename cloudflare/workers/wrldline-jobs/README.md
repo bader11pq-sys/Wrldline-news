@@ -2,6 +2,28 @@
 
 This Worker moves the scheduling and buffering of the existing WRLDLINE news jobs to Cloudflare Queues. Supabase Edge Functions remain the execution layer and PostgreSQL remains the source of truth.
 
+## Live recovery status — verified 18 November 2026, 17:40 UTC
+
+This section is the current production snapshot. Older dated snapshots below are retained as history and must not be treated as current configuration.
+
+- Deployed Worker: version 13, deployment `7d49ad4f-0c6c-4e24-b577-1b0875b6d23a`, 100% traffic. It has the global fail-closed producer switch, stale-message guard, no-write auth probes, and provider healthcheck routing. The independent per-pipeline producer switches described later are in this review branch but are **not yet deployed**.
+- Current Edge Functions: `wrldline-news-ingest` v63, `classify-news-worker` v40, `classify-news` v103, and `ai-provider-healthcheck` v62.
+- General queue: delivery paused, backlog 0. RSS collection is not running; the last successful general ingestion run fetched 80/80 sources and parsed 1,718 items at 16:51:43–16:51:51 UTC. No feed was fetched in the preceding 30 minutes at this snapshot.
+- Classification queue: delivery enabled, backlog 0, one serialized consumer with batch size 1 and max concurrency 1. The worker claims one article per invocation to avoid request timeouts. At 17:39:46 UTC, the last-hour article statuses were 15 classified, 4 needs-review, 0 pending, 0 processing, and 0 failed.
+- Breaking queue: paused, backlog 720. Translation queue: paused, backlog 288. Dead-letter queue: 1,429 messages and no consumer. Do not unpause these as part of a General-only recovery.
+- All six WRLDLINE support `pg_cron` jobs remain inactive. Do not reactivate them until each task has one verified scheduler and its endpoint/auth checks pass.
+- The global producer switch is fail-closed. No producer schedule is currently enabled in production. The current source branch adds independent `WRLDLINE_GENERAL_PRODUCER_ENABLED`, `WRLDLINE_BREAKING_PRODUCER_ENABLED`, `WRLDLINE_CLASSIFICATION_PRODUCER_ENABLED`, and `WRLDLINE_TRANSLATION_PRODUCER_ENABLED` switches; each is opt-in and missing values pause that pipeline.
+- Provider diagnostics (small structured-output tests): Gemini, Groq, NVIDIA, and Bazaarlink passed; OpenRouter failed; Gonka returned 401; Firecrawl returned 402 because credits were exhausted. Provider preflight is not proof of every article-level request. The deployed classifier was aligned with the passing Groq/NVIDIA request formats and uses a one-article worker batch.
+
+### General-only recovery sequence
+
+1. Deploy the reviewed per-pipeline switch Worker with every producer switch false.
+2. Unpause only `wrldline-news-general` and send one fresh `general` message. Confirm a completed `news_ingestion_runs` row, current source counts, and no unexpected queue retries.
+3. Only after that canary succeeds, deploy/configure `WRLDLINE_GENERAL_PRODUCER_ENABLED=true`; keep the global switch false and the Breaking, Classification, and Translation producer switches false.
+4. Confirm a subsequent scheduled General run succeeds. Keep Breaking and Translation paused, leave the DLQ untouched, and leave all six pg_cron jobs inactive.
+5. Stop and roll back the General producer switch if ingestion errors, retry counts, or queue backlog rise unexpectedly.
+
+
 ## Queues
 
 | Queue | Supabase function | Payload | Intended schedule |
