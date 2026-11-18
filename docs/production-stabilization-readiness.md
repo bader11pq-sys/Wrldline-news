@@ -114,6 +114,21 @@ The repository currently has inconsistent server-key handling:
 
 This is a concrete compatibility gap and a possible contributor to internal RPC 401s **if** the functions have begun using a new `sb_secret_...` key or the legacy key has been disabled. It is not yet proven to be the current cause: the actual Edge Function environment values were not inspected, and the Vault self-check was successful. Before rotating/deactivating any key, standardize a single server-key resolver and header policy across all Edge Functions, then test it in a non-production environment with the exact key type. Do not print key values or send new secret keys as Bearer tokens.
 
+### PostgREST saturation explains part of the apparent 401 storm
+
+A follow-up query of the PostgREST access logs found, in the same one-hour incident window (2026-11-17 14:30–15:30 UTC):
+- `POST /rpc/verify_wrldline_cron_secret`: 1,382 HTTP 503 responses between 15:05:19Z and 15:28:26Z, and 17 HTTP 504 responses between 14:38:13Z and 14:57:10Z.
+- All PostgREST endpoints combined in that hour: 2,618 HTTP 503, 69 HTTP 504, and 141 HTTP 500 responses.
+
+The log identifies the verifier callers as `service_role`, so those requests passed gateway key recognition and reached the RPC endpoint. The separate Vault self-check returned true. This materially weakens the theory that all observed Edge 401s were simply a bad cron secret. In several deployed Edge functions, any non-2xx response or RPC error from `verify_wrldline_cron_secret` was collapsed into `401 Unauthorized`. Therefore historical Edge 401 counts may include verifier-service 503/504 outages, not only invalid secrets.
+
+The PR now standardizes the distinction:
+- A successful verifier request returning JSON `true` authorizes.
+- A successful verifier request returning JSON `false` returns HTTP 401.
+- A transport, HTTP, JSON-decoding, or PostgREST RPC error returns HTTP 503 and a generic, non-sensitive verifier-unavailable message.
+
+This change does not fix the underlying PostgREST saturation. It prevents future monitoring from misclassifying an infrastructure outage as invalid caller credentials and preserves a retriable service-failure signal. The affected functions have not been deployed to production.
+
 ### Invocation failures by deployed function version
 
 The historical Supabase Edge request window (2026-11-17 14:30 UTC through 2026-11-18 14:30 UTC) reported:
