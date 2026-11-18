@@ -98,6 +98,22 @@ The private `source_freshness_metrics` table had 1,128 rows, but its latest `che
 
 The NewsData catalog contains 200 configured sources, but the most recent `newsdata_fetched_at` on articles was 2026-11-13 23:21:01 UTC. The NewsData source catalog's latest update was 2026-11-14 03:15:32 UTC. The deployed `newsdata-integration` function is ACTIVE v12, but its cron job is disabled.
 
+### Cron secret self-verification and API-key compatibility
+
+A read-only SQL diagnostic confirmed exactly one Vault row named `wrldline_news_cron_secret_20261113` and `public.verify_wrldline_cron_secret(the_same_vault_value)` returned `true`. This proves the current Vault entry is internally consistent with the verifier. It does **not** prove that Cloudflare sends the same bytes, that pg_net transmits the header as expected, or that each Edge Function's server-side database API key is accepted.
+
+The Supabase project exposes an active `default` publishable key and an active legacy `anon` key. No secret key value or service key was read. Current Supabase guidance says new Edge Functions receive `SUPABASE_SECRET_KEYS` as a JSON dictionary and `SUPABASE_PUBLISHABLE_KEYS`, alongside the legacy `SUPABASE_SERVICE_ROLE_KEY` and `SUPABASE_ANON_KEY`. Supabase states that legacy `anon`/`service_role` keys are deprecated by the end of 2026. See:
+- [Migrate to publishable and secret API keys](https://supabase.com/docs/guides/getting-started/migrating-to-new-api-keys)
+- [Edge Function environment variables](https://supabase.com/docs/guides/functions/secrets)
+- [Authorization and apikey headers](https://supabase.com/docs/guides/functions/auth-headers)
+
+The repository currently has inconsistent server-key handling:
+- `classify-news-worker`, `translate-articles`, and the shared notification environment resolver can parse `SUPABASE_SECRET_KEYS.default` as a fallback.
+- `wrldline-news-ingest`, `newsdata-integration`, `source-freshness/index.ts`, and the current `ops-dashboard` source rely on `SUPABASE_SERVICE_ROLE_KEY` and/or a singular `SUPABASE_SECRET_KEY`; they do not consistently parse the documented JSON dictionary.
+- The raw PostgREST helpers in ingestion, NewsData, and source freshness build both `apikey` and `Authorization: Bearer` from the same server key. Supabase's new `sb_secret_...` values are not JWTs and should be sent in `apikey`, not as a Bearer JWT. The legacy JWT-based `service_role` key can continue using the existing Bearer pattern until migration.
+
+This is a concrete compatibility gap and a possible contributor to internal RPC 401s **if** the functions have begun using a new `sb_secret_...` key or the legacy key has been disabled. It is not yet proven to be the current cause: the actual Edge Function environment values were not inspected, and the Vault self-check was successful. Before rotating/deactivating any key, standardize a single server-key resolver and header policy across all Edge Functions, then test it in a non-production environment with the exact key type. Do not print key values or send new secret keys as Bearer tokens.
+
 ### Invocation failures by deployed function version
 
 The historical Supabase Edge request window (2026-11-17 14:30 UTC through 2026-11-18 14:30 UTC) reported:
