@@ -70,10 +70,13 @@ export default {
     for (const message of batch.messages) {
       const authCheck = message.body?.task === "auth-check";
       const validTasks = ["general", "breaking", "classification", "translation"];
+      const authCheckSupportedQueues = ["wrldline-news-general", "wrldline-news-classification"];
       const task = authCheck && batch.queue === "wrldline-news-general"
         ? { functionName: "wrldline-news-ingest", body: { mode: "auth-check" } }
-        : QUEUE_TASKS[batch.queue];
-      if (!task || (authCheck && batch.queue !== "wrldline-news-general") ||
+        : authCheck && batch.queue === "wrldline-news-classification"
+          ? { functionName: "classify-news-worker", body: { mode: "auth-check" } }
+          : QUEUE_TASKS[batch.queue];
+      if (!task || (authCheck && !authCheckSupportedQueues.includes(batch.queue)) ||
           (message.body?.task && message.body.task !== "healthcheck" &&
            message.body.task !== "auth-check" && !validTasks.includes(message.body.task))) {
         console.error(JSON.stringify({ event: "invalid_queue_message", queue: batch.queue, message_id: message.id }));
