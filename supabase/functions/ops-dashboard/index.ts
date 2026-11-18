@@ -15,20 +15,69 @@ const cors = {
   "Vary": "Origin"
 };
 
-function json(data, status = 200) {
+type FeedRow = {
+  id: string;
+  name: string | null;
+  active: boolean;
+  last_fetched: string | null;
+  last_error: string | null;
+};
+
+type IngestionRun = {
+  pipeline: string | null;
+  started_at: string;
+  finished_at: string | null;
+  source_count: number | null;
+  successful_sources: number | null;
+  failed_sources: number | null;
+  parsed_items: number | null;
+  error_summary: string | null;
+  trigger_source: string | null;
+};
+
+type ProviderState = {
+  provider: string;
+  disabled_until: string | null;
+  reason: string | null;
+  updated_at: string | null;
+};
+
+type QueryResult<T> = {
+  data: T | null;
+  count: number | null;
+  error: { message?: string } | null;
+};
+
+type ClassificationStats = {
+  pending: number | null;
+  processing: number | null;
+  failed: number | null;
+  expired: number | null;
+  classified: number | null;
+  needs_review: number | null;
+  skipped: number | null;
+  oldest_pending_age_minutes: number | null;
+  oldest_pending_at: string | null;
+};
+
+function json(data: unknown, status = 200): Response {
   return new Response(JSON.stringify(data), { status, headers: cors });
 }
 
-async function safeQuery(query) {
+async function safeQuery<T>(query: PromiseLike<unknown>): Promise<QueryResult<T>> {
   try {
-    return await query;
-  } catch (error) {
-    return { data: null, count: null, error: { message: String(error?.message || error) } };
+    return await query as QueryResult<T>;
+  } catch (error: unknown) {
+    return {
+      data: null,
+      count: null,
+      error: { message: error instanceof Error ? error.message : String(error) }
+    };
   }
 }
 
-function errorMessage(result) {
-  return String(result?.error?.message || "Unknown query error").slice(0, 220);
+function errorMessage(result: QueryResult<unknown>): string {
+  return String(result.error?.message || "Unknown query error").slice(0, 220);
 }
 
 Deno.serve(async (req: Request) => {
@@ -74,15 +123,15 @@ Deno.serve(async (req: Request) => {
     breakingResult,
     classificationResult
   ] = await Promise.all([
-    safeQuery(db.from("feeds")
+    safeQuery<FeedRow[]>(db.from("feeds")
       .select("id,name,active,last_fetched,last_error")
       .eq("active", true)),
-    safeQuery(db.from("news_ingestion_runs")
+    safeQuery<IngestionRun[]>(db.from("news_ingestion_runs")
       .select("pipeline,started_at,finished_at,source_count,successful_sources,failed_sources,parsed_items,error_summary,trigger_source")
       .gte("started_at", dayAgo)
       .order("started_at", { ascending: false })
       .limit(200)),
-    safeQuery(db.from("articles")
+    safeQuery<null>(db.from("articles")
       .select("id", { count: "exact", head: true })
       .eq("editorial_status", "published")
       .gte("published_at", hourAgo)),
@@ -90,15 +139,15 @@ Deno.serve(async (req: Request) => {
       .select("id", { count: "exact", head: true })
       .not("translation_last_error", "is", null)
       .gte("received_at", dayAgo)),
-    safeQuery(db.from("ai_provider_cooldowns")
+    safeQuery<ProviderState[]>(db.from("ai_provider_cooldowns")
       .select("provider,disabled_until,reason,updated_at")),
-    safeQuery(db.from("translation_provider_state")
+    safeQuery<ProviderState[]>(db.from("translation_provider_state")
       .select("provider,disabled_until,reason,updated_at")),
     safeQuery(db.from("articles")
       .select("id", { count: "exact", head: true })
       .eq("is_breaking", true)
       .gte("published_at", hourAgo)),
-    safeQuery(db.rpc("classification_queue_stats"))
+    safeQuery<unknown>(db.rpc("classification_queue_stats"))
   ]);
 
   const results = {
@@ -117,9 +166,9 @@ Deno.serve(async (req: Request) => {
 
   const feedRows = feedsResult.data || [];
   const runRows = runsResult.data || [];
-  const stats = classificationResult.error
+  const stats: ClassificationStats | null = classificationResult.error
     ? null
-    : normalizeClassificationStats(classificationResult.data);
+    : normalizeClassificationStats(classificationResult.data) as ClassificationStats | null;
   const runSummary = summarizeRuns(runRows);
   const recentRuns = runRows.filter((run) => run.started_at >= hourAgo);
   const latest = [...runRows].sort((a, b) =>
