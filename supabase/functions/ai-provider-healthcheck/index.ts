@@ -101,9 +101,17 @@ Deno.serve(async(req:Request)=>{
  });
  const authHeader=req.headers.get("Authorization")||"";
  const token=authHeader.replace(/^Bearer\\s+/i,"");
+ const cronSecret=req.headers.get("x-wrldline-cron-secret")||"";
  let authorized=isSupabaseServiceRequest(req.headers,serviceKey);
+ console.info("AI_PROVIDER_HEALTHCHECK_AUTH",JSON.stringify({
+  service_key_configured:!!serviceKey,
+  service_request:authorized,
+  cron_secret_present:cronSecret.length>=32
+ }));
+ if(!serviceKey&&!authorized){
+  return json({ok:false,error:"Service authorization is not configured"},503);
+ }
  if(!authorized&&serviceKey){
-  const cronSecret=req.headers.get("x-wrldline-cron-secret")||"";
   if(cronSecret.length>=32){
    try{
     const check=await fetch(base+"/rest/v1/rpc/verify_wrldline_cron_secret",{
