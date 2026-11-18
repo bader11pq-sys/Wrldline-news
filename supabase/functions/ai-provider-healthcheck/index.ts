@@ -166,7 +166,7 @@ Deno.serve(async(req:Request)=>{
   provider:item.provider,
   status:item.status,
   model:typeof item.model==="string"?item.model:undefined,
-  error_code:item.error?((String(item.error).match(/HTTP\\s+(\\d{3})/i)||[])[1]||(/timeout/i.test(String(item.error))?"timeout":(/insufficient.?credits/i.test(String(item.error))?"insufficient_credits":"provider_error"))):undefined
+  error_code:item.error?((String(item.error).match(/HTTP +([0-9]{3})/i)||[])[1]||(/timeout/i.test(String(item.error))?"timeout":(/insufficient.?credits/i.test(String(item.error))?"insufficient_credits":"provider_error"))):undefined
  }));
  console.info("AI_PROVIDER_HEALTHCHECK_RESULT",JSON.stringify({tested_at:testedAt,results:resultSummary}));
  return json({ok:configured.some(x=>x.status==="passed"),all_configured_passed:configured.length>0&&configured.every(x=>x.status==="passed"),tested_at:testedAt,results});
