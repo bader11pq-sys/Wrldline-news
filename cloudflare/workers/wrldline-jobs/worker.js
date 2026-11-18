@@ -69,16 +69,21 @@ export default {
   async queue(batch, env) {
     for (const message of batch.messages) {
       const authCheck = message.body?.task === "auth-check";
+      const providerHealthcheck = message.body?.task === "provider-healthcheck";
       const validTasks = ["general", "breaking", "classification", "translation"];
       const authCheckSupportedQueues = ["wrldline-news-general", "wrldline-news-classification"];
-      const task = authCheck && batch.queue === "wrldline-news-general"
-        ? { functionName: "wrldline-news-ingest", body: { mode: "auth-check" } }
-        : authCheck && batch.queue === "wrldline-news-classification"
-          ? { functionName: "classify-news-worker", body: { mode: "auth-check" } }
-          : QUEUE_TASKS[batch.queue];
+      const task = providerHealthcheck && batch.queue === "wrldline-news-general"
+        ? { functionName: "ai-provider-healthcheck", body: {} }
+        : authCheck && batch.queue === "wrldline-news-general"
+          ? { functionName: "wrldline-news-ingest", body: { mode: "auth-check" } }
+          : authCheck && batch.queue === "wrldline-news-classification"
+            ? { functionName: "classify-news-worker", body: { mode: "auth-check" } }
+            : QUEUE_TASKS[batch.queue];
       if (!task || (authCheck && !authCheckSupportedQueues.includes(batch.queue)) ||
+          (providerHealthcheck && batch.queue !== "wrldline-news-general") ||
           (message.body?.task && message.body.task !== "healthcheck" &&
-           message.body.task !== "auth-check" && !validTasks.includes(message.body.task))) {
+           message.body.task !== "auth-check" && message.body.task !== "provider-healthcheck" &&
+           !validTasks.includes(message.body.task))) {
         console.error(JSON.stringify({ event: "invalid_queue_message", queue: batch.queue, message_id: message.id }));
         message.ack();
         continue;
