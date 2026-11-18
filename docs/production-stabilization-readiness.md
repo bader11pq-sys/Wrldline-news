@@ -252,6 +252,45 @@ The PR's `ops-dashboard` source no longer runs a second full-table `articles` co
 4. Verify current migrations, deployed function versions, Worker version, bindings, queues, schedules, and website deployment against one commit.
 5. Test Stripe in sandbox end-to-end and verify server-side entitlement enforcement before any paid launch.
 
+## Correlated shutdown timeline and scheduler/consumer split
+
+### Confirmed administrative Cron disable
+
+The unified PostgreSQL log records a successful administrative SQL statement at 2026-11-17 15:39:15.901 UTC (logged at 15:39:56.929 UTC, duration 29.548 seconds) issuing six calls to `cron.alter_job(job_id, active=false)` for job IDs 4, 7, 9, 10, 11, and 12. The statement metadata identifies application `mgmt-api`, database role `postgres`, and source `POST /mcp`. This confirms an explicit authenticated administrative action—not pg_cron spontaneously switching off. The available record does not contain a human email/name or reason; do not attribute it to a specific person.
+
+### Correlated events before the disable
+
+Cloudflare Worker observability contains 20 sampled OTel error records for `wrldline-jobs fetch 401` in the inspected 24-hour window, concentrated from 2026-11-17 15:04:46Z through 15:16:58Z. The spans show calls to both `wrldline-news-ingest` and `classify-news-worker`. It also contains one `fetch 546` record for `classify-news-worker` beginning 15:01:50Z and lasting about 150 seconds. These are sampled telemetry records (Worker log head-sampling configured at 20%), not guaranteed total invocation counts. In the same period, PostgREST verifier requests returned 503/504. Queue-delivery pause audit actions then occurred between 15:09:08Z and 15:19:30Z. The exact operator rationale is not present in the inspected audit records.
+
+The sequence is consistent with an operational response to Supabase/Edge invocation failures, but it does not establish the decision-maker's intent:
+1. 15:01:50Z: a classification Edge invocation ended with HTTP 546 after ~150 seconds.
+2. 15:04:46Z–15:16:58Z: sampled Worker calls to ingest/classification returned HTTP 401.
+3. 15:05:19Z–15:28:26Z: the cron-verifier PostgREST RPC returned 1,382 HTTP 503 and 17 HTTP 504 in the recorded one-hour window.
+4. 15:09:08Z–15:19:30Z: four Cloudflare queue delivery-pause actions were recorded.
+5. 15:39:15Z: one administrative SQL command marked all six pg_cron jobs inactive.
+
+### The producer scheduler is still running while queue consumers are paused
+
+The deployed `wrldline-jobs` Worker still has four Cron Triggers configured:
+- every minute: enqueue classification
+- every 2 minutes: enqueue breaking
+- every 3 minutes: enqueue general
+- every 5 minutes: enqueue translation
+
+A fresh Cloudflare Workers Observability query showed successful scheduled invocations (`outcome=ok`) for these triggers through 2026-11-18 14:56:38Z. The deployed queue configuration has one consumer per main queue, each with batch size 1, max concurrency 1, max retries 3, and retry delay 30 seconds. All four consumer deliveries remain paused. Producer Cron triggers and consumer delivery are separate controls; pausing delivery does not stop the scheduled producer from adding messages.
+
+The configured schedule rates sum to about 2.03 messages/minute, or approximately 122 scheduled messages/hour when every trigger succeeds, excluding retries. That explains how the backlog can continue to grow while delivery is paused. At 2026-11-18 15:01:05Z the main queues held 3,046 messages (general 509, breaking 750, classification 1,499, translation 288) plus 1,429 in DLQ, for 4,475 total. This is a time-specific snapshot; counts can change as scheduled producers continue.
+
+### DLQ payload and traceability gap
+
+A non-destructive preview of 15 DLQ messages found only `task`, `scheduled_at`, and `enqueued_at` in their payloads. There is no stored failure status, error code, retry history, or source message ID in those payloads. The DLQ has no consumer configured. Blind replay is unsafe.
+
+The deployed Worker source also omitted Cloudflare `message.id` from failure/success/network log fields, making it difficult to correlate a particular DLQ item with its original processing failure. The PR branch now adds `message_id` to invalid-message, healthcheck, missing-secret, success, HTTP-failure, and network-failure log entries and adds tests for success (200), HTTP failure (401), and network failure paths. This is a source-only change pending review and deployment; it does not retroactively add metadata to the existing DLQ backlog.
+
+### Controlled recovery order
+
+Do not resume all consumers at once. First review and retain the existing DLQ sample/export; verify current deployed Worker version and exact queue/consumer settings; deploy the message-ID logging change; confirm Supabase verifier health and Edge smoke tests in a controlled path. Then, with an authorized operator decision, temporarily pause/reduce producer Cron triggers to prevent further backlog growth, selectively unpause one main queue at a time with low concurrency, monitor status/error and backlog age, and only then restore its producer schedule. Treat classification, translation, breaking, and general as separate rollouts. Leave the DLQ untouched until redacted reasons and replay eligibility are understood. Separately restore NewsData and notification Cron jobs only after verifier and endpoint validation; choose exactly one source-freshness scheduler.
+
 ## Latest operational snapshot (2026-11-18 14:54:26 UTC)
 
 The final read-only check during this phase still showed all four production delivery queues paused, all six observed pg_cron rows individually inactive, and the classification backlog unchanged.
