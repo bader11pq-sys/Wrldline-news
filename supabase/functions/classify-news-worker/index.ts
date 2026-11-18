@@ -34,6 +34,16 @@ Deno.serve(async (req: Request) => {
   if (authResult.status === 503) return json({ error: "Authorization verifier temporarily unavailable" }, 503);
   if (!authResult.authorized) return json({ error: "Unauthorized" }, 401);
 
+  // No-write probe for the Worker-to-classifier path. Keep it before expiry,
+  // claim, provider calls, and every database mutation.
+  let body: Record<string, unknown> = {};
+  try {
+    body = await req.json();
+  } catch {
+    return json({ error: "Invalid JSON body" }, 400);
+  }
+  if (body.mode === "auth-check") return json({ ok: true, mode: "auth-check" });
+
   // Maintenance is deliberately idempotent. The first run expires the legacy
   // backlog; subsequent runs are cheap because the queue indexes cover it.
   const expired = await db.rpc("expire_stale_classification_queue");
