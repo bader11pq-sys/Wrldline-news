@@ -32,3 +32,9 @@ test("legacy source-count statuses cannot imply multi-source human confirmation"
   assert.match(reliability, /لم يُسجل تحقق بشري/);
   assert.doesNotMatch(reliability, /مؤكد بثلاثة مصادر|مؤكد بمصدرين|تأكيد رسمي \+ مصادر مستقلة/);
 });
+
+test("intelligence dashboard counts only the actual editorial review states", () => {
+  assert.match(source, /counts\["محل خلاف"\]/);
+  assert.match(source, /counts\["لم يُسجل تحقق بشري"\]/);
+  assert.doesNotMatch(source, /counts\["مؤكد بمصدرين"\]|counts\["تأكيد رسمي \+ مصادر مستقلة"\]/);
+});
