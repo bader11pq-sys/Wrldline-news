@@ -30,6 +30,12 @@ export function resolveSupabaseServiceKey(env = {}) {
   return null;
 }
 
+export function isSupabaseServiceRequest(headers, serviceKey) {
+  if (typeof serviceKey !== "string" || !serviceKey) return false;
+  const token = (headers.get("Authorization") || "").replace(/^Bearer\\s+/i, "");
+  return token === serviceKey || headers.get("apikey") === serviceKey;
+}
+
 // New opaque secret keys are accepted through apikey, not as JWT Bearer
 // credentials. Legacy service_role JWTs still need both headers for older
 // request paths and remain supported during the migration window.
