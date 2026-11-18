@@ -235,11 +235,45 @@ async function loadOpsDashboard(){
   $("opsRunsHint").textContent=(ing.runs_24h||0)+" دورة خلال 24 ساعة";
   $("opsPublished").textContent=c.published_last_hour??"—";
   $("opsBreaking").textContent=(data.breaking_last_hour||0)+" خبر عاجل في آخر ساعة";
-  $("opsPending").textContent=c.ai_pending??"—";
-  $("opsTranslation").textContent=(c.translation_errors_24h||0)+" أخطاء ترجمة خلال 24 ساعة";
+  const classification=c.classification||{};
+  $("opsPending").textContent=classification.available?classification.pending??"—":c.ai_pending??"—";
+  $("opsTranslation").textContent=(c.translation_errors_24h??"—")+" أخطاء ترجمة خلال 24 ساعة";
+  const classificationHost=$("opsClassificationStats");
+  if(classificationHost){
+   classificationHost.replaceChildren();
+   if(!classification.available){
+    classificationHost.textContent="إحصاءات التصنيف غير متاحة من قاعدة البيانات في هذا التحديث.";
+   }else{
+    const age=Number(classification.oldest_pending_age_minutes);
+    const ageLabel=Number.isFinite(age)?(age>=1440?Math.floor(age/1440)+" يوم":"أقل من يوم"): "غير متاح";
+    const rows=[
+     ["منتظر",classification.pending],["قيد المعالجة",classification.processing],
+     ["مصنف",classification.classified],["فاشل",classification.failed],
+     ["منتهي الصلاحية",classification.expired],["مراجعة بشرية",classification.needs_review],
+     ["عمر أقدم عنصر",ageLabel]
+    ];
+    for(const [label,value] of rows)classificationHost.append(opsLine(label,String(value??"غير متاح"),label==="منتظر"&&Number(value)>1000?"ops-bad":""));
+   }
+  }
+  const freshnessHost=$("opsExecutionFreshness");
+  if(freshnessHost){
+   freshnessHost.replaceChildren();
+   freshnessHost.append(
+    opsLine("آخر نجاح جمع",ing.last_success_at?opsFmt(ing.last_success_at):"غير مسجل",ing.last_success_at?"ops-ok":"ops-warn"),
+    opsLine("آخر فشل جمع",ing.last_failure_at?opsFmt(ing.last_failure_at):"غير مسجل",ing.last_failure_at?"ops-warn":"")
+   );
+  }
+  const queueHost=$("opsQueueHealth");
+  if(queueHost){
+   queueHost.textContent=data.queue?.available
+    ?"تم توفير مؤشرات Cloudflare من المصدر المرتبط."
+    :"مؤشرات Cloudflare غير موصولة بهذه الخدمة؛ افحص الطوابير من Cloudflare. لا يعني ذلك أن التراكم صفر.";
+  }
   $("opsUpdatedAt").textContent="آخر تحديث: "+opsFmt(data.generated_at);
-  status.textContent="تم تحديث المؤشرات بنجاح.";
-  status.style.color="#54c79a";
+  status.textContent=data.health?.status==="degraded"
+   ?"تم تحديث المؤشرات المتاحة؛ بعض قراءات قاعدة البيانات تعذرت."
+   :"تم تحديث المؤشرات بنجاح.";
+  status.style.color=data.health?.status==="degraded"?"#e7b65c":"#54c79a";
   const pipes=$("opsPipelines");pipes.replaceChildren();
   const entries=Object.entries(ing.pipelines||{});
   if(!entries.length)pipes.textContent="لا توجد دورات مسجلة في آخر 24 ساعة.";
