@@ -77,6 +77,13 @@ Total: **4,473 messages** (3,044 in the main queues and 1,429 in DLQ). The four 
 No queue delivery was resumed, no Cron schedule was changed, and no DLQ message was replayed during this read-only recheck. The PR branch now also includes a reviewed Supabase service-key compatibility helper; it is not deployed. New `sb_secret_...` keys must use `apikey` only, with no Authorization Bearer copy. Legacy `service_role` keys remain supported during the migration window. Do not rotate or deactivate keys as part of queue recovery.
 
 
+
+## Worker release candidate — not deployed
+
+Cloudflare version upload created **version 8** (`6db110f6-27e4-436d-be87-58f61db5d536`) at 2026-11-18 16:38:53 UTC. It contains the fail-closed producer switch and message-ID logging from this branch. Cloudflare confirmed the queue bindings, publishable-key binding, and existing `WRLDLINE_CRON_SECRET` binding were retained.
+
+The deployed version remains **version 7** at 100% traffic. Version 8 is an uploaded candidate only: it has not been deployed and receives no production traffic. The switch is intentionally fail-closed: without `WRLDLINE_PRODUCERS_ENABLED=true`, scheduled invocations do not enqueue new messages. Do not set it to `true` until consumer recovery is explicitly approved and validated.
+
 ## Separate urgent-source and SMS pipeline
 
 The GitHub Actions workflow `.github/workflows/breaking.yml` remains a dedicated scheduled path (every five minutes) in addition to the Cloudflare queue system. It runs `bot-breaking.js` against the 20 Arabic urgent-source monitors in the canonical catalog, upserts recent urgent articles, then calls `telnyx-gateway` to dispatch opted-in SMS. This is not the same operation as the Cloudflare breaking queue consumer, which scans already-ingested articles and flags urgent titles but does not send SMS.
