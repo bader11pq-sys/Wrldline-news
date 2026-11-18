@@ -1,3 +1,4 @@
+import { classifyCronVerifierResult } from '../_shared/cron-auth.mjs';
 // Caller authentication is mandatory before operational reads or writes.
 import { evaluateSource } from './evaluate.mjs';
 
@@ -15,8 +16,19 @@ export function createHandler(deps: Dependencies) {
       let authorized = false;
       const secret = request.headers.get('x-wrldline-cron-secret');
       if (secret) {
-        const result = await db('rpc/verify_wrldline_cron_secret', { p_secret: secret });
-        authorized = result.ok && await result.json() === true;
+        let result: Response;
+        try {
+          result = await db('rpc/verify_wrldline_cron_secret', { p_secret: secret });
+        } catch {
+          return reply({ error: 'Authorization verifier temporarily unavailable' }, 503);
+        }
+        if (!result.ok) return reply({ error: 'Authorization verifier temporarily unavailable' }, 503);
+        let value: unknown;
+        try { value = await result.json(); }
+        catch { return reply({ error: 'Authorization verifier temporarily unavailable' }, 503); }
+        const outcome = classifyCronVerifierResult({ ok: true, value });
+        if (outcome.status === 503) return reply({ error: 'Authorization verifier temporarily unavailable' }, 503);
+        authorized = outcome.authorized;
       }
       if (!authorized) {
         const token = request.headers.get('Authorization') ?? '';
