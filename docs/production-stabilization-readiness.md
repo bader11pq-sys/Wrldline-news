@@ -31,6 +31,12 @@ Queue consumer settings remain batch_size=1, max_retries=3, retry_delay=30 secon
 
 Cloudflare reports Worker deployment version 7 (`9c39fcc5-405c-4d7c-a54b-6dbe33c514df`), deployed 2026-11-15 03:46:52 UTC. The deployed `worker.js` content was compared byte-for-byte with `main:cloudflare/workers/wrldline-jobs/worker.js` and matched. Worker observability is enabled, with log sampling at 20% and trace sampling at 10%.
 
+### Worker-to-Supabase authentication contract
+
+The deployed Worker calls `wrldline-news-ingest` and `classify-news-worker` with the `x-wrldline-cron-secret` header. Both deployed functions validate that header through `public.verify_wrldline_cron_secret(p_secret)`. The database verifier compares the supplied value with the Vault entry named `wrldline_news_cron_secret_20261113`; one entry with that name exists.
+
+Cloudflare Worker version 7 records the annotation `Updated secret: WRLDLINE_CRON_SECRET` at 2026-11-15 03:46:50 UTC, while the Supabase verifier continues to reference the dated Vault entry. This makes secret-value drift a strong candidate explanation for the repeated 401 responses, but the mismatch is **not confirmed** because the Cloudflare secret value is not readable through the metadata/API inspection and no secret values were retrieved. The values must be compared securely by an authorized operator without exposing them in logs or chat. The common actor type for the four queue-pause audit events is `user`; the audit entries do not state the reason for pausing.
+
 ### Supabase
 
 Project status: `ACTIVE_HEALTHY`. The deployed `ops-dashboard` function exists and is `ACTIVE`, version 6, with JWT verification enabled. Its deployed source was retrieved read-only.
