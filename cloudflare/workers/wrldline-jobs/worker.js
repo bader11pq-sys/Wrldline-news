@@ -65,12 +65,12 @@ export default {
 
       if (message.body?.task === "healthcheck") {
         message.ack();
-        console.log(JSON.stringify({ event: "queue_healthcheck", queue: batch.queue }));
+        console.log(JSON.stringify({ event: "queue_healthcheck", queue: batch.queue, message_id: message.id }));
         continue;
       }
 
       if (!env.SUPABASE_PUBLISHABLE_KEY || !env.WRLDLINE_CRON_SECRET) {
-        console.error(JSON.stringify({ event: "missing_worker_secrets", queue: batch.queue }));
+        console.error(JSON.stringify({ event: "missing_worker_secrets", queue: batch.queue, message_id: message.id }));
         message.retry({ delaySeconds: 120 });
         continue;
       }
@@ -95,6 +95,7 @@ export default {
           console.log(JSON.stringify({
             event: "supabase_job_completed",
             queue: batch.queue,
+            message_id: message.id,
             task: message.body?.task,
             status: response.status,
             attempts: message.attempts,
@@ -105,6 +106,7 @@ export default {
           console.error(JSON.stringify({
             event: "supabase_job_failed",
             queue: batch.queue,
+            message_id: message.id,
             task: message.body?.task,
             status: response.status,
             attempts: message.attempts,
