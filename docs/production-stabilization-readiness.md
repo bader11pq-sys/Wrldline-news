@@ -269,6 +269,8 @@ The sequence is consistent with an operational response to Supabase/Edge invocat
 4. 15:09:08Z–15:19:30Z: four Cloudflare queue delivery-pause actions were recorded.
 5. 15:39:15Z: one administrative SQL command marked all six pg_cron jobs inactive.
 
+The current 100%-deployed Worker version is v7 (Cloudflare deployment created 2026-11-15 03:46:52Z). Its version metadata records an update to the `WRLDLINE_CRON_SECRET` binding on 2026-11-15 03:46:50Z. The deployed bindings include all four queue producers, `SUPABASE_PUBLISHABLE_KEY`, and the secret binding `WRLDLINE_CRON_SECRET`; no secret value was read. This proves the binding exists, not that its value matches the Supabase Vault entry. The Worker sends the publishable key in `apikey` and the cron value in `x-wrldline-cron-secret`. A value comparison remains a release prerequisite and must be performed without displaying either secret.
+
 ### The producer scheduler is still running while queue consumers are paused
 
 The deployed `wrldline-jobs` Worker still has four Cron Triggers configured:
