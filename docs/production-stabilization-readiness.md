@@ -287,12 +287,12 @@ The Supabase Edge Function inventory reports `verify_jwt=false` for both deploye
 
 ### Observed WRLDLINE compatibility gaps
 
-- Deployed `wrldline-news-ingest` v62 reads `SUPABASE_SERVICE_ROLE_KEY` or singular `SUPABASE_SECRET_KEY`, but does not parse `SUPABASE_SECRET_KEYS.default`. It builds a shared DB header set with both `apikey` and `Authorization: Bearer <key>`, including for any future secret-key fallback.
-- Deployed `classify-news-worker` v37 reads `SUPABASE_SECRET_KEYS.default` as a fallback but passes the selected key to `createClient` and forwards it as both `apikey` and `Authorization: Bearer` to `classify-news`. If the fallback is an `sb_secret_...` key, that Bearer usage conflicts with Supabase's new-key rules.
-- `newsdata-integration` v12 and `source-freshness` v1 still rely on legacy/singular key variables. They also need a deliberate new-key header/auth migration before the legacy variable is disabled.
-- Other server paths (classification, translation, notification server helpers, AI health checks and billing integrations) have different key parsing and caller-auth models. A global environment-variable replacement would break service-to-service calls; migrate each path with its own request contract.
+- The deployed functions remain unchanged: `wrldline-news-ingest` v62, `classify-news-worker` v37, `newsdata-integration` v12, and `source-freshness` v1 still have the legacy/singular key parsing and/or Bearer-header behavior described above. No production Edge Function was deployed during this phase.
+- This PR now adds `supabase/functions/_shared/service-key.mjs` to resolve an explicit `SUPABASE_SECRET_KEY`, then `SUPABASE_SECRET_KEYS.default`, then the legacy `SUPABASE_SERVICE_ROLE_KEY` fallback. It detects the new `sb_secret_...` format, emits `apikey` without a Bearer header for that key, and supplies a `supabase-js` fetch adapter that removes the automatically generated Authorization API-key header.
+- The review branch applies that helper to ingest, NewsData, classification worker/function, translation, source-freshness, notification server helpers, daily briefing, and Telnyx. Internal classification and translation endpoints accept a trusted worker key through `apikey` or the existing legacy Bearer form, while retaining editor/admin user-session authorization.
+- `tests/service-key.test.mjs` exercises named and legacy key resolution, apikey-only headers, removal of Authorization for new secret keys, legacy Bearer compatibility, and negative cases.
 
-These are confirmed source-level compatibility gaps, **not proof that the current November incident was caused by new API keys**. The deployed ingest still prioritizes the legacy `SUPABASE_SERVICE_ROLE_KEY` environment variable, which remains supported during the documented coexistence period. No secret value or runtime key type was read. No key variable was changed.
+The new branch tests address the identified source-level compatibility gaps in those paths; they do **not** prove the runtime key type currently installed in Supabase or that it caused the November outage. Other server integrations (including Stripe and several AI provider health checks) still need their own caller/callee audit before legacy-key deactivation. No secret value was read or changed, no runtime key was rotated, and no legacy key was disabled.
 
 ### Safe migration sequence before the legacy-key deprecation date
 
@@ -350,42 +350,44 @@ The deployed Worker source also omitted Cloudflare `message.id` from failure/suc
 
 Do not resume all consumers at once. First review and retain the existing DLQ sample/export; verify current deployed Worker version and exact queue/consumer settings; deploy the message-ID logging change; confirm Supabase verifier health and Edge smoke tests in a controlled path. Then, with an authorized operator decision, temporarily pause/reduce producer Cron triggers to prevent further backlog growth, selectively unpause one main queue at a time with low concurrency, monitor status/error and backlog age, and only then restore its producer schedule. Treat classification, translation, breaking, and general as separate rollouts. Leave the DLQ untouched until redacted reasons and replay eligibility are understood. Separately restore NewsData and notification Cron jobs only after verifier and endpoint validation; choose exactly one source-freshness scheduler.
 
-## Latest operational snapshot (2026-11-18 15:26:23 UTC)
+## Latest operational snapshot (2026-11-18 16:24:09 UTC)
 
-The latest read-only check still showed all four main delivery queues paused and all six tracked pg_cron jobs inactive. Cloudflare Worker producer schedules continued to run: telemetry recorded successful scheduled invocations through 15:26:16 UTC.
+A fresh read-only snapshot shows all four main delivery queues remain paused. Their registered consumers still exist, but delivery is disabled. The dead-letter queue still has no consumer.
 
 | Queue | Delivery paused | Backlog | Oldest message (UTC) |
 |---|---:|---:|---|
-| general | yes | 511 | 2026-11-18 00:06:35 |
-| breaking | yes | 745 | 2026-11-17 21:20:39 |
-| classification | yes | 1,504 | 2026-11-16 15:08:15 |
-| translation | yes | 292 | 2026-11-18 07:15:32 |
-| dead-letter | no consumer | 1,429 | Not returned by the queue metrics endpoint |
+| general | yes | 509 | 2026-11-17 11:27:35 |
+| breaking | yes | 748 | 2026-11-17 13:56:38 |
+| classification | yes | 1,487 | 2026-11-16 15:11:15 |
+| translation | yes | 300 | 2026-11-18 09:55:32 |
+| dead-letter | no consumer | 1,429 | 2026-11-15 13:59:51 |
 
-Total observed backlog: **4,481 messages** (3,052 across the four main queues, plus 1,429 in DLQ). The DLQ remains without a consumer; no messages were replayed.
+Total observed backlog: **4,473 messages** (3,044 across the four main queues, plus 1,429 in DLQ). No queue was resumed and no message was replayed. The four Worker Cron schedules remain configured. The deployed Worker is still version 7 and does not contain the fail-closed producer switch from this PR, so the schedules can continue enqueueing while delivery is paused.
 
-The classification RPC remained pending 8,756, processing 0, failed 45, expired 51,427, classified 2,105, needs_review 21, with oldest pending record 2017-04-20. The latest `newsdata_fetched_at` in articles remained 2026-11-13 23:21:01 UTC. Pending-item age buckets (read-only query, published articles only): 32 published in the last 24 hours, 8,577 in the last 1–7 days, 44 in the last 7–30 days, 9 in the last 30–90 days, 16 in the last 90 days–1 year, and 78 older than one year. Thus 8,609/8,756 (98.3%) are from the last seven days, while 103 are older than 30 days. The oldest pending samples include legacy technology/lifestyle-source rows from 2017–2023. Recovery policy: prioritize recent news under low concurrency; isolate and review the 103 older-than-30-day rows separately. Do not bulk-delete or reclassify the historical tail without an editorial retention decision.
+The classification RPC remains pending 8,756, processing 0, failed 45, expired 51,427, classified 2,105, and needs_review 21. The oldest pending row remains dated 2017-04-20. The latest `newsdata_fetched_at` in articles is **2026-11-17 11:22:26 UTC** (not the earlier November 13 value in this report).
 
-All six tracked cron rows remained `active=false`: notification dispatch, NewsData sync, source freshness, audience retention, security counters, and daily briefing. No scheduler was re-enabled.
+Source freshness has not advanced since **2026-11-17 13:15:04 UTC**: 22 healthy, 366 no-new-news, 228 error, 492 stale, and 20 not initialized. All 1,128 source metrics still share that same last checked timestamp. The 200-row NewsData source registry's latest update was 2026-11-14 03:15:32 UTC.
 
-## CI verification (fully tested code head: `403be590`; every subsequent branch update has been documentation-only, with no source or test-code changes)
+All six tracked `pg_cron` jobs remain `active=false`: notification dispatch, NewsData sync, source freshness, audience retention, security counters, and daily briefing. No scheduler was re-enabled. Classification backlog age buckets previously measured on published pending rows remain the operational recovery guide: 8,609/8,756 (98.3%) are within seven days and 103 are older than 30 days. Prioritize recent news under low concurrency; isolate the older tail for editorial review rather than bulk-deleting or reclassifying it.
 
-All five CI workflows for the code-identical tested head `403be590` completed successfully:
-- **Ops dashboard contract:** success.
-- **WRLDLINE Code Quality:** success. JavaScript syntax passed; all 151 Node tests passed (151 passed, 0 failed, 0 skipped); all Supabase Edge Function Deno type checks passed; protected-endpoint/consent tests passed (43 passed, 0 failed); disposable-database editorial/newsletter RLS checks passed; JSON and local HTML asset validation passed.
-- **WRLDLINE Production Readiness:** success. Browser regressions passed for consent, mobile layout/analytics, outage layout and briefing duplication, and anonymous account/admin protection. The new cached-homepage outage regression also passed: a seeded public article remained visible during mocked Supabase RPC 503, the UI clearly said it was showing a saved snapshot, and no retry button was displayed.
+## CI verification (tested source head: `c096c158b06167cbf2a9083730d3cbf9481bfd11`)
+
+All required code and security checks for this source head completed successfully:
+- **WRLDLINE Code Quality:** success. JavaScript syntax, all Node test modules (including the new Supabase service-key/auth-header tests), every Supabase Edge Function Deno type-check, protected-endpoint/consent tests, disposable-database editorial/newsletter RLS tests, JSON validation, and local HTML asset checks passed.
+- **WRLDLINE Production Readiness:** browser regression job passed, including consent, mobile layout/analytics, outage layout/briefing duplication, anonymous account/admin protection, and cached-homepage recovery on a mocked Supabase RPC 503.
 - **CodeQL:** success.
+- **Ops dashboard contract:** success.
 - **WRLDLINE Backup Restore Drill:** synthetic encrypted fixture restore succeeded. The manual real-production-backup job was skipped; no production backup was downloaded or restored.
 - The optional source-freshness job was skipped because its protected opt-in environment was not enabled.
 
-These are CI and synthetic-fixture results. They do not establish a live-site HTTP/browser smoke test, production data restore, or production worker/queue recovery. No production worker, queue, Supabase function, cron schedule, secret, or database row was changed during this stabilization work.
+The checks prove the branch code and test fixtures pass in CI. They do **not** establish live-site HTTP/browser availability, a real production backup restore, successful cron-secret equality between Cloudflare and Vault, or queue/NewsData recovery in production. No production Worker, queue setting, Supabase Edge Function, cron schedule, migration, secret, or database row was changed during this continuation. The latest documentation update will trigger a documentation-only CI refresh.
 
 ## Local verification
 
 Run:
 
 ```bash
-node --test tests/ops-dashboard-metrics.test.mjs tests/cron-auth.test.mjs
+node --test tests/ops-dashboard-metrics.test.mjs tests/cron-auth.test.mjs tests/service-key.test.mjs
 ```
 
 This test suite covers helper behavior only. It is not an end-to-end Supabase, Cloudflare, auth, or browser deployment test.
