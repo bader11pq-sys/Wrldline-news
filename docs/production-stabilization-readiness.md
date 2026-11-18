@@ -115,6 +115,8 @@ The repository currently has inconsistent server-key handling:
 This is a concrete compatibility gap and a possible contributor to internal RPC 401s **if** the functions have begun using a new `sb_secret_...` key or the legacy key has been disabled. It is not yet proven to be the current cause: the actual Edge Function environment values were not inspected, and the Vault self-check was successful. Before rotating/deactivating any key, standardize a single server-key resolver and header policy across all Edge Functions, then test it in a non-production environment with the exact key type. Do not print key values or send new secret keys as Bearer tokens.
 
 ### PostgREST saturation explains part of the apparent 401 storm
+The same PostgreSQL window also contains SQLSTATE `57014` cancellations outside WRLDLINE's own ingestion queries: PostgREST repeatedly timed out on `SELECT name FROM pg_timezone_names` (11 events), its schema/introspection CTE (6), and Realtime subscription publication queries (at least 8 across both subscription-manager processes). A `postgres_exporter` `pg_stat_statements` rollup and a management health-count query also timed out. This shows a broad database responsiveness problem across platform/system and application requests, rather than evidence of one bad cron secret or a single missing index. It does not establish the exact underlying cause (CPU, I/O, locks, memory, connection pool, or provider resource ceiling); no resource attribution is made without service metrics.
+
 
 A follow-up query of the PostgREST access logs found, in the same one-hour incident window (2026-11-17 14:30–15:30 UTC):
 - `POST /rpc/verify_wrldline_cron_secret`: 1,382 HTTP 503 responses between 15:05:19Z and 15:28:26Z, and 17 HTTP 504 responses between 14:38:13Z and 14:57:10Z.
@@ -208,7 +210,7 @@ The PR's `ops-dashboard` source no longer runs a second full-table `articles` co
 Run:
 
 ```bash
-node --test tests/ops-dashboard-metrics.test.mjs
+node --test tests/ops-dashboard-metrics.test.mjs tests/cron-auth.test.mjs
 ```
 
 This test suite covers helper behavior only. It is not an end-to-end Supabase, Cloudflare, auth, or browser deployment test.
