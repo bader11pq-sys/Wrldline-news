@@ -120,6 +120,7 @@ export default {
         console.error(JSON.stringify({
           event: "supabase_job_network_error",
           queue: batch.queue,
+          message_id: message.id,
           task: message.body?.task,
           attempts: message.attempts,
           error: String(error?.message || error).slice(0, 220),
