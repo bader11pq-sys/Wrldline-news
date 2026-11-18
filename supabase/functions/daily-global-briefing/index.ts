@@ -1,5 +1,5 @@
 import { createClient } from "npm:@supabase/supabase-js@2.119.0";
-import { resolveSupabaseServiceKey } from "../_shared/service-key.mjs";
+import { resolveSupabaseServiceKey, serviceClientOptions } from "../_shared/service-key.mjs";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": Deno.env.get("SITE_URL") || "https://al-ghaib.us.ci",
@@ -393,7 +393,7 @@ Deno.serve(async (req: Request) => {
   });
   if (!serviceKey) return json({ error: "Supabase server credentials are unavailable" }, 500);
 
-  const db = createClient(supabaseUrl, serviceKey, { auth: { persistSession: false, autoRefreshToken: false } });
+  const db = createClient(supabaseUrl, serviceKey, serviceClientOptions(serviceKey));
   const { data: authRow, error: authError } = await db.from("wrldline_daily_briefing_auth").select("secret_hash").eq("singleton", true).maybeSingle();
   if (authError || !authRow?.secret_hash) return json({ error: "Briefing authentication is not configured" }, 503);
 
