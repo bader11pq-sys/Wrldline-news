@@ -34,10 +34,14 @@ export default {
   async scheduled(controller, env) {
     const cron = controller.cron;
     const scheduledTime = controller.scheduledTime;
-    if (env.WRLDLINE_PRODUCERS_ENABLED === "false") {
+    // Fail closed: do not add to paused/backlogged queues unless an operator
+    // explicitly opts in after the queue consumers and Supabase handlers are healthy.
+    if (env.WRLDLINE_PRODUCERS_ENABLED !== "true") {
       console.warn(JSON.stringify({
         event: "producers_paused",
         cron,
+        enabled: false,
+        reason: "WRLDLINE_PRODUCERS_ENABLED is not explicitly true",
         scheduled_at: new Date(scheduledTime).toISOString(),
       }));
       return;
