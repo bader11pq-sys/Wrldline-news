@@ -391,3 +391,27 @@ node --test tests/ops-dashboard-metrics.test.mjs tests/cron-auth.test.mjs tests/
 ```
 
 This test suite covers helper behavior only. It is not an end-to-end Supabase, Cloudflare, auth, or browser deployment test.
+
+
+## Additional producer and queue hygiene findings (2026-11-18)
+
+### Dedicated GitHub breaking/SMS path
+
+The default `main` branch still defines `.github/workflows/breaking.yml` on a five-minute schedule (`2-59/5 * * * *`), as well as push and manual triggers. This is a separate urgent-source collector, not merely a second Cloudflare queue producer:
+
+- `bot-breaking.js` reads the canonical 80-source catalog, selects the 20 Arabic breaking monitors, fetches their Google News/Telegram streams, and upserts recent urgent items as `is_breaking=true`.
+- The workflow then calls `telnyx-gateway` with `action=dispatch_breaking` to deliver opted-in SMS.
+- The Cloudflare breaking queue task is different: it scans recently ingested articles and flags urgent titles; it does not itself call the Telnyx SMS action.
+
+Therefore the GitHub workflow may continue delivering urgent-source ingestion and SMS while the Cloudflare queue consumers are paused. Do not remove its schedule until a tested replacement for both the dedicated monitor feed and SMS dispatch exists. Its schedule is not included in the Cloudflare queue rate estimate above.
+
+### SMS delivery reliability caveat
+
+The deployed `telnyx-gateway` currently sets `sms_notification_sent_at` before attempting the provider sends. That prevents concurrent duplicate claims, but it can also leave an article marked as sent when a provider call fails. The GitHub workflow additionally treats the SMS dispatch failure as a non-fatal fallback message, so an unsuccessful call may not fail the workflow. Before migrating SMS dispatch into Cloudflare Queues, implement per-recipient delivery state/idempotency and retry-safe claiming. Do not change the current sending path as part of queue recovery.
+
+### Classification backlog hygiene
+
+A fresh database query found 8,756 pending classification rows and **zero** published pending rows within the last hour. All 8,756 are therefore outside the one-hour AI window and are due to the existing idempotent `expire_stale_classification_queue()` maintenance RPC on the next successful classification-worker run. The function marks them `expired`; it does not delete articles. The published-age distribution was: 20 in the last 24 hours (but none in the last hour), 8,589 between one and seven days, 44 between 7 and 30 days, 9 between 30 and 90 days, 16 between 90 days and one year, and 78 older than one year.
+
+The oldest pending samples include archive/navigation items (for example, publisher pages titled “Business Wire - VentureBeat” and “Advertise With Us - Gujarat Samachar”) received on 2026-11-17 with 2017–2018 publication dates. This points to stale feed entries entering ingestion, not a backlog of 8,756 current stories. The existing `articles_classification_queue_idx` covers the status/publication filter; the expiry RPC should be run under one worker at low concurrency and monitored for completion before any attempt to classify recent stories. Do not delete these rows or reclassify the historical tail as a bulk operation.
+
