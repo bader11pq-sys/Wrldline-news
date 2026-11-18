@@ -1,5 +1,6 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "npm:@supabase/supabase-js@2";
+import { classifyCronVerifierResult } from "../_shared/cron-auth.mjs";
 
 const cors = {
   "Access-Control-Allow-Origin": Deno.env.get("SITE_URL") || "https://al-ghaib.us.ci",
@@ -25,7 +26,9 @@ Deno.serve(async (req: Request) => {
   const db = createClient(url, serviceKey, { auth: { persistSession: false, autoRefreshToken: false } });
   const secret = req.headers.get("x-wrldline-cron-secret") || "";
   const { data: authorized, error: authError } = await db.rpc("verify_wrldline_cron_secret", { p_secret: secret });
-  if (authError || authorized !== true) return json({ error: "Unauthorized" }, 401);
+  const authResult = classifyCronVerifierResult({ ok: !authError, value: authorized });
+  if (authResult.status === 503) return json({ error: "Authorization verifier temporarily unavailable" }, 503);
+  if (!authResult.authorized) return json({ error: "Unauthorized" }, 401);
 
   // Maintenance is deliberately idempotent. The first run expires the legacy
   // backlog; subsequent runs are cheap because the queue indexes cover it.
