@@ -1,6 +1,11 @@
 import { classifyCronVerifierResult } from "../_shared/cron-auth.mjs";
+import { resolveSupabaseServiceKey } from "../_shared/service-key.mjs";
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL") || "https://vmaxbnogmmfyrcucapnq.supabase.co";
-const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || Deno.env.get("SUPABASE_SECRET_KEY") || "";
+const SERVICE_KEY = resolveSupabaseServiceKey({
+  SUPABASE_SECRET_KEY: Deno.env.get("SUPABASE_SECRET_KEY") || "",
+  SUPABASE_SECRET_KEYS: Deno.env.get("SUPABASE_SECRET_KEYS") || "",
+  SUPABASE_SERVICE_ROLE_KEY: Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "",
+});
 const NEWSDATA_KEY = Deno.env.get("NEWSDATA_API_KEY") || "";
 const DB_HEADERS = { apikey: SERVICE_KEY, Authorization: "Bearer " + SERVICE_KEY, "Content-Type": "application/json" };
 const CATEGORY_BATCHES = [
