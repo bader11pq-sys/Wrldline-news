@@ -2,12 +2,13 @@ import { createClient, type SupabaseClient } from "npm:@supabase/supabase-js@2.1
 import { createECDH } from "node:crypto";
 import { Buffer } from "node:buffer";
 import { keyedHash, ready } from "./core.ts";
+import { resolveSupabaseServiceKey } from "../service-key.mjs";
 // This repository has no generated Database types; match the documented live schema explicitly in projections.
 // deno-lint-ignore no-explicit-any
 export type DB = SupabaseClient<any>;
 export type Env = Record<string, string>;
 export function environment(): Env {
-  const names = ["SUPABASE_URL", "SUPABASE_SERVICE_ROLE_KEY", "NOTIFICATIONS_ENABLED", "SITE_URL", "VAPID_PUBLIC_KEY", "VAPID_PRIVATE_KEY", "VAPID_SUBJECT", "RESEND_API_KEY", "NEWSLETTER_FROM", "NOTIFICATION_TOKEN_SECRET"];
+  const names = ["SUPABASE_URL", "SUPABASE_SERVICE_ROLE_KEY", "SUPABASE_SECRET_KEY", "SUPABASE_SECRET_KEYS", "NOTIFICATIONS_ENABLED", "SITE_URL", "VAPID_PUBLIC_KEY", "VAPID_PRIVATE_KEY", "VAPID_SUBJECT", "RESEND_API_KEY", "NEWSLETTER_FROM", "NOTIFICATION_TOKEN_SECRET"];
   const env = Object.fromEntries(names.map(name => [name, Deno.env.get(name) || ""]));
   // Nonsecret production defaults for this existing site. Database channel flags
   // still start false; the explicit env value "false" remains the global kill switch.
@@ -17,12 +18,7 @@ export function environment(): Env {
     env.SITE_URL = site.protocol === "https:" && site.pathname === "/" && !site.search && !site.hash && !site.username && !site.password ? site.origin : "";
   } catch { env.SITE_URL = ""; }
   env.NOTIFICATIONS_ENABLED = env.NOTIFICATIONS_ENABLED || "true";
-  if (!env.SUPABASE_SERVICE_ROLE_KEY) {
-    env.SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SECRET_KEY") || "";
-    if (!env.SUPABASE_SERVICE_ROLE_KEY) {
-      try { const keys=JSON.parse(Deno.env.get("SUPABASE_SECRET_KEYS") || "{}");if(typeof keys.default==="string")env.SUPABASE_SERVICE_ROLE_KEY=keys.default; } catch { /* fail closed */ }
-    }
-  }
+  env.SUPABASE_SERVICE_ROLE_KEY = resolveSupabaseServiceKey(env) || "";
   return env;
 }
 export function database(env: Env): DB {
