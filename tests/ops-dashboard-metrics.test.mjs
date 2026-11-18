@@ -18,9 +18,33 @@ test("normalizes live classification queue statistics without inventing zeros", 
     oldest_pending_at: "2017-04-20T12:24:43Z"
   });
   assert.equal(stats.pending, 8756);
+  assert.equal(stats.processing, 0);
   assert.equal(stats.oldest_pending_age_minutes, 5038672);
   assert.equal(stats.oldest_pending_at, "2017-04-20T12:24:43Z");
   assert.equal(normalizeClassificationStats(null), null);
+});
+
+test("preserves unavailable numeric metrics as null, not zero", () => {
+  const stats = normalizeClassificationStats({
+    pending: null,
+    processing: undefined,
+    failed: "",
+    expired: "   ",
+    classified: "not-a-number",
+    needs_review: 0,
+    skipped: "0",
+    oldest_pending_age_minutes: null,
+    oldest_pending_at: null
+  });
+  assert.equal(stats.pending, null);
+  assert.equal(stats.processing, null);
+  assert.equal(stats.failed, null);
+  assert.equal(stats.expired, null);
+  assert.equal(stats.classified, null);
+  assert.equal(stats.needs_review, 0);
+  assert.equal(stats.skipped, 0);
+  assert.equal(stats.oldest_pending_age_minutes, null);
+  assert.equal(stats.oldest_pending_at, null);
 });
 
 test("summarizes ingestion successes and failures independently", () => {
