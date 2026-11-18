@@ -90,3 +90,30 @@ The GitHub Actions workflow `.github/workflows/breaking.yml` remains a dedicated
 
 Do not remove the GitHub schedule until the dedicated urgent-source collection and SMS delivery are replaced and tested. The current Telnyx sender claims an article by setting `sms_notification_sent_at` before contacting the provider; provider failures may therefore leave an article marked as sent without a retry. A future queue-based SMS migration needs per-recipient idempotency and retry-safe delivery state.
 
+
+## Safer backlog drain and cron authentication probe
+
+The current review-branch Worker adds two recovery safeguards:
+
+- Periodic queue messages older than **15 minutes** are acknowledged and logged as `stale_schedule_message_skipped`; messages with missing/invalid `scheduled_at` are acknowledged as invalid. These are scheduler envelopes only, not article records. Fresh producers remain disabled unless `WRLDLINE_PRODUCERS_ENABLED=true`.
+- A one-off `{task:"auth-check", scheduled_at:"..."}` message is accepted only on `wrldline-news-general` and invokes `wrldline-news-ingest` with `{mode:"auth-check"}`. That mode performs the Vault-backed cron-secret check and returns before ingestion or writes.
+
+The new unit tests assert no Supabase fetch occurs for stale/malformed messages and that the probe uses the publishable `apikey` plus `x-wrldline-cron-secret` header, without an Authorization Bearer key. This is a test-only guarantee until the reviewed Worker and Edge Function are deployed.
+
+## Latest candidate — version 9 (uploaded, not deployed)
+
+Cloudflare accepted release candidate version **9** (`7f219072-952d-4fa0-9088-956de7ef31ce`) at 2026-11-18 16:44:05 UTC. It includes the fail-closed producer switch, stale-tick guard, no-write auth probe, and message-ID logging. The API confirmed the four queue bindings, publishable API key binding and Cron secret binding were retained. The deployed Worker remains version 7 at 100% traffic; version 9 receives no traffic.
+
+Do not deploy or shift traffic until an operator approves the production step. Once deployed, keep producers disabled; the General queue auth probe requires a separately approved single-queue unpause and one manual test message.
+
+## Latest read-only queue snapshot — 2026-11-18 16:44:32 UTC
+
+| Queue | Delivery paused | Backlog | Oldest message (UTC) |
+|---|---:|---:|---|
+| general | yes | 511 | 2026-11-17 19:15:35 |
+| breaking | yes | 748 | 2026-11-17 14:24:38 |
+| classification | yes | 1,496 | 2026-11-16 15:01:15 |
+| translation | yes | 289 | 2026-11-17 15:05:33 |
+| dead-letter | no consumer | 1,429 | 2026-11-15 14:23:23 |
+
+All four main queues remain paused. Total backlog is 4,473 messages. The recent `peek` sample contained scheduled task envelopes only; it did not contain article payloads. No message was replayed or purged.
