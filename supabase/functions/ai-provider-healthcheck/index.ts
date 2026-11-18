@@ -161,5 +161,13 @@ Deno.serve(async(req:Request)=>{
  ]);
  const configured=results.filter(x=>x.status!=="not_configured");
  results[0].key_source=Deno.env.get("GEMINI_API_KEY")?"GEMINI_API_KEY":(Deno.env.get("GOOGLE_API_KEY")?"GOOGLE_API_KEY":null);
- return json({ok:configured.some(x=>x.status==="passed"),all_configured_passed:configured.length>0&&configured.every(x=>x.status==="passed"),tested_at:new Date().toISOString(),results});
+ const testedAt=new Date().toISOString();
+ const resultSummary=results.map((item:any)=>({
+  provider:item.provider,
+  status:item.status,
+  model:typeof item.model==="string"?item.model:undefined,
+  error_code:item.error?((String(item.error).match(/HTTP\\s+(\\d{3})/i)||[])[1]||(/timeout/i.test(String(item.error))?"timeout":(/insufficient.?credits/i.test(String(item.error))?"insufficient_credits":"provider_error"))):undefined
+ }));
+ console.info("AI_PROVIDER_HEALTHCHECK_RESULT",JSON.stringify({tested_at:testedAt,results:resultSummary}));
+ return json({ok:configured.some(x=>x.status==="passed"),all_configured_passed:configured.length>0&&configured.every(x=>x.status==="passed"),tested_at:testedAt,results});
 });
