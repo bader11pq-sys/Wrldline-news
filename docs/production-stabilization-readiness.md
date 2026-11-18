@@ -88,9 +88,9 @@ The live `cron.job` table reports these jobs as `active=false`:
 All three SQL commands send `x-wrldline-cron-secret` and reference the same Vault entry name used by `verify_wrldline_cron_secret`. No secret values were read. The deployed Cloudflare `wrldline-jobs` Worker does not contain tasks for these three functions; it only schedules general, breaking, classification, and translation.
 
 Run-history evidence:
-- NewsData sync: 4 `job startup timeout` failures in the inspected 24-hour window (14:45–15:30 UTC on 2026-11-17).
-- Source freshness: the same 4 startup-timeout failures.
-- Notifications: 49 failed runs (`job canceled` / `job startup timeout`) and 19 successful pg_cron command runs. However, Edge logs independently show 15 HTTP 401 responses from `notification-dispatch`; a successful pg_cron/net.http_post enqueue is not proof that the Edge Function accepted or completed delivery.
+- NewsData sync: 4 `job startup timeout` failures in the inspected 24-hour window (14:45–15:30 UTC on 2026-11-17). Its migration `20261114041500_schedule_newsdata_sync_every_15_minutes.sql` explicitly creates a 15-minute job, so the current inactive state plus the 2026-11-13 last article fetch is an operational gap to resolve after authentication and scheduler health are verified.
+- Source freshness: the same 4 startup-timeout failures. However, project documentation explicitly defines source-freshness scheduling as an operator-selected option among pg_cron/pg_net, Cloudflare, or an opt-in GitHub Actions workflow guarded by `FRESHNESS_MONITOR_ENABLED=true`. The pg_cron row is inactive; whether another approved scheduler is enabled was not verified. Treat this as a monitoring-coverage gap until the chosen scheduler is confirmed, not proof that a required job was unexpectedly disabled.
+- Notifications: 49 failed pg_cron runs (`job canceled` / `job startup timeout`) and 19 successful pg_cron command runs. The live `notification_runtime` row is `push_enabled=true`, `email_enabled=false`, with `enabled_at=2026-11-15 04:56:50 UTC`; thus push dispatch is intended to be enabled while email remains off. The one-minute dispatch Cron is currently inactive, and Edge logs independently show 15 HTTP 401 responses from `notification-dispatch`. A successful pg_cron/net.http_post enqueue is not proof that the Edge Function accepted or completed delivery.
 
 ### Freshness gap
 
