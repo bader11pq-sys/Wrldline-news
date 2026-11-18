@@ -9,6 +9,8 @@ const PAGE_SIZE = 24;
 // Large parallel projections were saturating the Data API and leaving the homepage loading.
 const MAIN_FEED_LIMIT = 80;
 const SUPPLEMENTAL_FEED_LIMIT = 32;
+const HOME_FEED_CACHE_KEY = "wrldline:home-feed-cache:v1";
+const HOME_FEED_CACHE_TTL_MS = 3 * 60 * 1000;
 const WRLDLINE_TAXONOMY = window.WRLDLINE_TAXONOMY || null;
 const CATEGORY_NAMES = WRLDLINE_TAXONOMY?.CATEGORY_NAMES || { ar:{politics:"سياسة",economy:"اقتصاد",security:"أمن ودفاع",tech:"تكنولوجيا",sports:"رياضة",culture:"ثقافة",health:"صحة",science:"علوم",environment:"بيئة",society:"مجتمع",world:"حول العالم",uncategorized:"غير مصنف"}, en:{politics:"Politics",economy:"Economy",security:"Security & Defence",tech:"Technology",sports:"Sports",culture:"Culture",health:"Health",science:"Science",environment:"Environment",society:"Society",world:"Around the world",uncategorized:"Uncategorized"} };
 function normalizeCategory(value){if(WRLDLINE_TAXONOMY?.normalizeCategory)return WRLDLINE_TAXONOMY.normalizeCategory(value);const key=String(value||"").trim().toLowerCase();return CATEGORY_NAMES.ar[key]?key:"uncategorized";}
@@ -120,6 +122,40 @@ const requestedCategory = new URLSearchParams(location.search).get("category");
 const initialCategory = requestedCategory && Object.hasOwn(CATEGORY_NAMES.ar, requestedCategory) ? requestedCategory : "all";
 const state = { articles:[], missedArticles:[], filtered:[], category:initialCategory, country:"all", lang:localStorage.getItem("wrldline:language")==="en"?"en":"ar", limit:PAGE_SIZE, saved:new Set(readSaved()), query:"", sort:"newest", loading:false, db:null, user:null, preferences:null, follows:{category:[],country:[]}, followOnly:false, realtime:null,  pendingLocalSaved:new Set(readSaved()), breakingTickerIndex:0, breakingTickerCurrentId:null, missedLimit:8, refetchAfterCurrent:false,lastFetchAt:0 };
 
+function readHomeFeedCache(){
+ try{
+  const cached=JSON.parse(sessionStorage.getItem(HOME_FEED_CACHE_KEY)||"null");
+  const age=Date.now()-Number(cached?.savedAt);
+  if(!cached||!Number.isFinite(age)||age<0||age>HOME_FEED_CACHE_TTL_MS||!Array.isArray(cached.rows)||!cached.rows.length)return null;
+  return cached;
+ }catch{return null;}
+}
+function saveHomeFeedCache(rows,popularRows){
+ try{
+  sessionStorage.setItem(HOME_FEED_CACHE_KEY,JSON.stringify({
+   savedAt:Date.now(),
+   rows:Array.isArray(rows)?rows.slice(0,240):[],
+   popularRows:Array.isArray(popularRows)?popularRows.slice(0,12):[]
+  }));
+ }catch{/* Storage quota/private-mode failures must never block live news. */}
+}
+function restoreCachedHomeFeed(cached){
+ if(!cached||!Array.isArray(cached.rows)||!cached.rows.length)return false;
+ const normalized=cached.rows.map(normalizeArticle).filter(a=>a.title&&!BLOCKED_EDITORIAL_STATUSES.has(a.editorialStatus)&&!isLowQualityArticle(a)&&(!isTelegramArticle(a.raw)||(a.isBreaking===true&&isDedicatedBreakingSource(a.src))));
+ if(!normalized.length)return false;
+ state.articles=dedupeArticles(normalized);
+ state.missedArticles=dedupeArticles(state.articles.filter(a=>a.isNewsDataOnly));
+ state.lastFetchAt=Date.now();
+ populateCountries();renderMissedStories();applyFilters();renderCoveragePulse();renderExclusive();
+ renderPopularStories(Array.isArray(cached.popularRows)?cached.popularRows:[]);updateBreaking();
+ document.getElementById("lastUpdated").textContent=ui("آخر تحديث ناجح: ","Last successful update: ")+formatDate(new Date(cached.savedAt));
+ document.getElementById("connectionLabel").textContent=ui("نعرض نسخة محفوظة؛ التحديث المباشر غير متاح","Showing saved headlines; live refresh is unavailable");
+ document.getElementById("newsStatus")?.classList.remove("is-updating");
+ document.getElementById("newsStatus")?.classList.add("is-error");
+ const linkedId=new URLSearchParams(location.search).get("article");if(linkedId)openArticle(linkedId,false);
+ return true;
+}
+
 document.addEventListener("DOMContentLoaded", () => {
   initPreferences(); bindEvents(); if (state.category !== "all") selectCategory(state.category); updateClock(); fetchNews(); initPersonalization(); setInterval(()=>{if(!document.hidden&&Date.now()-state.lastFetchAt>=90000)fetchNews();},30000); setInterval(updateBreaking, 15000);
   registerServiceWorker(); setupAppInstall();
@@ -127,7 +163,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 async function registerServiceWorker(){
  if(!("serviceWorker" in navigator))return;
-  const workerBuild="v61";
+  const workerBuild="v62";
  navigator.serviceWorker.addEventListener("controllerchange",()=>{
   if(sessionStorage.getItem("wrldline:sw-build")!==workerBuild){
    sessionStorage.setItem("wrldline:sw-build",workerBuild);
@@ -135,7 +171,7 @@ async function registerServiceWorker(){
   }
  });
  try{
-  const registration=await navigator.serviceWorker.register("/sw.js?v=v61",{scope:"/"});
+  const registration=await navigator.serviceWorker.register("/sw.js?v=v62",{scope:"/"});
   registration.update().catch(()=>{});
   registration.addEventListener("updatefound",()=>{
    const worker=registration.installing;if(!worker)return;
@@ -254,6 +290,7 @@ async function fetchNews(manual=false){
   ]);
   const unique=new Map();[...mainRows,...missedRows,...breakingRows,...exclusiveRows,...popularRows].forEach(row=>{if(row?.id)unique.set(String(row.id),row);});
   const rows=[...unique.values()];
+  saveHomeFeedCache(rows,popularRows);
   state.lastFetchAt=Date.now();
   const normalized=rows.map(normalizeArticle).filter(a=>a.title&&!BLOCKED_EDITORIAL_STATUSES.has(a.editorialStatus)&&!isLowQualityArticle(a)&&(!isTelegramArticle(a.raw)||(a.isBreaking===true&&isDedicatedBreakingSource(a.src))));
   state.articles=dedupeArticles(normalized);
@@ -265,6 +302,13 @@ async function fetchNews(manual=false){
   if(manual)showToast(ui("تم تحديث الأخبار","News updated"));
  }catch(err){
   console.error("WRLDLINE fetch:",err);
+  if(!state.articles.length){
+   const cached=readHomeFeedCache();
+   if(restoreCachedHomeFeed(cached)){
+    if(manual)showToast(ui("تعذر تحديث الأخبار؛ نعرض آخر نسخة محفوظة.","Refresh failed; showing the last saved feed."));
+    return;
+   }
+  }
   document.getElementById("connectionLabel").textContent=ui("تعذر الاتصال بمصدر الأخبار","News connection unavailable");
   document.getElementById("newsStatus")?.classList.remove("is-updating");document.getElementById("newsStatus")?.classList.add("is-error");
   if(manual)showToast(ui("تعذر تحديث الأخبار. تحقق من الاتصال وحاول مجددًا.","Could not refresh news. Check your connection and try again."));
