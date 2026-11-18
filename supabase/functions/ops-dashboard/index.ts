@@ -68,7 +68,6 @@ Deno.serve(async (req: Request) => {
     feedsResult,
     runsResult,
     articleCountsResult,
-    aiPendingResult,
     translationErrorsResult,
     aiCooldownsResult,
     translationStateResult,
@@ -89,10 +88,6 @@ Deno.serve(async (req: Request) => {
       .gte("published_at", hourAgo)),
     safeQuery(db.from("articles")
       .select("id", { count: "exact", head: true })
-      .eq("editorial_status", "published")
-      .neq("ai_classification_status", "classified")),
-    safeQuery(db.from("articles")
-      .select("id", { count: "exact", head: true })
       .not("translation_last_error", "is", null)
       .gte("received_at", dayAgo)),
     safeQuery(db.from("ai_provider_cooldowns")
@@ -110,7 +105,6 @@ Deno.serve(async (req: Request) => {
     feeds: feedsResult,
     ingestion: runsResult,
     published: articleCountsResult,
-    ai_pending_fallback: aiPendingResult,
     translation_errors: translationErrorsResult,
     ai_providers: aiCooldownsResult,
     translation_providers: translationStateResult,
@@ -148,7 +142,7 @@ Deno.serve(async (req: Request) => {
 
   const content = {
     published_last_hour: articleCountsResult.error ? null : articleCountsResult.count || 0,
-    ai_pending: stats?.pending ?? (aiPendingResult.error ? null : aiPendingResult.count || 0),
+    ai_pending: stats?.pending ?? null,
     translation_errors_24h: translationErrorsResult.error ? null : translationErrorsResult.count || 0,
     classification: stats ? { available: true, ...stats } : {
       available: false,
