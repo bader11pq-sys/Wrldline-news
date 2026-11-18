@@ -350,32 +350,35 @@ The deployed Worker source also omitted Cloudflare `message.id` from failure/suc
 
 Do not resume all consumers at once. First review and retain the existing DLQ sample/export; verify current deployed Worker version and exact queue/consumer settings; deploy the message-ID logging change; confirm Supabase verifier health and Edge smoke tests in a controlled path. Then, with an authorized operator decision, temporarily pause/reduce producer Cron triggers to prevent further backlog growth, selectively unpause one main queue at a time with low concurrency, monitor status/error and backlog age, and only then restore its producer schedule. Treat classification, translation, breaking, and general as separate rollouts. Leave the DLQ untouched until redacted reasons and replay eligibility are understood. Separately restore NewsData and notification Cron jobs only after verifier and endpoint validation; choose exactly one source-freshness scheduler.
 
-## Latest operational snapshot (2026-11-18 14:54:26 UTC)
+## Latest operational snapshot (2026-11-18 15:26:23 UTC)
 
-The final read-only check during this phase still showed all four production delivery queues paused, all six observed pg_cron rows individually inactive, and the classification backlog unchanged.
+The latest read-only check still showed all four main delivery queues paused and all six tracked pg_cron jobs inactive. Cloudflare Worker producer schedules continued to run: telemetry recorded successful scheduled invocations through 15:26:16 UTC.
 
-| Queue | Paused | Backlog | Oldest message (UTC) | Age |
-|---|---:|---:|---|---:|
-| general | yes | 512 | 2026-11-18 00:45:35 | 14h 08m |
-| breaking | yes | 746 | 2026-11-17 20:22:39 | 18h 31m |
-| classification | yes | 1,496 | 2026-11-16 15:08:15 | 47h 46m |
-| translation | yes | 286 | 2026-11-18 06:50:33 | 8h 03m |
-| dead-letter | n/a | 1,429 | 2026-11-15 14:29:56 | 72h 24m |
+| Queue | Delivery paused | Backlog | Oldest message (UTC) |
+|---|---:|---:|---|
+| general | yes | 511 | 2026-11-18 00:06:35 |
+| breaking | yes | 745 | 2026-11-17 21:20:39 |
+| classification | yes | 1,504 | 2026-11-16 15:08:15 |
+| translation | yes | 292 | 2026-11-18 07:15:32 |
+| dead-letter | no consumer | 1,429 | Not returned by the queue metrics endpoint |
 
-Total observed queue backlog: 4,469 messages including DLQ. The classification RPC remained at pending 8,756, processing 0, failed 45, expired 51,427, classified 2,105, needs_review 21, with oldest pending record 2017-04-20.
+Total observed backlog: **4,481 messages** (3,052 across the four main queues, plus 1,429 in DLQ). The DLQ remains without a consumer; no messages were replayed.
+
+The classification RPC remained pending 8,756, processing 0, failed 45, expired 51,427, classified 2,105, needs_review 21, with oldest pending record 2017-04-20. The latest `newsdata_fetched_at` in articles remained 2026-11-13 23:21:01 UTC.
 
 All six tracked cron rows remained `active=false`: notification dispatch, NewsData sync, source freshness, audience retention, security counters, and daily briefing. No scheduler was re-enabled.
 
-## CI verification (current PR head: 2026-11-18)
+## CI verification (latest PR head: `403be590`)
 
-The latest CI runs for the PR head completed successfully:
-- Ops dashboard contract workflow: success.
-- WRLDLINE Code Quality: success, including all Supabase Edge Deno type checks, protected-endpoint/consent tests, disposable-database editorial/newsletter RLS checks, and asset/JSON validation.
-- WRLDLINE Production Readiness: success, including mocked consent/mobile/network-failure browser regressions. The optional source-freshness workflow job was skipped because its opt-in environment was not enabled.
-- CodeQL: success.
-- WRLDLINE Backup Restore Drill: synthetic encrypted fixture restore succeeded. The manual real-production-backup job was skipped; no real production backup was downloaded or restored.
+All CI workflows for the latest PR head completed successfully:
+- **Ops dashboard contract:** success.
+- **WRLDLINE Code Quality:** success. JavaScript syntax passed; all 151 Node tests passed (151 passed, 0 failed, 0 skipped); all Supabase Edge Function Deno type checks passed; protected-endpoint/consent tests passed (43 passed, 0 failed); disposable-database editorial/newsletter RLS checks passed; JSON and local HTML asset validation passed.
+- **WRLDLINE Production Readiness:** success. Browser regressions passed for consent, mobile layout/analytics, outage layout and briefing duplication, and anonymous account/admin protection. The new cached-homepage outage regression also passed: a seeded public article remained visible during mocked Supabase RPC 503, the UI clearly said it was showing a saved snapshot, and no retry button was displayed.
+- **CodeQL:** success.
+- **WRLDLINE Backup Restore Drill:** synthetic encrypted fixture restore succeeded. The manual real-production-backup job was skipped; no production backup was downloaded or restored.
+- The optional source-freshness job was skipped because its protected opt-in environment was not enabled.
 
-These are CI and synthetic-fixture results. They do not establish a live-site HTTP/browser smoke test, a production data restore, or production worker/queue recovery.
+These are CI and synthetic-fixture results. They do not establish a live-site HTTP/browser smoke test, production data restore, or production worker/queue recovery. No production worker, queue, Supabase function, cron schedule, secret, or database row was changed during this stabilization work.
 
 ## Local verification
 
