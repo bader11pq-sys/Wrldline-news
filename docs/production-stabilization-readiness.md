@@ -5,6 +5,12 @@
 **Supabase project:** `vmaxbnogmmfyrcucapnq`  
 **Cloudflare Worker:** `wrldline-jobs`
 
+## Hosting and live-site verification
+
+Cloudflare account inspection found zero Cloudflare Pages projects. The active `al-ghaib.us.ci` zone is a full zone on the Free Website plan, and its apex DNS record is a proxied CNAME to `bader11pq-sys.github.io`. There is no `www.al-ghaib.us.ci` DNS record. The observed hosting topology is therefore GitHub Pages as the origin behind Cloudflare DNS/proxy, not Cloudflare Pages.
+
+A direct HTTP check of the public site from the inspection environment could not complete because external DNS resolution failed in that environment. This is **not** evidence that the production website is down. The exact GitHub Pages deployment commit was not independently verified through the available GitHub connection, so the live front-end artifact is not yet tied to the repository commit in this report. Browser CI passed against its isolated local server; it is not a live production browser smoke test.
+
 ## Scope and safety
 
 This phase is being prepared on a dedicated GitHub branch. No production Worker, queue, Cron, Supabase function, migration, secret, or row was changed. Queue delivery remains paused as observed; do not unpause until the failure mode and backlog/DLQ disposition have been reviewed.
@@ -245,6 +251,17 @@ The PR's `ops-dashboard` source no longer runs a second full-table `articles` co
 3. Add Cloudflare Queue metrics to the dashboard through a least-privilege server-side integration or an explicit operational API; do not expose Cloudflare API tokens to the browser.
 4. Verify current migrations, deployed function versions, Worker version, bindings, queues, schedules, and website deployment against one commit.
 5. Test Stripe in sandbox end-to-end and verify server-side entitlement enforcement before any paid launch.
+
+## CI verification (current PR head: 2026-11-18)
+
+The latest CI runs for the PR head completed successfully:
+- Ops dashboard contract workflow: success.
+- WRLDLINE Code Quality: success, including all Supabase Edge Deno type checks, protected-endpoint/consent tests, disposable-database editorial/newsletter RLS checks, and asset/JSON validation.
+- WRLDLINE Production Readiness: success, including mocked consent/mobile/network-failure browser regressions. The optional source-freshness workflow job was skipped because its opt-in environment was not enabled.
+- CodeQL: success.
+- WRLDLINE Backup Restore Drill: synthetic encrypted fixture restore succeeded. The manual real-production-backup job was skipped; no real production backup was downloaded or restored.
+
+These are CI and synthetic-fixture results. They do not establish a live-site HTTP/browser smoke test, a production data restore, or production worker/queue recovery.
 
 ## Local verification
 
