@@ -134,8 +134,8 @@ test("scheduled producer can be paused without enqueueing new backlog", async ()
   }
 });
 
-test("scheduled producer remains enabled by default for backwards compatibility", async () => {
-  const output = interceptConsole("log");
+test("scheduled producer fails closed when the opt-in switch is absent", async () => {
+  const output = interceptConsole("warn");
   const sent = [];
   try {
     await worker.scheduled({
@@ -147,9 +147,32 @@ test("scheduled producer remains enabled by default for backwards compatibility"
       }
     });
 
+    const event = output.entries.find(entry => entry.event === "producers_paused");
+    assert.equal(event?.enabled, false);
+    assert.match(event?.reason || "", /not explicitly true/);
+    assert.equal(sent.length, 0);
+  } finally {
+    output.restore();
+  }
+});
+
+test("scheduled producer enqueues only after explicit opt-in", async () => {
+  const output = interceptConsole("log");
+  const sent = [];
+  try {
+    await worker.scheduled({
+      cron: "* * * * *",
+      scheduledTime: Date.parse("2026-11-18T15:02:00Z")
+    }, {
+      WRLDLINE_PRODUCERS_ENABLED: "true",
+      CLASSIFICATION_QUEUE: {
+        async send(message) { sent.push(message); }
+      }
+    });
+
     assert.equal(sent.length, 1);
     assert.equal(sent[0].task, "classification");
-    assert.equal(sent[0].scheduled_at, "2026-11-18T15:01:00.000Z");
+    assert.equal(sent[0].scheduled_at, "2026-11-18T15:02:00.000Z");
     assert.equal(output.entries.some(entry => entry.event === "jobs_enqueued"), true);
   } finally {
     output.restore();
