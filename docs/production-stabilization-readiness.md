@@ -258,6 +258,10 @@ Supabase's current migration guide (updated 2026-10-29) states that legacy `anon
 - https://supabase.com/docs/guides/getting-started/migrating-to-new-api-keys
 - https://supabase.com/docs/guides/functions/auth
 
+### Current Edge gateway authentication mode
+
+The Supabase Edge Function inventory reports `verify_jwt=false` for both deployed `wrldline-news-ingest` v62 and `classify-news-worker` v37. The deployed Cloudflare Worker calls those functions with its publishable key on `apikey` and the separate `x-wrldline-cron-secret` header; it does not send a user JWT. Thus the Worker→Edge gateway contract is intentionally custom-header based, and the in-handler Vault-backed verifier is the actual authorization gate. This matches the Supabase recommended pattern for a function that performs its own caller authentication with `verify_jwt=false`; it does not prove the cron secret itself matched at the time of the incident.
+
 ### Observed WRLDLINE compatibility gaps
 
 - Deployed `wrldline-news-ingest` v62 reads `SUPABASE_SERVICE_ROLE_KEY` or singular `SUPABASE_SECRET_KEY`, but does not parse `SUPABASE_SECRET_KEYS.default`. It builds a shared DB header set with both `apikey` and `Authorization: Bearer <key>`, including for any future secret-key fallback.
