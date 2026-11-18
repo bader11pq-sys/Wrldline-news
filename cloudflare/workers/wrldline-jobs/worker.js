@@ -72,7 +72,8 @@ export default {
       const providerHealthcheck = message.body?.task === "provider-healthcheck";
       const validTasks = ["general", "breaking", "classification", "translation"];
       const authCheckSupportedQueues = ["wrldline-news-general", "wrldline-news-classification"];
-      const task = providerHealthcheck && batch.queue === "wrldline-news-general"
+      const providerHealthcheckSupportedQueues = ["wrldline-news-general", "wrldline-news-classification"];
+      const task = providerHealthcheck && providerHealthcheckSupportedQueues.includes(batch.queue)
         ? { functionName: "ai-provider-healthcheck", body: {} }
         : authCheck && batch.queue === "wrldline-news-general"
           ? { functionName: "wrldline-news-ingest", body: { mode: "auth-check" } }
@@ -80,7 +81,7 @@ export default {
             ? { functionName: "classify-news-worker", body: { mode: "auth-check" } }
             : QUEUE_TASKS[batch.queue];
       if (!task || (authCheck && !authCheckSupportedQueues.includes(batch.queue)) ||
-          (providerHealthcheck && batch.queue !== "wrldline-news-general") ||
+          (providerHealthcheck && !providerHealthcheckSupportedQueues.includes(batch.queue)) ||
           (message.body?.task && message.body.task !== "healthcheck" &&
            message.body.task !== "auth-check" && message.body.task !== "provider-healthcheck" &&
            !validTasks.includes(message.body.task))) {
