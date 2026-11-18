@@ -350,6 +350,51 @@ The deployed Worker source also omitted Cloudflare `message.id` from failure/suc
 
 Do not resume all consumers at once. First review and retain the existing DLQ sample/export; verify current deployed Worker version and exact queue/consumer settings; deploy the message-ID logging change; confirm Supabase verifier health and Edge smoke tests in a controlled path. Then, with an authorized operator decision, temporarily pause/reduce producer Cron triggers to prevent further backlog growth, selectively unpause one main queue at a time with low concurrency, monitor status/error and backlog age, and only then restore its producer schedule. Treat classification, translation, breaking, and general as separate rollouts. Leave the DLQ untouched until redacted reasons and replay eligibility are understood. Separately restore NewsData and notification Cron jobs only after verifier and endpoint validation; choose exactly one source-freshness scheduler.
 
+
+## Controlled queue-recovery preparation (2026-11-18 16:44 UTC)
+
+### Cloudflare Worker candidate v9 — uploaded, not deployed
+
+Cloudflare Version Upload created Worker version **9**, ID `7f219072-952d-4fa0-9088-956de7ef31ce`, at 2026-11-18 16:44:05 UTC. It contains:
+- the fail-closed `WRLDLINE_PRODUCERS_ENABLED` guard;
+- a 15-minute scheduled-message freshness cutoff;
+- a no-write `auth-check` task accepted only on the General queue;
+- message-ID logging on success and failure.
+
+Cloudflare confirmed that all four queue bindings, the public publishable key binding, and the existing secret Cron binding are retained. The secret value was not read. Version 9 is **uploaded only**; production remains on Worker v7 at 100% traffic. No deployment, canary traffic, schedule, or queue-state change was created.
+
+### Safe backlog behavior and authentication probe
+
+A non-destructive Cloudflare `peek` sample showed that queued payloads contain only scheduled task envelopes (`task`, `scheduled_at`, `enqueued_at`), not article records. The review-branch consumer now acknowledges malformed timestamps and messages whose scheduled timestamp is older than 15 minutes without invoking Supabase. This avoids executing a historical burst of obsolete periodic scans when delivery resumes. It does not discard article content; these messages contain only triggers. Fresh producers remain fail-closed until explicitly enabled.
+
+A fresh `auth-check` envelope on the General queue maps to `wrldline-news-ingest` with mode `auth-check`. After the existing Vault-backed cron-secret verifier returns true, the function responds with `{ok:true,mode:"auth-check"}` before any ingestion or database write. The branch tests verify the Worker sends the public API key and cron header, does not send an Authorization Bearer key, and rejects the probe task on other queues. This provides a one-message, no-write production verification path after version 9 is deliberately deployed and the General queue is deliberately unpaused.
+
+**Do not enqueue or unpause for this probe yet.** Its final live execution still needs operator approval because it requires a production traffic change (deploy v9), enabling one consumer (General), and adding one manual queue message.
+
+### Latest read-only queue snapshot (2026-11-18 16:44:32 UTC)
+
+| Queue | Delivery paused | Backlog | Oldest message (UTC) |
+|---|---:|---:|---|
+| general | yes | 511 | 2026-11-17 19:15:35 |
+| breaking | yes | 748 | 2026-11-17 14:24:38 |
+| classification | yes | 1,496 | 2026-11-16 15:01:15 |
+| translation | yes | 289 | 2026-11-17 15:05:33 |
+| dead-letter | no consumer | 1,429 | 2026-11-15 14:23:23 |
+
+The four main queues contain 3,044 messages; with 1,429 DLQ messages the total remains **4,473**. No message was peeked destructively, replayed, acknowledged, or purged by the read-only inspection.
+
+### CI for queue-recovery safeguards
+
+On source head `f24b6c8dd2f00bfff52c80145e89f2f72ed98dde`, all five CI workflows passed:
+- Code Quality: **190 Node tests passed**, no failures; JavaScript checks, all Edge Function Deno type checks, protected-endpoint/consent tests, database RLS fixtures, and asset checks passed.
+- Production Readiness browser regressions: success.
+- CodeQL: success.
+- Ops dashboard contract: success.
+- Synthetic encrypted restore: success; the manual real-production-backup job was skipped.
+- Protected source-freshness monitor: skipped because the opt-in production environment is disabled.
+
+CI proves the reviewed code and mocked/in-memory behavior, not that Cloudflare and Vault secrets match in production. The no-write auth probe remains unexecuted until the operator-approved deployment/unpause sequence.
+
 ## Latest operational snapshot (2026-11-18 16:24:09 UTC)
 
 A fresh read-only snapshot shows all four main delivery queues remain paused. Their registered consumers still exist, but delivery is disabled. The dead-letter queue still has no consumer.
