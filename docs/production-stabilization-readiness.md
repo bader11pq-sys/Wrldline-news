@@ -59,6 +59,82 @@ The latest recorded ingestion run timestamps in `news_ingestion_runs` were on 20
 
 The GitHub `main` branch is at `40e6e1f`. The phase-A/C/D commits referenced in the supplied local-only report (`c0ca129`, `f017b65`, `5ea74f8`) were not found in the remote repository or its only listed branch. Do not assume those local changes are in production or GitHub main.
 
+## Additional stabilization findings (2026-11-18 14:28 UTC)
+
+### Current Cloudflare queue snapshot
+
+A fresh read at `2026-11-18T14:28:42Z` confirmed that all four delivery queues remain paused. Backlog values moved slightly from the earlier snapshot:
+
+| Queue | Delivery paused | Backlog | Oldest message (UTC) | Approx. age |
+|---|---:|---:|---|---:|
+| general | yes | 504 | 2026-11-17 11:27:35 | 27h 01m |
+| breaking | yes | 739 | 2026-11-17 13:54:38 | 24h 34m |
+| classification | yes | 1,497 | 2026-11-16 15:01:15 | 47h 27m |
+| translation | yes | 281 | 2026-11-17 15:25:32 | 23h 03m |
+| dead-letter | n/a | 1,429 | 2026-11-15 14:09:23 | 72h 19m |
+
+Total observed backlog: 4,450 messages. DLQ timestamp is available in this snapshot; it is not zero/unknown. Queue counts are approximate and may move while paused or while producers continue to enqueue.
+
+### Supabase scheduled jobs are disabled
+
+The live `cron.job` table reports these jobs as `active=false`:
+
+| Job | Schedule | Target Edge Function |
+|---|---|---|
+| `wrldline-newsdata-sync` | every 15 minutes | `newsdata-integration` |
+| `wrldline-notifications-every-minute` | every minute | `notification-dispatch` |
+| `wrldline-source-freshness` | every 15 minutes | `source-freshness` |
+
+All three SQL commands send `x-wrldline-cron-secret` and reference the same Vault entry name used by `verify_wrldline_cron_secret`. No secret values were read. The deployed Cloudflare `wrldline-jobs` Worker does not contain tasks for these three functions; it only schedules general, breaking, classification, and translation.
+
+Run-history evidence:
+- NewsData sync: 4 `job startup timeout` failures in the inspected 24-hour window (14:45–15:30 UTC on 2026-11-17).
+- Source freshness: the same 4 startup-timeout failures.
+- Notifications: 49 failed runs (`job canceled` / `job startup timeout`) and 19 successful pg_cron command runs. However, Edge logs independently show 15 HTTP 401 responses from `notification-dispatch`; a successful pg_cron/net.http_post enqueue is not proof that the Edge Function accepted or completed delivery.
+
+### Freshness gap
+
+The private `source_freshness_metrics` table had 1,128 rows, but its latest `checked_at` was 2026-11-17 13:15:04 UTC. At the new inspection, that is more than 25 hours old. The snapshot contained 22 healthy, 228 error, and 492 stale sources. The remaining statuses were not rolled into those three counts.
+
+The NewsData catalog contains 200 configured sources, but the most recent `newsdata_fetched_at` on articles was 2026-11-13 23:21:01 UTC. The NewsData source catalog's latest update was 2026-11-14 03:15:32 UTC. The deployed `newsdata-integration` function is ACTIVE v12, but its cron job is disabled.
+
+### Invocation failures by deployed function version
+
+The historical Supabase Edge request window (2026-11-17 14:30 UTC through 2026-11-18 14:30 UTC) reported:
+
+| Function version recorded in Edge logs | HTTP status | Requests |
+|---|---:|---:|
+| `wrldline-news-ingest` v60 | 200 | 6 |
+| `wrldline-news-ingest` v60 | 401 | 117 |
+| `wrldline-news-ingest` v60 | 500 | 9 |
+| `wrldline-news-ingest` v60 | 504 | 8 |
+| `wrldline-news-ingest` v60 | 546 | 21 |
+| `classify-news-worker` v37 | 401 | 145 |
+| `classify-news-worker` v37 | 500 | 12 |
+| `classify-news-worker` v37 | 504 | 1 |
+| `classify-news-worker` v37 | 546 | 7 |
+| `notification-dispatch` v2 | 401 | 15 |
+
+These are invocation counts, not counts of unique articles. The errors are historical: the ingest function has since been deployed as v62, but queue delivery is still paused, so v62 has not yet been validated through a new queue-driven run. Supabase's HTTP 546 guidance describes a function resource limit (CPU or memory); the retained logs do not identify which resource was exhausted. HTTP 504 is a request timeout, not an authentication error.
+
+### Database timeouts and query evidence
+
+The historical application logs contain 9 `statement_timeout` events and 4 `worker_busy` translation skips. The breaking scan in deployed ingest v60 selected up to 2,000 recent published articles and filtered candidate titles in JavaScript; several executions failed with Postgres SQLSTATE `57014` during that scan or during run-log insertion. Translation lock acquisition also timed out.
+
+A read-only `EXPLAIN (FORMAT JSON)` of the current breaking scan query selects `idx_articles_published`. `pg_stat_statements` reports 2,842 calls for the matching query shape, 656,168.87 ms total execution time, and 230.88 ms mean execution time. This is not evidence that an additional index is required: the planner uses the publication index and the average is low compared with the outlier timeout. Do not add indexes or raise statement timeouts without examining slow-query outliers and current v62 behavior.
+
+### Supabase advisor summary
+
+The live advisors returned no health lints, plus items that require a deliberate security/performance review:
+- Security: one mutable function search_path warning, 9 anon-callable and 13 authenticated-callable SECURITY DEFINER RPC warnings, an Auth leaked-password-protection recommendation, and 22 RLS-enabled tables with no policies. Some are intentionally private operational tables with revoked grants; public news RPCs may be intentionally SECURITY DEFINER. Audit each function/table against the expected data-access contract before changing grants.
+- Performance: 4 foreign keys without covering indexes, 11 RLS init-plan recommendations, 19 unused-index observations, and 2 multiple-permissive-policy warnings on `article_claims` and `article_evidence`.
+
+No advisor-driven SQL change was applied. Unused indexes should not be dropped during incident recovery.
+
+### PR code refinement
+
+The PR's `ops-dashboard` source no longer runs a second full-table `articles` count as a fallback when `classification_queue_stats()` fails. It now reports the classification metric as unavailable instead of adding another broad count query during a database incident. The helper and contract tests also keep translation success from being misreported as ingestion success.
+
 ## Changes prepared in this branch
 
 - Restore a reviewable source file for the deployed `ops-dashboard` function.
