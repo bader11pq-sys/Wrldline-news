@@ -393,6 +393,24 @@ node --test tests/ops-dashboard-metrics.test.mjs tests/cron-auth.test.mjs tests/
 This test suite covers helper behavior only. It is not an end-to-end Supabase, Cloudflare, auth, or browser deployment test.
 
 
+
+### Cloudflare Worker candidate prepared — not deployed
+
+A release-candidate version was uploaded through the Cloudflare **Version Upload** API on 2026-11-18 16:38:53 UTC:
+
+- Worker: `wrldline-jobs`
+- Candidate: **version 8**, `6db110f6-27e4-436d-be87-58f61db5d536`
+- Candidate annotation: fail-closed producer circuit breaker; uploaded but not deployed.
+- The API confirmed the four queue bindings, `SUPABASE_PUBLISHABLE_KEY`, and the existing `WRLDLINE_CRON_SECRET` binding are retained. The secret's value was not read or exposed.
+- The deployed Worker remains **version 7** (`9c39fcc5-405c-4d7c-a54b-6dbe33c514df`) at 100% traffic. Its source does not contain `WRLDLINE_PRODUCERS_ENABLED`.
+- No deployment or traffic shift was created. The four Cron schedules remain configured, and main queue delivery remains paused.
+
+If version 8 is later deployed while `WRLDLINE_PRODUCERS_ENABLED` is absent, its scheduled handler fails closed and does not enqueue new work. Do not set that variable to `true` until a controlled consumer recovery is ready. The candidate must still be explicitly approved for deployment.
+
+### Breaking-source/SMS workflow distinction
+
+The `main` branch retains the independent five-minute GitHub Actions breaking desk. The PR branch now documents, rather than disables, this schedule: it retrieves 20 urgent Arabic sources and then dispatches opted-in SMS. The Cloudflare queue's breaking task only flags articles already ingested. This distinction is necessary because disabling `breaking.yml` before replacing the SMS path would remove the current scheduled SMS dispatcher.
+
 ## Additional producer and queue hygiene findings (2026-11-18)
 
 ### Dedicated GitHub breaking/SMS path
