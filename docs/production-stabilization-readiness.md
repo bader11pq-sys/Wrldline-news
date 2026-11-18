@@ -164,6 +164,35 @@ The live advisors returned no health lints, plus items that require a deliberate
 
 No advisor-driven SQL change was applied. Unused indexes should not be dropped during incident recovery.
 
+### pg_cron startup failures and concurrency configuration
+
+A 48-hour aggregation of `cron.job_run_details` shows repeated startup timeouts across both WRLDLINE and platform maintenance jobs:
+
+| Job | 48h failed with startup timeout | Succeeded | Other failures |
+|---|---:|---:|---:|
+| notifications (every minute) | 939 | 551 | 1 canceled |
+| NewsData sync (15m) | 86 | 13 | 0 |
+| source freshness (15m) | 86 | 13 | 0 |
+| audience retention (hourly) | 14 | 11 | 0 |
+| security counters (hourly) | 18 | 7 | 0 |
+| daily briefing | 1 | 0 | 0 |
+
+All six jobs currently show `active=false`. The pg_cron error text `job startup timeout` indicates that a job did not complete startup before its deadline; it does not by itself prove whether the reason was connection pressure, process scheduling, or another resource bottleneck. The notification job also had one `job canceled` run.
+
+The current settings snapshot is:
+- `cron.max_running_jobs=32`
+- `cron.use_background_workers=off` (pg_cron uses client sessions rather than its background-worker mode)
+- `max_connections=60`
+- `max_worker_processes=6`
+- `statement_timeout=120000ms`
+- `work_mem=2184kB`
+
+These values create a plausible concurrency/connection-pressure risk, but there is no captured `too many connections` or connection-slot error in the inspected PostgreSQL logs. The database snapshot shortly after the incident had only 6 sessions and 0 active queries; that later snapshot does not rule out earlier pressure. Do not increase `cron.max_running_jobs`, alter worker settings, or raise timeouts without a resource-time-series review and a controlled test. The same startup timeout across audience retention and security maintenance means the incident is not isolated to WRLDLINE's news pipeline.
+
+Useful current references:
+- [pg_cron runtime configuration and startup state](https://github.com/citusdata/pg_cron/blob/main/src/pg_cron.c)
+- [Supabase PostgREST error codes](https://supabase.com/docs/guides/api/rest/postgrest-error-codes), including database connection/resource 503s and pool acquisition 504s.
+
 ### Current database snapshot
 
 A short read-only activity snapshot at `2026-11-18 14:44:27 UTC` showed 6 other database sessions and 0 active queries at that instant. PostgreSQL cumulative counters since the last statistics reset (`2026-10-29 12:49:05 UTC`) showed 6,434 temp files / 14 GB written and 5 deadlocks. This is not enough to attribute the historical 503/57014 incident to a single resource. The zero-active query count is only a point-in-time observation; the cumulative temporary-write count warrants query-plan and workload review.
