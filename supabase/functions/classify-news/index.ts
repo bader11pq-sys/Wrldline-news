@@ -1,6 +1,7 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.119.0";
 import { normalizeCategory, normalizeScope, TAXONOMY_VERSION } from "../_shared/taxonomy.ts";
+import { resolveSupabaseServiceKey } from "../_shared/service-key.mjs";
 
 const cors = {
   "Access-Control-Allow-Origin": Deno.env.get("SITE_URL") || "https://al-ghaib.us.ci",
@@ -316,8 +317,11 @@ Deno.serve(async (req: Request) => {
 
   const supabaseUrl = Deno.env.get("SUPABASE_URL");
   const anonKey = Deno.env.get("SUPABASE_ANON_KEY") || (() => { try { return JSON.parse(Deno.env.get("SUPABASE_PUBLISHABLE_KEYS") || "{}").default; } catch { return null; } })();
-  const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ||
-    (() => { try { return JSON.parse(Deno.env.get("SUPABASE_SECRET_KEYS") || "{}").default; } catch { return null; } })();
+  const serviceKey = resolveSupabaseServiceKey({
+    SUPABASE_SECRET_KEY: Deno.env.get("SUPABASE_SECRET_KEY") || "",
+    SUPABASE_SECRET_KEYS: Deno.env.get("SUPABASE_SECRET_KEYS") || "",
+    SUPABASE_SERVICE_ROLE_KEY: Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "",
+  });
   const geminiKey = Deno.env.get("GEMINI_API_KEY") || Deno.env.get("GOOGLE_API_KEY") || null;
   const groqKey = Deno.env.get("GROQ_API_KEY") || null;
   const nvidiaKey = Deno.env.get("NVIDIA_API_KEY") || null;
