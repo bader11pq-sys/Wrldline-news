@@ -123,6 +123,12 @@ Deno.test("Expired confirmation does not activate subscriber",async()=>{
 Deno.test("Dispatch requires existing service-only cron verifier",async()=>{
   const m=mock();const r=await dispatch(env,m.db,{email:()=>Promise.reject(),push:()=>Promise.reject()})(new Request("https://edge.invalid/notification-dispatch",{method:"POST",headers:{"x-wrldline-cron-secret":"wrong-fixture"}}));equal(r.status,401);assert(!m.calls.some(c=>c.name==="notification_claim"));
 });
+Deno.test("Dispatch reports verifier infrastructure errors as 503, not invalid credentials",async()=>{
+  const m=mock({rpc:()=>({data:null,error:{message:"database unavailable"}})});
+  const r=await dispatch(env,m.db,{email:()=>Promise.reject(),push:()=>Promise.reject()})(new Request("https://edge.invalid/notification-dispatch",{method:"POST",headers:{"x-wrldline-cron-secret":"fixture-cron"}}));
+  equal(r.status,503);
+  assert(!m.calls.some(c=>c.name==="notification_claim"));
+});
 Deno.test("Dispatch with no sending credentials reports zero and never claims",async()=>{
   const m=mock();const r=await dispatch({...env,NOTIFICATIONS_ENABLED:"false"},m.db,{email:()=>Promise.reject(),push:()=>Promise.reject()})(new Request("https://edge.invalid/notification-dispatch",{method:"POST",headers:{"x-wrldline-cron-secret":"fixture-cron"}}));equal(r.status,200);equal((await r.json()).sent,0);assert(!m.calls.some(c=>c.name==="notification_claim"));
 });
