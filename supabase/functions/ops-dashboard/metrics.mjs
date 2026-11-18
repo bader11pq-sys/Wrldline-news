@@ -14,7 +14,16 @@ export function normalizeClassificationStats(value) {
   ];
   const normalized = {};
   for (const key of numericKeys) {
-    const number = Number(source[key]);
+    const raw = source[key];
+    if (raw === null || raw === undefined || (typeof raw === "string" && raw.trim() === "")) {
+      normalized[key] = null;
+      continue;
+    }
+    const number = typeof raw === "number"
+      ? raw
+      : typeof raw === "string"
+        ? Number(raw.trim())
+        : Number.NaN;
     normalized[key] = Number.isFinite(number) ? number : null;
   }
   normalized.oldest_pending_at =
