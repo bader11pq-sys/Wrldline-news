@@ -1,6 +1,6 @@
 // Resolve the privileged Supabase API key across the supported Edge Function
 // environment layouts. Never accept a publishable key as a service credential.
-function isSecretKey(value) {
+export function isSupabaseSecretKey(value) {
   return typeof value === "string" && /^sb_secret_[A-Za-z0-9_-]{22}_[A-Za-z0-9_-]{8}$/.test(value);
 }
 
@@ -9,14 +9,14 @@ function readDefaultSecretKeys(value) {
   try {
     const parsed = JSON.parse(value);
     const candidate = parsed && typeof parsed === "object" ? parsed.default : null;
-    return isSecretKey(candidate) ? candidate : null;
+    return isSupabaseSecretKey(candidate) ? candidate : null;
   } catch {
     return null;
   }
 }
 
 export function resolveSupabaseServiceKey(env = {}) {
-  const direct = isSecretKey(env.SUPABASE_SECRET_KEY) ? env.SUPABASE_SECRET_KEY : null;
+  const direct = isSupabaseSecretKey(env.SUPABASE_SECRET_KEY) ? env.SUPABASE_SECRET_KEY : null;
   if (direct) return direct;
 
   const mapped = readDefaultSecretKeys(env.SUPABASE_SECRET_KEYS);
@@ -28,4 +28,33 @@ export function resolveSupabaseServiceKey(env = {}) {
   }
 
   return null;
+}
+
+// New opaque secret keys are accepted through apikey, not as JWT Bearer
+// credentials. Legacy service_role JWTs still need both headers for older
+// request paths and remain supported during the migration window.
+export function serviceApiHeaders(serviceKey, contentType = "application/json") {
+  const headers = { apikey: serviceKey };
+  if (!isSupabaseSecretKey(serviceKey)) headers.Authorization = "Bearer " + serviceKey;
+  if (contentType) headers["Content-Type"] = contentType;
+  return headers;
+}
+
+// supabase-js versions and call sites may add Authorization: Bearer <api key>.
+// Strip that header for opaque secret keys while retaining apikey. This keeps
+// the normal client API but follows Supabase's new-key requirement.
+export function serviceClientOptions(serviceKey, fetchImpl = fetch) {
+  const options = { auth: { persistSession: false, autoRefreshToken: false } };
+  if (!isSupabaseSecretKey(serviceKey)) return options;
+
+  return {
+    ...options,
+    global: {
+      fetch: (input, init = {}) => {
+        const headers = new Headers(init.headers ?? (input instanceof Request ? input.headers : undefined));
+        headers.delete("Authorization");
+        return fetchImpl(input, { ...init, headers });
+      },
+    },
+  };
 }
