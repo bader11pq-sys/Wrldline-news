@@ -81,5 +81,6 @@ test("breaking, editorial, and translation badges retain the verification state"
 });
 
 test("public article route link identifies the verification context", () => {
-  assert.match(script, /فتح صفحة الخبر وسياق التحقق/);
+  assert.match(script, /فتح صفحة الخبر المستقلة وسياق التحقق/);
+  assert.match(script, /Open article page — verification context/);
 });
