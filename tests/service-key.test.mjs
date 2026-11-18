@@ -2,6 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import {
   resolveSupabaseServiceKey,
+  isSupabaseServiceRequest,
   serviceApiHeaders,
   serviceClientOptions
 } from "../supabase/functions/_shared/service-key.mjs";
@@ -69,4 +70,20 @@ test("keeps standard supabase-js setup for legacy service-role JWTs", () => {
   const options = serviceClientOptions("legacy-service-role-fixture");
   assert.equal(options.global, undefined);
   assert.deepEqual(options.auth, { persistSession: false, autoRefreshToken: false });
+});
+
+test("authenticates new secret-key service calls from apikey only", () => {
+  const headers = new Headers({ apikey: newSecret });
+  assert.equal(isSupabaseServiceRequest(headers, newSecret), true);
+});
+
+test("keeps legacy service-role Bearer authentication working", () => {
+  const legacy = "legacy-service-role-fixture";
+  const headers = new Headers({ Authorization: "Bearer " + legacy, apikey: legacy });
+  assert.equal(isSupabaseServiceRequest(headers, legacy), true);
+});
+
+test("does not accept a public key as the service identity", () => {
+  const headers = new Headers({ apikey: "sb_publishable_public_fixture" });
+  assert.equal(isSupabaseServiceRequest(headers, newSecret), false);
 });
