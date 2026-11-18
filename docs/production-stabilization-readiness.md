@@ -252,6 +252,29 @@ The PR's `ops-dashboard` source no longer runs a second full-table `articles` co
 4. Verify current migrations, deployed function versions, Worker version, bindings, queues, schedules, and website deployment against one commit.
 5. Test Stripe in sandbox end-to-end and verify server-side entitlement enforcement before any paid launch.
 
+## Public homepage RPC timeout findings and frontend resilience
+
+A user-facing home feed trace on 2026-11-18 at 10:03:48–10:03:52 UTC showed two HTTP 500 responses from `public_home_news_recent_v2`. PostgreSQL recorded SQLSTATE `57014` (`canceling statement due to statement timeout`) for both PostgREST calls; the API trace reported an upstream duration around 3.0–4.1 seconds. The same browser session had successful calls before and immediately after the two failures. This is a transient public-feed timeout, not a missing RPC or API-key rejection.
+
+The role-specific timeouts are:
+- `anon`: 3 seconds
+- `authenticated`: 8 seconds
+- current diagnostic `postgres` session: 2 minutes
+
+This matters because the public home page normally calls the RPC as `anon`. The errors therefore match the 3-second public role budget. A read-only `EXPLAIN` showed the published article scan uses `articles_public_publication_idx` and the per-article translation lookup uses `article_translations_published_article_idx`; no sequential scan was selected for the standard recent feed. The current tables contain approximately 56.9k live articles and 5.1k translations, with 62,354 published articles and 2,838 published translations meeting the public title/status filter.
+
+A controlled, read-only execution of the homepage RPC with 80 rows under `SET ROLE anon` and `statement_timeout='3s'` returned 80 rows in 5.182 ms at the time of inspection (1,548 shared buffer hits). Another run under the same role/budget returned in 5.295 ms. This confirms the query can be very fast when the database is quiet; it does **not** invalidate the captured historical timeout. `pg_stat_statements` still shows high variance across parameterized call shapes: one 51-call shape averaged 420.64 ms (max 2,461.76 ms), a 21-call shape averaged 747.14 ms (max 2,798.20 ms), and a 24-call shape averaged 281.68 ms (max 2,328.23 ms). Do not raise the public timeout or add indexes without a representative load test.
+
+### Frontend mitigation added in this PR
+
+The homepage now stores the last successful public feed response (including public supplemental rows) in per-tab `sessionStorage` for three minutes. If the first/main RPC fails and there are no in-memory articles, it restores that recent public snapshot, keeps rendering the page, displays the original successful-update time, and explicitly labels the content as a saved snapshot while live refresh is unavailable. It does not issue an automatic retry, so a database incident cannot be amplified by retry traffic. Storage failures are fail-soft and never block the live request. The cache contains only rows returned by the public published-news RPC, not user profiles, saved items, or private editorial data.
+
+The app shell/service worker cache was bumped to v62 so clients can receive this frontend change. The PR also adds a browser-regression case that seeds a recent public feed snapshot, simulates a Supabase 503, and checks that the cached story remains visible and clearly labeled. This is branch-only until reviewed and deployed.
+
+### Related access-control result
+
+The same browser session received `permission denied for table article_change_log` (SQLSTATE `42501`) when an unauthenticated browser queried the editorial change log. Repository migrations/docs intentionally reserve that audit table for editors/admins. Treat this as an expected access-control denial unless an authorized editor session is independently shown; do not grant public/anon access or weaken its RLS.
+
 ## Supabase new API key migration gate (separate from the November outage)
 
 Supabase's current migration guide (updated 2026-10-29) states that legacy `anon` and `service_role` keys are deprecated by the end of 2026; new `sb_publishable_...` and `sb_secret_...` keys coexist with legacy keys during migration. It specifies that Edge Functions receive the new keys as JSON maps in `SUPABASE_PUBLISHABLE_KEYS` and `SUPABASE_SECRET_KEYS`, keyed by names such as `default`. A new secret key is not a JWT and must be sent in `apikey` only; putting it in `Authorization: Bearer` causes JWT parsing failure. See:
