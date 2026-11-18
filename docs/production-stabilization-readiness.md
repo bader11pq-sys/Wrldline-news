@@ -368,7 +368,7 @@ The classification RPC remained pending 8,756, processing 0, failed 45, expired 
 
 All six tracked cron rows remained `active=false`: notification dispatch, NewsData sync, source freshness, audience retention, security counters, and daily briefing. No scheduler was re-enabled.
 
-## CI verification (last fully tested code head: `403be590`; subsequent commits `5840f5d`, `fcd8ec7`, and `4038578` update documentation only)
+## CI verification (fully tested code head: `403be590`; every subsequent branch update has been documentation-only, with no source or test-code changes)
 
 All five CI workflows for the code-identical tested head `403be590` completed successfully:
 - **Ops dashboard contract:** success.
