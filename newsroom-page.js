@@ -124,7 +124,7 @@
             const f = c.framing.find(x => x.article === a)?.terms || [];
             const u = window.WLNR.safeURL(window.WLNR.articleURL(a));
             return '<div class="nr-headline"><div class="nr-headline-src"><b>' + esc(window.WLNR.sourceName(a)) + "</b>" + esc(window.WLNR.timeAgo(a.published_at)) + '</div><div><a href="' + esc(u || "#") + '" target="_blank" rel="noopener noreferrer">' + esc(a.title) + "</a>" + (f.length ? '<div class="nr-frames">' + f.map(t => '<span class="nr-frame">' + esc(t) + "</span>").join("") + "</div>" : "") + "</div></div>";
-          }).join("") + '</div><div class="nr-cluster-foot"><span>فارق التوقيت: ' + c.timeGapH + ' ساعة · ' + c.articles.length + ' عنواناً</span><span>المؤشر آلي ولا يقيس استقلال المصادر أو دقة الروايات</span></div></article>";
+          }).join("") + '</div><div class="nr-cluster-foot"><span>فارق التوقيت: ' + c.timeGapH + ' ساعة · ' + c.articles.length + ' عنواناً</span><span>المؤشر آلي ولا يقيس استقلال المصادر أو دقة الروايات</span></div></article>';
       }).join("");
     };
     toolbar?.addEventListener("input", e => { if (e.target.id === "balSearch") { state.q = e.target.value.trim(); draw(); } });
