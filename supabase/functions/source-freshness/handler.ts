@@ -1,10 +1,11 @@
 import { classifyCronVerifierResult } from '../_shared/cron-auth.mjs';
+import { serviceApiHeaders } from "../_shared/service-key.mjs";
 // Caller authentication is mandatory before operational reads or writes.
 import { evaluateSource } from './evaluate.mjs';
 
 type Dependencies = { url: string; serviceKey: string; fetch: typeof fetch; now: () => Date };
 export function createHandler(deps: Dependencies) {
-  const headers = { apikey: deps.serviceKey, Authorization: `Bearer ${deps.serviceKey}`, 'Content-Type': 'application/json' };
+  const headers = serviceApiHeaders(deps.serviceKey);
   const reply = (body: unknown, status = 200) => Response.json(body, { status, headers: { 'Cache-Control': 'no-store' } });
   const db = (path: string, body: unknown) => deps.fetch(`${deps.url}/rest/v1/${path}`, {
     method: 'POST', headers: { ...headers, ...(path.startsWith('source_freshness_metrics') ? { Prefer: 'resolution=merge-duplicates,return=minimal' } : {}) }, body: JSON.stringify(body), signal: AbortSignal.timeout(30000),
