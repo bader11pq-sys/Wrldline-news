@@ -56,13 +56,28 @@ function contentBadgeMarkup(a){
  if(kind==="news")return "";
  return '<span class="content-badge content-'+kind+'">'+escapeHTML(contentKindLabel(kind))+'</span>';
 }
+function verificationBadgeMarkup(a){
+ const disputed=String(a?.verification||"unconfirmed").toLowerCase()==="disputed";
+ const label=disputed?ui("محل خلاف","Disputed"):ui("لم يُسجل تحقق بشري","No human review recorded");
+ const note=disputed
+  ?ui("حالة الخبر مسجلة كمحل خلاف؛ راجع المصادر والأدلة قبل تكوين حكم.","This story is marked as disputed; review its sources and evidence before drawing a conclusion.")
+  :ui("موجز الأخبار لا يتضمن سجل مراجعة بشرية لهذا الخبر. هذا لا يعني أنه كاذب، بل أن التأكيد البشري غير موثق هنا.","The homepage feed does not include a human-review record for this story. This does not mean the story is false; human confirmation is simply not documented here.");
+ return '<span class="editorial-verification '+(disputed?'editorial-verification--disputed':'editorial-verification--unconfirmed')+'" title="'+escapeHTML(note)+'" aria-label="'+escapeHTML(label)+'">'+escapeHTML(label)+'</span>';
+}
+function verificationDisclosureMarkup(a){
+ const disputed=String(a?.verification||"unconfirmed").toLowerCase()==="disputed";
+ const note=disputed
+  ?ui("هذه الحالة مسجلة كمحل خلاف. افحص روايات المصادر والأدلة المرتبطة قبل اعتماد أي استنتاج.","This item is marked as disputed. Review source accounts and linked evidence before relying on any conclusion.")
+  :ui("لم يُسجل في موجز الخبر تأكيد بشري موثق. هذا لا يعني أن الخبر كاذب؛ لكنه يعني أن هذه الواجهة لا تملك حالياً سجلاً يثبت مراجعته بشرياً. افتح صفحة الخبر المستقلة لمراجعة سياق التحقق والأدلة إن توفرت.","The feed does not contain a documented human confirmation. This does not mean the story is false; it means this interface does not currently show a record of human review. Open the standalone article page to inspect verification context and evidence when available.");
+ return '<p class="editorial-verification-disclosure" role="note">'+escapeHTML(note)+'</p>';
+}
 function typeBadgesMarkup(a){
  let html="";
  if(a.isBreaking)html+='<span class="breaking-badge">'+ui("عاجل","Breaking")+'</span>';
  html+=contentBadgeMarkup(a);
  if(a.hasTranslation&&a.translationStatus&&a.translationStatus!=="none")html+='<span class="translation-badge translation-source">'+escapeHTML(translationBadge(a))+'</span>';
  else if(a.translationFallback)html+='<span class="translation-badge translation-source">'+escapeHTML(translationBadge(a))+'</span>';
- return html;
+ html+=verificationBadgeMarkup(a);\n return html;
 }
 function sourceLineMarkup(a,extraClass=""){
  const domain=sourceDomain(a.sourceURL);
@@ -496,7 +511,7 @@ function renderHero(){
  const others=state.filtered.filter(a=>a.id!==lead.id).slice(0,3);
  host.innerHTML='<article class="lead-story" role="button" tabindex="0" data-open="'+escapeHTML(lead.id)+'">'+imageMarkup(lead,"lead-image")+'<div class="lead-overlay"><div class="story-meta"><span class="category-label">'+escapeHTML(categoryName(lead.cat))+'</span>'+typeBadgesMarkup(lead)+'<span>'+escapeHTML(countryName(lead.country,lead.aiCountryCode))+'</span><span class="read-time" style="color:#ffffffb0">'+wlReadingTime(lead)+'</span></div><h2>'+escapeHTML(lead.title)+'</h2><p>'+escapeHTML(lead.summary)+'</p>'+sourceLineMarkup(lead,"lead-source")+'</div></article>'+
  '<div class="lead-rail"><div class="lead-rail-head"><span>TOP STORIES</span><strong>أهم ما يحدث الآن</strong></div>'+
- others.map((a,idx)=>'<article class="rail-story" role="button" tabindex="0" data-open="'+escapeHTML(a.id)+'"><div><div class="story-meta"><span class="rail-number">0'+(idx+1)+'</span><span class="category-label">'+escapeHTML(categoryName(a.cat))+'</span></div><h3>'+escapeHTML(a.title)+'</h3><div class="rail-source">'+escapeHTML(a.src||"WRLDLINE")+' · '+timeAgo(a.published_at)+'</div></div>'+imageMarkup(a,"rail-image")+'</article>').join("")+
+ others.map((a,idx)=>'<article class="rail-story" role="button" tabindex="0" data-open="'+escapeHTML(a.id)+'"><div><div class="story-meta"><span class="rail-number">0'+(idx+1)+'</span><span class="category-label">'+escapeHTML(categoryName(a.cat))+verificationBadgeMarkup(a)+'</div><h3>'+escapeHTML(a.title)+'</h3><div class="rail-source">'+escapeHTML(a.src||"WRLDLINE")+' · '+timeAgo(a.published_at)+'</div></div>'+imageMarkup(a,"rail-image")+'</article>').join("")+
  '</div>';
  host.querySelectorAll("[data-open]").forEach(el=>el.addEventListener("click",()=>openArticle(el.dataset.open)));
 }
@@ -645,13 +660,13 @@ function openArticle(id,updateUrl=true){
  if(updateUrl){const url=new URL(location.href);url.searchParams.set("article",id);history.pushState({article:id},"",url);}
  track("view_article",{article_id:a.id,content_type:a.contentType,category:a.cat,source_domain:sourceDomain(a.sourceURL),has_source_link:!!a.sourceURL});
  const host=document.getElementById("modalContent");
- host.innerHTML='<button class="modal-close" id="modalClose" aria-label="'+ui("إغلاق","Close")+'">×</button>'+articleMediaMarkup(a)+'<div class="modal-article-body"><div class="story-meta"><span class="category-label">'+escapeHTML(categoryName(a.cat))+'</span>'+typeBadgesMarkup(a)+'<span>'+escapeHTML(countryName(a.country,a.aiCountryCode))+'</span></div><h1>'+escapeHTML(a.title)+'</h1><p class="modal-publication-date">'+ui("تاريخ النشر: ","Published: ")+escapeHTML(formatDate(a.published_at))+'</p>'+correctionMarkup(a)+'<p class="modal-summary">'+escapeHTML(a.summary)+'</p>'+newsDataMetaMarkup(a)+(a.newsdataAiSummary?'<section class="ai-insight"><strong>NewsData.io AI</strong><p>'+escapeHTML(a.newsdataAiSummary)+'</p></section>':'')+(a.aiSummary?'<section class="ai-insight"><strong>'+ui("تحليل WRLDLINE AI","WRLDLINE AI analysis")+'</strong><p>'+escapeHTML(a.aiSummary)+'</p><small>'+ui("مؤشر الحدث: ","Event risk: ")+escapeHTML(riskLabel(a.aiRiskLevel))+' · '+escapeHTML(a.aiRiskScore)+'/100</small></section>':'')+(state.lang==="ar"&&a.aiReaderImpact?'<section class="ai-impact"><h3>وش يعني لك؟</h3><p>'+escapeHTML(a.aiReaderImpact)+'</p><small>قراءة آلية مساعدة مبنية على نص الخبر، وليست تحققاً بشرياً أو نصيحة مالية.</small></section>':'')+(state.lang==="ar"&&a.aiWatchNext?'<section class="ai-impact ai-impact--watch"><h3>ما الذي نراقبه تالياً؟</h3><p>'+escapeHTML(a.aiWatchNext)+'</p></section>':'')+sourceBoxMarkup(a)+'<p class="disclaimer">'+escapeHTML(provenanceNote(a))+' <a href="corrections.html">'+ui("سياسة التصحيح","Corrections policy")+'</a>.</p><div class="article-actions"><button class="outline-button" id="modalListen" type="button">♫ '+ui("استمع للخبر","Listen to story")+'</button><button class="outline-button" id="modalShare" type="button">↗ '+ui("مشاركة الخبر","Share story")+'</button><button class="outline-button" id="modalSave">'+(state.saved.has(a.id)?ui("★ إزالة من المحفوظات","★ Remove saved"):ui("☆ حفظ الخبر","☆ Save story"))+'</button>'+socialMarkup+'</div></div>';
+ host.innerHTML='<button class="modal-close" id="modalClose" aria-label="'+ui("إغلاق","Close")+'">×</button>'+articleMediaMarkup(a)+'<div class="modal-article-body"><div class="story-meta"><span class="category-label">'+escapeHTML(categoryName(a.cat))+'</span>'+typeBadgesMarkup(a)+'<span>'+escapeHTML(countryName(a.country,a.aiCountryCode))+'</span></div><h1>'+escapeHTML(a.title)+'</h1><p class="modal-publication-date">'+ui("تاريخ النشر: ","Published: ")+escapeHTML(formatDate(a.published_at))+'</p>'+verificationDisclosureMarkup(a)+correctionMarkup(a)+'<p class="modal-summary">'+escapeHTML(a.summary)+'</p>'+newsDataMetaMarkup(a)+(a.newsdataAiSummary?'<section class="ai-insight"><strong>NewsData.io AI</strong><p>'+escapeHTML(a.newsdataAiSummary)+'</p></section>':'')+(a.aiSummary?'<section class="ai-insight"><strong>'+ui("تحليل WRLDLINE AI","WRLDLINE AI analysis")+'</strong><p>'+escapeHTML(a.aiSummary)+'</p><small>'+ui("مؤشر الحدث: ","Event risk: ")+escapeHTML(riskLabel(a.aiRiskLevel))+' · '+escapeHTML(a.aiRiskScore)+'/100</small></section>':'')+(state.lang==="ar"&&a.aiReaderImpact?'<section class="ai-impact"><h3>وش يعني لك؟</h3><p>'+escapeHTML(a.aiReaderImpact)+'</p><small>قراءة آلية مساعدة مبنية على نص الخبر، وليست تحققاً بشرياً أو نصيحة مالية.</small></section>':'')+(state.lang==="ar"&&a.aiWatchNext?'<section class="ai-impact ai-impact--watch"><h3>ما الذي نراقبه تالياً؟</h3><p>'+escapeHTML(a.aiWatchNext)+'</p></section>':'')+sourceBoxMarkup(a)+'<p class="disclaimer">'+escapeHTML(provenanceNote(a))+' <a href="corrections.html">'+ui("سياسة التصحيح","Corrections policy")+'</a>.</p><div class="article-actions"><button class="outline-button" id="modalListen" type="button">♫ '+ui("استمع للخبر","Listen to story")+'</button><button class="outline-button" id="modalShare" type="button">↗ '+ui("مشاركة الخبر","Share story")+'</button><button class="outline-button" id="modalSave">'+(state.saved.has(a.id)?ui("★ إزالة من المحفوظات","★ Remove saved"):ui("☆ حفظ الخبر","☆ Save story"))+'</button>'+socialMarkup+'</div></div>';
  document.getElementById("modalClose").addEventListener("click",closeArticle);
  document.getElementById("modalSave").addEventListener("click",()=>{toggleSaved(a.id);document.getElementById("modalSave").textContent=state.saved.has(a.id)?ui("★ إزالة من المحفوظات","★ Remove saved"):ui("☆ حفظ الخبر","☆ Save story");});
  document.getElementById("modalShare").addEventListener("click",()=>shareArticle(a));
  document.getElementById("modalListen").addEventListener("click",()=>playArticleAudio(a));
  const publicURL=publicArticleURL(a);
- if(publicURL)host.querySelector(".article-actions")?.insertAdjacentHTML("beforeend",'<a class="outline-button" href="'+escapeHTML(publicURL)+'">↗ '+ui("فتح صفحة الخبر المستقلة","Open article page")+'</a>');
+ if(publicURL)host.querySelector(".article-actions")?.insertAdjacentHTML("beforeend",'<a class="outline-button" href="'+escapeHTML(publicURL)+'">↗ '+ui("فتح صفحة الخبر وسياق التحقق","Open article and verification context")+'</a>');
  showModal("articleModal");
  try{document.dispatchEvent(new CustomEvent("wrldline:article-opened",{detail:{article:a}}));}catch(error){console.warn("WRLDLINE intelligence:",error);}
 }
