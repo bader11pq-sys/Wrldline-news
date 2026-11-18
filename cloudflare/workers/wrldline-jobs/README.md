@@ -33,10 +33,10 @@ The Worker deployment and the queue consumers are in different states. Do not in
 
 ### Producer pause switch in the review branch
 
-The current source in this branch supports an optional non-secret Worker variable:
+The current source in this branch uses a fail-closed, explicit opt-in:
 
-- Set `WRLDLINE_PRODUCERS_ENABLED=false` to make the scheduled handler return before enqueueing any message.
-- If the variable is absent, scheduling remains enabled for backwards compatibility.
+- Set `WRLDLINE_PRODUCERS_ENABLED=true` only after the queue consumers, Supabase verifier, and backlog recovery checks pass.
+- If the variable is absent or set to anything other than `true`, the scheduled handler returns before enqueueing any message and records a `producers_paused` event.
 - The deployed v7 Worker does **not** contain this code yet and does not read this variable. Setting the variable against v7 alone will not stop producers.
 - This switch is not configured in production. It becomes usable only after the reviewed Worker code is deployed. Do not upload or deploy this branch merely to set the variable.
 
