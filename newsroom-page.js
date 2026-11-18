@@ -103,7 +103,7 @@
     state = { min: 2, age: 168, q: "" };
     const toolbar = $("#nrToolbar");
     if (toolbar) toolbar.innerHTML = '<div class="nr-search"><svg aria-hidden="true"><use href="#i-search"/></svg><input id="balSearch" type="search" placeholder="ابحث في العناوين المتقاطعة…" aria-label="بحث في ميزان الروايات"></div>' +
-      [2, 3, 4].map(n => '<button class="nr-chip' + (n === 2 ? " is-active" : "") + '" data-min="' + n + '">' + n + "+ ناشرين</button>").join("") +
+      [2, 3, 4].map(n => '<button class="nr-chip' + (n === 2 ? " is-active" : "") + '" data-min="' + n + '">' + n + "+ جهات نشر</button>").join("") +
       '<select class="nr-select" id="balAge" aria-label="النافذة الزمنية"><option value="72">72 ساعة</option><option value="168" selected>7 أيام</option><option value="720">30 يوماً</option></select>' +
       '<span class="nr-count" id="balCount"></span>';
     const root = $("#nrRoot");
@@ -111,10 +111,10 @@
       const clusters = window.WLNR.clusterArticles(articles, { minSources: state.min, maxAgeH: state.age });
       const rows = state.q ? clusters.filter(c => c.articles.some(a => (a.title || "").includes(state.q)) || c.tokens.some(t => t.includes(state.q))) : clusters;
       const sources = new Set(rows.flatMap(c => c.sources));
-      if ($("#balCount")) $("#balCount").textContent = rows.length + " تقاطعاً · " + sources.size + " ناشراً";
+      if ($("#balCount")) $("#balCount").textContent = rows.length + " تقاطعاً · " + sources.size + " جهة نشر مسجلة";
       stats([[rows.length, "تقاطعاً"], [sources.size, "جهة نشر مسجلة"], [rows.length ? Math.round(rows.reduce((n, c) => n + c.sourceCount, 0) / rows.length) : 0, "متوسط أسماء جهات النشر"]]);
       if (!rows.length) {
-        root.innerHTML = '<p class="nr-note" role="note">تجميع آلي أولي لعناوين متشابهة زمنياً ولغوياً. عدد الناشرين لا يثبت استقلالهم، ولا يؤكد وحده أن العناوين تصف الحدث نفسه أو أن الروايات متوازنة.</p>' + empty("لا تقاطعات كافية الآن", "قد تكون التغطية الحالية من ناشر واحد، أو خارج النافذة الزمنية. وسّع النافذة أو قلّل الحد الأدنى للناشرين.");
+        root.innerHTML = '<p class="nr-note" role="note">تجميع آلي أولي لعناوين متشابهة زمنياً ولغوياً. عدد أسماء جهات النشر لا يثبت استقلالها، ولا يؤكد وحده أن العناوين تصف الحدث نفسه أو أن الروايات متوازنة.</p>' + empty("لا تقاطعات كافية الآن", "قد تكون التغطية الحالية من ناشر واحد، أو خارج النافذة الزمنية. وسّع النافذة أو قلّل الحد الأدنى لجهات النشر.");
         return;
       }
       root.innerHTML = '<p class="nr-note" role="note">تجميع آلي أولي لعناوين متشابهة زمنياً ولغوياً. عدد أسماء جهات النشر لا يثبت استقلالها، ولا يؤكد وحده أن العناوين تصف الحدث نفسه أو أن الروايات متوازنة.</p>' + rows.map(c => {
