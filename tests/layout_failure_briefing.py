@@ -16,6 +16,34 @@ async def main():
   pg=await c.new_page();await pg.goto(BASE+'/',wait_until='domcontentloaded');await pg.wait_for_timeout(13500)
   out['failure']={'hero':await pg.locator('#heroLayout').inner_text(),'retry':await pg.locator('#heroLayout button').count()}
   await c.close()
+  # cached homepage recovery: a prior public snapshot remains visible when the RPC is unavailable
+  c=await b.new_context(viewport={'width':1280,'height':800})
+  pg=await c.new_page()
+  fixture={
+   'savedAt':int(__import__('time').time()*1000),
+   'rows':[{
+    'id':'00000000-0000-4000-8000-000000000099',
+    'title':'WRLDLINE cached homepage recovery test: a previously published story remains readable during a short service interruption',
+    'summary':'A public published news story cached for a brief period so the homepage can remain readable during an API interruption.',
+    'url':'https://example.test/wrldline-cache-recovery',
+    'source_url':'https://example.test/wrldline-cache-recovery',
+    'source_name':'اختبار الاستقرار',
+    'published_at':__import__('datetime').datetime.now(__import__('datetime').timezone.utc).isoformat(),
+    'lang':'ar','source_language':'ar','category':'politics','country':'السعودية',
+    'editorial_status':'published','article_translations':[],
+    'newsdata_only':False,'is_breaking':False,'is_exclusive':False,
+    'verification':'unconfirmed'
+   }],
+   'popularRows':[]
+  }
+  await pg.add_init_script("sessionStorage.setItem('wrldline:home-feed-cache:v1', "+json.dumps(json.dumps(fixture,ensure_ascii=False)) + ");")
+  await pg.goto(BASE+'/',wait_until='domcontentloaded');await pg.wait_for_timeout(4000)
+  out['cached_home']={
+   'hero':await pg.locator('#heroLayout').inner_text(),
+   'connection':await pg.locator('#connectionLabel').inner_text(),
+   'retry_buttons':await pg.locator('#heroLayout button').count()
+  }
+  await c.close()
   # briefing dedupe
   c=await b.new_context(viewport={'width':1280,'height':900})
   pg=await c.new_page();await pg.goto(BASE+'/daily-briefing.html',wait_until='domcontentloaded');await pg.wait_for_timeout(6000)
