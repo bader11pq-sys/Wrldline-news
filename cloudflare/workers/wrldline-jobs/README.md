@@ -58,3 +58,21 @@ The November 18 queue metrics are point-in-time evidence, not a promise that the
 - Queue delivery is at-least-once; consumers are serialized per queue and use the existing ingestion upsert and translation worker lock.
 - Failed jobs are retried and then routed to the shared dead-letter queue.
 - The /health route returns only service and queue names.
+
+
+## Read-only recheck — 2026-11-18 16:24:09 UTC
+
+A second, later Cloudflare API read confirms the four main queues are still paused and the DLQ still has no consumer:
+
+| Queue | Delivery paused | Backlog | Oldest message (UTC) |
+|---|---:|---:|---|
+| general | yes | 509 | 2026-11-17 11:27:35 |
+| breaking | yes | 748 | 2026-11-17 13:56:38 |
+| classification | yes | 1,487 | 2026-11-16 15:11:15 |
+| translation | yes | 300 | 2026-11-18 09:55:32 |
+| dead-letter | no consumer | 1,429 | 2026-11-15 13:59:51 |
+
+Total: **4,473 messages** (3,044 in the main queues and 1,429 in DLQ). The four Worker Cron schedules are still configured. The deployed version remains the pre-guard Worker version, so the branch's `WRLDLINE_PRODUCERS_ENABLED` fail-closed guard is not active in production. Do not assume setting that variable alone can pause version 7.
+
+No queue delivery was resumed, no Cron schedule was changed, and no DLQ message was replayed during this read-only recheck. The PR branch now also includes a reviewed Supabase service-key compatibility helper; it is not deployed. New `sb_secret_...` keys must use `apikey` only, with no Authorization Bearer copy. Legacy `service_role` keys remain supported during the migration window. Do not rotate or deactivate keys as part of queue recovery.
+
