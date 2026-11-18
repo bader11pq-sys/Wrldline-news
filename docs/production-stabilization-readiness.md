@@ -364,7 +364,7 @@ The latest read-only check still showed all four main delivery queues paused and
 
 Total observed backlog: **4,481 messages** (3,052 across the four main queues, plus 1,429 in DLQ). The DLQ remains without a consumer; no messages were replayed.
 
-The classification RPC remained pending 8,756, processing 0, failed 45, expired 51,427, classified 2,105, needs_review 21, with oldest pending record 2017-04-20. The latest `newsdata_fetched_at` in articles remained 2026-11-13 23:21:01 UTC.
+The classification RPC remained pending 8,756, processing 0, failed 45, expired 51,427, classified 2,105, needs_review 21, with oldest pending record 2017-04-20. The latest `newsdata_fetched_at` in articles remained 2026-11-13 23:21:01 UTC. Pending-item age buckets (read-only query, published articles only): 32 published in the last 24 hours, 8,577 in the last 1–7 days, 44 in the last 7–30 days, 9 in the last 30–90 days, 16 in the last 90 days–1 year, and 78 older than one year. Thus 8,609/8,756 (98.3%) are from the last seven days, while 103 are older than 30 days. The oldest pending samples include legacy technology/lifestyle-source rows from 2017–2023. Recovery policy: prioritize recent news under low concurrency; isolate and review the 103 older-than-30-day rows separately. Do not bulk-delete or reclassify the historical tail without an editorial retention decision.
 
 All six tracked cron rows remained `active=false`: notification dispatch, NewsData sync, source freshness, audience retention, security counters, and daily briefing. No scheduler was re-enabled.
 
