@@ -283,6 +283,12 @@ A fresh Cloudflare Workers Observability query showed successful scheduled invoc
 
 The configured schedule rates sum to about 2.03 messages/minute, or approximately 122 scheduled messages/hour when every trigger succeeds, excluding retries. That explains how the backlog can continue to grow while delivery is paused. At 2026-11-18 15:01:05Z the main queues held 3,046 messages (general 509, breaking 750, classification 1,499, translation 288) plus 1,429 in DLQ, for 4,475 total. This is a time-specific snapshot; counts can change as scheduled producers continue.
 
+### Producer circuit breaker added in the PR branch
+
+The `wrldline-jobs` source now supports an opt-in producer circuit breaker: when the plain-text Worker variable `WRLDLINE_PRODUCERS_ENABLED` is exactly `false`, the scheduled handler records a `producers_paused` event and returns before sending to any queue. When the variable is absent, legacy scheduling remains enabled for backwards compatibility. Tests cover both states and assert that the paused path sends zero messages.
+
+This is a code-only safety control in the review branch. The variable has **not** been set in the deployed Cloudflare Worker, and no Worker upload or Cron Trigger change was made. After review/deployment, an authorized operator can use this control to stop new producer messages while inspecting/draining existing queues, without changing consumer delivery settings.
+
 ### DLQ payload and traceability gap
 
 A non-destructive preview of 15 DLQ messages found only `task`, `scheduled_at`, and `enqueued_at` in their payloads. There is no stored failure status, error code, retry history, or source message ID in those payloads. The DLQ has no consumer configured. Blind replay is unsafe.
