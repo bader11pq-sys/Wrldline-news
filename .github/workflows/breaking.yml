@@ -1,7 +1,14 @@
-name: WRLDLINE Breaking News Desk (manual fallback)
-# Cloudflare wrldline-jobs is the only scheduled breaking-news producer.
-# Keep this workflow manual to avoid a second collector and duplicate SMS dispatch.
+name: WRLDLINE Breaking News Desk
+# Separate urgent-source collector and SMS dispatcher. This schedule is not the Cloudflare queue producer.
+# Keep it enabled until SMS delivery has a tested replacement; the Cloudflare breaking task only flags articles.
 on:
+  push:
+    branches: [main]
+    paths:
+      - 'bot-breaking.js'
+      - '.github/workflows/breaking.yml'
+  schedule:
+    - cron: '2-59/5 * * * *'
   workflow_dispatch:
 permissions:
   contents: read
