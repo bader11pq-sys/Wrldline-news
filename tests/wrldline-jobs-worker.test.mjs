@@ -313,3 +313,46 @@ test("queue messages without scheduled_at are rejected without calling Supabase"
     output.restore();
   }
 });
+
+test("classification queue auth-check invokes only the no-write classifier verifier mode", async () => {
+  const originalFetch = globalThis.fetch;
+  const output = interceptConsole("log");
+  let acked = false;
+  let requestedUrl = "";
+  let requestedBody = null;
+  let requestedHeaders = null;
+  globalThis.fetch = async (url, init) => {
+    requestedUrl = String(url);
+    requestedBody = JSON.parse(init.body);
+    requestedHeaders = new Headers(init.headers);
+    return new Response(JSON.stringify({ ok: true, mode: "auth-check" }), {
+      status: 200, headers: { "Content-Type": "application/json" }
+    });
+  };
+
+  try {
+    await worker.queue({
+      queue: "wrldline-news-classification",
+      messages: [{
+        id: "fixture-classification-auth-check",
+        body: { task: "auth-check", scheduled_at: new Date().toISOString() },
+        attempts: 0,
+        ack() { acked = true; },
+        retry() { assert.fail("classification auth-check should not retry on success"); }
+      }]
+    }, env);
+
+    assert.equal(requestedUrl, "https://vmaxbnogmmfyrcucapnq.supabase.co/functions/v1/classify-news-worker");
+    assert.deepEqual(requestedBody, { mode: "auth-check" });
+    assert.equal(requestedHeaders.get("apikey"), env.SUPABASE_PUBLISHABLE_KEY);
+    assert.equal(requestedHeaders.get("x-wrldline-cron-secret"), env.WRLDLINE_CRON_SECRET);
+    assert.equal(requestedHeaders.has("authorization"), false);
+    assert.equal(acked, true);
+    const event = output.entries.find(entry => entry.event === "supabase_job_completed");
+    assert.equal(event?.task, "auth-check");
+    assert.equal(event?.status, 200);
+  } finally {
+    globalThis.fetch = originalFetch;
+    output.restore();
+  }
+});
