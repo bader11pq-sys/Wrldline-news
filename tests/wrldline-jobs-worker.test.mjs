@@ -112,3 +112,46 @@ test("network failures log the Cloudflare message ID", async () => {
     output.restore();
   }
 });
+
+test("scheduled producer can be paused without enqueueing new backlog", async () => {
+  const output = interceptConsole("warn");
+  let sends = 0;
+  try {
+    await worker.scheduled({
+      cron: "* * * * *",
+      scheduledTime: Date.parse("2026-11-18T15:00:00Z")
+    }, {
+      WRLDLINE_PRODUCERS_ENABLED: "false",
+      CLASSIFICATION_QUEUE: { async send() { sends += 1; } }
+    });
+
+    const event = output.entries.find(entry => entry.event === "producers_paused");
+    assert.equal(event?.cron, "* * * * *");
+    assert.equal(event?.scheduled_at, "2026-11-18T15:00:00.000Z");
+    assert.equal(sends, 0);
+  } finally {
+    output.restore();
+  }
+});
+
+test("scheduled producer remains enabled by default for backwards compatibility", async () => {
+  const output = interceptConsole("log");
+  const sent = [];
+  try {
+    await worker.scheduled({
+      cron: "* * * * *",
+      scheduledTime: Date.parse("2026-11-18T15:01:00Z")
+    }, {
+      CLASSIFICATION_QUEUE: {
+        async send(message) { sent.push(message); }
+      }
+    });
+
+    assert.equal(sent.length, 1);
+    assert.equal(sent[0].task, "classification");
+    assert.equal(sent[0].scheduled_at, "2026-11-18T15:01:00.000Z");
+    assert.equal(output.entries.some(entry => entry.event === "jobs_enqueued"), true);
+  } finally {
+    output.restore();
+  }
+});
