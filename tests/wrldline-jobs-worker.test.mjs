@@ -358,7 +358,7 @@ test("classification queue auth-check invokes only the no-write classifier verif
 });
 
 
-test("provider-healthcheck task invokes the provider diagnostics only on the general queue", async () => {
+test("provider-healthcheck task invokes provider diagnostics on the classification queue without classifying articles", async () => {
   const originalFetch = globalThis.fetch;
   const output = interceptConsole("log");
   let acked = false;
@@ -380,7 +380,7 @@ test("provider-healthcheck task invokes the provider diagnostics only on the gen
 
   try {
     await worker.queue({
-      queue: "wrldline-news-general",
+      queue: "wrldline-news-classification",
       messages: [{
         id: "fixture-provider-healthcheck",
         body: { task: "provider-healthcheck", scheduled_at: new Date().toISOString() },
@@ -406,7 +406,7 @@ test("provider-healthcheck task invokes the provider diagnostics only on the gen
   }
 });
 
-test("provider-healthcheck task is rejected on non-general queues", async () => {
+test("provider-healthcheck task is rejected on breaking and translation queues", async () => {
   const originalFetch = globalThis.fetch;
   const output = interceptConsole("error");
   let acked = false;
@@ -415,7 +415,7 @@ test("provider-healthcheck task is rejected on non-general queues", async () => 
 
   try {
     await worker.queue({
-      queue: "wrldline-news-classification",
+      queue: "wrldline-news-breaking",
       messages: [{
         id: "fixture-provider-healthcheck-wrong-queue",
         body: { task: "provider-healthcheck", scheduled_at: new Date().toISOString() },
