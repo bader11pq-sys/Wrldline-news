@@ -119,7 +119,7 @@
       }
       root.innerHTML = '<p class="nr-note" role="note">تجميع آلي أولي لعناوين متشابهة زمنياً ولغوياً. عدد أسماء جهات النشر لا يثبت استقلالها، ولا يؤكد وحده أن العناوين تصف الحدث نفسه أو أن الروايات متوازنة.</p>' + rows.map(c => {
         const label = (c.articles.find(a => /[\u0600-\u06FF]/.test(a.title)) || c.articles[0])?.title || c.tokens.join(" · ");
-        return '<article class="nr-cluster"><div class="nr-cluster-head"><div><span class="nr-tag">تجميع عناوين أولي</span><h3>' + esc(label) + '</h3></div><div class="nr-balance"><b>' + c.sourceCount + "</b><small>ناشرون</small></div></div>" +
+        return '<article class="nr-cluster"><div class="nr-cluster-head"><div><span class="nr-tag">تجميع عناوين أولي</span><h3>' + esc(label) + '</h3></div><div class="nr-balance"><b>' + c.sourceCount + "</b><small>جهات نشر</small></div></div>" +
           '<div class="nr-headlines">' + c.articles.slice(0, 6).map(a => {
             const f = c.framing.find(x => x.article === a)?.terms || [];
             const u = window.WLNR.safeURL(window.WLNR.articleURL(a));
