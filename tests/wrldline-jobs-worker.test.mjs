@@ -83,3 +83,32 @@ test("successful Supabase queue invocation logs the Cloudflare message ID", asyn
     output.restore();
   }
 });
+
+test("network failures log the Cloudflare message ID", async () => {
+  const originalFetch = globalThis.fetch;
+  const output = interceptConsole("error");
+  const retries = [];
+  globalThis.fetch = async () => { throw new Error("network fixture"); };
+
+  try {
+    await worker.queue({
+      queue: "wrldline-news-breaking",
+      messages: [{
+        id: "fixture-message-network",
+        body: { task: "breaking" },
+        attempts: 2,
+        ack() {},
+        retry(options) { retries.push(options); }
+      }]
+    }, env);
+
+    const event = output.entries.find(entry => entry.event === "supabase_job_network_error");
+    assert.equal(event?.message_id, "fixture-message-network");
+    assert.equal(event?.queue, "wrldline-news-breaking");
+    assert.equal(event?.error, "network fixture");
+    assert.deepEqual(retries, [{ delaySeconds: 60 }]);
+  } finally {
+    globalThis.fetch = originalFetch;
+    output.restore();
+  }
+});
