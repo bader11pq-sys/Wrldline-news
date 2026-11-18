@@ -34,6 +34,14 @@ export default {
   async scheduled(controller, env) {
     const cron = controller.cron;
     const scheduledTime = controller.scheduledTime;
+    if (env.WRLDLINE_PRODUCERS_ENABLED === "false") {
+      console.warn(JSON.stringify({
+        event: "producers_paused",
+        cron,
+        scheduled_at: new Date(scheduledTime).toISOString(),
+      }));
+      return;
+    }
     switch (cron) {
       case "* * * * *":
         await enqueue(env.CLASSIFICATION_QUEUE, "classification", scheduledTime);
