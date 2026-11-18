@@ -1,6 +1,7 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.119.0";
 import { classifyCronVerifierResult } from "../_shared/cron-auth.mjs";
+import { resolveSupabaseServiceKey } from "../_shared/service-key.mjs";
 
 const cors = {
   "Access-Control-Allow-Origin": Deno.env.get("SITE_URL") || "https://al-ghaib.us.ci",
@@ -19,8 +20,11 @@ Deno.serve(async (req: Request) => {
   if (req.method !== "POST") return json({ error: "POST required" }, 405);
 
   const url = Deno.env.get("SUPABASE_URL");
-  const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")
-    || (() => { try { return JSON.parse(Deno.env.get("SUPABASE_SECRET_KEYS") || "{}").default; } catch { return null; } })();
+  const serviceKey = resolveSupabaseServiceKey({
+    SUPABASE_SECRET_KEY: Deno.env.get("SUPABASE_SECRET_KEY") || "",
+    SUPABASE_SECRET_KEYS: Deno.env.get("SUPABASE_SECRET_KEYS") || "",
+    SUPABASE_SERVICE_ROLE_KEY: Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "",
+  });
   if (!url || !serviceKey) return json({ error: "Server configuration is incomplete" }, 500);
 
   const db = createClient(url, serviceKey, { auth: { persistSession: false, autoRefreshToken: false } });
