@@ -1,7 +1,7 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.119.0";
 import { normalizeCategory, normalizeScope, TAXONOMY_VERSION } from "../_shared/taxonomy.ts";
-import { resolveSupabaseServiceKey, serviceClientOptions } from "../_shared/service-key.mjs";
+import { resolveSupabaseServiceKey, isSupabaseServiceRequest, serviceClientOptions } from "../_shared/service-key.mjs";
 
 const cors = {
   "Access-Control-Allow-Origin": Deno.env.get("SITE_URL") || "https://al-ghaib.us.ci",
@@ -335,10 +335,9 @@ Deno.serve(async (req: Request) => {
 
   const authHeader = req.headers.get("Authorization") || "";
   const token = authHeader.replace(/^Bearer\s+/i, "");
-  const apiKey = req.headers.get("apikey") || "";
   // Background workers authenticate with the exact server-side service-role key.
   // Browser/editor requests still require a real user session with trusted app_metadata.
-  const isTrustedWorker = token === serviceKey || apiKey === serviceKey;
+  const isTrustedWorker = isSupabaseServiceRequest(req.headers, serviceKey);
   if (!isTrustedWorker) {
     if (!token) return json({ error: "Authentication required." }, 401);
     const authClient = createClient(supabaseUrl, anonKey, { auth: { persistSession: false, autoRefreshToken: false } });
