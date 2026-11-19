@@ -1,4 +1,4 @@
-const TOPICS = new Set(['general','correction','copyright','sponsorship','privacy','technical']);
+const TOPICS = new Set(['general','correction','copyright','sponsorship','privacy','technical','intelligence']);
 export function validateContact(input) {
   if (!input || typeof input !== 'object' || Array.isArray(input)) return null;
   const allowed = new Set(['name','email','topic','message','page_path','website','consent']);

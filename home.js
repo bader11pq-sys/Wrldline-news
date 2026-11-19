@@ -238,7 +238,35 @@
     if (needle) needle.style.insetInlineStart = Math.min(97, score) + "%";
   }
 
+  async function renderDossiers() {
+    const host = document.getElementById("dossierStripGrid");
+    if (!host) return;
+    const esc = NR.escapeHTML;
+    const labels = {active:"نشط", monitoring:"قيد المراقبة", closed:"مغلق"};
+    try {
+      const res = await fetch("dossier/index.json", { signal: AbortSignal.timeout(9000) });
+      if (!res.ok) throw new Error("HTTP " + res.status);
+      const data = await res.json();
+      const list = (data.dossiers || []).slice().sort((a, b) => {
+        const rank = {active:0, monitoring:1, closed:2};
+        return (Number(b.priority || 0) - Number(a.priority || 0)) || (rank[a.status] ?? 3) - (rank[b.status] ?? 3) || Date.parse(b.updatedAt) - Date.parse(a.updatedAt);
+      }).slice(0, 3);
+      if (!list.length) throw new Error("empty");
+      host.innerHTML = list.map(d => {
+        const when = Date.parse(d.updatedAt) ? new Intl.DateTimeFormat("ar-SA-u-ca-gregory", {day:"numeric", month:"long"}).format(new Date(d.updatedAt)) : "";
+        return '<a class="dossier-strip-card" href="' + esc(d.url) + '">' +
+          '<span class="dossier-strip-status dossier-strip-status--' + esc(d.status) + '"><i aria-hidden="true"></i>' + esc(labels[d.status] || d.status) + '</span>' +
+          '<strong>' + esc(d.title) + '</strong>' +
+          '<span class="dossier-strip-summary">' + esc(String(d.summary || "").slice(0, 150)) + (String(d.summary || "").length > 150 ? "…" : "") + '</span>' +
+          '<span class="dossier-strip-foot"><span>' + (d.sectors || []).slice(0, 2).map(esc).join(" · ") + '</span><span>آخر تحديث ' + esc(when) + '</span></span>' +
+          '</a>';
+      }).join("");
+    } catch {
+      host.innerHTML = '<div class="dossier-strip-loading">تعذر تحميل الملفات الآن. <a href="dossier/">افتح صفحة الملفات</a>.</div>';
+    }
+  }
   async function boot() {
+    void renderDossiers();
     const articles = await NR.fetchArticles(400);
     if (articles.length) {
       renderRooms(articles);

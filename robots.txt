@@ -8,3 +8,4 @@ Disallow: /*?article=
 Sitemap: https://al-ghaib.us.ci/sitemap.xml
 Sitemap: https://al-ghaib.us.ci/article-sitemap.xml
 Sitemap: https://al-ghaib.us.ci/news-sitemap.xml
+Sitemap: https://al-ghaib.us.ci/dossier/sitemap.xml

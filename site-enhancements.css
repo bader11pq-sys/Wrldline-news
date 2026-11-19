@@ -30,3 +30,31 @@ body.wl-enhanced :focus-visible{outline:3px solid var(--wl-focus);outline-offset
 
 /* Evidence-based most-read module; never fabricates popularity while the audience is small. */
 .wl-popular-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.wl-popular-item{display:flex;align-items:center;gap:13px;min-width:0;padding:15px;border:1px solid var(--line);border-radius:13px;background:var(--surface);color:var(--text);text-align:start;cursor:pointer}.wl-popular-item:hover{border-color:var(--gold)}.wl-popular-rank{font:800 25px/1 Manrope,sans-serif;color:var(--gold);min-width:30px}.wl-popular-copy{display:grid;gap:5px;min-width:0}.wl-popular-copy strong{font-size:13px;line-height:1.75}.wl-popular-copy small{color:var(--muted);font-size:10px}.wl-popular-arrow{margin-inline-start:auto;color:var(--gold);font-size:18px}.wl-popular-empty{grid-column:1/-1;margin:0;padding:16px;border:1px dashed var(--line);border-radius:12px;color:var(--muted);font-size:12px;line-height:1.9}@media(max-width:680px){.wl-popular-grid{grid-template-columns:1fr}}
+
+/* Live Event Dossier strip (homepage) */
+.wl-dossier-strip{padding:clamp(28px,5vw,54px) 0;background:linear-gradient(180deg,var(--surface-2),transparent)}
+.dossier-strip-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.dossier-strip-card{display:flex;flex-direction:column;gap:9px;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius-lg,20px);padding:18px;box-shadow:var(--shadow-sm);transition:transform .2s,box-shadow .2s,border-color .2s}
+.dossier-strip-card:hover{transform:translateY(-3px);box-shadow:var(--shadow-md);border-color:var(--gold)}
+.dossier-strip-status{display:inline-flex;align-items:center;gap:6px;align-self:flex-start;font-size:10.5px;font-weight:700;padding:2px 9px;border-radius:999px;background:var(--surface-2);color:var(--muted)}
+.dossier-strip-status i{width:7px;height:7px;border-radius:50%;background:currentColor}
+.dossier-strip-status--active{background:#e4f2ea;color:#1d6b45}
+.dossier-strip-status--monitoring{background:#fbf0d9;color:#8a5a12}
+.dossier-strip-card strong{font-family:var(--font-display);font-size:17px;line-height:1.5;color:var(--ink)}
+.dossier-strip-summary{font-size:12.5px;line-height:1.8;color:var(--muted)}
+.dossier-strip-foot{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-top:auto;padding-top:9px;border-top:1px solid var(--line);font-size:10.5px;color:var(--muted-2)}
+.dossier-strip-loading{grid-column:1/-1;padding:20px;border:1px dashed var(--line-strong);border-radius:14px;color:var(--muted);font-size:12px;text-align:center}
+.dossier-strip-loading a{color:var(--gold-strong);font-weight:700}
+@media(max-width:860px){.dossier-strip-grid{grid-template-columns:1fr}}
+@media(prefers-color-scheme:dark){.dossier-strip-status--active{background:#122a21;color:#7cc9a2}.dossier-strip-status--monitoring{background:#2a2314;color:#e0b878}}
+
+/* Business intelligence band */
+.wl-intel-band{padding:clamp(26px,4vw,44px) 0}
+.wl-intel-band-inner{display:flex;align-items:center;justify-content:space-between;gap:22px;background:linear-gradient(120deg,var(--navy),var(--navy-2));color:#eef3f9;border-radius:22px;padding:clamp(20px,3vw,32px)}
+.wl-intel-band h2{font-size:clamp(20px,2.6vw,28px);color:#fff;margin:6px 0 8px}
+.wl-intel-band p{font-size:13px;line-height:1.9;color:#c4d2e2;max-width:70ch}
+.wl-intel-band .wl-kicker{color:#e3c489}
+.wl-intel-band .wl-btn{white-space:nowrap;flex-shrink:0}
+@media(max-width:760px){.wl-intel-band-inner{flex-direction:column;align-items:flex-start}}
+
+@media print{.wl-reveal{opacity:1!important;transform:none!important;transition:none!important}}

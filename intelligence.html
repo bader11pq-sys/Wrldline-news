@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="ar" dir="rtl" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>WRLDLINE Intelligence — تقارير ورصد للمؤسسات | WRLDLINE</title>
+<meta name="description" content="خدمة تحليل ورصد للمؤسسات: تقرير قطاعي أسبوعي، ملفات أحداث حية، وتنبيهات تنفيذية في الطاقة والشحن والتجارة والاقتصاد الخليجي. مصادر مؤرخة وحدود واضحة.">
+<link rel="canonical" href="https://al-ghaib.us.ci/intelligence.html">
+<meta property="og:type" content="website">
+<meta property="og:title" content="WRLDLINE Intelligence — تقارير ورصد للمؤسسات">
+<meta property="og:description" content="من الخبر إلى الفهم، ومن الفهم إلى القرار: تقارير قطاعية وملفات أحداث حية للفرق التنفيذية في الخليج.">
+<meta property="og:url" content="https://al-ghaib.us.ci/intelligence.html">
+<meta property="og:locale" content="ar_SA">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Noto+Kufi+Arabic:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="wrld.css?v=20261114-3">
+<link rel="stylesheet" href="site-enhancements.css">
+<style>
+.intel-page{--intel-navy:#0b1a2b;--intel-gold:#b08a45;--intel-line:#e2dbcd;padding-bottom:0}
+.intel-hero{background:radial-gradient(ellipse at 85% -20%,rgba(176,138,69,.35),transparent 55%),linear-gradient(160deg,#0b1a2b,#16304a);color:#f3f6fb;padding:clamp(46px,8vw,92px) 0 clamp(40px,6vw,70px)}
+.intel-hero .wl-kicker{color:#e3c489}
+.intel-hero h1{font-size:clamp(30px,5.4vw,60px);line-height:1.2;margin:10px 0 16px;max-width:22ch}
+.intel-hero p{font-size:clamp(15px,1.8vw,19px);line-height:1.95;color:#d7e1ec;max-width:72ch}
+.intel-hero-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:24px}
+.intel-btn{display:inline-flex;align-items:center;justify-content:center;min-height:46px;padding:11px 20px;border-radius:11px;font-weight:700;font-size:14px;border:1px solid rgba(255,255,255,.3);color:#fff;background:rgba(255,255,255,.06)}
+.intel-btn--gold{background:#b08a45;border-color:#b08a45;color:#101b2b}
+.intel-btn--gold:hover{background:#c9a15a}
+.intel-btn:hover{background:rgba(255,255,255,.14)}
+.intel-meta{display:flex;gap:18px;flex-wrap:wrap;margin-top:26px;font-size:12px;color:#aebed0}
+.intel-section{padding:clamp(36px,6vw,64px) 0}
+.intel-section--alt{background:linear-gradient(180deg,var(--surface-2),transparent)}
+.intel-head{max-width:820px;margin-bottom:26px}
+.intel-head h2{font-size:clamp(24px,3.4vw,36px);line-height:1.3;margin:8px 0 10px}
+.intel-head p{color:var(--muted);font-size:15px;line-height:1.95}
+.intel-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.intel-card{background:var(--surface);border:1px solid var(--intel-line);border-radius:18px;padding:20px;box-shadow:var(--shadow-sm);display:flex;flex-direction:column;gap:8px}
+.intel-card h3{font-size:18px;margin:0}
+.intel-card p{font-size:13.5px;line-height:1.9;color:var(--muted)}
+.intel-card ul{margin:4px 0 0;padding-inline-start:18px;list-style:disc;font-size:13px;line-height:1.9;color:var(--ink-2)}
+.intel-card .intel-tag{align-self:flex-start;font-size:10.5px;font-weight:700;letter-spacing:.05em;color:#8a6524;background:#f3e7cd;border-radius:999px;padding:2px 9px}
+.intel-steps{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;counter-reset:step}
+.intel-step{background:var(--surface);border:1px solid var(--intel-line);border-radius:16px;padding:16px;position:relative}
+.intel-step::before{counter-increment:step;content:counter(step);display:grid;place-items:center;width:26px;height:26px;border-radius:50%;background:var(--intel-navy);color:#fff;font:800 12px var(--font-latin);margin-bottom:9px}
+.intel-step h3{font-size:14.5px;margin-bottom:5px}
+.intel-step p{font-size:12px;line-height:1.8;color:var(--muted)}
+.intel-samples{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.intel-sample{display:flex;flex-direction:column;gap:6px;background:var(--surface);border:1px solid var(--intel-line);border-radius:14px;padding:15px;box-shadow:var(--shadow-xs)}
+.intel-sample small{font-size:10.5px;font-weight:700;color:#8a6524}
+.intel-sample a{font-weight:700;font-size:14.5px;line-height:1.6}
+.intel-sample a:hover{color:#8a6524}
+.intel-sample span{font-size:11px;color:var(--muted)}
+.intel-pilot{background:var(--intel-navy);color:#eef3f9;border-radius:22px;padding:clamp(22px,4vw,38px);display:grid;grid-template-columns:1.3fr .7fr;gap:24px;align-items:center}
+.intel-pilot h2{color:#fff;font-size:clamp(22px,3vw,32px);margin-bottom:8px}
+.intel-pilot p{color:#c4d2e2;font-size:13.5px;line-height:1.95}
+.intel-pilot ul{list-style:disc;padding-inline-start:18px;color:#d7e1ec;font-size:13px;line-height:2;margin-top:8px}
+.intel-pilot .intel-btn{width:100%}
+.intel-faq{display:grid;gap:8px;max-width:900px}
+.intel-faq details{background:var(--surface);border:1px solid var(--intel-line);border-radius:12px;padding:13px 16px}
+.intel-faq summary{cursor:pointer;font-weight:700;font-size:14px}
+.intel-faq p{font-size:13px;line-height:1.9;color:var(--muted);margin-top:8px}
+.intel-note{background:#fbf6ea;border:1px solid #eadcbc;border-radius:14px;padding:14px 16px;font-size:12.5px;line-height:1.9;color:#6b552a;margin-top:18px}
+@media(max-width:860px){.intel-grid,.intel-steps,.intel-samples,.intel-pilot{grid-template-columns:1fr}.intel-pilot{gap:16px}}
+</style>
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"Service","name":"WRLDLINE Intelligence","serviceType":"تحليل ورصد إخباري للمؤسسات","description":"تقارير قطاعية وملفات أحداث حية وتنبيهات تنفيذية في الطاقة والشحن والتجارة والاقتصاد الخليجي، بمصادر عامة مؤرخة.","provider":{"@type":"Organization","name":"WRLDLINE","url":"https://al-ghaib.us.ci"},"areaServed":["SA","AE","QA","KW","BH","OM"],"availableLanguage":["ar","en"],"url":"https://al-ghaib.us.ci/intelligence.html","isAccessibleForFree":false}
+</script>
+</head>
+<body class="intel-page">
+<a class="skip-link" href="#main">تجاوز إلى المحتوى</a>
+<header id="siteHeader"></header>
+<main id="main">
+  <section class="intel-hero" data-no-reveal>
+    <div class="wl-container">
+      <span class="wl-kicker">WRLDLINE INTELLIGENCE · B2B</span>
+      <h1>قرارات أفضل تبدأ بملف واضح، لا بعنوان عاجل.</h1>
+      <p>خدمة تحليل ورصد للفرق التنفيذية والتحليلية في الطاقة والشحن والتجارة والاقتصاد الخليجي. نجمع التطورات، نفصل الواقعة عن التصريح والتقدير، ونحدد ما يجب مراقبته تالياً — بمصادر مؤرخة وحدود استخدام صريحة.</p>
+      <div class="intel-hero-actions">
+        <a class="intel-btn intel-btn--gold" href="contact.html?topic=intelligence&amp;subject=WRLDLINE%20Intelligence">اطلب مكالمة تعريفية</a>
+        <a class="intel-btn" href="#samples">شاهد نماذج الملفات</a>
+      </div>
+      <div class="intel-meta"><span>عربي أولاً · تقارير إنجليزية عند الطلب</span><span>مصادر عامة فقط</span><span>لا معلومات سرية ولا نصيحة استثمارية</span></div>
+    </div>
+  </section>
+
+  <section class="intel-section" data-no-reveal>
+    <div class="wl-container">
+      <div class="intel-head">
+        <span class="wl-kicker">THE PROBLEM</span>
+        <h2>الفريق لا يحتاج مزيداً من الأخبار. يحتاج قراراً حول ما يهم.</h2>
+        <p>الأخبار المتكررة تستهلك الوقت، والتحليلات العامة لا تفرّق بين ما ثبت وما لم يثبت. نعمل على الطبقة التي تسبق القرار: ما الذي تغيّر فعلاً؟ ما الروايات المتناقضة؟ ما الأثر المحتمل على السعودية والخليج؟ وما الموعد أو المؤشر الذي يجب متابعته؟</p>
+      </div>
+      <div class="intel-grid">
+        <article class="intel-card"><span class="intel-tag">للمؤسسات</span><h3>لمن هذه الخدمة؟</h3><p>فرق الاستراتيجية والعلاقات الحكومية والاستثمار والتواصل في شركات الطاقة والشحن واللوجستيات والتجارة والخدمات المالية العاملة في الخليج.</p></article>
+        <article class="intel-card"><span class="intel-tag">المخرج</span><h3>ما الذي يصلك؟</h3><ul><li>تقرير قطاعي أسبوعي: تطورات، سياق، أثر، ومصادر.</li><li>ملف حدث حي محدث عند تغير الوقائع.</li><li>تنبيه تنفيذي قصير عند تطور جوهري.</li><li>مراجعة ربع سنوية لما تغير في الفرضيات.</li></ul></article>
+      </div>
+    </div>
+  </section>
+
+  <section class="intel-section intel-section--alt" id="samples" data-no-reveal>
+    <div class="wl-container">
+      <div class="intel-head">
+        <span class="wl-kicker">SAMPLES</span>
+        <h2>نماذج حقيقية، لا عرض تقديمي.</h2>
+        <p>هذه ملفات منشورة يمكنك قراءتها الآن. كل عبارة مرتبطة بمصدر، وكل ادعاء مصنف بحالة تحقق، وكل ملف يحمل سجل تحديثات وتصحيحات.</p>
+      </div>
+      <div class="intel-samples">
+        <article class="intel-sample"><small>الطاقة والملاحة</small><a href="dossier/hormuz-closure-2026.html">هرمز: ممر مغلق ومفاوضات تبحث عن مخرج</a><span>6 مصادر · خط زمني · ميزان روايات · أثر خليجي</span></article>
+        <article class="intel-sample"><small>اليمن والبحر الأحمر</small><a href="dossier/bab-al-mandab-2026.html">باب المندب: الحوثيون يعودون إلى الممر</a><span>5 مصادر · وقت الحدث منفصل عن وقت النشر</span></article>
+        <article class="intel-sample"><small>الطاقة والأسواق</small><a href="dossier/opec-plus-december-2026.html">أوبك+ ديسمبر: تثبيت الإنتاج وخفض العلاوات الآسيوية</a><span>6 مصادر · أرقام رسمية ومقارنات سوقية</span></article>
+        <article class="intel-sample"><small>الغاز المسال</small><a href="dossier/qatarenergy-lng-2026.html">قطر للطاقة: التوسع خارج هرمز</a><span>4 مصادر · تقديرات مفصولة عن التوجيه الرسمي</span></article>
+      </div>
+    </div>
+  </section>
+
+  <section class="intel-section" data-no-reveal>
+    <div class="wl-container">
+      <div class="intel-head">
+        <span class="wl-kicker">METHOD</span>
+        <h2>كيف نعمل؟</h2>
+        <p>أربع خطوات ثابتة، قابلة للتدقيق، وليست صندوقاً أسود.</p>
+      </div>
+      <div class="intel-steps">
+        <article class="intel-step"><h3>جمع</h3><p>مصادر رسمية ووكالات وتقارير صناعية، مع تاريخ نشر وتاريخ وصول.</p></article>
+        <article class="intel-step"><h3>تصنيف</h3><p>واقعة، تصريح، تقدير، أو ادعاء غير متحقق. لا ندمج الفئات.</p></article>
+        <article class="intel-step"><h3>تحليل</h3><p>ما تغيّر؟ ما الروايات المتناقضة؟ ما الأثر الفعلي مقابل المحتمل؟</p></article>
+        <article class="intel-step"><h3>مراجعة</h3><p>سجل تحديثات وتصحيحات ظاهر، وحدود استخدام مكتوبة.</p></article>
+      </div>
+      <p class="intel-note"><strong>حدود واضحة:</strong> نعمل على معلومات عامة موثقة، ولا ندّعي امتلاك معلومات سرية. لا نقدم نصيحة استثمارية أو قانونية أو تأمينية. التقديرات تُنسب إلى أصحابها، والادعاءات غير المتحققة تُعرض كادعاءات لا كوقائع.</p>
+    </div>
+  </section>
+
+  <section class="intel-section" data-no-reveal>
+    <div class="wl-container">
+      <div class="intel-pilot">
+        <div>
+          <span class="wl-kicker" style="color:#e3c489">PILOT</span>
+          <h2>تجربة أربعة أسابيع</h2>
+          <p>نبدأ بنطاق ضيق يمكن قياسه: قطاع واحد أو حدث واحد، ومستلمون محددون. الهدف ليس إثبات أننا نكتب، بل اختبار ما إذا كان الملف يغيّر قراراً أو يوفر وقتاً فعلياً.</p>
+          <ul><li>أسبوع 1: تحديد القطاع والأسئلة والقرارات المستهدفة.</li><li>أسبوع 2–3: تقرير أسبوعي وملف حدث حي.</li><li>أسبوع 4: مراجعة ما استُخدم وما لم يُستخدم، وقرار الاستمرار.</li></ul>
+        </div>
+        <div>
+          <a class="intel-btn intel-btn--gold" href="contact.html?topic=intelligence&amp;subject=WRLDLINE%20Intelligence%20Pilot">اطلب تجربة أربعة أسابيع</a>
+          <p style="margin-top:10px;font-size:11.5px;color:#9fb2c8">نحدد السعر بعد معرفة النطاق وعدد المستلمين. لا ننشر رقماً قبل اختباره مع العملاء.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="intel-section intel-section--alt" data-no-reveal>
+    <div class="wl-container">
+      <div class="intel-head"><span class="wl-kicker">FAQ</span><h2>أسئلة متوقعة</h2></div>
+      <div class="intel-faq">
+        <details><summary>كيف تختلف عن نشرة أخبار؟</summary><p>النشرة تخبرك بما حدث. الملف يشرح ما تغيّر، وما تختلف عليه المصادر، وما الأثر المحتمل، وما يجب مراقبته. لا نرسل قائمة عناوين.</p></details>
+        <details><summary>هل تستخدمون معلومات سرية؟</summary><p>لا. كل ما ننشره مبني على مصادر عامة يمكن للعميل فتحها. هذا حد صريح وليس تسويقاً.</p></details>
+        <details><summary>ما القطاعات المتاحة؟</summary><p>الطاقة والنفط والغاز، الشحن واللوجستيات، التجارة والاقتصاد الخليجي، والأمن البحري المرتبط بها. يمكن إضافة قطاع بعد تقييم المصادر.</p></details>
+        <details><summary>هل التقارير بالعربية؟</summary><p>العربية هي الأساس. يمكن تسليم ملخص تنفيذي إنجليزي عند الحاجة، دون ترجمة آلية غير مراجعة.</p></details>
+        <details><summary>ماذا لو لم يكن هناك تطور؟</summary><p>نقول ذلك. لا نصنع تحديثاً لملء جدول. الملف يبقى بحالته ويُحدّث وقت وجود معلومة جديدة.</p></details>
+      </div>
+    </div>
+  </section>
+</main>
+<footer id="siteFooter"></footer>
+<script src="site-shell.js?v=20261119-1" defer></script>
+<script src="site-enhancements.js?v=20261119-1" defer></script>
+</body>
+</html>

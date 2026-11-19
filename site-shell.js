@@ -9,14 +9,14 @@
   const copy = {
     ar: {
       brandHome: "WRLDLINE — الرئيسية", menu: "فتح القائمة", home: "الرئيسية", encyclopedia: "الموسوعة", theme: "تبديل المظهر", account: "حسابي",
-      navHome: "الرئيسية", shorts: "▶ Shorts", context: "غرفة السياق", balance: "ميزان الروايات", impact: "أطلس التأثير", history: "الموسوعة التاريخية", mirror: "مرآة التاريخ", explainers: "افهمها في دقيقة", promises: "ذاكرة الوعود", library: "المكتبة",
+      navHome: "الرئيسية", dossiers: "ملفات الأحداث", shorts: "▶ Shorts", context: "غرفة السياق", balance: "ميزان الروايات", impact: "أطلس التأثير", history: "الموسوعة التاريخية", mirror: "مرآة التاريخ", explainers: "افهمها في دقيقة", promises: "ذاكرة الوعود", library: "المكتبة",
       about: "منصة عربية تشرح أخبار السياسة والاقتصاد والعالم: الخبر، سياقه، أثره المحتمل على القارئ، وما تؤيده الأدلة المتاحة.",
       newsrooms: "غرف الأخبار", knowledge: "المعرفة", encyclopediaCol: "الموسوعة", atlas: "الأطلس", compare: "المقارنة", aboutLink: "عن الموقع", topics: "الموضوعات", tags: "الوسوم", advertise: "للإعلان والرعاية",
       copyright: "© <span data-year>2026</span> WRLDLINE NEWS — المحتوى الإخباري يُنسب إلى مصادره الأصلية.", editorial: "التحليلات والسياق من تحرير WRLDLINE."
     },
     en: {
       brandHome: "WRLDLINE — Home", menu: "Open menu", home: "Home", encyclopedia: "Encyclopedia", theme: "Toggle appearance", account: "My account",
-      navHome: "Home", shorts: "▶ Shorts", context: "Context Room", balance: "Narrative Balance", impact: "Impact Atlas", history: "History Encyclopedia", mirror: "History Mirror", explainers: "Explained in a minute", promises: "Promise Ledger", library: "Library",
+      navHome: "Home", dossiers: "Event Dossiers", shorts: "▶ Shorts", context: "Context Room", balance: "Narrative Balance", impact: "Impact Atlas", history: "History Encyclopedia", mirror: "History Mirror", explainers: "Explained in a minute", promises: "Promise Ledger", library: "Library",
       about: "An Arabic-first newsroom explaining politics, economics and global events: what happened, why it matters, and what the available evidence supports.",
       newsrooms: "Newsrooms", knowledge: "Knowledge", encyclopediaCol: "Encyclopedia", atlas: "Atlas", compare: "Compare", aboutLink: "About", topics: "Topics", tags: "Tags", advertise: "Advertising & sponsorship",
       copyright: "© <span data-year>2026</span> WRLDLINE NEWS — News content is attributed to its original sources.", editorial: "Analysis and context by WRLDLINE editorial."
@@ -60,6 +60,7 @@
     </div>
     <div class="wl-nav-wrap" id="mainNav"><nav class="wl-nav" aria-label="${t("navHome")}"><div class="wl-nav-scroll">
       <a class="wl-nav-link" href="index.html">${t("navHome")}</a>
+      <a class="wl-nav-link" href="dossier/">${t("dossiers")}</a>
       <a class="wl-nav-link" href="/news/">${lang === "ar" ? "الأرشيف" : "Archive"}</a>
       <a class="wl-nav-link" href="topics.html">${t("topics")}</a>
       <a class="wl-nav-link wl-nav-link--shorts" href="shorts.html">${t("shorts")}</a>
@@ -80,10 +81,10 @@
   <div class="wl-container">
     <div class="footer-main">
       <div><a class="wl-brand footer-brand" href="index.html"><span class="wl-brand-mark">W</span><span class="wl-brand-copy"><strong>WRLDLINE</strong><small>GLOBAL NEWS NETWORK</small></span></a><p class="footer-about">${t("about")}</p></div>
-      <div class="footer-col"><h3>${t("newsrooms")}</h3><a href="index.html">${t("navHome")}</a><a href="context.html">${t("context")}</a><a href="balance.html">${t("balance")}</a><a href="impact.html">${t("impact")}</a></div>
+      <div class="footer-col"><h3>${t("newsrooms")}</h3><a href="index.html">${t("navHome")}</a><a href="dossier/">${t("dossiers")}</a><a href="context.html">${t("context")}</a><a href="balance.html">${t("balance")}</a><a href="impact.html">${t("impact")}</a></div>
       <div class="footer-col"><h3>${t("knowledge")}</h3><a href="history.html">${t("history")}</a><a href="mirror.html">${t("mirror")}</a><a href="explainers.html">${t("explainers")}</a><a href="promises.html">${t("promises")}</a></div>
       <div class="footer-col"><h3>${t("encyclopediaCol")}</h3><a href="history-explore.html">${t("atlas")}</a><a href="history-compare.html">${t("compare")}</a><a href="history-library.html">${t("library")}</a><a href="about.html">${t("aboutLink")}</a></div>
-      <div class="footer-col"><h3>${lang === "ar" ? "تابع الأخبار" : "Follow news"}</h3><a href="/news/">${lang === "ar" ? "كل الأخبار العامة" : "Public news"}</a><a href="topics.html">${t("topics")}</a><a href="tags.html">${t("tags")}</a><a href="/newsletter.html">${lang === "ar" ? "النشرة البريدية" : "Newsletter"}</a><a href="advertise.html">${t("advertise")}</a><a href="/rss.xml">RSS</a><a href="/atom.xml">Atom</a><button type="button" data-analytics-settings>${lang === "ar" ? "إعدادات الخصوصية" : "Privacy settings"}</button></div>
+      <div class="footer-col"><h3>${lang === "ar" ? "تابع الأخبار" : "Follow news"}</h3><a href="/news/">${lang === "ar" ? "كل الأخبار العامة" : "Public news"}</a><a href="topics.html">${t("topics")}</a><a href="tags.html">${t("tags")}</a><a href="/newsletter.html">${lang === "ar" ? "النشرة البريدية" : "Newsletter"}</a><a href="intelligence.html">${lang === "ar" ? "أعمال ومؤسسات" : "Business & institutions"}</a><a href="advertise.html">${t("advertise")}</a><a href="/rss.xml">RSS</a><a href="/atom.xml">Atom</a><button type="button" data-analytics-settings>${lang === "ar" ? "إعدادات الخصوصية" : "Privacy settings"}</button></div>
     </div>
     <div class="footer-bottom"><span>${t("copyright")}</span><span>${t("editorial")}</span></div>
   </div>

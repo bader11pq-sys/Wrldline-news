@@ -4,6 +4,20 @@
   const SUPABASE_URL = "https://vmaxbnogmmfyrcucapnq.supabase.co";
   const SUPABASE_KEY = "sb_publishable_D3c88u75_LcEN460Y3Jcpw__EfqUnBx";
   const contact = document.getElementById("contactForm");
+  if (contact) {
+    // Prefill only from a small allow-list; never inject arbitrary text into the message.
+    const params = new URLSearchParams(location.search);
+    const topic = params.get("topic");
+    const topicField = contact.elements.namedItem("topic");
+    if (topic && topicField && [...topicField.options].some(o => o.value === topic)) topicField.value = topic;
+    const subject = (params.get("subject") || "").replace(/[\u0000-\u001f\u007f]/g, " ").trim().slice(0, 120);
+    const messageField = contact.elements.namedItem("message");
+    if (subject && messageField && !messageField.value.trim()) {
+      messageField.value = `[${subject}]\n`;
+      messageField.focus();
+      messageField.setSelectionRange(messageField.value.length, messageField.value.length);
+    }
+  }
   if (contact) contact.addEventListener("submit", async event => {
     event.preventDefault();
     const status = document.getElementById("contactStatus"), button = contact.querySelector("button[type=submit]");

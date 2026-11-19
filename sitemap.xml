@@ -21,9 +21,17 @@
   <url><loc>https://al-ghaib.us.ci/sources.html</loc></url>
   <url><loc>https://al-ghaib.us.ci/about.html</loc></url>
   <url><loc>https://al-ghaib.us.ci/advertise.html</loc></url>
+  <url><loc>https://al-ghaib.us.ci/intelligence.html</loc></url>
   <url><loc>https://al-ghaib.us.ci/contact.html</loc></url>
   <url><loc>https://al-ghaib.us.ci/privacy.html</loc></url>
   <url><loc>https://al-ghaib.us.ci/terms.html</loc></url>
   <url><loc>https://al-ghaib.us.ci/corrections.html</loc></url>
   <url><loc>https://al-ghaib.us.ci/newsletter.html</loc></url>
+  <!-- DOSSIERS:START -->
+  <url><loc>https://al-ghaib.us.ci/dossier/</loc></url>
+  <url><loc>https://al-ghaib.us.ci/dossier/hormuz-closure-2026.html</loc></url>
+  <url><loc>https://al-ghaib.us.ci/dossier/bab-al-mandab-2026.html</loc></url>
+  <url><loc>https://al-ghaib.us.ci/dossier/opec-plus-december-2026.html</loc></url>
+  <url><loc>https://al-ghaib.us.ci/dossier/qatarenergy-lng-2026.html</loc></url>
+  <!-- DOSSIERS:END -->
 </urlset>
