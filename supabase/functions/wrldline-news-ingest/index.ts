@@ -138,7 +138,11 @@ async function processGeneralFeed(feed: any) {
 }
 async function setFeedHealth(feed: any,result: any) {
  const query="feeds?url=eq."+encodeURIComponent(feed.url);
- const patch={last_fetched:result.ok?new Date().toISOString():null,last_error:result.ok?null:result.error,active:true,category:normalizeCategory(feed.category),lang:feed.lang||"en",source_scope:normalizeScope(feed.source_scope||inferSourceScope(feed))};
+ const attemptedAt=new Date().toISOString();
+ const patch: Record<string,unknown>={last_attempted_at:attemptedAt,last_error:result.ok?null:result.error,active:true,category:normalizeCategory(feed.category),lang:feed.lang||"en",source_scope:normalizeScope(feed.source_scope||inferSourceScope(feed))};
+ // last_fetched is the last successful fetch, not the last attempt.
+ // Preserve it on failures so transient timeouts do not erase source history.
+ if(result.ok) patch.last_fetched=attemptedAt;
  const r=await dbRequest(query,{method:"PATCH",headers:{"Prefer":"return=minimal"},body:JSON.stringify(patch)});
  return r.ok;
 }
