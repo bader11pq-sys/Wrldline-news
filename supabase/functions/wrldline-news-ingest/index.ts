@@ -93,9 +93,12 @@ function parseGeneral(xml: string,feed: any) {
   const publishedAt=parsedDate(date);
   if(!publishedAt) return null;
   const language=resolveSourceLanguage(feed.lang,title+" "+summary);
+  const cleanTitle=String(title).replace(/<[^>]*>/g," ").replace(/\s+/g," ").trim();
+  const cleanSummary=String(summary).replace(/<[^>]*>/g," ").replace(/\s+/g," ").trim();
+  const summaryIsDuplicate=!cleanSummary||cleanSummary===cleanTitle||(cleanSummary.startsWith(cleanTitle)&&cleanSummary.length<=cleanTitle.length*1.2);
   const category=normalizeCategory(feed.category);
   const sourceScope=normalizeScope(feed.source_scope||inferSourceScope(feed));
-  return {url,title:title.slice(0,500),summary:summary.slice(0,5000),image_url:entryImage(block),category,feed_id:feed.id||null,country:null,event_country:null,source_scope:sourceScope,source_language:language.language,language_detection:language.detection,source_name:feed.name,source_url:feed.url,lang:language.language,verification:"unconfirmed",published_at:publishedAt,ai_classification_status:"pending",editorial_status:summary.trim()?"published":"review",classification_reason:category==="uncategorized"?"unclassified_source":"rss_source_section",taxonomy_version:TAXONOMY_VERSION};
+  return {url,title:title.slice(0,500),summary:summary.slice(0,5000),image_url:entryImage(block),category,feed_id:feed.id||null,country:null,event_country:null,source_scope:sourceScope,source_language:language.language,language_detection:language.detection,source_name:feed.name,source_url:feed.url,lang:language.language,verification:"unconfirmed",published_at:publishedAt,ai_classification_status:"pending",editorial_status:summaryIsDuplicate?"review":"published",classification_reason:category==="uncategorized"?"unclassified_source":"rss_source_section",taxonomy_version:TAXONOMY_VERSION};
  }).filter(Boolean);
 }
 async function dbRequest(path: string,init: RequestInit & {headers?: Record<string,string>} = {}) {

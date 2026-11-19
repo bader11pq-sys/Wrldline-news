@@ -80,6 +80,31 @@ test("bot parseEntry records a language conflict but keeps the declared language
   assert.equal(entry.country, null);
 });
 
+test("bot parseEntry holds entries whose summary only repeats the headline", () => {
+  const entry = parseEntry(rssBlock("Headline repeated as summary", "Headline repeated as summary"), {
+    name: "Example feed",
+    url: "https://example.com/feed.xml",
+    lang: "en",
+    category: "world",
+    source_scope: "international",
+  });
+  assert.ok(entry);
+  assert.equal(entry.editorial_status, "review");
+  assert.equal(entry.classification_reason, "rss_source_section");
+});
+
+test("bot parseEntry publishes a headline with a genuinely different summary", () => {
+  const entry = parseEntry(rssBlock("Headline about a decision", "The cabinet approved the measure after a long debate and said it would take effect next month."), {
+    name: "Example feed",
+    url: "https://example.com/feed.xml",
+    lang: "en",
+    category: "world",
+    source_scope: "international",
+  });
+  assert.ok(entry);
+  assert.equal(entry.editorial_status, "published");
+});
+
 test("bot parseEntry turns an unknown feed category into uncategorized", () => {
   const entry = parseEntry(rssBlock("General story", "General summary"), {
     name: "General feed",

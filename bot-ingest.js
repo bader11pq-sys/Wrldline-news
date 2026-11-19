@@ -138,12 +138,15 @@ function parseEntry(block,feed){
  const title=tag(block,["title"]);const url=getLink(block);const summary=tag(block,["description","summary","content:encoded","content"]);const date=tag(block,["pubDate","published","updated","dc:date"]);const publishedAt=safeDate(date);
  if(!title||isPublisherNoise(title)||!/^https?:\/\//i.test(url)||!publishedAt)return null;
  const language=taxonomy.resolveSourceLanguage(feed.lang,title+" "+summary);
+ const cleanTitle=String(title).replace(/<[^>]*>/g," ").replace(/\s+/g," ").trim();
+ const cleanSummary=String(summary).replace(/<[^>]*>/g," ").replace(/\s+/g," ").trim();
+ const summaryIsDuplicate=!cleanSummary||cleanSummary===cleanTitle||(cleanSummary.startsWith(cleanTitle)&&cleanSummary.length<=cleanTitle.length*1.2);
  const category=taxonomy.normalizeCategory(feed.category);
  const sourceScope=taxonomy.normalizeScope(feed.source_scope);
  const sourceCountry=feed.country&&feed.country!=="دولي"?feed.country:null;
  if(language.detection==="conflict")INGEST_STATS.languageConflicts++;
  if(category==="uncategorized")INGEST_STATS.uncategorized++;else INGEST_STATS.categorized++;
- return {url,title:title.slice(0,500),summary:summary.slice(0,5000),image_url:getImage(block),category,country:null,event_country:null,source_country:sourceCountry,source_scope:sourceScope,source_language:language.language,language_detection:language.detection,source_name:feed.name,source_url:feed.url,lang:language.language,verification:"unconfirmed",published_at:publishedAt,ai_classification_status:"pending",editorial_status:summary.trim()?"published":"review",classification_reason:category==="uncategorized"?"unclassified_source":"rss_source_section",taxonomy_version:taxonomy.TAXONOMY_VERSION};
+ return {url,title:title.slice(0,500),summary:summary.slice(0,5000),image_url:getImage(block),category,country:null,event_country:null,source_country:sourceCountry,source_scope:sourceScope,source_language:language.language,language_detection:language.detection,source_name:feed.name,source_url:feed.url,lang:language.language,verification:"unconfirmed",published_at:publishedAt,ai_classification_status:"pending",editorial_status:summaryIsDuplicate?"review":"published",classification_reason:category==="uncategorized"?"unclassified_source":"rss_source_section",taxonomy_version:taxonomy.TAXONOMY_VERSION};
 }
 async function fetchFeed(feed){
  const candidates=[feed.url,feed.fallbackUrl].filter(Boolean);let lastError="unknown";
