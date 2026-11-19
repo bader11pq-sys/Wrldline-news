@@ -249,3 +249,21 @@ Migration `20261119074000_classification_expiry_index_and_batch.sql` adds a part
 4. Only then repeat a single fresh-article classification canary. Keep the recurring classification producer disabled until one article succeeds end-to-end with provider attribution and persisted output.
 
 The classification queue returned to zero after the failed one-message canary; no new canary was enqueued. No production index, function, trigger, queue setting, schedule, or article was changed by this diagnosis.
+
+
+## RSS run variability and feed-health timestamp correction — 2026-11-19 06:34 UTC
+
+The general pipeline is active but source success is variable:
+- 06:30:51 UTC: **80/80** sources succeeded; 1,727 items parsed.
+- 06:34:30 UTC: **45/80** succeeded, **35/80** failed; 980 items parsed. The failures consisted of **34 `Signal timed out`** and **one HTTP 503**. The previous successful run means these errors should not be treated as proof that every affected publisher endpoint is permanently broken.
+- The feed table showed 80 active sources, 45 recent successful fetch timestamps, and 35 active rows with a latest error. The deployed `setFeedHealth()` implementation set `last_fetched=null` on every failed attempt, which erased the previous-success timestamp. Therefore a null `last_fetched` in the current production data cannot distinguish a never-successful feed from a feed that succeeded earlier and timed out later.
+
+### Branch-only source-health fix
+
+- `20261119074500_track_feed_attempts.sql` adds `feeds.last_attempted_at`.
+- `wrldline-news-ingest/index.ts` now writes `last_attempted_at` on every attempt, updates `last_fetched` only on success, and leaves the previous successful-fetch timestamp unchanged when the latest attempt fails.
+- This fixes the observability model; it does not itself resolve publisher-side timeouts. The deployed ingestion function remains unchanged until the reviewed migration and code are released together.
+
+Do not disable all 35 affected sources or increase timeout/retry settings based on one bad cycle. Compare at least several subsequent per-run outcomes after the observability fix is deployed; then distinguish persistent endpoint errors (404/403/invalid feed) from transient timeout/503 and replace only verified-invalid URLs.
+
+The current snapshot is **45/80 latest-cycle success**, not a claim that the 80-source list has permanently failed or recovered.
