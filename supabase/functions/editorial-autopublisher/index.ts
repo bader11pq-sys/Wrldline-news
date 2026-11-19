@@ -168,16 +168,16 @@ function xmlDecode(value: string) {
     .replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
 }
 function readXmlTag(block: string, name: string) {
-  const re = new RegExp("<" + name + "(?:\\\\s[^>]*)?>([\\\\s\\\\S]*?)</" + name + ">", "i");
+  const re = new RegExp("<" + name + "[^>]*>([\\s\\S]*?)</" + name + ">", "i");
   const m = block.match(re);
   return m ? xmlDecode(m[1]) : "";
 }
 function readXmlAttr(block: string, tag: string, attr: string) {
-  const re = new RegExp("<" + tag + "\\\\b([^>]*)>", "i");
+  const re = new RegExp("<" + tag + "\\b([^>]*)>", "i");
   const hit = block.match(re);
   if (!hit) return "";
-  const m = hit[1].match(new RegExp("\\\\b" + attr + "=[\\"']([^\\"']+)[\\"']", "i"));
-  return m ? xmlDecode(m[1]) : "";
+  const m = hit[1].match(new RegExp("\\b" + attr + "=(?:\\"([^\\"]+)\\"|'([^']+)')", "i"));
+  return m ? xmlDecode(m[1] || m[2]) : "";
 }
 function classifyPublisher(publisher: string, sourceUrl: string) {
   const h = (host(sourceUrl) + " " + publisher).toLowerCase();
