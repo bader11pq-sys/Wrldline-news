@@ -143,7 +143,7 @@ function parseEntry(block,feed){
  const sourceCountry=feed.country&&feed.country!=="دولي"?feed.country:null;
  if(language.detection==="conflict")INGEST_STATS.languageConflicts++;
  if(category==="uncategorized")INGEST_STATS.uncategorized++;else INGEST_STATS.categorized++;
- return {url,title:title.slice(0,500),summary:summary.slice(0,5000),image_url:getImage(block),category,country:null,event_country:null,source_country:sourceCountry,source_scope:sourceScope,source_language:language.language,language_detection:language.detection,source_name:feed.name,source_url:feed.url,lang:language.language,verification:"unconfirmed",published_at:publishedAt,ai_classification_status:"pending",editorial_status:"published",classification_reason:category==="uncategorized"?"unclassified_source":"rss_source_section",taxonomy_version:taxonomy.TAXONOMY_VERSION};
+ return {url,title:title.slice(0,500),summary:summary.slice(0,5000),image_url:getImage(block),category,country:null,event_country:null,source_country:sourceCountry,source_scope:sourceScope,source_language:language.language,language_detection:language.detection,source_name:feed.name,source_url:feed.url,lang:language.language,verification:"unconfirmed",published_at:publishedAt,ai_classification_status:"pending",editorial_status:summary.trim()?"published":"review",classification_reason:category==="uncategorized"?"unclassified_source":"rss_source_section",taxonomy_version:taxonomy.TAXONOMY_VERSION};
 }
 async function fetchFeed(feed){
  const candidates=[feed.url,feed.fallbackUrl].filter(Boolean);let lastError="unknown";

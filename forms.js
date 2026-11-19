@@ -24,6 +24,9 @@
     notification?.readiness().then(config => {
       document.getElementById("newsletterReadiness").textContent = config.email_ready ? "خدمة طلب التأكيد متاحة. لا يبدأ الإرسال الدوري قبل تأكيد بريدك." : "خدمة الإرسال غير مفعلة أو غير متاحة حالياً. لا يمكن تفعيل اشتراك أو إرسال بريد حتى اكتمال إعدادها.";
       newsletter.querySelector("button[type=submit]").disabled = !config.email_ready;
+    }).catch(() => {
+      document.getElementById("newsletterReadiness").textContent = "تعذر التحقق من جاهزية خدمة الإرسال. بقي الاشتراك معطلاً ولم يُحفظ أي بريد.";
+      newsletter.querySelector("button[type=submit]").disabled = true;
     });
     newsletter.addEventListener("submit", async event => {
       event.preventDefault(); if (!newsletter.reportValidity()) return;

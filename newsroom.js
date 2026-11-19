@@ -68,7 +68,8 @@
     return new Intl.DateTimeFormat("ar-SA-u-ca-gregory", { dateStyle: "medium", timeStyle: "short", calendar: "gregory" }).format(new Date(t));
   }
   function sourceName(a) {
-    return String(a.source_name || a.src || a.source || "مصدر إخباري").trim();
+    const value = String(a?.source_name || a?.src || a?.source || "").trim();
+    return value || "المصدر غير متاح";
   }
   function articleURL(a) {
     return a.url || a.source_url || "";
@@ -208,15 +209,17 @@
   function sourceLink(a, cls = "") {
     const u = safeURL(articleURL(a));
     const name = escapeHTML(sourceName(a));
-    return u ? '<a class="' + cls + '" href="' + escapeHTML(u) + '" target="_blank" rel="noopener noreferrer">' + name + " ↗</a>" : "<span>" + name + "</span>";
+    return u ? '<a class="' + cls + '" href="' + escapeHTML(u) + '" target="_blank" rel="noopener noreferrer">' + name + " ↗</a>" : '<span class="source-missing">' + name + " · رابط المصدر غير متوفر</span>";
   }
 
   function articleCard(a, opts = {}) {
+    const publishedAt = Date.parse(a?.published_at || "");
+    const publishedISO = Number.isFinite(publishedAt) ? new Date(publishedAt).toISOString() : "";
     const img = a.image_url ? '<img src="' + escapeHTML(a.image_url) + '" alt="' + escapeHTML(a.title) + '" loading="lazy" decoding="async" referrerpolicy="no-referrer" onerror="this.style.display=\'none\'">' : "";
     const cls = opts.compact ? "wl-live-story" : "news-card news-card--editorial";
     return '<article class="' + cls + '">' + (opts.compact ? "" : '<div class="card-open">' + img) +
       '<div class="' + (opts.compact ? "wl-live-copy" : "card-content") + '">' +
-      '<div class="story-meta"><span class="category-label">' + escapeHTML(opts.category || "") + "</span><span>" + escapeHTML(sourceName(a)) + "</span><span class=\"read-time\">" + timeAgo(a.published_at) + "</span></div>" +
+      '<div class="story-meta"><span class="category-label">' + escapeHTML(opts.category || "") + '</span><span class="story-source-name">' + escapeHTML(sourceName(a)) + '</span><time class="read-time" datetime="' + escapeHTML(publishedISO) + '" aria-label="وقت نشر المصدر: ' + escapeHTML(formatDate(a.published_at)) + '" title="وقت نشر المصدر: ' + escapeHTML(formatDate(a.published_at)) + '">' + timeAgo(a.published_at) + '</time></div>' +
       "<h3>" + escapeHTML(a.title) + "</h3>" +
       (a.summary && !opts.compact ? "<p>" + escapeHTML(a.summary) + "</p>" : "") +
       '<div class="source-line">' + sourceLink(a) + "</div></div>" + (opts.compact ? "" : "</div>") + "</article>";
