@@ -22,6 +22,7 @@ async function setup() {
     insert into public.articles values('${article}','Fixture headline','politics','published'),('66666666-6666-4666-8666-666666666666','Private fixture','security','review');
     insert into public.subscriptions values('${user}','plus','active','sub_fixture_verified',now()+interval '1 day');`);
   await db.exec(fs.readFileSync(path.join(__dirname, '../supabase/migrations/20261115040000_audience_analytics.sql'), 'utf8'));
+  await db.exec(fs.readFileSync(path.join(__dirname, '../supabase/migrations/20261119070000_add_advertise_to_audience_page.sql'), 'utf8'));
   return db;
 }
 async function claims(db, role = 'service_role', editorial = null) {
@@ -63,6 +64,10 @@ test('dedupe event IDs, reject free text, ignore unpublished/nonexistent article
     assert.equal(data.top_news[0].avg_active_seconds, 30); assert.equal(data.top_news[0].read_sessions, 1); assert.equal(data.top_news[0].views, 1);
     assert.equal(data.categories[0].category, 'politics'); assert.equal(data.funnel.plus_interest_sessions, 1); assert.equal(data.funnel.account_signup_sessions, 1);
     assert.equal(data.funnel.paid_receipt_verified, false);
+    const advertiserPageEvent = event('page_view', { page: 'advertise' });
+    assert.equal((await ingest(db, [advertiserPageEvent])).accepted, 1);
+    const advertiserStored = await db.query('select page from public.audience_events where event_id=$1', [advertiserPageEvent.event_id]);
+    assert.equal(advertiserStored.rows[0].page, 'advertise');
     assert(!JSON.stringify(data).includes(user)); assert(!JSON.stringify(data).includes('sub_fixture_verified'));
   } finally { await db.close(); }
 });
