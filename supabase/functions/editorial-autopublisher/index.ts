@@ -21,19 +21,14 @@ function xmlDecode(value: string) {
     .replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
 }
 function readXmlTag(block: string, name: string) {
-  const tag = name.toLowerCase();
-  const open = block.match(new RegExp("<" + tag + "[^>]*>", "i"));
-  if (!open) return "";
-  const start = block.indexOf(open[0]) + open[0].length;
-  const end = block.toLowerCase().indexOf("</" + tag + ">", start);
-  return end >= 0 ? xmlDecode(block.slice(start, end)) : "";
-}
-function readXmlAttr(block: string, tag: string, attr: string) {
-  const open = block.match(new RegExp("<" + tag + "\\\\b([^>]*)>", "i"));
-  if (!open) return "";
-  const attrs = [...open[1].matchAll(/([A-Za-z_:][\w:.-]*)\s*=\s*(?:"([^"]*)"|'([^']*)')/g)];
-  const found = attrs.find(x => x[1].toLowerCase() === attr.toLowerCase());
-  return found ? xmlDecode(found[2] || found[3] || "") : "";
+  const lower = block.toLowerCase(), token = "<" + name.toLowerCase();
+  const at = lower.indexOf(token);
+  if (at < 0) return "";
+  const openEnd = lower.indexOf(">", at);
+  if (openEnd < 0) return "";
+  const close = "</" + name.toLowerCase() + ">";
+  const end = lower.indexOf(close, openEnd + 1);
+  return end < 0 ? "" : xmlDecode(block.slice(openEnd + 1, end));
 }
 function classifyPublisher(publisher: string, sourceUrl: string) {
   const h = (host(sourceUrl) + " " + publisher).toLowerCase();
@@ -50,7 +45,9 @@ function extractXmlBlocks(xml: string, tag: string) {
     const at = lower.indexOf(open, cursor);
     if (at < 0) break;
     const afterName = lower[at + open.length];
-    if (afterName && !/[\\s>]/.test(afterName)) { cursor = at + open.length; continue; }
+    if (afterName && afterName !== ">" && afterName !== " " && afterName !== "\n" && afterName !== "\r" && afterName !== "\t") {
+      cursor = at + open.length; continue;
+    }
     const end = lower.indexOf(close, at + open.length);
     if (end < 0) break;
     out.push(xml.slice(at, end + close.length));
