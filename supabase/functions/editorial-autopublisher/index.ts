@@ -99,7 +99,7 @@ async function buildPack(mode: string, db: any, recent: any[]) {
   const p = await db.from("editorial_publications").select("section,slug,title,content,published_at")
     .in("section", ["dossier", "context"]).eq("status", "published").order("updated_at", { ascending: false }).limit(12);
   if (p.error) throw new Error(p.error.message);
-  const top = a.story.slice(0, 10).map((x: any) => x.title).join(" / ");
+  const top = a.story.slice(0, 3).map((x: any) => x.title).join(" / ").slice(0, 260);
   let queries: string[] = [];
   if (mode === "dossier") queries = ["latest developments " + top + " official statements November 2026", "primary source timeline data " + top + " government international organizations", "Saudi Gulf regional economic security impact " + top];
   if (mode === "watchlist") queries = ["official meetings decisions deadlines next 7 days Saudi Arabia GCC OPEC November 2026", "official calendars central banks United Nations energy shipping Gulf next week", "upcoming elections diplomatic meetings economic data releases next week official"];
@@ -176,6 +176,14 @@ async function publishMode(db: any, mode: string, pack: any) {
 }
 function riyadhDate() { return new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Riyadh", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date()); }
 async function log(db: any, id: number, status: string, extra: any) { await db.from("editorial_run_log").update({ status, finished_at: stamp(), ...extra }).eq("id", id); }
+async function advanceDossierSchedule(db: any) {
+  const st = await db.from("editorial_runtime_state").select("state_value").eq("state_key", "dossier_next_due_at").maybeSingle();
+  let next = Date.parse(st.data?.state_value?.at || "2026-11-19T15:00:00.000Z");
+  if (!Number.isFinite(next)) next = Date.now();
+  do { next += 3 * 86400000; } while (next <= Date.now());
+  await db.from("editorial_runtime_state").upsert({ state_key: "dossier_next_due_at", state_value: { at: new Date(next).toISOString() }, updated_at: stamp() }, { onConflict: "state_key" });
+  return new Date(next).toISOString();
+}
 
 Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: CORS });
@@ -218,16 +226,11 @@ Deno.serve(async (req: Request) => {
     if (recent.length < 8) throw new Error("Insufficient recent published articles for a research-backed update");
     const pack = await buildPack(mode, db, recent), result = await publishMode(db, mode, pack);
     if (result.skipped) {
-      await log(db, begun.data.id, "skipped", { provider: result.provider, research_sources: pack.sources.length, article_sources: pack.articles.length, details: { reason: result.reason } });
-      return reply({ ok: true, skipped: true, reason: result.reason });
+      const nextDue = mode === "dossier" ? await advanceDossierSchedule(db) : null;
+      await log(db, begun.data.id, "skipped", { provider: result.provider, research_sources: pack.sources.length, article_sources: pack.articles.length, details: { reason: result.reason, next_due_at: nextDue } });
+      return reply({ ok: true, skipped: true, reason: result.reason, next_due_at: nextDue });
     }
-    if (mode === "dossier") {
-      const st = await db.from("editorial_runtime_state").select("state_value").eq("state_key", "dossier_next_due_at").maybeSingle();
-      let next = Date.parse(st.data?.state_value?.at || "2026-11-19T15:00:00.000Z");
-      if (!Number.isFinite(next)) next = Date.now();
-      do { next += 3 * 86400000; } while (next <= Date.now());
-      await db.from("editorial_runtime_state").upsert({ state_key: "dossier_next_due_at", state_value: { at: new Date(next).toISOString() }, updated_at: stamp() }, { onConflict: "state_key" });
-    }
+    if (mode === "dossier") await advanceDossierSchedule(db);
     await log(db, begun.data.id, "published", {
       section: mode.startsWith("context") ? "context" : mode, publication_slug: result.row.slug,
       provider: result.provider, research_sources: result.researchSources, article_sources: result.articleSources,
