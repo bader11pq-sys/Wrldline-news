@@ -357,17 +357,18 @@ Deno.serve(async (req: Request) => {
         return reply({ ok: true, skipped: true, next_due_at: new Date(due).toISOString() });
       }
     }
-    let recent = await articles(db, mode === "context_monthly" ? 24 * 45 : mode === "context_monitor" ? 48 : mode === "mirror" ? 24 * 5 : 24 * 8, mode === "context_monthly" ? 220 : 160);
+    const articleBatch = await articles(db, mode === "context_monthly" ? 24 * 45 : mode === "context_monitor" ? 48 : mode === "mirror" ? 24 * 5 : 24 * 8, mode === "context_monthly" ? 220 : 160);
+    let recent = articleBatch.story;
     if (mode === "context_monitor") {
       const highImpactCategories = new Set(["politics", "economy", "security", "world"]);
-      recent = recent.filter((x: any) => x.is_breaking === true || highImpactCategories.has(String(x.category || "").toLowerCase()));
-      const sources = new Set(recent.map((x: any) => txt(x.source_name, 90)));
+      recent = recent.filter((x: any) => x.breaking === true || highImpactCategories.has(String(x.category || "").toLowerCase()));
+      const sources = new Set(recent.map((x: any) => txt(x.source, 90)).filter(Boolean));
       if (recent.length < 7 || sources.size < 4) {
         await log(db, begun.data.id, "skipped", { details: { reason: "no_material_development_cluster", count: recent.length, sources: sources.size } });
         return reply({ ok: true, skipped: true, reason: "no_material_development_cluster", candidates: recent.length, distinct_sources: sources.size });
       }
     }
-    if (recent.length < 8) throw new Error("Insufficient recent published articles for a research-backed update");
+    if (mode !== "context_monitor" && recent.length < 8) throw new Error("Insufficient recent published articles for a research-backed update");
     const pack = await buildPack(mode, db, recent), result = await publishMode(db, mode, pack);
     if (result.skipped) {
       const nextDue = mode === "dossier" ? await advanceDossierSchedule(db) : null;
