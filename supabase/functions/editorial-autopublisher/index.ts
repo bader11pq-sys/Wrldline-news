@@ -1,6 +1,6 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
 
-const URL = Deno.env.get("SUPABASE_URL") || "https://vmaxbnogmmfyrcucapnq.supabase.co";
+const SUPABASE_URL = Deno.env.get("SUPABASE_URL") || "https://vmaxbnogmmfyrcucapnq.supabase.co";
 const SITE = Deno.env.get("SITE_URL") || "https://al-ghaib.us.ci";
 const CORS = { "Access-Control-Allow-Origin": SITE, "Access-Control-Allow-Headers": "content-type, x-wrldline-editorial-secret", "Access-Control-Allow-Methods": "POST, OPTIONS", "Vary": "Origin" };
 const reply = (x: unknown, status = 200) => new Response(JSON.stringify(x), { status, headers: { ...CORS, "Content-Type": "application/json" } });
@@ -334,7 +334,7 @@ Deno.serve(async (req: Request) => {
   if (supplied.length < 32) return reply({ error: "Unauthorized" }, 401);
   const service = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || (() => { try { return JSON.parse(Deno.env.get("SUPABASE_SECRET_KEYS") || "{}").default; } catch { return null; } })();
   if (!service) return reply({ error: "Supabase service credential missing" }, 500);
-  const db = createClient(URL, service, { auth: { persistSession: false, autoRefreshToken: false } });
+  const db = createClient(SUPABASE_URL, service, { auth: { persistSession: false, autoRefreshToken: false } });
   const auth = await db.from("editorial_runtime_auth").select("secret_hash").eq("singleton", true).maybeSingle();
   if (auth.error || !auth.data?.secret_hash) return reply({ error: "Editorial authentication not configured" }, 503);
   const raw = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(supplied));
@@ -362,6 +362,11 @@ Deno.serve(async (req: Request) => {
       const google = g[0].status === "fulfilled" ? g[0].value.length : -1;
       const googleError = g[0].status === "rejected" ? String(g[0].reason).slice(0, 250) : "";
       const generated = await ai("Respond with a JSON object containing one field named ok, with boolean value true.");
+      await log(db, begun.data.id, "skipped", {
+        provider: generated.provider,
+        research_sources: statuses.reduce((count, item) => count + (Number(item.count) || 0), 0) + Math.max(google, 0),
+        details: { statuses, sample_blocks: sampleBlocks.length, sample_title: sampleTitle, sample_url: safeLink(sampleLink), sample_parsed_count: sampleParsed.length, google_rss_count: google, google_error: googleError, ai_ok: generated.data?.ok === true }
+      });
       return reply({ ok: true, self_test: true, statuses, sample_blocks: sampleBlocks.length, sample_title: sampleTitle, sample_url: safeLink(sampleLink), sample_parsed_count: sampleParsed.length, google_rss_count: google, google_error: googleError, ai_provider: generated.provider, ai_ok: generated.data?.ok === true });
     }
     if (mode === "dossier") {
