@@ -88,9 +88,14 @@
     openDetail('<div class="nr-detail-head"><div><span class="nr-tag">' + esc(c.tag || "سياق") + "</span><h2>" + esc(c.title) + "</h2><p>" + esc(c.dek) + '</p></div><button class="nr-close" type="button" aria-label="إغلاق"><svg aria-hidden="true"><use href="#i-close"/></svg></button></div>' +
       '<div class="nr-block"><h3>الخلفية</h3><ul>' + (c.background || []).map(x => "<li>" + esc(x) + "</li>").join("") + "</ul></div>" +
       '<div class="nr-two"><div class="nr-known"><h4>ما نعرفه</h4><ul>' + (c.known || []).map(x => "<li>" + esc(x) + "</li>").join("") + '</ul></div><div class="nr-unknown"><h4>ما لا نعرفه بعد</h4><ul>' + (c.unknown || []).map(x => "<li>" + esc(x) + "</li>").join("") + "</ul></div></div>" +
+      (c.editorial_thesis || c.what_changed ? '<div class="nr-block"><h3>الخلاصة التحريرية</h3><p>' + esc(c.editorial_thesis || "") + '</p>' + (c.what_changed ? '<p><b>ما تغيّر:</b> ' + esc(c.what_changed) + '</p>' : "") + '</div>' : "") +
       '<div class="nr-block"><h3>اللاعبون والمصالح</h3><div class="nr-players">' + (c.players || []).map(p => '<div class="nr-player"><b>' + esc(p[0]) + "</b><span>" + esc(p[1]) + "</span></div>").join("") + "</div></div>" +
       '<div class="nr-block"><h3>ما يجب مراقبته</h3><ul>' + (c.watch || []).map(x => "<li>" + esc(x) + "</li>").join("") + "</ul></div>" +
-      '<div class="nr-block"><h3>السيناريوهات</h3><div class="nr-scenarios">' + (c.scenarios || []).map(s => '<div class="nr-scenario"><div class="nr-scenario-top"><span>' + esc(s[0]) + "</span><b>" + esc(s[1]) + '%</b></div><div class="nr-bar"><i style="width:' + Math.max(0, Math.min(100, Number(s[1]) || 0)) + '%"></i></div><p>' + esc(s[2]) + "</p></div>").join("") + "</div></div>" +
+      '<div class="nr-block"><h3>السيناريوهات</h3><div class="nr-scenarios">' + (c.scenarios || []).map(s => {
+        const label = Array.isArray(s) ? s[0] : (s.title || "مسار");
+        const description = Array.isArray(s) ? (s[2] || s[1] || "") : [s.conditions, s.consequences].filter(Boolean).join(" — ");
+        return '<div class="nr-scenario"><div class="nr-scenario-top"><span>' + esc(label) + "</span></div><p>" + esc(description) + "</p></div>";
+      }).join("") + "</div></div>" +
       '<div class="nr-block"><h3>مصادر الملف</h3>' + srcLinks(c.sources) + "</div>" + liveBlock(c));
     detail().querySelector(".nr-close")?.addEventListener("click", closeDetail);
     history.replaceState(null, "", "#" + id);
@@ -226,6 +231,8 @@
       '<div class="nr-two"><div class="nr-block"><h3>اليوم</h3><p>' + esc(m.nowSummary) + '</p></div><div class="nr-block"><h3>الماضي</h3><p><b>' + esc(m.pastTitle) + "</b></p></div></div>" +
       '<div class="nr-two"><div class="nr-block"><h3>أوجه الشبه</h3><ul>' + (m.similarities || []).map(x => "<li>" + esc(x) + "</li>").join("") + '</ul></div><div class="nr-block"><h3>الفروق</h3><ul>' + (m.differences || []).map(x => "<li>" + esc(x) + "</li>").join("") + "</ul></div></div>" +
       '<div class="nr-block"><h3>الدرس</h3><p>' + esc(m.lesson) + '</p></div>' +
+      (Array.isArray(m.comparativeAnalysis) && m.comparativeAnalysis.length ? '<div class="nr-block"><h3>التحليل المقارن</h3><ul>' + m.comparativeAnalysis.map(x => '<li>' + esc(x) + '</li>').join("") + '</ul></div>' : '') +
+      (m.limits ? '<div class="nr-block"><h3>حدود المقارنة</h3><p>' + esc(m.limits) + '</p></div>' : '') +
       (m.pastDossier ? '<div class="nr-block"><a class="wl-btn wl-btn--ghost" href="history-dossier.html?id=' + encodeURIComponent(m.pastDossier) + '">افتح الملف التاريخي المرتبط ←</a></div>' : "") +
       '<div class="nr-block"><h3>المصادر</h3>' + srcLinks(m.sources) + "</div>");
     detail().querySelector(".nr-close")?.addEventListener("click", closeDetail);
