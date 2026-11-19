@@ -22,6 +22,8 @@ async function setup() {
     insert into public.articles values('${article}','Fixture headline','politics','published'),('66666666-6666-4666-8666-666666666666','Private fixture','security','review');
     insert into public.subscriptions values('${user}','plus','active','sub_fixture_verified',now()+interval '1 day');`);
   await db.exec(fs.readFileSync(path.join(__dirname, '../supabase/migrations/20261115040000_audience_analytics.sql'), 'utf8'));
+  await db.exec(fs.readFileSync(path.join(__dirname, '../supabase/migrations/20261119070000_add_advertise_to_audience_page.sql'), 'utf8'));
+  await db.exec(fs.readFileSync(path.join(__dirname, '../supabase/migrations/20261119071000_audience_dashboard_page_breakdown.sql'), 'utf8'));
   return db;
 }
 async function claims(db, role = 'service_role', editorial = null) {
@@ -52,6 +54,8 @@ test('dedupe event IDs, reject free text, ignore unpublished/nonexistent article
   const db = await setup();
   try {
     await claims(db);
+    const authProbe = await db.query("select auth.role() as role, current_setting('request.jwt.claims', true) as claims");
+    assert.equal(authProbe.rows[0].role, 'service_role', 'test fixture must establish service_role JWT claims before ingest');
     const view = event('view_article', { article_id: article, category: 'security' });
     assert.equal((await ingest(db, [view])).accepted, 1); assert.equal((await ingest(db, [view])).accepted, 0);
     assert.equal((await ingest(db, [event('view_article', { article_id: '66666666-6666-4666-8666-666666666666' })])).accepted, 0);
@@ -63,6 +67,15 @@ test('dedupe event IDs, reject free text, ignore unpublished/nonexistent article
     assert.equal(data.top_news[0].avg_active_seconds, 30); assert.equal(data.top_news[0].read_sessions, 1); assert.equal(data.top_news[0].views, 1);
     assert.equal(data.categories[0].category, 'politics'); assert.equal(data.funnel.plus_interest_sessions, 1); assert.equal(data.funnel.account_signup_sessions, 1);
     assert.equal(data.funnel.paid_receipt_verified, false);
+    await claims(db); // dashboard() switches the JWT to authenticated/editor; ingestion must return to service_role.
+    const advertiserPageEvent = event('page_view', { page: 'advertise', session_id: randomUUID() });
+    assert.equal((await ingest(db, [advertiserPageEvent])).accepted, 1);
+    const advertiserStored = await db.query('select page from public.audience_events where event_id=$1', [advertiserPageEvent.event_id]);
+    assert.equal(advertiserStored.rows[0].page, 'advertise');
+    const pageData = await dashboard(db);
+    const advertiserAggregate = pageData.pages.find(row => row.page === 'advertise');
+    assert.equal(advertiserAggregate.views, 1);
+    assert.equal(advertiserAggregate.sessions, 1);
     assert(!JSON.stringify(data).includes(user)); assert(!JSON.stringify(data).includes('sub_fixture_verified'));
   } finally { await db.close(); }
 });

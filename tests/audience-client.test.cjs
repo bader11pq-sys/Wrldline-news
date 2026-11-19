@@ -96,3 +96,18 @@ test('separate returning permission disabled clears old identifier and legacy bl
   api.setConsent('granted', { returning: false }); api.flush(); assert.equal(f.events().at(-1).browser_id, undefined);
   assert.equal(f.w.localStorage.getItem('wrldline:analytics-browser-v2'), null); f.close();
 });
+
+test('advertiser page is recorded with a distinct finite page key', () => {
+  const f = fixture({ url: 'https://al-ghaib.us.ci/advertise.html' }), api = f.w.WRLDLINE_ANALYTICS;
+  api.setConsent('granted'); api.flush();
+  assert.equal(f.events()[0].name, 'page_view');
+  assert.equal(f.events()[0].page, 'advertise');
+  assert(!JSON.stringify(f.calls).includes('/advertise.html'));
+  f.close();
+});
+
+test('advertiser page loads the consent UI and analytics collector', () => {
+  const html = fs.readFileSync(path.join(__dirname, '../advertise.html'), 'utf8');
+  assert.match(html, /<script src="analytics-config\.js[^"]*"><\/script>/);
+  assert.match(html, /<script src="analytics\.js[^"]*" defer><\/script>/);
+});
