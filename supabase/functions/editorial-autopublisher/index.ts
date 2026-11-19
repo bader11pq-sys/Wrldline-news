@@ -127,7 +127,7 @@ function promptFor(mode: string, pack: any, date: string) {
   else if (mode.startsWith("context")) task = [
     "اكتب ملفاً معمقاً في «غرفة السياق»، لا موجز أخبار ولا قائمة أسبوعية. حلل الجذور والتاريخ وبنية المصالح والفاعلين والقيود القانونية والمؤسسية والاقتصاد والطاقة والتنافس الإقليمي والدولي وما نعرفه وما لا نعرفه.",
     "نوع التشغيل: " + mode + ". في context_monitor لا تنشر إلا إذا ظهر تطور مهم يغيّر تفسير الملف أو ميزان المصالح مقارنة بالسابق؛ وإلا no_update.",
-    'JSON: {"action":"publish|no_update","slug":"context-topic-yyyymm أو existing-slug","title":"...","content":{"id":"slug","tag":"ملف سياق أو تحديث مهم","title":"...","dek":"...","keywords":["..."],"background":["6-9 فقرات تحليلية موثقة"],"known":["4-7 حقائق"],"unknown":["3-6 فجوات"],"players":[["الفاعل","مصالحه وأدواته وقيوده"]],"watch":["3-6 مؤشرات بنيوية طويلة الأجل"],"scenarios":[["المسار","0","وصف شرطي بلا نسبة مئوية"]],"editorial_thesis":"...","what_changed":"...","source_ids":["source_1"]}}',
+    'JSON: {"action":"publish|no_update","slug":"context-topic-yyyymm أو existing-slug","title":"...","content":{"id":"slug","tag":"ملف سياق أو تحديث مهم","title":"...","dek":"...","keywords":["..."],"background":["6-9 فقرات تحليلية موثقة"],"known":["4-7 حقائق"],"unknown":["3-6 فجوات"],"players":[["الفاعل","مصالحه وأدواته وقيوده"]],"watch":["3-6 مؤشرات بنيوية طويلة الأجل"],"scenarios":[{"title":"المسار","conditions":"الشروط التي قد تقود إليه","consequences":"الآثار المحتملة","source_ids":["source_1"]}],"editorial_thesis":"...","what_changed":"...","source_ids":["source_1"]}}',
     "اكتب بعمق، وبيّن تضارب المصالح وتوازن القوة والقيود القانونية، ولا تستخدم نسباً مئوية مختلقة للسيناريوهات."
   ].join("\n");
   else task = [
