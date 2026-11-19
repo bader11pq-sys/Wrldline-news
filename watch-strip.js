@@ -48,7 +48,7 @@
         why: item.why,
         when: item.when,
         approximate: item.timing === "approximate",
-        url: item.dossierSlug ? "/dossier/" + encodeURIComponent(item.dossierSlug) + ".html#watch" : "/dossier/watchlist.html"
+        url: "/dossier/"
       })))) return;
       return fetch("/dossier/watchlist.json", { cache:"no-store" }).then(r => r.ok ? r.json() : null).then(data => render(data?.items || []));
     })
