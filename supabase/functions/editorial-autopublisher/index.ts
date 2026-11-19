@@ -353,11 +353,15 @@ Deno.serve(async (req: Request) => {
       if (f.error) throw new Error(f.error.message);
       const results = await Promise.allSettled((f.data || []).map((x: any) => fetchRss(x.url, x.name)));
       const statuses = results.map((x, i) => ({ feed: f.data[i]?.name, ok: x.status === "fulfilled", count: x.status === "fulfilled" ? x.value.length : 0, error: x.status === "rejected" ? String(x.reason).slice(0, 160) : "" }));
-      const sample = parseFeedXml("<rss><channel><item><title>WRLDLINE TEST</title><link>https://example.com/test</link><description>test item</description></item></channel></rss>", "test", "https://example.com/rss");
+      const sampleXml = "<rss><channel><item><title>WRLDLINE TEST</title><link>https://example.com/test</link><description>test item</description></item></channel></rss>";
+      const sampleBlocks = extractXmlBlocks(sampleXml, "item");
+      const sampleTitle = sampleBlocks.length ? readXmlTag(sampleBlocks[0], "title") : "";
+      const sampleLink = sampleBlocks.length ? readXmlTag(sampleBlocks[0], "link") : "";
+      const sampleParsed = parseFeedXml(sampleXml, "test", "https://example.com/rss");
       const g = await Promise.allSettled([searchWeb("Saudi Arabia Gulf policy energy economy November 2026", "en-US")]);
       const google = g[0].status === "fulfilled" ? g[0].value.length : -1;
       const googleError = g[0].status === "rejected" ? String(g[0].reason).slice(0, 250) : "";
-      return reply({ ok: true, self_test: true, statuses, sample_parser_count: sample.length, google_rss_count: google, google_error: googleError });
+      return reply({ ok: true, self_test: true, statuses, sample_blocks: sampleBlocks.length, sample_title: sampleTitle, sample_link: sampleLink, sample_url: http(sampleLink), sample_parsed_count: sampleParsed.length, google_rss_count: google, google_error: googleError });
     }
     if (mode === "dossier") {
       const st = await db.from("editorial_runtime_state").select("state_value").eq("state_key", "dossier_next_due_at").maybeSingle();
