@@ -6,6 +6,7 @@
   const $ = id => document.getElementById(id);
   const number = value => new Intl.NumberFormat("ar").format(Number(value) || 0);
   const categories = { politics: "سياسة", economy: "اقتصاد", security: "أمن ودفاع", tech: "تقنية", sports: "رياضة", culture: "ثقافة", health: "صحة", science: "علوم", environment: "بيئة", society: "مجتمع", world: "حول العالم", uncategorized: "غير مصنف" };
+  const pageNames = { home: "الرئيسية", news: "صفحات الأخبار", account: "الحساب", advertise: "أعلن معنا", markets: "الأسواق", map: "الخريطة", history: "التاريخ", newsletter: "النشرة", contact: "التواصل", about: "من نحن", privacy: "الخصوصية", terms: "الشروط", sources: "المصادر", briefing: "الموجز اليومي", other: "أخرى" };
   const arrivals = { direct: "مباشر / إحالة غير متاحة", internal: "داخل الموقع", search: "محركات البحث", social: "شبكات اجتماعية", messaging: "تطبيقات المراسلة", email: "البريد الإلكتروني", other: "مصادر أخرى" };
   const engagements = { scroll_50: "تجاوز ٥٠٪ من منطقة التمرير", scroll_90: "تجاوز ٩٠٪ من منطقة التمرير", share: "مشاركة ناجحة", save: "حفظ ناجح", follow: "متابعة ناجحة", reaction: "تفاعل" };
   let client, revision = 0, authorized = false, disposed = false;
@@ -14,7 +15,7 @@
   function clear() {
     revision++; authorized = false;
     $("audienceDashboard").hidden = true;
-    for (const id of ["audienceMetrics", "audienceNews", "audienceArrivals", "audienceCategories", "audienceEngagement", "audienceFunnel", "audienceBilling"]) $(id).replaceChildren();
+    for (const id of ["audienceMetrics", "audienceNews", "audiencePages", "audienceArrivals", "audienceCategories", "audienceEngagement", "audienceFunnel", "audienceBilling"]) $(id).replaceChildren();
     $("audienceInsight").textContent = "—"; $("audienceUpdated").textContent = "";
   }
   function metric(title, value, hint) {
@@ -52,6 +53,7 @@
       table.appendChild(tr);
     }
     if (!table.children.length) { const tr = document.createElement("tr"), td = document.createElement("td"); td.colSpan = 5; td.textContent = "لا توجد أخبار مقاسة بعد."; tr.appendChild(td); table.appendChild(tr); }
+    list("audiencePages", (data.pages || []).map(row => ({ title: pageNames[row.page] || "أخرى", value: number(row.views) + " مشاهدة · " + number(row.sessions) + " جلسة", weight: row.views })));
     list("audienceArrivals", (data.arrivals || []).map(row => ({ title: arrivals[row.referrer_category] || "أخرى", value: number(row.sessions) + " جلسة", weight: row.sessions })));
     list("audienceCategories", (data.categories || []).map(row => ({ title: categories[row.category] || "غير مصنف", value: duration(row.active_seconds) + " · " + number(row.sessions) + " جلسة", weight: row.active_seconds })));
     list("audienceEngagement", (data.engagement || []).map(row => ({ title: engagements[row.engagement_type] || "تفاعل", value: number(row.events) + " حدث · " + number(row.sessions) + " جلسة", weight: row.events })));
