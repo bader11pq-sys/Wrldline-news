@@ -254,6 +254,7 @@ function renderHeader(active = "") {
   const links = [
     ["/index.html", "الرئيسية"],
     ["/dossier/", "ملفات الأحداث"],
+    ["/dossier/watchlist.html", "ما نراقبه"],
     ["/context.html", "غرفة السياق"],
     ["/balance.html", "ميزان الروايات"],
     ["/impact.html", "أطلس التأثير"],
@@ -282,7 +283,7 @@ function renderFooter() {
 </footer>`;
 }
 
-function pageShell({ title, description, canonical, body, jsonLd, extraHead = "", bodyClass = "" }) {
+function pageShell({ title, description, canonical, body, jsonLd, extraHead = "", bodyClass = "", activeNav = "/dossier/" }) {
   return `<!doctype html>
 <html lang="ar" dir="rtl" data-theme="light">
 <head>
@@ -312,7 +313,7 @@ ${extraHead}
 </head>
 <body class="dossier-page ${bodyClass}">
 <a class="skip-link" href="#main">تجاوز إلى المحتوى</a>
-${renderHeader(bodyClass === "dossier-index" ? "/dossier/" : "/dossier/")}
+${renderHeader(activeNav)}
 <main id="main">${body}</main>
 ${renderFooter()}
 <script src="/dossier.js?v=20261119-1" defer></script>
@@ -434,6 +435,14 @@ function renderDossier(d, now) {
           <li>${badge("unverified")} متداول بلا دليل كافٍ.</li>
         </ul>
       </div>
+      <div class="aside-card">
+        <h2>أدوات الملف</h2>
+        <ul class="tools">
+          <li><a href="/dossier/watchlist.html?dossier=${attr(d.slug)}">ما نراقبه في هذا الملف</a></li>
+          <li><a href="/dossier/claims.html?dossier=${attr(d.slug)}">ادعاءات هذا الملف</a></li>
+          <li><a href="/dossier/impact.html?dossier=${attr(d.slug)}">أثر هذا الملف</a></li>
+        </ul>
+      </div>
       <div class="aside-card aside-note">
         <h2>حدود الاستخدام</h2>
         <p>هذا الملف تحليل لمعلومات عامة. لا يدّعي معلومات سرية، ولا يقدم نصيحة استثمارية أو تأمينية. الأرقام منسوبة إلى مصادرها وتاريخها.</p>
@@ -501,6 +510,7 @@ function renderIndex(list, now) {
   <h1>ملفات الأحداث الحية</h1>
   <p class="lead">كل ملف يجمع ما حدث، وما تغيّر، وميزان الروايات، والسياق، والأثر على الخليج، وما نراقبه تالياً — بمصادر مؤرخة وحالة تحقق واضحة.</p>
   <div class="index-stats"><div><b>${list.length}</b><span>ملفات منشورة</span></div><div><b>${active}</b><span>ملف نشط</span></div><div><b>${list.reduce((n, d) => n + d.sources.length, 0)}</b><span>مصدراً موثقاً</span></div></div>
+  ${renderSuiteNav("/dossier/")}
 </div></section>
 <section class="wrap index-body">
   <div class="dossier-search">
@@ -524,6 +534,7 @@ function renderIndex(list, now) {
     <h2>كيف نبني الملف؟</h2>
     <p>نبدأ من مصادر عامة مؤرخة، نفصل وقت الحدث عن وقت نشر المعلومة، ونصنّف كل عبارة: واقعة، تصريح، تقدير، أو ادعاء غير متحقق. لا نملأ الفراغات بالتخمين، ونحفظ سجل التحديثات والتصحيحات في أسفل كل ملف.</p>
     <a href="/about.html">اقرأ المنهجية الكاملة</a>
+    <p class="muted">للمحررين: <a href="/dossier/review.html">طابور مراجعة التحديثات</a> — أداة داخلية غير مفهرسة.</p>
   </section>
 </section>`;
 
@@ -571,7 +582,7 @@ ${items}
 }
 
 function renderSitemap(list) {
-  const urls = [`${ORIGIN}/dossier/`, ...list.map((d) => `${ORIGIN}/dossier/${d.slug}.html`)];
+  const urls = [`${ORIGIN}/dossier/`, ...SUITE_PAGES.map(([href]) => `${ORIGIN}${href}`), ...list.map((d) => `${ORIGIN}/dossier/${d.slug}.html`)];
   return `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 ${urls.map((u) => `  <url><loc>${u}</loc></url>`).join("\n")}
@@ -585,10 +596,358 @@ function renderIndexJson(list) {
     dossiers: list.map((d) => ({
       slug: d.slug, title: d.title, shortTitle: d.shortTitle, status: d.status,
       priority: Number(d.priority || 0),
-      summary: d.summary, updatedAt: d.updatedAt, sectors: d.sectors, location: d.location,
+      summary: d.summary, updatedAt: d.updatedAt, sectors: d.sectors, location: d.location, keywords: d.keywords,
       url: `/dossier/${d.slug}.html`, sources: d.sources.length,
     })),
   }, null, 2) + "\n";
+}
+
+
+const SUITE_PAGES = [
+  ["/dossier/watchlist.html", "ما نراقبه"],
+  ["/dossier/claims.html", "ميزان الادعاءات"],
+  ["/dossier/impact.html", "أثر الملفات"],
+  ["/dossier/digest.html", "موجز الأسبوع"],
+];
+
+const CLAIM_TYPES = {
+  agreement: { label: "اتفاق", cls: "claim-agree", hint: "ما تتفق عليه المصادر المراجعة." },
+  difference: { label: "اختلاف", cls: "claim-diff", hint: "روايات متعارضة أو تفسيرات مختلفة." },
+  unverified: { label: "غير متحقق", cls: "claim-unv", hint: "ادعاء متداول بلا دليل كافٍ." },
+};
+
+const AR_MONTH_NUM = { "يناير": 1, "فبراير": 2, "مارس": 3, "أبريل": 4, "مايو": 5, "يونيو": 6, "يوليو": 7, "أغسطس": 8, "سبتمبر": 9, "أكتوبر": 10, "نوفمبر": 11, "ديسمبر": 12 };
+const pad2 = (n) => String(n).padStart(2, "0");
+
+function parseWhen(when, fallbackYear) {
+  const value = text(when);
+  if (!value) return { timing: "undated", date: null, approximate: false };
+  const exact = value.match(/(\d{1,2})\s+(يناير|فبراير|مارس|أبريل|مايو|يونيو|يوليو|أغسطس|سبتمبر|أكتوبر|نوفمبر|ديسمبر)\s+(\d{4})/);
+  if (exact) {
+    const month = AR_MONTH_NUM[exact[2]];
+    const date = `${exact[3]}-${pad2(month)}-${pad2(Number(exact[1]))}`;
+    if (Number.isFinite(Date.parse(date))) return { timing: "dated", date, approximate: false };
+  }
+  const approx = value.match(/(مطلع|منتصف|أواخر)\s+(يناير|فبراير|مارس|أبريل|مايو|يونيو|يوليو|أغسطس|سبتمبر|أكتوبر|نوفمبر|ديسمبر)\s*(\d{4})?/);
+  if (approx) {
+    const year = approx[3] || String(fallbackYear);
+    const day = approx[1] === "مطلع" ? 1 : approx[1] === "منتصف" ? 15 : 25;
+    return { timing: "dated", date: `${year}-${pad2(AR_MONTH_NUM[approx[2]])}-${pad2(day)}`, approximate: true };
+  }
+  const yearOnly = value.match(/\b(20\d{2})\b/);
+  if (yearOnly) return { timing: "dated", date: `${yearOnly[1]}-01-01`, approximate: true };
+  if (/أسبوع|مستمر|يومي|ربع|شهري/.test(value)) return { timing: "ongoing", date: null, approximate: false };
+  return { timing: "undated", date: null, approximate: false };
+}
+
+function collectWatch(list, now) {
+  const fallbackYear = new Date(now).getUTCFullYear();
+  const items = [];
+  for (const d of list) {
+    d.watchNext.forEach((w, i) => {
+      const parsed = parseWhen(w.when, fallbackYear);
+      items.push({
+        id: `${d.slug}-watch-${i}`,
+        dossier: d.slug,
+        dossierTitle: d.shortTitle,
+        status: d.status,
+        sectors: d.sectors,
+        what: w.what,
+        when: w.when,
+        why: w.why,
+        ...parsed,
+        url: `/dossier/${d.slug}.html#watch`,
+      });
+    });
+  }
+  const order = { dated: 0, ongoing: 1, undated: 2 };
+  items.sort((a, b) => (order[a.timing] - order[b.timing]) || (a.date && b.date ? a.date.localeCompare(b.date) : 0) || a.dossierTitle.localeCompare(b.dossierTitle, "ar"));
+  return items;
+}
+
+function collectClaims(list) {
+  const items = [];
+  for (const d of list) {
+    for (const type of ["unverified", "difference", "agreement"]) {
+      const key = type === "difference" ? "differences" : type === "agreement" ? "agreements" : "unverified";
+      d.narratives[key].forEach((n, i) => {
+        items.push({ id: `${d.slug}-${type}-${i}`, type, text: n.text, sourceRefs: n.sourceRefs, sourceMap: d.sourceMap, dossier: d.slug, dossierTitle: d.shortTitle, sectors: d.sectors, url: `/dossier/${d.slug}.html#balance` });
+      });
+    }
+  }
+  return items;
+}
+
+function collectImpact(list) {
+  const items = [];
+  for (const d of list) {
+    for (const type of ["actual", "potential"]) {
+      d.impact[type].forEach((n, i) => {
+        items.push({ id: `${d.slug}-${type}-${i}`, type, text: n.text, sourceRefs: n.sourceRefs, sourceMap: d.sourceMap, dossier: d.slug, dossierTitle: d.shortTitle, sectors: d.sectors, url: `/dossier/${d.slug}.html#impact` });
+      });
+    }
+  }
+  return items;
+}
+
+function renderSuiteNav(active = "") {
+  return `<nav class="suite-nav" aria-label="أدوات الملفات">${SUITE_PAGES.map(([href, label]) => `<a href="${href}"${href === active ? ' aria-current="page"' : ""}>${esc(label)}</a>`).join("")}</nav>`;
+}
+
+function suiteFilters(list, groups) {
+  return groups.map((group) => `<div class="filters" role="group" aria-label="${attr(group.label)}">${group.buttons.map(([value, label, attrName, isOn]) => `<button type="button" class="chip${isOn ? " is-on" : ""}" ${attrName}="${attr(value)}" aria-pressed="${isOn ? "true" : "false"}">${esc(label)}</button>`).join("")}</div>`).join("");
+}
+
+function renderWatchlist(list, items, now) {
+  const canonical = `${ORIGIN}/dossier/watchlist.html`;
+  const dated = items.filter((i) => i.timing === "dated").length;
+  const ongoing = items.filter((i) => i.timing === "ongoing").length;
+  const undated = items.filter((i) => i.timing === "undated").length;
+  const cards = items.map((i) => `<article class="card watch-item" data-suite-item data-type="${attr(i.timing)}" data-dossier="${attr(i.dossier)}" data-timing="${attr(i.timing)}">
+      <div class="card-top"><span class="status status-${attr(i.status)}"><span class="dot" aria-hidden="true"></span>${esc(i.dossierTitle)}</span>${i.when ? `<span class="when">${esc(i.when)}${i.approximate ? " <em>تقديري</em>" : ""}</span>` : ""}</div>
+      <h2>${esc(i.what)}</h2>
+      <p>${esc(i.why)}</p>
+      <div class="card-foot"><span>${esc(i.sectors.join(" · "))}</span><a href="${attr(i.url)}">افتح الملف ←</a></div>
+    </article>`).join("");
+  const body = `
+<section class="index-hero"><div class="wrap">
+  <span class="kicker">WATCHLIST · ما نراقبه</span>
+  <h1>ما نراقبه تالياً</h1>
+  <p class="lead">مؤشرات ومواعيد وقرارات من كل ملفات الأحداث في مكان واحد. نفصل الموعد المحدد عن المؤشر المستمر، ونوضح لماذا يستحق كل بند المتابعة. لا نضع تاريخاً لم نتحقق منه.</p>
+  <div class="index-stats"><div><b>${items.length}</b><span>بنداً للمتابعة</span></div><div><b>${dated}</b><span>موعد أو نافذة زمنية</span></div><div><b>${ongoing}</b><span>مؤشر مستمر</span></div><div><b>${undated}</b><span>بلا موعد محدد</span></div></div>
+  ${renderSuiteNav("/dossier/watchlist.html")}
+</div></section>
+<section class="wrap index-body" data-suite data-suite-unit="بند">
+  <div class="suite-intro"><p>يمكنك الاشتراك في التقويم أدناه لمتابعة المواعيد المحددة. المواعيد التقديرية موسومة بوضوح، ولا تُعرض كمواعيد رسمية.</p><div class="suite-actions"><a class="btn btn-primary" href="/dossier/watchlist.ics">تنزيل تقويم المتابعة (.ics)</a><a class="btn" href="/dossier/feed.xml">RSS الملفات</a></div></div>
+  ${suiteFilters(list, [
+    { label: "تصفية حسب نوع المتابعة", buttons: [["all", "الكل", "data-suite-timing", true], ["dated", "مواعيد", "data-suite-timing", false], ["ongoing", "مستمر", "data-suite-timing", false], ["undated", "غير محدد", "data-suite-timing", false]] },
+    { label: "تصفية حسب الملف", buttons: [["all", "كل الملفات", "data-suite-dossier", true], ...list.map((d) => [d.slug, d.shortTitle, "data-suite-dossier", false])] },
+  ])}
+  <p class="muted" data-suite-count role="status" aria-live="polite">${items.length} بنداً</p>
+  <div class="cards suite-cards">${cards}</div>
+  <p class="empty" data-suite-empty hidden>لا توجد بنود مطابقة لهذا الاختيار.</p>
+  <section class="index-note"><h2>كيف نقرأ هذا التقويم؟</h2><p>«مواعيد» تعني تاريخاً أو نافذة زمنية وردت في مصدر موثق؛ «تقديري» يعني أن المصدر ذكر نافذة مثل «مطلع ديسمبر» دون يوم محدد. «مستمر» مؤشر يُراقب دورياً مثل تقارير الملاحة أو أسعار السوق. «غير محدد» بند مهم لكن لا تاريخ له بعد، ولا نخترع له موعداً.</p><a href="/about.html">المنهجية الكاملة</a></section>
+</section>`;
+  const jsonLd = JSON.stringify({
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    name: "ما نراقبه تالياً — WRLDLINE",
+    description: "مؤشرات ومواعيد وقرارات قابلة للتحقق من ملفات الأحداث الحية.",
+    url: canonical,
+    numberOfItems: items.length,
+    itemListElement: items.map((i, index) => ({ "@type": "ListItem", position: index + 1, name: i.what, url: `${ORIGIN}${i.url}` })),
+  }).replace(/</g, "\\u003c");
+  return pageShell({ title: "ما نراقبه تالياً | WRLDLINE", description: "مؤشرات ومواعيد وقرارات من ملفات الأحداث الحية، مع تمييز المواعيد المؤكدة عن التقديرية.", canonical, body, jsonLd, bodyClass: "dossier-index dossier-suite", activeNav: "/dossier/watchlist.html" });
+}
+
+function renderClaims(list, items, now) {
+  const canonical = `${ORIGIN}/dossier/claims.html`;
+  const counts = { agreement: 0, difference: 0, unverified: 0 };
+  items.forEach((i) => { counts[i.type] += 1; });
+  const cards = items.map((i) => {
+    const type = CLAIM_TYPES[i.type];
+    return `<article class="card claim-card" data-suite-item data-type="${attr(i.type)}" data-dossier="${attr(i.dossier)}">
+      <div class="card-top"><span class="claim-badge ${type.cls}">${esc(type.label)}</span><span class="muted">${esc(i.dossierTitle)}</span></div>
+      <p class="claim-text">${esc(i.text)}</p>
+      <div class="claim-foot">${sourceLinks(i.sourceRefs, i.sourceMap)}<a href="${attr(i.url)}">سياق الادعاء ←</a></div>
+    </article>`;
+  }).join("");
+  const body = `
+<section class="index-hero"><div class="wrap">
+  <span class="kicker">CLAIMS BALANCE · ميزان الادعاءات</span>
+  <h1>ما تقوله المصادر… وما لم يثبت بعد</h1>
+  <p class="lead">كل ادعاء في ملفاتنا مصنّف: ما تتفق عليه المصادر، وما تختلف عليه، وما لم يتحقق. لا نعرض الادعاء كحقيقة، ولا نحذف الاختلاف لأنه غير مريح.</p>
+  <div class="index-stats"><div><b>${counts.agreement}</b><span>نقطة اتفاق</span></div><div><b>${counts.difference}</b><span>نقطة اختلاف</span></div><div><b>${counts.unverified}</b><span>ادعاء غير متحقق</span></div></div>
+  ${renderSuiteNav("/dossier/claims.html")}
+</div></section>
+<section class="wrap index-body" data-suite data-suite-unit="ادعاء">
+  ${suiteFilters(list, [
+    { label: "تصفية حسب حالة الادعاء", buttons: [["all", "الكل", "data-suite-type", true], ["unverified", "غير متحقق", "data-suite-type", false], ["difference", "اختلاف", "data-suite-type", false], ["agreement", "اتفاق", "data-suite-type", false]] },
+    { label: "تصفية حسب الملف", buttons: [["all", "كل الملفات", "data-suite-dossier", true], ...list.map((d) => [d.slug, d.shortTitle, "data-suite-dossier", false])] },
+  ])}
+  <p class="muted" data-suite-count role="status" aria-live="polite">${items.length} ادعاء</p>
+  <div class="cards suite-cards claim-grid">${cards}</div>
+  <p class="empty" data-suite-empty hidden>لا توجد ادعاءات مطابقة لهذا الاختيار.</p>
+  <section class="index-note"><h2>معنى الحالات</h2><p><strong>اتفاق:</strong> نقاط تتفق عليها المصادر المراجعة. <strong>اختلاف:</strong> روايات متعارضة أو تفسيرات مختلفة، نعرضها بأصحابها. <strong>غير متحقق:</strong> ادعاء متداول لا يكفي دليله الحالي، ونبقيه ظاهراً لأن إخفاءه قد يخلق ثقة زائفة.</p><a href="/balance.html">ميزان الروايات حسب الخبر</a></section>
+</section>`;
+  const jsonLd = JSON.stringify({
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
+    name: "ميزان الادعاءات — WRLDLINE",
+    description: "ادعاءات مصنفة إلى اتفاق واختلاف وغير متحقق من ملفات الأحداث الحية.",
+    url: canonical,
+    inLanguage: "ar",
+    hasPart: items.slice(0, 50).map((i) => ({ "@type": "Claim", name: i.text.slice(0, 140), url: `${ORIGIN}${i.url}` })),
+  }).replace(/</g, "\\u003c");
+  return pageShell({ title: "ميزان الادعاءات | WRLDLINE", description: "ما تتفق عليه المصادر وما تختلف عليه وما لم يتحقق، من ملفات الأحداث الحية.", canonical, body, jsonLd, bodyClass: "dossier-index dossier-suite", activeNav: "/dossier/claims.html" });
+}
+
+function renderImpact(list, items, now) {
+  const canonical = `${ORIGIN}/dossier/impact.html`;
+  const actual = items.filter((i) => i.type === "actual").length;
+  const potential = items.filter((i) => i.type === "potential").length;
+  const cards = items.map((i) => `<article class="card impact-card" data-suite-item data-type="${attr(i.type)}" data-dossier="${attr(i.dossier)}">
+      <div class="card-top"><span class="impact-badge ${i.type === "actual" ? "impact-actual" : "impact-potential"}">${i.type === "actual" ? "أثر فعلي" : "أثر محتمل"}</span><span class="muted">${esc(i.dossierTitle)}</span></div>
+      <p>${esc(i.text)}</p>
+      <div class="card-foot">${sourceLinks(i.sourceRefs, i.sourceMap)}<a href="${attr(i.url)}">الملف ←</a></div>
+    </article>`).join("");
+  const body = `
+<section class="index-hero"><div class="wrap">
+  <span class="kicker">DOSSIER IMPACT · أثر الملفات</span>
+  <h1>الأثر الفعلي… والاحتمال الذي لا نقدّمه كواقع</h1>
+  <p class="lead">نجمع ما وثّقته المصادر من أثر فعلي على السعودية والخليج، ونفصله عن الأثر المحتمل. الاحتمال سيناريو مبني على دليل، وليس تنبؤاً ولا توصية.</p>
+  <div class="index-stats"><div><b>${actual}</b><span>أثر فعلي موثق</span></div><div><b>${potential}</b><span>أثر محتمل</span></div><div><b>${list.length}</b><span>ملفاً</span></div></div>
+  ${renderSuiteNav("/dossier/impact.html")}
+</div></section>
+<section class="wrap index-body" data-suite data-suite-unit="أثر">
+  ${suiteFilters(list, [
+    { label: "تصفية حسب نوع الأثر", buttons: [["all", "الكل", "data-suite-type", true], ["actual", "أثر فعلي", "data-suite-type", false], ["potential", "أثر محتمل", "data-suite-type", false]] },
+    { label: "تصفية حسب الملف", buttons: [["all", "كل الملفات", "data-suite-dossier", true], ...list.map((d) => [d.slug, d.shortTitle, "data-suite-dossier", false])] },
+  ])}
+  <p class="muted" data-suite-count role="status" aria-live="polite">${items.length} أثراً</p>
+  <div class="cards suite-cards impact-card-grid">${cards}</div>
+  <p class="empty" data-suite-empty hidden>لا توجد آثار مطابقة لهذا الاختيار.</p>
+  <section class="index-note"><h2>حدود القراءة</h2><p>«أثر فعلي» يعني أن المصدر وثّق تغيراً حدث بالفعل: رسوم شحن، توقف عبور، رقم سعر، أو قرار. «أثر محتمل» يعني ما قد يترتب على استمرار الوضع، وهو سيناريو لا ضمان. لا نستخدم هذه الصفحة لتوصية استثمارية أو تأمينية.</p><a href="/impact.html">أطلس التأثير التفاعلي</a></section>
+</section>`;
+  const jsonLd = JSON.stringify({
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
+    name: "أثر الملفات — WRLDLINE",
+    description: "أثر فعلي ومحتمل للأحداث على السعودية والخليج، بمصادر موثقة.",
+    url: canonical,
+    inLanguage: "ar",
+    hasPart: items.slice(0, 50).map((i) => ({ "@type": "CreativeWork", name: i.text.slice(0, 140), url: `${ORIGIN}${i.url}` })),
+  }).replace(/</g, "\\u003c");
+  return pageShell({ title: "أثر الملفات | WRLDLINE", description: "أثر فعلي موثق وأثر محتمل للأحداث على السعودية والخليج، مع المصادر.", canonical, body, jsonLd, bodyClass: "dossier-index dossier-suite", activeNav: "/dossier/impact.html" });
+}
+
+function renderDigest(list, now) {
+  const canonical = `${ORIGIN}/dossier/digest.html`;
+  const nowISO = new Date(now).toISOString();
+  const weekStart = now - 7 * 86400000;
+  const recent = [];
+  for (const d of list) {
+    for (const c of d.whatChanged) {
+      if (Date.parse(c.at) >= weekStart) recent.push({ ...c, dossier: d });
+    }
+  }
+  recent.sort((a, b) => Date.parse(b.at) - Date.parse(a.at));
+  const fallback = list.flatMap((d) => d.whatChanged.slice(0, 1).map((c) => ({ ...c, dossier: d }))).sort((a, b) => Date.parse(b.at) - Date.parse(a.at));
+  const changes = (recent.length ? recent : fallback).slice(0, 8);
+  const top = list.find((d) => d.status === "active") || list[0];
+  const watch = collectWatch(list, now).filter((i) => i.timing !== "undated").slice(0, 5);
+  const unverified = collectClaims(list).filter((i) => i.type === "unverified").slice(0, 4);
+  const active = list.filter((d) => d.status === "active");
+  const changeItems = changes.map((c) => `<li><time datetime="${attr(c.at)}">${esc(arabicDate(c.at))}</time><div><a href="/dossier/${attr(c.dossier.slug)}.html">${esc(c.dossier.shortTitle)}</a><p>${esc(c.text)}</p></div></li>`).join("");
+  const watchItems = watch.map((w) => `<li><span class="when">${esc(w.when)}${w.approximate ? " <em>تقديري</em>" : ""}</span><div><a href="${attr(w.url)}">${esc(w.what)}</a><p>${esc(w.why)}</p></div></li>`).join("");
+  const unverifiedItems = unverified.map((u) => `<li><p>${esc(u.text)}</p><a href="${attr(u.url)}">${esc(u.dossierTitle)} ←</a></li>`).join("");
+  const activeCards = active.map((d) => `<a class="digest-card" href="/dossier/${attr(d.slug)}.html"><span class="status status-${attr(d.status)}"><span class="dot" aria-hidden="true"></span>${esc(STATUS[d.status].label)}</span><strong>${esc(d.title)}</strong><span class="muted">آخر تحديث ${esc(arabicDate(d.updatedAt))}</span></a>`).join("");
+  const body = `
+<section class="index-hero"><div class="wrap">
+  <span class="kicker">WEEKLY DOSSIER DIGEST</span>
+  <h1>موجز الملفات</h1>
+  <p class="lead">ما تغيّر في ملفات الأحداث هذا الأسبوع، وما نراقبه بعد ذلك، وما بقي غير متحقق. موجز واحد لمن لا يريد متابعة التحديثات لحظة بلحظة.</p>
+  <div class="index-stats"><div><b>${esc(arabicDate(nowISO))}</b><span>تاريخ الإصدار</span></div><div><b>${active.length}</b><span>ملف نشط</span></div><div><b>${changes.length}</b><span>تطوراً في الموجز</span></div></div>
+  ${renderSuiteNav("/dossier/digest.html")}
+</div></section>
+<section class="wrap index-body digest-body">
+  <article class="digest-feature">
+    <span class="kicker">ملف الأسبوع</span>
+    <h2><a href="/dossier/${attr(top.slug)}.html">${esc(top.title)}</a></h2>
+    <p>${esc(top.summary)}</p>
+    <div class="hero-meta"><span><b>الحالة</b> ${esc(STATUS[top.status].label)}</span><span><b>آخر تحديث</b> ${esc(arabicDate(top.updatedAt))}</span><span><b>المصادر</b> ${top.sources.length}</span></div>
+    <a class="btn btn-primary" href="/dossier/${attr(top.slug)}.html">افتح الملف</a>
+  </article>
+  <section class="digest-section"><h2>ما تغيّر هذا الأسبوع</h2><ol class="digest-list">${changeItems || '<li class="empty">لا توجد تحديثات مؤرخة في هذه النافذة.</li>'}</ol></section>
+  <section class="digest-section"><h2>ما نراقبه بعد ذلك</h2><ol class="digest-list">${watchItems || '<li class="empty">لا توجد بنود متابعة موسومة بموعد أو مؤشر مستمر.</li>'}</ol><p><a href="/dossier/watchlist.html">كل ما نراقبه ←</a></p></section>
+  <section class="digest-section"><h2>ما بقي غير متحقق</h2><ul class="digest-unverified">${unverifiedItems || '<li class="empty">لا توجد ادعاءات معلقة في هذا الإصدار.</li>'}</ul><p><a href="/dossier/claims.html">ميزان الادعاءات ←</a></p></section>
+  <section class="digest-section"><h2>الملفات النشطة</h2><div class="digest-grid">${activeCards}</div></section>
+  <section class="digest-cta"><h2>تصلك هذه الملفات أولاً</h2><p>اشترك في نشرة WRLDLINE لتصلك ملفات الأحداث والتطورات المهمة، مع تأكيد بريدك قبل أي إرسال.</p><a class="btn btn-primary" href="/newsletter.html">اشترك في النشرة</a></section>
+</section>`;
+  const jsonLd = JSON.stringify({
+    "@context": "https://schema.org",
+    "@type": "Article",
+    headline: "موجز ملفات الأحداث — WRLDLINE",
+    description: "ملخص أسبوعي لما تغيّر في ملفات الأحداث وما نراقبه وما لم يتحقق.",
+    datePublished: nowISO,
+    dateModified: nowISO,
+    inLanguage: "ar",
+    url: canonical,
+    author: { "@type": "Organization", name: "WRLDLINE", url: ORIGIN },
+    publisher: { "@type": "Organization", name: "WRLDLINE", url: ORIGIN, logo: { "@type": "ImageObject", url: `${ORIGIN}/favicon.svg` } },
+  }).replace(/</g, "\\u003c");
+  return pageShell({ title: "موجز الملفات الأسبوعي | WRLDLINE", description: "ما تغيّر في ملفات الأحداث هذا الأسبوع، وما نراقبه، وما بقي غير متحقق.", canonical, body, jsonLd, bodyClass: "dossier-index dossier-suite", activeNav: "/dossier/digest.html" });
+}
+
+
+function renderReview(list, now) {
+  const canonical = `${ORIGIN}/dossier/review.html`;
+  const meta = list.map((d) => ({ slug: d.slug, title: d.title, shortTitle: d.shortTitle, keywords: d.keywords, status: d.status }));
+  const rows = list.map((d) => `<li><a href="/dossier/${attr(d.slug)}.html">${esc(d.title)}</a><span>${d.keywords.length} كلمة ربط · ${esc(STATUS[d.status].label)}</span></li>`).join("");
+  const body = `
+<section class="index-hero"><div class="wrap">
+  <span class="kicker">EDITORIAL REVIEW QUEUE · داخلي</span>
+  <h1>طابور مراجعة تحديثات الملفات</h1>
+  <p class="lead">أداة للمحرر، لا للقارئ: تقارن آخر الأخبار المنشورة بكلمات كل ملف حدث، وتعرض المرشحات التي قد تستحق تحديثاً. لا يضيف النظام شيئاً إلى الملف تلقائياً؛ القرار تحريري، وكل إضافة تحتاج مصدراً وتاريخاً.</p>
+  <div class="index-stats"><div><b>${list.length}</b><span>ملفاً للمطابقة</span></div><div><b>${list.reduce((n, d) => n + d.keywords.length, 0)}</b><span>كلمة ربط</span></div><div><b>80</b><span>آخر خبر يُفحص</span></div></div>
+</div></section>
+<section class="wrap index-body review-body">
+  <div class="suite-intro"><p>المرشح ليس تحديثاً. راجع الخبر، تحقق من المصدر وتاريخه، ثم أضفه إلى الملف يدوياً إن كان يستحق. الأخبار غير المطابقة لا تظهر.</p><div class="suite-actions"><a class="btn" href="/dossier/">كل الملفات</a><a class="btn" href="/about.html#dossiers">منهجية الملفات</a></div></div>
+  <div class="review-controls">
+    <label>الملف <select id="reviewDossier"><option value="all">كل الملفات</option>${list.map((d) => `<option value="${attr(d.slug)}">${esc(d.shortTitle)}</option>`).join("")}</select></label>
+    <label>أقل عدد كلمات مطابقة <select id="reviewMin"><option value="1">1</option><option value="2" selected>2</option><option value="3">3</option></select></label>
+    <button type="button" class="btn" id="reviewRefresh">تحديث القائمة</button>
+    <span class="muted" id="reviewStatus" role="status" aria-live="polite">جارٍ تحميل الأخبار…</span>
+  </div>
+  <div class="cards suite-cards" id="reviewList"></div>
+  <p class="empty" id="reviewEmpty" hidden>لا توجد مرشحات مطابقة بهذه الشروط الآن.</p>
+  <section class="index-note"><h2>الملفات وكلماتها</h2><ul class="review-keywords">${rows}</ul><p class="muted">تُحدَّث الكلمات يدوياً في ملفات JSON. لا تُستخدم المطابقة كدليل على وجود صلة؛ هي مجرد إشارة للمراجعة.</p></section>
+</section>
+<script type="application/json" id="reviewDossiers">${JSON.stringify(meta).replace(/</g, "\\u003c")}</script>`;
+  return pageShell({ title: "طابور مراجعة تحديثات الملفات | WRLDLINE", description: "أداة تحريرية لمطابقة الأخبار الجديدة بكلمات ملفات الأحداث.", canonical, body, jsonLd: JSON.stringify({ "@context": "https://schema.org", "@type": "WebPage", name: "طابور مراجعة تحديثات الملفات", url: canonical, inLanguage: "ar", isAccessibleForFree: true }), bodyClass: "dossier-index dossier-suite dossier-review", activeNav: "/dossier/", extraHead: '<meta name="robots" content="noindex,nofollow"><script src="/review.js?v=20261119-1" defer></script>' });
+}
+
+function renderWatchlistJson(items, now) {
+  return JSON.stringify({ updatedAt: new Date(now).toISOString(), count: items.length, items }, null, 2) + "\n";
+}
+function renderClaimsJson(items, now) {
+  return JSON.stringify({ updatedAt: new Date(now).toISOString(), count: items.length, claims: items.map(({ sourceMap, ...rest }) => ({ ...rest, sources: rest.sourceRefs.map((ref) => { const s = sourceMap.get(ref); return s ? { publisher: s.publisher, url: s.url } : null; }).filter(Boolean) })) }, null, 2) + "\n";
+}
+function renderImpactJson(items, now) {
+  return JSON.stringify({ updatedAt: new Date(now).toISOString(), count: items.length, impacts: items.map(({ sourceMap, ...rest }) => ({ ...rest, sources: rest.sourceRefs.map((ref) => { const s = sourceMap.get(ref); return s ? { publisher: s.publisher, url: s.url } : null; }).filter(Boolean) })) }, null, 2) + "\n";
+}
+
+function icsEscape(value = "") {
+  return String(value).replace(/\\/g, "\\\\").replace(/\n/g, "\\n").replace(/,/g, "\\,").replace(/;/g, "\\;");
+}
+function renderIcs(items, now) {
+  const stamp = new Date(now).toISOString().replace(/[-:]/g, "").replace(/\.\d{3}/, "");
+  const events = items.filter((i) => i.timing === "dated" && i.date).map((i) => {
+    const start = i.date.replace(/-/g, "");
+    const endDate = new Date(Date.parse(i.date) + 86400000).toISOString().slice(0, 10).replace(/-/g, "");
+    const summary = `${i.approximate ? "[تقديري] " : ""}${i.what}`;
+    return `BEGIN:VEVENT
+UID:${i.id}@wrldline
+DTSTAMP:${stamp}
+DTSTART;VALUE=DATE:${start}
+DTEND;VALUE=DATE:${endDate}
+SUMMARY:${icsEscape(summary)}
+DESCRIPTION:${icsEscape(`${i.why}\nالموعد كما ورد في الملف: ${i.when}\nالملف: ${ORIGIN}/dossier/${i.dossier}.html`)}
+URL:${ORIGIN}${i.url}
+CATEGORIES:${icsEscape(i.sectors.join(","))}
+${i.approximate ? "X-WRLDLINE-APPROXIMATE:TRUE\n" : ""}END:VEVENT`;
+  }).join("\n");
+  return `BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//WRLDLINE//Watchlist//AR
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:WRLDLINE — ما نراقبه
+X-WR-CALDESC:مواعيد ومؤشرات من ملفات الأحداث الحية. المواعيد التقديرية موسومة.
+X-WR-TIMEZONE:Asia/Riyadh
+${events}
+END:VCALENDAR
+`;
 }
 
 function updateRootSitemap(list) {
@@ -597,7 +956,7 @@ function updateRootSitemap(list) {
   const source = fs.readFileSync(file, "utf8");
   const start = "  <!-- DOSSIERS:START -->";
   const end = "  <!-- DOSSIERS:END -->";
-  const block = [start, `  <url><loc>${ORIGIN}/dossier/</loc></url>`, ...list.map((d) => `  <url><loc>${ORIGIN}/dossier/${d.slug}.html</loc></url>`), end].join("\n");
+  const block = [start, `  <url><loc>${ORIGIN}/dossier/</loc></url>`, ...SUITE_PAGES.map(([href]) => `  <url><loc>${ORIGIN}${href}</loc></url>`), ...list.map((d) => `  <url><loc>${ORIGIN}/dossier/${d.slug}.html</loc></url>`), end].join("\n");
   let next;
   if (source.includes(start) && source.includes(end)) {
     next = source.replace(new RegExp(`${start}[\\s\\S]*?${end}`), block);
@@ -624,12 +983,24 @@ function build({ quiet = false } = {}) {
     (Date.parse(b.updatedAt) - Date.parse(a.updatedAt))
   );
   const now = Math.max(...list.map((d) => Date.parse(d.updatedAt)));
+  const watch = collectWatch(list, now);
+  const claims = collectClaims(list);
+  const impacts = collectImpact(list);
   fs.mkdirSync(OUT_DIR, { recursive: true });
   for (const d of list) fs.writeFileSync(path.join(OUT_DIR, `${d.slug}.html`), renderDossier(d, now), "utf8");
   fs.writeFileSync(path.join(OUT_DIR, "index.html"), renderIndex(list, now), "utf8");
   fs.writeFileSync(path.join(OUT_DIR, "index.json"), renderIndexJson(list), "utf8");
   fs.writeFileSync(path.join(OUT_DIR, "feed.xml"), renderFeed(list), "utf8");
   fs.writeFileSync(path.join(OUT_DIR, "sitemap.xml"), renderSitemap(list), "utf8");
+  fs.writeFileSync(path.join(OUT_DIR, "watchlist.html"), renderWatchlist(list, watch, now), "utf8");
+  fs.writeFileSync(path.join(OUT_DIR, "claims.html"), renderClaims(list, claims, now), "utf8");
+  fs.writeFileSync(path.join(OUT_DIR, "impact.html"), renderImpact(list, impacts, now), "utf8");
+  fs.writeFileSync(path.join(OUT_DIR, "digest.html"), renderDigest(list, now), "utf8");
+  fs.writeFileSync(path.join(OUT_DIR, "review.html"), renderReview(list, now), "utf8");
+  fs.writeFileSync(path.join(OUT_DIR, "watchlist.json"), renderWatchlistJson(watch, now), "utf8");
+  fs.writeFileSync(path.join(OUT_DIR, "claims.json"), renderClaimsJson(claims, now), "utf8");
+  fs.writeFileSync(path.join(OUT_DIR, "impact.json"), renderImpactJson(impacts, now), "utf8");
+  fs.writeFileSync(path.join(OUT_DIR, "watchlist.ics"), renderIcs(watch, now), "utf8");
   updateRootSitemap(list);
   if (!quiet) {
     console.log(`Built ${list.length} dossiers:`);
@@ -647,4 +1018,4 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
   }
 }
 
-export { build, validate, renderDossier, renderIndex, renderFeed, renderSitemap, DossierError };
+export { build, validate, renderDossier, renderIndex, renderFeed, renderSitemap, renderWatchlist, renderClaims, renderImpact, renderDigest, renderWatchlistJson, renderClaimsJson, renderImpactJson, renderIcs, renderReview, parseWhen, collectWatch, collectClaims, collectImpact, DossierError };

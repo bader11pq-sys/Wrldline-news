@@ -1,0 +1,358 @@
+{
+  "updatedAt": "2026-11-19T10:00:00.000Z",
+  "count": 18,
+  "items": [
+    {
+      "id": "bab-al-mandab-2026-watch-2",
+      "dossier": "bab-al-mandab-2026",
+      "dossierTitle": "باب المندب",
+      "status": "active",
+      "sectors": [
+        "الشحن",
+        "الطاقة",
+        "الأمن",
+        "التجارة",
+        "الموانئ"
+      ],
+      "what": "خدمة MSC الجديدة بين شمال الهند والبحر الأحمر",
+      "when": "أواخر نوفمبر 2026",
+      "why": "اختبار عملي لما إذا كانت الخطوط تعيد الثقة في الممر أم لا.",
+      "timing": "dated",
+      "date": "2026-11-25",
+      "approximate": true,
+      "url": "/dossier/bab-al-mandab-2026.html#watch"
+    },
+    {
+      "id": "opec-plus-december-2026-watch-0",
+      "dossier": "opec-plus-december-2026",
+      "dossierTitle": "أوبك+ ديسمبر",
+      "status": "monitoring",
+      "sectors": [
+        "الطاقة",
+        "الاقتصاد",
+        "الأسواق",
+        "التجارة"
+      ],
+      "what": "اجتماع أوبك+ في 29 نوفمبر",
+      "when": "29 نوفمبر 2026",
+      "why": "هو القرار الحاسم لمستوى إنتاج يناير، والسوق ينتظره أكثر من بيان نوفمبر.",
+      "timing": "dated",
+      "date": "2026-11-29",
+      "approximate": false,
+      "url": "/dossier/opec-plus-december-2026.html#watch"
+    },
+    {
+      "id": "opec-plus-december-2026-watch-1",
+      "dossier": "opec-plus-december-2026",
+      "dossierTitle": "أوبك+ ديسمبر",
+      "status": "monitoring",
+      "sectors": [
+        "الطاقة",
+        "الاقتصاد",
+        "الأسواق",
+        "التجارة"
+      ],
+      "what": "علاوات أرامكو لشهر يناير",
+      "when": "مطلع ديسمبر 2026",
+      "why": "تكشف ما إذا كان خفض ديسمبر بداية اتجاه أم خطوة موسمية.",
+      "timing": "dated",
+      "date": "2026-12-01",
+      "approximate": true,
+      "url": "/dossier/opec-plus-december-2026.html#watch"
+    },
+    {
+      "id": "opec-plus-december-2026-watch-2",
+      "dossier": "opec-plus-december-2026",
+      "dossierTitle": "أوبك+ ديسمبر",
+      "status": "monitoring",
+      "sectors": [
+        "الطاقة",
+        "الاقتصاد",
+        "الأسواق",
+        "التجارة"
+      ],
+      "what": "تقرير أوبك الشهري وتقرير وكالة الطاقة الدولية",
+      "when": "منتصف ديسمبر",
+      "why": "يوفران تقديرات الطلب والمعروض التي تفسر قرارات العلاوات.",
+      "timing": "dated",
+      "date": "2026-12-15",
+      "approximate": true,
+      "url": "/dossier/opec-plus-december-2026.html#watch"
+    },
+    {
+      "id": "qatarenergy-lng-2026-watch-1",
+      "dossier": "qatarenergy-lng-2026",
+      "dossierTitle": "غاز قطر",
+      "status": "monitoring",
+      "sectors": [
+        "الطاقة",
+        "الغاز",
+        "التجارة",
+        "الأسواق"
+      ],
+      "what": "بدء إنتاج مشروع Golden Pass الأمريكي",
+      "when": "2027 وفق تقارير",
+      "why": "يحدد متى تتحول العقود الأمريكية إلى كميات فعلية.",
+      "timing": "dated",
+      "date": "2027-01-01",
+      "approximate": true,
+      "url": "/dossier/qatarenergy-lng-2026.html#watch"
+    },
+    {
+      "id": "hormuz-closure-2026-watch-0",
+      "dossier": "hormuz-closure-2026",
+      "dossierTitle": "أزمة هرمز",
+      "status": "active",
+      "sectors": [
+        "الطاقة",
+        "الشحن",
+        "الأمن",
+        "التجارة",
+        "الأمن الغذائي"
+      ],
+      "what": "تقارير UKMTO الأسبوعية عن العبور والحوادث",
+      "when": "أسبوعياً",
+      "why": "هي المؤشر المستقل الأقرب لقياس ما إذا كان الممر يتحسن فعلاً، لا مجرد تصريحات.",
+      "timing": "ongoing",
+      "date": null,
+      "approximate": false,
+      "url": "/dossier/hormuz-closure-2026.html#watch"
+    },
+    {
+      "id": "hormuz-closure-2026-watch-3",
+      "dossier": "hormuz-closure-2026",
+      "dossierTitle": "أزمة هرمز",
+      "status": "active",
+      "sectors": [
+        "الطاقة",
+        "الشحن",
+        "الأمن",
+        "التجارة",
+        "الأمن الغذائي"
+      ],
+      "what": "حالة خط شرق-غرب السعودي وحركة التصدير عبر البحر الأحمر",
+      "when": "مستمر",
+      "why": "هو الممر البديل الوحيد للسعودية إذا طال إغلاق هرمز، وتعرّض لضربات متكررة.",
+      "timing": "ongoing",
+      "date": null,
+      "approximate": false,
+      "url": "/dossier/hormuz-closure-2026.html#watch"
+    },
+    {
+      "id": "hormuz-closure-2026-watch-4",
+      "dossier": "hormuz-closure-2026",
+      "dossierTitle": "أزمة هرمز",
+      "status": "active",
+      "sectors": [
+        "الطاقة",
+        "الشحن",
+        "الأمن",
+        "التجارة",
+        "الأمن الغذائي"
+      ],
+      "what": "سعر برنت وعلاوات المخاطر",
+      "when": "يومياً",
+      "why": "السعر يترجم المخاطر الأمنية إلى كلفة مباشرة على المستهلك والموازنة.",
+      "timing": "ongoing",
+      "date": null,
+      "approximate": false,
+      "url": "/dossier/hormuz-closure-2026.html#watch"
+    },
+    {
+      "id": "opec-plus-december-2026-watch-3",
+      "dossier": "opec-plus-december-2026",
+      "dossierTitle": "أوبك+ ديسمبر",
+      "status": "monitoring",
+      "sectors": [
+        "الطاقة",
+        "الاقتصاد",
+        "الأسواق",
+        "التجارة"
+      ],
+      "what": "سعر برنت وعلاوة المخاطر المرتبطة بهرمز",
+      "when": "يومي",
+      "why": "يحدد ما إذا كان خفض العلاوة يعوضه ارتفاع السعر المرجعي أم لا.",
+      "timing": "ongoing",
+      "date": null,
+      "approximate": false,
+      "url": "/dossier/opec-plus-december-2026.html#watch"
+    },
+    {
+      "id": "bab-al-mandab-2026-watch-0",
+      "dossier": "bab-al-mandab-2026",
+      "dossierTitle": "باب المندب",
+      "status": "active",
+      "sectors": [
+        "الشحن",
+        "الطاقة",
+        "الأمن",
+        "التجارة",
+        "الموانئ"
+      ],
+      "what": "تقارير UKMTO الأسبوعية عن البحر الأحمر وباب المندب",
+      "when": "أسبوعياً",
+      "why": "تحدد ما إذا كانت السيطرة الجديدة ترافقت مع حوادث فعلية أم لا.",
+      "timing": "ongoing",
+      "date": null,
+      "approximate": false,
+      "url": "/dossier/bab-al-mandab-2026.html#watch"
+    },
+    {
+      "id": "bab-al-mandab-2026-watch-1",
+      "dossier": "bab-al-mandab-2026",
+      "dossierTitle": "باب المندب",
+      "status": "active",
+      "sectors": [
+        "الشحن",
+        "الطاقة",
+        "الأمن",
+        "التجارة",
+        "الموانئ"
+      ],
+      "what": "حركة العبور في باب المندب وأسعار الشحن والتأمين",
+      "when": "مستمر",
+      "why": "هي الترجمة الاقتصادية المباشرة للتهديد الأمني.",
+      "timing": "ongoing",
+      "date": null,
+      "approximate": false,
+      "url": "/dossier/bab-al-mandab-2026.html#watch"
+    },
+    {
+      "id": "bab-al-mandab-2026-watch-4",
+      "dossier": "bab-al-mandab-2026",
+      "dossierTitle": "باب المندب",
+      "status": "active",
+      "sectors": [
+        "الشحن",
+        "الطاقة",
+        "الأمن",
+        "التجارة",
+        "الموانئ"
+      ],
+      "what": "هجمات على المنشآت السعودية وخط شرق-غرب",
+      "when": "مستمر",
+      "why": "استهداف المنشآت يحوّل التهديد من الملاحة إلى القدرة التصديرية نفسها.",
+      "timing": "ongoing",
+      "date": null,
+      "approximate": false,
+      "url": "/dossier/bab-al-mandab-2026.html#watch"
+    },
+    {
+      "id": "qatarenergy-lng-2026-watch-0",
+      "dossier": "qatarenergy-lng-2026",
+      "dossierTitle": "غاز قطر",
+      "status": "monitoring",
+      "sectors": [
+        "الطاقة",
+        "الغاز",
+        "التجارة",
+        "الأسواق"
+      ],
+      "what": "توجيهات قطر للطاقة الرسمية حول الطاقة والمحفظة",
+      "when": "الإعلانات الربعية",
+      "why": "تفصل التقديرات الخارجية عن الأرقام الرسمية.",
+      "timing": "ongoing",
+      "date": null,
+      "approximate": false,
+      "url": "/dossier/qatarenergy-lng-2026.html#watch"
+    },
+    {
+      "id": "qatarenergy-lng-2026-watch-3",
+      "dossier": "qatarenergy-lng-2026",
+      "dossierTitle": "غاز قطر",
+      "status": "monitoring",
+      "sectors": [
+        "الطاقة",
+        "الغاز",
+        "التجارة",
+        "الأسواق"
+      ],
+      "what": "عقود جديدة مع مشترين آسيويين",
+      "when": "مستمر",
+      "why": "تكشف ما إذا كان المشترون يقبلون تركيزاً أكبر على مورد واحد.",
+      "timing": "ongoing",
+      "date": null,
+      "approximate": false,
+      "url": "/dossier/qatarenergy-lng-2026.html#watch"
+    },
+    {
+      "id": "hormuz-closure-2026-watch-1",
+      "dossier": "hormuz-closure-2026",
+      "dossierTitle": "أزمة هرمز",
+      "status": "active",
+      "sectors": [
+        "الطاقة",
+        "الشحن",
+        "الأمن",
+        "التجارة",
+        "الأمن الغذائي"
+      ],
+      "what": "جولة المفاوضات غير المباشرة في الدوحة",
+      "when": "غير محدد",
+      "why": "تحدد ما إذا كانت شروط إيران والولايات المتحدة قابلة للتقارب، أم أن المسار العسكري سيعود.",
+      "timing": "undated",
+      "date": null,
+      "approximate": false,
+      "url": "/dossier/hormuz-closure-2026.html#watch"
+    },
+    {
+      "id": "hormuz-closure-2026-watch-2",
+      "dossier": "hormuz-closure-2026",
+      "dossierTitle": "أزمة هرمز",
+      "status": "active",
+      "sectors": [
+        "الطاقة",
+        "الشحن",
+        "الأمن",
+        "التجارة",
+        "الأمن الغذائي"
+      ],
+      "what": "أي مشروع قرار جديد في مجلس الأمن",
+      "when": "غير محدد",
+      "why": "غياب الإجراء يعني استمرار الفراغ الدولي، وأي قرار جديد سيحدد شكل الضغط على الأطراف.",
+      "timing": "undated",
+      "date": null,
+      "approximate": false,
+      "url": "/dossier/hormuz-closure-2026.html#watch"
+    },
+    {
+      "id": "bab-al-mandab-2026-watch-3",
+      "dossier": "bab-al-mandab-2026",
+      "dossierTitle": "باب المندب",
+      "status": "active",
+      "sectors": [
+        "الشحن",
+        "الطاقة",
+        "الأمن",
+        "التجارة",
+        "الموانئ"
+      ],
+      "what": "جولة محادثات السلام اليمنية",
+      "when": "غير محدد",
+      "why": "أي ترتيب سياسي سيحدد مستقبل السيطرة على المضيق.",
+      "timing": "undated",
+      "date": null,
+      "approximate": false,
+      "url": "/dossier/bab-al-mandab-2026.html#watch"
+    },
+    {
+      "id": "qatarenergy-lng-2026-watch-2",
+      "dossier": "qatarenergy-lng-2026",
+      "dossierTitle": "غاز قطر",
+      "status": "monitoring",
+      "sectors": [
+        "الطاقة",
+        "الغاز",
+        "التجارة",
+        "الأسواق"
+      ],
+      "what": "عودة الشحنات عبر هرمز",
+      "when": "مرتبط بمفاوضات الممر",
+      "why": "كل شهر إغلاق يعزز منطق التحوط ويغير اقتصاديات المحفظة.",
+      "timing": "undated",
+      "date": null,
+      "approximate": false,
+      "url": "/dossier/qatarenergy-lng-2026.html#watch"
+    }
+  ]
+}

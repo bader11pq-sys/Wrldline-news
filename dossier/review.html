@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="ar" dir="rtl" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<title>طابور مراجعة تحديثات الملفات | WRLDLINE</title>
+<meta name="description" content="أداة تحريرية لمطابقة الأخبار الجديدة بكلمات ملفات الأحداث.">
+<link rel="canonical" href="https://al-ghaib.us.ci/dossier/review.html">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="WRLDLINE">
+<meta property="og:locale" content="ar_SA">
+<meta property="og:title" content="طابور مراجعة تحديثات الملفات | WRLDLINE">
+<meta property="og:description" content="أداة تحريرية لمطابقة الأخبار الجديدة بكلمات ملفات الأحداث.">
+<meta property="og:url" content="https://al-ghaib.us.ci/dossier/review.html">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="طابور مراجعة تحديثات الملفات | WRLDLINE">
+<meta name="twitter:description" content="أداة تحريرية لمطابقة الأخبار الجديدة بكلمات ملفات الأحداث.">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Noto+Kufi+Arabic:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/dossier.css?v=20261119-1">
+<link rel="alternate" type="application/rss+xml" title="ملفات WRLDLINE" href="/dossier/feed.xml">
+<meta name="robots" content="noindex,nofollow"><script src="/review.js?v=20261119-1" defer></script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"WebPage","name":"طابور مراجعة تحديثات الملفات","url":"https://al-ghaib.us.ci/dossier/review.html","inLanguage":"ar","isAccessibleForFree":true}</script>
+</head>
+<body class="dossier-page dossier-index dossier-suite dossier-review">
+<a class="skip-link" href="#main">تجاوز إلى المحتوى</a>
+<header class="site-header">
+  <div class="wrap header-inner">
+    <a class="brand" href="/index.html"><span class="brand-mark">W</span><span class="brand-copy"><strong>WRLDLINE</strong><small>LIVE EVENT DOSSIER</small></span></a>
+    <nav class="site-nav" aria-label="التنقل الرئيسي">
+      <a href="/index.html">الرئيسية</a><a href="/dossier/" aria-current="page">ملفات الأحداث</a><a href="/dossier/watchlist.html">ما نراقبه</a><a href="/context.html">غرفة السياق</a><a href="/balance.html">ميزان الروايات</a><a href="/impact.html">أطلس التأثير</a><a href="/markets.html">الأسواق</a><a href="/about.html">المنهجية</a>
+    </nav>
+    <button class="theme-toggle" type="button" data-dossier-theme aria-label="تبديل المظهر">☾</button>
+  </div>
+</header>
+<main id="main">
+<section class="index-hero"><div class="wrap">
+  <span class="kicker">EDITORIAL REVIEW QUEUE · داخلي</span>
+  <h1>طابور مراجعة تحديثات الملفات</h1>
+  <p class="lead">أداة للمحرر، لا للقارئ: تقارن آخر الأخبار المنشورة بكلمات كل ملف حدث، وتعرض المرشحات التي قد تستحق تحديثاً. لا يضيف النظام شيئاً إلى الملف تلقائياً؛ القرار تحريري، وكل إضافة تحتاج مصدراً وتاريخاً.</p>
+  <div class="index-stats"><div><b>4</b><span>ملفاً للمطابقة</span></div><div><b>34</b><span>كلمة ربط</span></div><div><b>80</b><span>آخر خبر يُفحص</span></div></div>
+</div></section>
+<section class="wrap index-body review-body">
+  <div class="suite-intro"><p>المرشح ليس تحديثاً. راجع الخبر، تحقق من المصدر وتاريخه، ثم أضفه إلى الملف يدوياً إن كان يستحق. الأخبار غير المطابقة لا تظهر.</p><div class="suite-actions"><a class="btn" href="/dossier/">كل الملفات</a><a class="btn" href="/about.html#dossiers">منهجية الملفات</a></div></div>
+  <div class="review-controls">
+    <label>الملف <select id="reviewDossier"><option value="all">كل الملفات</option><option value="hormuz-closure-2026">أزمة هرمز</option><option value="bab-al-mandab-2026">باب المندب</option><option value="opec-plus-december-2026">أوبك+ ديسمبر</option><option value="qatarenergy-lng-2026">غاز قطر</option></select></label>
+    <label>أقل عدد كلمات مطابقة <select id="reviewMin"><option value="1">1</option><option value="2" selected>2</option><option value="3">3</option></select></label>
+    <button type="button" class="btn" id="reviewRefresh">تحديث القائمة</button>
+    <span class="muted" id="reviewStatus" role="status" aria-live="polite">جارٍ تحميل الأخبار…</span>
+  </div>
+  <div class="cards suite-cards" id="reviewList"></div>
+  <p class="empty" id="reviewEmpty" hidden>لا توجد مرشحات مطابقة بهذه الشروط الآن.</p>
+  <section class="index-note"><h2>الملفات وكلماتها</h2><ul class="review-keywords"><li><a href="/dossier/hormuz-closure-2026.html">هرمز: ممر مغلق ومفاوضات تبحث عن مخرج</a><span>9 كلمة ربط · نشط</span></li><li><a href="/dossier/bab-al-mandab-2026.html">باب المندب: الحوثيون يعودون إلى الممر</a><span>8 كلمة ربط · نشط</span></li><li><a href="/dossier/opec-plus-december-2026.html">أوبك+ ديسمبر: تثبيت الإنتاج وخفض العلاوات الآسيوية</a><span>9 كلمة ربط · قيد المراقبة</span></li><li><a href="/dossier/qatarenergy-lng-2026.html">قطر للطاقة: التوسع خارج هرمز</a><span>8 كلمة ربط · قيد المراقبة</span></li></ul><p class="muted">تُحدَّث الكلمات يدوياً في ملفات JSON. لا تُستخدم المطابقة كدليل على وجود صلة؛ هي مجرد إشارة للمراجعة.</p></section>
+</section>
+<script type="application/json" id="reviewDossiers">[{"slug":"hormuz-closure-2026","title":"هرمز: ممر مغلق ومفاوضات تبحث عن مخرج","shortTitle":"أزمة هرمز","keywords":["هرمز","Hormuz","إيران","الخليج","ناقلات","UKMTO","ملاحة","نفط","غاز"],"status":"active"},{"slug":"bab-al-mandab-2026","title":"باب المندب: الحوثيون يعودون إلى الممر","shortTitle":"باب المندب","keywords":["باب المندب","Bab al-Mandab","الحوثيون","اليمن","البحر الأحمر","جدة","السعودية","شحن"],"status":"active"},{"slug":"opec-plus-december-2026","title":"أوبك+ ديسمبر: تثبيت الإنتاج وخفض العلاوات الآسيوية","shortTitle":"أوبك+ ديسمبر","keywords":["أوبك","OPEC","أرامكو","Aramco","النفط","برنت","علاوة","OSP","السعودية"],"status":"monitoring"},{"slug":"qatarenergy-lng-2026","title":"قطر للطاقة: التوسع خارج هرمز","shortTitle":"غاز قطر","keywords":["قطر","QatarEnergy","غاز مسال","LNG","هرمز","Cheniere","Woodside","North Field"],"status":"monitoring"}]</script></main>
+<footer class="site-footer">
+  <div class="wrap footer-grid">
+    <div><strong>WRLDLINE</strong><p>من الخبر إلى الفهم، ومن الفهم إلى القرار.</p></div>
+    <div><h2>الملفات</h2><a href="/dossier/">كل ملفات الأحداث</a><a href="/dossier/feed.xml">خلاصة الملفات</a><a href="/about.html">المنهجية والتحرير</a></div>
+    <div><h2>السياسات</h2><a href="/corrections.html">التصحيح</a><a href="/privacy.html">الخصوصية</a><a href="/terms.html">الشروط</a><a href="/contact.html">التواصل</a></div>
+  </div>
+  <div class="wrap footer-bottom"><span>© 2026 WRLDLINE NEWS</span><span>الملفات تحليل معلومات عامة موثقة، وليست معلومات سرية أو نصيحة استثمارية.</span></div>
+</footer>
+<script src="/dossier.js?v=20261119-1" defer></script>
+</body>
+</html>

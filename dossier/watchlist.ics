@@ -1,0 +1,63 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//WRLDLINE//Watchlist//AR
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:WRLDLINE — ما نراقبه
+X-WR-CALDESC:مواعيد ومؤشرات من ملفات الأحداث الحية. المواعيد التقديرية موسومة.
+X-WR-TIMEZONE:Asia/Riyadh
+BEGIN:VEVENT
+UID:bab-al-mandab-2026-watch-2@wrldline
+DTSTAMP:20261119T100000Z
+DTSTART;VALUE=DATE:20261125
+DTEND;VALUE=DATE:20261126
+SUMMARY:[تقديري] خدمة MSC الجديدة بين شمال الهند والبحر الأحمر
+DESCRIPTION:اختبار عملي لما إذا كانت الخطوط تعيد الثقة في الممر أم لا.\nالموعد كما ورد في الملف: أواخر نوفمبر 2026\nالملف: https://al-ghaib.us.ci/dossier/bab-al-mandab-2026.html
+URL:https://al-ghaib.us.ci/dossier/bab-al-mandab-2026.html#watch
+CATEGORIES:الشحن\,الطاقة\,الأمن\,التجارة\,الموانئ
+X-WRLDLINE-APPROXIMATE:TRUE
+END:VEVENT
+BEGIN:VEVENT
+UID:opec-plus-december-2026-watch-0@wrldline
+DTSTAMP:20261119T100000Z
+DTSTART;VALUE=DATE:20261129
+DTEND;VALUE=DATE:20261130
+SUMMARY:اجتماع أوبك+ في 29 نوفمبر
+DESCRIPTION:هو القرار الحاسم لمستوى إنتاج يناير، والسوق ينتظره أكثر من بيان نوفمبر.\nالموعد كما ورد في الملف: 29 نوفمبر 2026\nالملف: https://al-ghaib.us.ci/dossier/opec-plus-december-2026.html
+URL:https://al-ghaib.us.ci/dossier/opec-plus-december-2026.html#watch
+CATEGORIES:الطاقة\,الاقتصاد\,الأسواق\,التجارة
+END:VEVENT
+BEGIN:VEVENT
+UID:opec-plus-december-2026-watch-1@wrldline
+DTSTAMP:20261119T100000Z
+DTSTART;VALUE=DATE:20261201
+DTEND;VALUE=DATE:20261202
+SUMMARY:[تقديري] علاوات أرامكو لشهر يناير
+DESCRIPTION:تكشف ما إذا كان خفض ديسمبر بداية اتجاه أم خطوة موسمية.\nالموعد كما ورد في الملف: مطلع ديسمبر 2026\nالملف: https://al-ghaib.us.ci/dossier/opec-plus-december-2026.html
+URL:https://al-ghaib.us.ci/dossier/opec-plus-december-2026.html#watch
+CATEGORIES:الطاقة\,الاقتصاد\,الأسواق\,التجارة
+X-WRLDLINE-APPROXIMATE:TRUE
+END:VEVENT
+BEGIN:VEVENT
+UID:opec-plus-december-2026-watch-2@wrldline
+DTSTAMP:20261119T100000Z
+DTSTART;VALUE=DATE:20261215
+DTEND;VALUE=DATE:20261216
+SUMMARY:[تقديري] تقرير أوبك الشهري وتقرير وكالة الطاقة الدولية
+DESCRIPTION:يوفران تقديرات الطلب والمعروض التي تفسر قرارات العلاوات.\nالموعد كما ورد في الملف: منتصف ديسمبر\nالملف: https://al-ghaib.us.ci/dossier/opec-plus-december-2026.html
+URL:https://al-ghaib.us.ci/dossier/opec-plus-december-2026.html#watch
+CATEGORIES:الطاقة\,الاقتصاد\,الأسواق\,التجارة
+X-WRLDLINE-APPROXIMATE:TRUE
+END:VEVENT
+BEGIN:VEVENT
+UID:qatarenergy-lng-2026-watch-1@wrldline
+DTSTAMP:20261119T100000Z
+DTSTART;VALUE=DATE:20270101
+DTEND;VALUE=DATE:20270102
+SUMMARY:[تقديري] بدء إنتاج مشروع Golden Pass الأمريكي
+DESCRIPTION:يحدد متى تتحول العقود الأمريكية إلى كميات فعلية.\nالموعد كما ورد في الملف: 2027 وفق تقارير\nالملف: https://al-ghaib.us.ci/dossier/qatarenergy-lng-2026.html
+URL:https://al-ghaib.us.ci/dossier/qatarenergy-lng-2026.html#watch
+CATEGORIES:الطاقة\,الغاز\,التجارة\,الأسواق
+X-WRLDLINE-APPROXIMATE:TRUE
+END:VEVENT
+END:VCALENDAR

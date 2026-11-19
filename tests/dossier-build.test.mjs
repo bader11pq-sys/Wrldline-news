@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { validate, renderDossier, renderIndex, renderFeed, renderSitemap, DossierError } from "../scripts/build-dossiers.mjs";
+import { validate, renderDossier, renderIndex, renderFeed, renderSitemap, renderWatchlist, renderClaims, renderImpact, renderDigest, renderWatchlistJson, renderIcs, renderReview, parseWhen, collectWatch, collectClaims, collectImpact, DossierError } from "../scripts/build-dossiers.mjs";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const CONTENT = path.join(ROOT, "content", "dossiers");
@@ -135,6 +135,60 @@ test("index, feed and sitemap cover every dossier exactly once", () => {
     assert.equal((feed.match(new RegExp(`/dossier/${d.slug}.html`, "g")) || []).length >= 1, true);
     assert.equal((sitemap.match(new RegExp(`/dossier/${d.slug}.html`, "g")) || []).length, 1);
   }
+});
+
+test("watchlist, claims, impact and digest render their core sections", () => {
+  const now = Date.parse("2026-11-19T12:00:00Z");
+  const watch = collectWatch(dossiers, now);
+  const claims = collectClaims(dossiers);
+  const impacts = collectImpact(dossiers);
+  const w = renderWatchlist(dossiers, watch, now);
+  assert.match(w, /ما نراقبه تالياً/);
+  assert.match(w, /watchlist\.ics/);
+  assert.match(w, /data-suite-item/);
+  const c = renderClaims(dossiers, claims, now);
+  assert.match(c, /ميزان الادعاءات/);
+  assert.match(c, /غير متحقق/);
+  const im = renderImpact(dossiers, impacts, now);
+  assert.match(im, /أثر فعلي/);
+  assert.match(im, /أثر محتمل/);
+  const dg = renderDigest(dossiers, now);
+  assert.match(dg, /موجز الملفات/);
+  assert.match(dg, /ملف الأسبوع/);
+});
+
+test("review queue is noindex and embeds dossier keywords", () => {
+  const now = Date.parse("2026-11-19T12:00:00Z");
+  const html = renderReview(dossiers, now);
+  assert.match(html, /noindex,nofollow/);
+  assert.match(html, /reviewDossiers/);
+  assert.match(html, /review\.js/);
+  assert.match(html, /طابور مراجعة تحديثات الملفات/);
+  for (const d of dossiers) {
+    assert.ok(html.includes(d.slug));
+    assert.ok(html.includes(d.keywords[0]));
+  }
+});
+
+test("watchlist JSON and ICS keep dates and mark estimates", () => {
+  const now = Date.parse("2026-11-19T12:00:00Z");
+  const watch = collectWatch(dossiers, now);
+  const json = JSON.parse(renderWatchlistJson(watch, now));
+  assert.ok(json.items.length >= 10);
+  assert.ok(json.items.some((i) => i.timing === "dated" && i.date));
+  const ics = renderIcs(watch, now);
+  assert.match(ics, /^BEGIN:VCALENDAR/);
+  assert.match(ics, /BEGIN:VEVENT/);
+  assert.match(ics, /DTSTART;VALUE=DATE:\d{8}/);
+  assert.match(ics, /\[تقديري\]/);
+});
+
+test("parseWhen distinguishes exact dates, windows and ongoing indicators", () => {
+  assert.deepEqual(parseWhen("29 نوفمبر 2026", 2026), { timing: "dated", date: "2026-11-29", approximate: false });
+  assert.equal(parseWhen("مطلع ديسمبر 2026", 2026).approximate, true);
+  assert.equal(parseWhen("أسبوعياً", 2026).timing, "ongoing");
+  assert.equal(parseWhen("غير محدد", 2026).timing, "undated");
+  assert.equal(parseWhen("2027 وفق تقارير", 2026).date, "2027-01-01");
 });
 
 test("generated files on disk match the curated content", () => {

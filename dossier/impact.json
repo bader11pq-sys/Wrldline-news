@@ -1,0 +1,667 @@
+{
+  "updatedAt": "2026-11-19T10:00:00.000Z",
+  "count": 27,
+  "impacts": [
+    {
+      "id": "hormuz-closure-2026-actual-0",
+      "type": "actual",
+      "text": "حركة الحاويات عبر الممر متوقفة فعلياً، وشركات الشحن تفرض رسوماً إضافية تصل إلى نحو 1,000 دولار للحاوية على السفن التي تعبر هرمز.",
+      "sourceRefs": [
+        "akm"
+      ],
+      "dossier": "hormuz-closure-2026",
+      "dossierTitle": "أزمة هرمز",
+      "sectors": [
+        "الطاقة",
+        "الشحن",
+        "الأمن",
+        "التجارة",
+        "الأمن الغذائي"
+      ],
+      "url": "/dossier/hormuz-closure-2026.html#impact",
+      "sources": [
+        {
+          "publisher": "AKM Shipping",
+          "url": "https://akmshipping.com/news/akm-industry-update-november-2026"
+        }
+      ]
+    },
+    {
+      "id": "hormuz-closure-2026-actual-1",
+      "type": "actual",
+      "text": "نحو 490 سفينة كانت تنتظر خارج الممر في 25 أكتوبر، منها نحو 200 عند مرسى الفجيرة وخور فكان، مع انتظار يمتد أسابيع في بعض الموانئ البديلة.",
+      "sourceRefs": [
+        "akm"
+      ],
+      "dossier": "hormuz-closure-2026",
+      "dossierTitle": "أزمة هرمز",
+      "sectors": [
+        "الطاقة",
+        "الشحن",
+        "الأمن",
+        "التجارة",
+        "الأمن الغذائي"
+      ],
+      "url": "/dossier/hormuz-closure-2026.html#impact",
+      "sources": [
+        {
+          "publisher": "AKM Shipping",
+          "url": "https://akmshipping.com/news/akm-industry-update-november-2026"
+        }
+      ]
+    },
+    {
+      "id": "hormuz-closure-2026-actual-2",
+      "type": "actual",
+      "text": "خام برنت أغلق أكتوبر قرب 118 دولاراً للبرميل، وهو أعلى مستوى في ستة أشهر وفق تقرير صناعي.",
+      "sourceRefs": [
+        "akm"
+      ],
+      "dossier": "hormuz-closure-2026",
+      "dossierTitle": "أزمة هرمز",
+      "sectors": [
+        "الطاقة",
+        "الشحن",
+        "الأمن",
+        "التجارة",
+        "الأمن الغذائي"
+      ],
+      "url": "/dossier/hormuz-closure-2026.html#impact",
+      "sources": [
+        {
+          "publisher": "AKM Shipping",
+          "url": "https://akmshipping.com/news/akm-industry-update-november-2026"
+        }
+      ]
+    },
+    {
+      "id": "hormuz-closure-2026-actual-3",
+      "type": "actual",
+      "text": "خط الأنابيب السعودي شرق-غرب، البديل للتصدير عبر البحر الأحمر، تعرض لإغلاق مؤقت في سبتمبر بعد ضربات من العراق، وهوجم مرة أخرى في 9 نوفمبر.",
+      "sourceRefs": [
+        "scr"
+      ],
+      "dossier": "hormuz-closure-2026",
+      "dossierTitle": "أزمة هرمز",
+      "sectors": [
+        "الطاقة",
+        "الشحن",
+        "الأمن",
+        "التجارة",
+        "الأمن الغذائي"
+      ],
+      "url": "/dossier/hormuz-closure-2026.html#impact",
+      "sources": [
+        {
+          "publisher": "Security Council Report",
+          "url": "https://www.securitycouncilreport.org/whatsinblue/2026/11/briefing-on-the-situation-in-the-gulf-region.php"
+        }
+      ]
+    },
+    {
+      "id": "hormuz-closure-2026-actual-4",
+      "type": "actual",
+      "text": "تقرير لرويترز ذكر أن إيران شنت ما لا يقل عن 135 هجوماً بصواريخ وطائرات مسيّرة على ما لا يقل عن 84 موقعاً للبنية التحتية في الخليج منذ فبراير.",
+      "sourceRefs": [
+        "scr"
+      ],
+      "dossier": "hormuz-closure-2026",
+      "dossierTitle": "أزمة هرمز",
+      "sectors": [
+        "الطاقة",
+        "الشحن",
+        "الأمن",
+        "التجارة",
+        "الأمن الغذائي"
+      ],
+      "url": "/dossier/hormuz-closure-2026.html#impact",
+      "sources": [
+        {
+          "publisher": "Security Council Report",
+          "url": "https://www.securitycouncilreport.org/whatsinblue/2026/11/briefing-on-the-situation-in-the-gulf-region.php"
+        }
+      ]
+    },
+    {
+      "id": "hormuz-closure-2026-potential-0",
+      "type": "potential",
+      "text": "استمرار الإغلاق يعني بقاء كلفة التأمين والشحن مرتفعة، وانتقال الضغط إلى أسعار الوقود والغذاء داخل دول الخليج.",
+      "sourceRefs": [
+        "scr",
+        "gcc"
+      ],
+      "dossier": "hormuz-closure-2026",
+      "dossierTitle": "أزمة هرمز",
+      "sectors": [
+        "الطاقة",
+        "الشحن",
+        "الأمن",
+        "التجارة",
+        "الأمن الغذائي"
+      ],
+      "url": "/dossier/hormuz-closure-2026.html#impact",
+      "sources": [
+        {
+          "publisher": "Security Council Report",
+          "url": "https://www.securitycouncilreport.org/whatsinblue/2026/11/briefing-on-the-situation-in-the-gulf-region.php"
+        },
+        {
+          "publisher": "الأمانة العامة لمجلس التعاون الخليجي",
+          "url": "https://www.gcc-sg.org/en/MediaCenter/News/Pages/news-2026-11-13-2.aspx"
+        }
+      ]
+    },
+    {
+      "id": "hormuz-closure-2026-potential-1",
+      "type": "potential",
+      "text": "أي فتح سياسي للممر لن يعيد خطوط الحاويات فوراً: تقديرات صناعية تشير إلى أسابيع بين أي اختراق سياسي وعودة الخدمات المنتظمة، لأن شركات التأمين يجب أن تعود لتغطية السفن.",
+      "sourceRefs": [
+        "akm"
+      ],
+      "dossier": "hormuz-closure-2026",
+      "dossierTitle": "أزمة هرمز",
+      "sectors": [
+        "الطاقة",
+        "الشحن",
+        "الأمن",
+        "التجارة",
+        "الأمن الغذائي"
+      ],
+      "url": "/dossier/hormuz-closure-2026.html#impact",
+      "sources": [
+        {
+          "publisher": "AKM Shipping",
+          "url": "https://akmshipping.com/news/akm-industry-update-november-2026"
+        }
+      ]
+    },
+    {
+      "id": "hormuz-closure-2026-potential-2",
+      "type": "potential",
+      "text": "جولة تصعيد جديدة بعد الانتخابات الأمريكية قد توسع استهداف المنشآت وتدفع أسعار الطاقة لمستويات أعلى.",
+      "sourceRefs": [
+        "scr",
+        "akm"
+      ],
+      "dossier": "hormuz-closure-2026",
+      "dossierTitle": "أزمة هرمز",
+      "sectors": [
+        "الطاقة",
+        "الشحن",
+        "الأمن",
+        "التجارة",
+        "الأمن الغذائي"
+      ],
+      "url": "/dossier/hormuz-closure-2026.html#impact",
+      "sources": [
+        {
+          "publisher": "Security Council Report",
+          "url": "https://www.securitycouncilreport.org/whatsinblue/2026/11/briefing-on-the-situation-in-the-gulf-region.php"
+        },
+        {
+          "publisher": "AKM Shipping",
+          "url": "https://akmshipping.com/news/akm-industry-update-november-2026"
+        }
+      ]
+    },
+    {
+      "id": "bab-al-mandab-2026-actual-0",
+      "type": "actual",
+      "text": "سيطرة الحوثيين على مناطق تطل على المضيق ترفع مخاطر الشحن وتدفع بعض الخطوط إلى تحويلات أو تأخير.",
+      "sourceRefs": [
+        "bbc",
+        "scr"
+      ],
+      "dossier": "bab-al-mandab-2026",
+      "dossierTitle": "باب المندب",
+      "sectors": [
+        "الشحن",
+        "الطاقة",
+        "الأمن",
+        "التجارة",
+        "الموانئ"
+      ],
+      "url": "/dossier/bab-al-mandab-2026.html#impact",
+      "sources": [
+        {
+          "publisher": "BBC News",
+          "url": "https://www.bbc.com/news/articles/cqvg2xgyvnjpo"
+        },
+        {
+          "publisher": "Security Council Report",
+          "url": "https://www.securitycouncilreport.org/whatsinblue/2026/11/briefing-on-the-situation-in-the-gulf-region.php"
+        }
+      ]
+    },
+    {
+      "id": "bab-al-mandab-2026-actual-1",
+      "type": "actual",
+      "text": "جدة تواجه انتظاراً من خمسة إلى عشرة أيام ومدد إفراج من ستة إلى ثمانية أيام، مع ازدحام موسمي في الربع الأخير.",
+      "sourceRefs": [
+        "akm"
+      ],
+      "dossier": "bab-al-mandab-2026",
+      "dossierTitle": "باب المندب",
+      "sectors": [
+        "الشحن",
+        "الطاقة",
+        "الأمن",
+        "التجارة",
+        "الموانئ"
+      ],
+      "url": "/dossier/bab-al-mandab-2026.html#impact",
+      "sources": [
+        {
+          "publisher": "AKM Shipping",
+          "url": "https://akmshipping.com/news/akm-industry-update-november-2026"
+        }
+      ]
+    },
+    {
+      "id": "bab-al-mandab-2026-actual-2",
+      "type": "actual",
+      "text": "أسعار النفط العالمية ارتفعت بعد سيطرة الحوثيين على المضيق، لأن السعودية كانت تعتمد على البحر الأحمر للتصدير بعد إغلاق هرمز.",
+      "sourceRefs": [
+        "bbc"
+      ],
+      "dossier": "bab-al-mandab-2026",
+      "dossierTitle": "باب المندب",
+      "sectors": [
+        "الشحن",
+        "الطاقة",
+        "الأمن",
+        "التجارة",
+        "الموانئ"
+      ],
+      "url": "/dossier/bab-al-mandab-2026.html#impact",
+      "sources": [
+        {
+          "publisher": "BBC News",
+          "url": "https://www.bbc.com/news/articles/cqvg2xgyvnjpo"
+        }
+      ]
+    },
+    {
+      "id": "bab-al-mandab-2026-actual-3",
+      "type": "actual",
+      "text": "نحو 330 ألف نازح بسبب تصاعد القتال وفق تقدير أممي، مع مئات القتلى.",
+      "sourceRefs": [
+        "bbc"
+      ],
+      "dossier": "bab-al-mandab-2026",
+      "dossierTitle": "باب المندب",
+      "sectors": [
+        "الشحن",
+        "الطاقة",
+        "الأمن",
+        "التجارة",
+        "الموانئ"
+      ],
+      "url": "/dossier/bab-al-mandab-2026.html#impact",
+      "sources": [
+        {
+          "publisher": "BBC News",
+          "url": "https://www.bbc.com/news/articles/cqvg2xgyvnjpo"
+        }
+      ]
+    },
+    {
+      "id": "bab-al-mandab-2026-potential-0",
+      "type": "potential",
+      "text": "استمرار التهديد قد يدفع مزيداً من خطوط الحاويات إلى رأس الرجاء الصالح، ما يزيد زمن العبور والكلفة على التجارة الخليجية.",
+      "sourceRefs": [
+        "akm"
+      ],
+      "dossier": "bab-al-mandab-2026",
+      "dossierTitle": "باب المندب",
+      "sectors": [
+        "الشحن",
+        "الطاقة",
+        "الأمن",
+        "التجارة",
+        "الموانئ"
+      ],
+      "url": "/dossier/bab-al-mandab-2026.html#impact",
+      "sources": [
+        {
+          "publisher": "AKM Shipping",
+          "url": "https://akmshipping.com/news/akm-industry-update-november-2026"
+        }
+      ]
+    },
+    {
+      "id": "bab-al-mandab-2026-potential-1",
+      "type": "potential",
+      "text": "إذا استقرت سيطرة الحوثيين على المضيق، قد يتحول السؤال من أمن العبور إلى شروط العبور والرسوم والتصاريح، وهو ما ترفضه دول الخليج علناً.",
+      "sourceRefs": [
+        "gcc"
+      ],
+      "dossier": "bab-al-mandab-2026",
+      "dossierTitle": "باب المندب",
+      "sectors": [
+        "الشحن",
+        "الطاقة",
+        "الأمن",
+        "التجارة",
+        "الموانئ"
+      ],
+      "url": "/dossier/bab-al-mandab-2026.html#impact",
+      "sources": [
+        {
+          "publisher": "الأمانة العامة لمجلس التعاون الخليجي",
+          "url": "https://www.gcc-sg.org/en/MediaCenter/News/Pages/news-2026-11-13-2.aspx"
+        }
+      ]
+    },
+    {
+      "id": "bab-al-mandab-2026-potential-2",
+      "type": "potential",
+      "text": "تعطل إضافي في البحر الأحمر قد يجبر السعودية على إعادة توجيه مزيد من الصادرات عبر خط شرق-غرب، وهو خط تعرّض لضربات أيضاً.",
+      "sourceRefs": [
+        "scr"
+      ],
+      "dossier": "bab-al-mandab-2026",
+      "dossierTitle": "باب المندب",
+      "sectors": [
+        "الشحن",
+        "الطاقة",
+        "الأمن",
+        "التجارة",
+        "الموانئ"
+      ],
+      "url": "/dossier/bab-al-mandab-2026.html#impact",
+      "sources": [
+        {
+          "publisher": "Security Council Report",
+          "url": "https://www.securitycouncilreport.org/whatsinblue/2026/11/briefing-on-the-situation-in-the-gulf-region.php"
+        }
+      ]
+    },
+    {
+      "id": "opec-plus-december-2026-actual-0",
+      "type": "actual",
+      "text": "تثبيت الإنتاج لديسمبر يعني عدم إضافة معروض جديد من الدول السبع في الشهر الأخير من 2026.",
+      "sourceRefs": [
+        "opec"
+      ],
+      "dossier": "opec-plus-december-2026",
+      "dossierTitle": "أوبك+ ديسمبر",
+      "sectors": [
+        "الطاقة",
+        "الاقتصاد",
+        "الأسواق",
+        "التجارة"
+      ],
+      "url": "/dossier/opec-plus-december-2026.html#impact",
+      "sources": [
+        {
+          "publisher": "أوبك",
+          "url": "https://www.opec.org/pr-detail/620-1-november-2026.html"
+        }
+      ]
+    },
+    {
+      "id": "opec-plus-december-2026-actual-1",
+      "type": "actual",
+      "text": "خفض علاوة آسيا 2 دولاراً عن نوفمبر يخفض السعر الرسمي لكل برميل يُباع في آسيا عند تساوي الأسعار المرجعية، ما يضغط على الإيراد لكل برميل.",
+      "sourceRefs": [
+        "argaam"
+      ],
+      "dossier": "opec-plus-december-2026",
+      "dossierTitle": "أوبك+ ديسمبر",
+      "sectors": [
+        "الطاقة",
+        "الاقتصاد",
+        "الأسواق",
+        "التجارة"
+      ],
+      "url": "/dossier/opec-plus-december-2026.html#impact",
+      "sources": [
+        {
+          "publisher": "Argaam",
+          "url": "https://www.argaam.com/en/article/articledetail/id/1951139"
+        }
+      ]
+    },
+    {
+      "id": "opec-plus-december-2026-actual-2",
+      "type": "actual",
+      "text": "علاوة أمريكا الشمالية بقيت عند 4.60 دولار فوق Argus، ما يعني أن السوق الأمريكية لم تشهد الخفض نفسه.",
+      "sourceRefs": [
+        "argaam"
+      ],
+      "dossier": "opec-plus-december-2026",
+      "dossierTitle": "أوبك+ ديسمبر",
+      "sectors": [
+        "الطاقة",
+        "الاقتصاد",
+        "الأسواق",
+        "التجارة"
+      ],
+      "url": "/dossier/opec-plus-december-2026.html#impact",
+      "sources": [
+        {
+          "publisher": "Argaam",
+          "url": "https://www.argaam.com/en/article/articledetail/id/1951139"
+        }
+      ]
+    },
+    {
+      "id": "opec-plus-december-2026-potential-0",
+      "type": "potential",
+      "text": "إذا قررت أوبك+ زيادة الإنتاج في 29 نوفمبر، فقد يتوسع الضغط النزولي على الأسعار ويزيد المنافسة على الحصة الآسيوية.",
+      "sourceRefs": [
+        "opec"
+      ],
+      "dossier": "opec-plus-december-2026",
+      "dossierTitle": "أوبك+ ديسمبر",
+      "sectors": [
+        "الطاقة",
+        "الاقتصاد",
+        "الأسواق",
+        "التجارة"
+      ],
+      "url": "/dossier/opec-plus-december-2026.html#impact",
+      "sources": [
+        {
+          "publisher": "أوبك",
+          "url": "https://www.opec.org/pr-detail/620-1-november-2026.html"
+        }
+      ]
+    },
+    {
+      "id": "opec-plus-december-2026-potential-1",
+      "type": "potential",
+      "text": "إذا أعيد فتح هرمز، قد تعود الإمدادات الخليجية بسرعة أكبر وتتغير معادلة العلاوات مجدداً.",
+      "sourceRefs": [
+        "scr",
+        "akm"
+      ],
+      "dossier": "opec-plus-december-2026",
+      "dossierTitle": "أوبك+ ديسمبر",
+      "sectors": [
+        "الطاقة",
+        "الاقتصاد",
+        "الأسواق",
+        "التجارة"
+      ],
+      "url": "/dossier/opec-plus-december-2026.html#impact",
+      "sources": [
+        {
+          "publisher": "Security Council Report",
+          "url": "https://www.securitycouncilreport.org/whatsinblue/2026/11/briefing-on-the-situation-in-the-gulf-region.php"
+        },
+        {
+          "publisher": "AKM Shipping",
+          "url": "https://akmshipping.com/news/akm-industry-update-november-2026"
+        }
+      ]
+    },
+    {
+      "id": "opec-plus-december-2026-potential-2",
+      "type": "potential",
+      "text": "استمرار الخصومات قد يدفع منتجين آخرين إلى تعديل علاواتهم، ما يوسع المنافسة السعرية في آسيا.",
+      "sourceRefs": [
+        "argaam"
+      ],
+      "dossier": "opec-plus-december-2026",
+      "dossierTitle": "أوبك+ ديسمبر",
+      "sectors": [
+        "الطاقة",
+        "الاقتصاد",
+        "الأسواق",
+        "التجارة"
+      ],
+      "url": "/dossier/opec-plus-december-2026.html#impact",
+      "sources": [
+        {
+          "publisher": "Argaam",
+          "url": "https://www.argaam.com/en/article/articledetail/id/1951139"
+        }
+      ]
+    },
+    {
+      "id": "qatarenergy-lng-2026-actual-0",
+      "type": "actual",
+      "text": "توقف الشحنات القطرية وإعلان القوة القاهرة بعد هجوم مارس.",
+      "sourceRefs": [
+        "reuters"
+      ],
+      "dossier": "qatarenergy-lng-2026",
+      "dossierTitle": "غاز قطر",
+      "sectors": [
+        "الطاقة",
+        "الغاز",
+        "التجارة",
+        "الأسواق"
+      ],
+      "url": "/dossier/qatarenergy-lng-2026.html#impact",
+      "sources": [
+        {
+          "publisher": "Reuters",
+          "url": "https://www.reuters.com/business/energy/qatarenergys-lng-expansion-may-leave-it-bigger-not-less-exposed-2026-11-18/"
+        }
+      ]
+    },
+    {
+      "id": "qatarenergy-lng-2026-actual-1",
+      "type": "actual",
+      "text": "عقود طويلة الأجل لشراء غاز أمريكي من Cheniere وWoodside، ما يضيف مصدراً خارج هرمز.",
+      "sourceRefs": [
+        "reuters",
+        "qe-cheniere"
+      ],
+      "dossier": "qatarenergy-lng-2026",
+      "dossierTitle": "غاز قطر",
+      "sectors": [
+        "الطاقة",
+        "الغاز",
+        "التجارة",
+        "الأسواق"
+      ],
+      "url": "/dossier/qatarenergy-lng-2026.html#impact",
+      "sources": [
+        {
+          "publisher": "Reuters",
+          "url": "https://www.reuters.com/business/energy/qatarenergys-lng-expansion-may-leave-it-bigger-not-less-exposed-2026-11-18/"
+        },
+        {
+          "publisher": "QatarEnergy",
+          "url": "https://www.qatarenergy.qa/en/MediaCenter/Pages/newsdetails.aspx?ItemId=3922"
+        }
+      ]
+    },
+    {
+      "id": "qatarenergy-lng-2026-actual-2",
+      "type": "actual",
+      "text": "استمرار التوسع المحلي إلى 142 مليون طن سنوياً قبل نهاية 2030.",
+      "sourceRefs": [
+        "qe"
+      ],
+      "dossier": "qatarenergy-lng-2026",
+      "dossierTitle": "غاز قطر",
+      "sectors": [
+        "الطاقة",
+        "الغاز",
+        "التجارة",
+        "الأسواق"
+      ],
+      "url": "/dossier/qatarenergy-lng-2026.html#impact",
+      "sources": [
+        {
+          "publisher": "QatarEnergy",
+          "url": "https://www.qatarenergy.qa/en/whoweare/Pages/WhatIsLNG.aspx"
+        }
+      ]
+    },
+    {
+      "id": "qatarenergy-lng-2026-potential-0",
+      "type": "potential",
+      "text": "إذا تحققت المحفظة 175–185 مليون طن، فقد تمتلك قطر نحو ربع السوق العالمية ونفوذاً تفاوضياً أكبر مع المشترين الآسيويين.",
+      "sourceRefs": [
+        "reuters"
+      ],
+      "dossier": "qatarenergy-lng-2026",
+      "dossierTitle": "غاز قطر",
+      "sectors": [
+        "الطاقة",
+        "الغاز",
+        "التجارة",
+        "الأسواق"
+      ],
+      "url": "/dossier/qatarenergy-lng-2026.html#impact",
+      "sources": [
+        {
+          "publisher": "Reuters",
+          "url": "https://www.reuters.com/business/energy/qatarenergys-lng-expansion-may-leave-it-bigger-not-less-exposed-2026-11-18/"
+        }
+      ]
+    },
+    {
+      "id": "qatarenergy-lng-2026-potential-1",
+      "type": "potential",
+      "text": "الاعتماد على كميات أمريكية أعلى كلفة قد يضغط على الهوامش إذا انخفضت أسعار الغاز أو تعطلت الشحنات.",
+      "sourceRefs": [
+        "reuters"
+      ],
+      "dossier": "qatarenergy-lng-2026",
+      "dossierTitle": "غاز قطر",
+      "sectors": [
+        "الطاقة",
+        "الغاز",
+        "التجارة",
+        "الأسواق"
+      ],
+      "url": "/dossier/qatarenergy-lng-2026.html#impact",
+      "sources": [
+        {
+          "publisher": "Reuters",
+          "url": "https://www.reuters.com/business/energy/qatarenergys-lng-expansion-may-leave-it-bigger-not-less-exposed-2026-11-18/"
+        }
+      ]
+    },
+    {
+      "id": "qatarenergy-lng-2026-potential-2",
+      "type": "potential",
+      "text": "تركيز المحفظة في بلدين قد يزيد تعرض قطر لمخاطر البنية التحتية والسياسة في كلا البلدين، بدل تنويعها جغرافياً.",
+      "sourceRefs": [
+        "reuters"
+      ],
+      "dossier": "qatarenergy-lng-2026",
+      "dossierTitle": "غاز قطر",
+      "sectors": [
+        "الطاقة",
+        "الغاز",
+        "التجارة",
+        "الأسواق"
+      ],
+      "url": "/dossier/qatarenergy-lng-2026.html#impact",
+      "sources": [
+        {
+          "publisher": "Reuters",
+          "url": "https://www.reuters.com/business/energy/qatarenergys-lng-expansion-may-leave-it-bigger-not-less-exposed-2026-11-18/"
+        }
+      ]
+    }
+  ]
+}

@@ -179,3 +179,53 @@
     })();
   }
 })();
+
+/* Dossier intelligence suite filters */
+(() => {
+  const suite = document.querySelector("[data-suite]");
+  if (!suite) return;
+  const items = [...suite.querySelectorAll("[data-suite-item]")];
+  const state = { type: "all", timing: "all", dossier: "all" };
+  const groups = [
+    { key: "type", selector: "[data-suite-type]", data: "suiteType" },
+    { key: "timing", selector: "[data-suite-timing]", data: "suiteTiming" },
+    { key: "dossier", selector: "[data-suite-dossier]", data: "suiteDossier" },
+  ];
+  for (const group of groups) {
+    const buttons = [...suite.querySelectorAll(group.selector)];
+    if (!buttons.length) continue;
+    const requested = new URLSearchParams(location.search).get(group.key === "dossier" ? "dossier" : group.key);
+    if (requested && buttons.some((b) => b.dataset[group.data] === requested)) state[group.key] = requested;
+    const setActive = (value) => {
+      for (const b of buttons) {
+        const on = b.dataset[group.data] === value;
+        b.classList.toggle("is-on", on);
+        b.setAttribute("aria-pressed", on ? "true" : "false");
+      }
+    };
+    setActive(state[group.key]);
+    for (const b of buttons) {
+      b.addEventListener("click", () => {
+        state[group.key] = b.dataset[group.data];
+        setActive(state[group.key]);
+        apply();
+      });
+    }
+  }
+  const count = suite.querySelector("[data-suite-count]");
+  const empty = suite.querySelector("[data-suite-empty]");
+  const unit = suite.dataset.suiteUnit || "عنصر";
+  function apply() {
+    let shown = 0;
+    for (const el of items) {
+      const ok = (state.type === "all" || el.dataset.type === state.type)
+        && (state.timing === "all" || el.dataset.timing === state.timing)
+        && (state.dossier === "all" || el.dataset.dossier === state.dossier);
+      el.hidden = !ok;
+      if (ok) shown += 1;
+    }
+    if (count) count.textContent = `${shown} ${unit}`;
+    if (empty) empty.hidden = shown !== 0;
+  }
+  apply();
+})();
