@@ -32,7 +32,7 @@ export function validatePayload(value: unknown, now = Date.now()): Payload {
     if (typeof event.occurred_at !== "string" || !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/.test(event.occurred_at)) fail();
     const timestamp = Date.parse(event.occurred_at);
     if (!Number.isFinite(timestamp) || timestamp > now + 60000 || timestamp < now - 86400000) fail();
-    member(event.page, ["home", "news", "account", "markets", "map", "history", "newsletter", "contact", "about", "privacy", "terms", "sources", "briefing", "other"]);
+    member(event.page, ["home", "news", "account", "advertise", "markets", "map", "history", "newsletter", "contact", "about", "privacy", "terms", "sources", "briefing", "other"]);
     member(event.device_type, ["mobile", "tablet", "desktop"]); member(event.locale, ["ar", "en"]);
     member(event.referrer_category, ["direct", "internal", "search", "social", "email", "messaging", "other"]);
     if ("article_id" in event) id(event.article_id, false);
