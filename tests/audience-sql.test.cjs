@@ -23,6 +23,7 @@ async function setup() {
     insert into public.subscriptions values('${user}','plus','active','sub_fixture_verified',now()+interval '1 day');`);
   await db.exec(fs.readFileSync(path.join(__dirname, '../supabase/migrations/20261115040000_audience_analytics.sql'), 'utf8'));
   await db.exec(fs.readFileSync(path.join(__dirname, '../supabase/migrations/20261119070000_add_advertise_to_audience_page.sql'), 'utf8'));
+  await db.exec(fs.readFileSync(path.join(__dirname, '../supabase/migrations/20261119071000_audience_dashboard_page_breakdown.sql'), 'utf8'));
   return db;
 }
 async function claims(db, role = 'service_role', editorial = null) {
