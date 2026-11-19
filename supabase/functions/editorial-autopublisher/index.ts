@@ -49,7 +49,7 @@ async function searchWithGroq(query: string): Promise<Src[]> {
       reasoning_effort: "low",
       stream: false,
       tool_choice: "required",
-      citation_options: "enabled",
+      citation_options: "disabled",
       tools: [{ type: "browser_search" }]
     })
   });
