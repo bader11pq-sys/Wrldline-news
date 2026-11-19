@@ -43,11 +43,29 @@
   }
   async function configure(){if(!apiUrl||!apiKey)throw new Error("Public API configuration not found");}
   async function fetchPage(offset,limit){
-    const query=apiUrl+"/rest/v1/articles?select=id,title,summary,category,lang,image_url,media_type,url,source_url,source_name,is_breaking,published_at,received_at,article_translations(lang,title,summary)&editorial_status=eq.published&order=published_at.desc&limit="+limit+"&offset="+offset;
-    const token=await window.WRLDLINE_AUTH?.getAccessToken?.();
-    const response=await fetch(query,{headers:{apikey:apiKey,...(token?{Authorization:"Bearer "+token}: {})},signal:AbortSignal.timeout(20000)});
-    if(!response.ok)throw new Error("News API HTTP "+response.status);
-    const rows=await response.json();if(!Array.isArray(rows))throw new Error("Invalid news response");
+    // Public readers must use the same allowlisted RPC as the homepage.
+    // Direct SELECT on public.articles is intentionally not granted to anon.
+    const response=await fetch(apiUrl+"/rest/v1/rpc/public_home_news_recent_v2",{
+      method:"POST",
+      headers:{apikey:apiKey,"Content-Type":"application/json","Accept":"application/json"},
+      body:JSON.stringify({
+        p_limit:limit,
+        p_before:new Date().toISOString(),
+        p_since:null,
+        p_offset:offset,
+        p_newsdata_only:null,
+        p_is_breaking:null,
+        p_is_exclusive:null
+      }),
+      signal:AbortSignal.timeout(20000)
+    });
+    if(!response.ok){
+      let detail="";
+      try{const payload=await response.json();detail=payload?.message||payload?.hint||payload?.details||"";}catch{}
+      throw new Error("News API HTTP "+response.status+(detail?": "+detail:""));
+    }
+    const rows=await response.json();
+    if(!Array.isArray(rows))throw new Error("Invalid public news response");
     return rows;
   }
   function mergeRows(rows){
@@ -65,7 +83,20 @@
     if(loading)return;loading=true;
     feed.innerHTML='<div class="shorts-state"><strong>'+t("جارٍ تحميل الأخبار...","Loading latest stories...")+'</strong><span>'+t("نحمّل أحدث الأخبار أولاً لتبدأ القراءة بسرعة","Loading the latest stories first")+'</span></div>';
     try{await configure();const rows=await fetchPage(0,100);stories=[];mergeRows(rows);nextOffset=rows.length;hasMore=rows.length===100;render();await refreshLatest();}
-    catch(error){console.error("WRLDLINE Shorts:",error);feed.innerHTML='<div class="shorts-state"><strong>'+t("تعذر تحميل الأخبار","Could not load stories")+'</strong><span>'+t("تحقق من اتصال الإنترنت ثم حاول مرة أخرى.","Check your connection and try again.")+'</span><button id="shortsRetry">'+t("إعادة المحاولة","Retry")+'</button></div>';document.getElementById("shortsRetry").onclick=loadAll;}
+    catch(error){
+      console.error("WRLDLINE Shorts:",error);
+      const reason=String(error?.message||"");
+      const status=Number(reason.match(/HTTP (\\d{3})/)?.[1]||0);
+      const explanation=status===401||status===403
+        ?t("خدمة الأخبار رفضت الطلب بسبب صلاحيات الوصول. أعد المحاولة لاحقاً.","The news service denied access. Please retry later.")
+        :status===404
+          ?t("واجهة موجز الأخبار غير متاحة حالياً.","The news feed endpoint is currently unavailable.")
+          :status
+            ?t("خدمة الأخبار غير متاحة حالياً (رمز "+status+").","The news service is unavailable (code "+status+").")
+            :t("تعذر الوصول إلى خدمة الأخبار. تحقق من اتصالك ثم أعد المحاولة.","Could not reach the news service. Check your connection and retry.");
+      feed.innerHTML='<div class="shorts-state"><strong>'+t("تعذر تحميل الأخبار","Could not load stories")+'</strong><span>'+explanation+'</span><button id="shortsRetry">'+t("إعادة المحاولة","Retry")+'</button></div>';
+      document.getElementById("shortsRetry").onclick=loadAll;
+    }
     finally{loading=false;}
   }
   function appendMoreButton(){
