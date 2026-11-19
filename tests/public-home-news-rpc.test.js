@@ -60,3 +60,17 @@ test("most-read module is backed by published article views and a minimum distin
   assert.ok(!migration.includes("session_id, event_id"));
   assert.ok(migration.includes("grant execute on function public.public_top_read_articles(integer, integer) to anon, authenticated;"));
 });
+
+
+test("WRLDLINE Shorts uses the allowlisted public news RPC instead of direct articles SELECT", () => {
+  const shorts = read("shorts.js");
+  const migration = read("supabase/migrations/20261115100000_reader_impact_intelligence.sql");
+  assert.match(shorts, /\/rest\/v1\/rpc\/public_home_news_recent_v2/);
+  assert.match(shorts, /method:"POST"/);
+  assert.match(shorts, /p_limit:limit/);
+  assert.match(shorts, /p_offset:offset/);
+  assert.doesNotMatch(shorts, /\/rest\/v1\/articles\?/);
+  assert.match(migration, /create or replace function public\.public_home_news_recent_v2/);
+  assert.match(migration, /article_translations jsonb/);
+  assert.match(migration, /media_type text/);
+});
