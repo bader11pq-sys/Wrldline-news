@@ -176,8 +176,9 @@ function readXmlAttr(block: string, tag: string, attr: string) {
   const re = new RegExp("<" + tag + "\\b([^>]*)>", "i");
   const hit = block.match(re);
   if (!hit) return "";
-  const m = hit[1].match(new RegExp("\\b" + attr + "=(?:\\"([^\\"]+)\\"|'([^']+)')", "i"));
-  return m ? xmlDecode(m[1] || m[2]) : "";
+  const attrs = [...hit[1].matchAll(/([A-Za-z_:][\w:.-]*)\s*=\s*(?:"([^"]*)"|'([^']*)')/g)];
+  const value = attrs.find(x => x[1].toLowerCase() === attr.toLowerCase());
+  return value ? xmlDecode(value[2] || value[3] || "") : "";
 }
 function classifyPublisher(publisher: string, sourceUrl: string) {
   const h = (host(sourceUrl) + " " + publisher).toLowerCase();
