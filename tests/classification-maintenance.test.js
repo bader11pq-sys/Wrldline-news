@@ -26,7 +26,7 @@ test("classification cleanup failures are warnings, not a gate on fresh-story cl
   assert.match(claimFunction, /for update skip locked/i);
 });
 
-test("classification worker still claims a bounded single-story batch", () => {
+test("classification worker still claims one story per invocation", () => {
   const worker = read("supabase/functions/classify-news-worker/index.ts");
   assert.match(worker, /claim_classification_batch",\s*\{\s*p_limit:\s*1\s*\}/);
 });
