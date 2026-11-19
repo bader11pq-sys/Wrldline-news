@@ -357,7 +357,7 @@ Deno.serve(async (req: Request) => {
         return reply({ ok: true, skipped: true, next_due_at: new Date(due).toISOString() });
       }
     }
-    let recent = await articles(db, mode === "context_monthly" ? 24 * 45 : mode === "mirror" ? 24 * 5 : 24 * 8, mode === "context_monthly" ? 220 : 160);
+    let recent = await articles(db, mode === "context_monthly" ? 24 * 45 : mode === "context_monitor" ? 48 : mode === "mirror" ? 24 * 5 : 24 * 8, mode === "context_monthly" ? 220 : 160);
     if (mode === "context_monitor") {
       const highImpactCategories = new Set(["politics", "economy", "security", "world"]);
       recent = recent.filter((x: any) => x.is_breaking === true || highImpactCategories.has(String(x.category || "").toLowerCase()));
