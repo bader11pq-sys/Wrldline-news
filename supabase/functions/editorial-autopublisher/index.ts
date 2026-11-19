@@ -219,7 +219,7 @@ async function buildPack(mode: string, db: any, recent: any[]) {
       if (mode.startsWith("context")) return x.source_scope === "international" || x.category === "politics" || x.category === "economy";
       if (mode === "watchlist") return x.category === "politics" || x.category === "economy";
       return x.source_scope === "international" || x.category === "politics" || x.category === "economy";
-    }).slice(0, 10);
+    }).slice(0, 18);
     const feedResults = await Promise.allSettled(selectedFeeds.map((x: any) => fetchRss(x.url, x.name)));
     feedResults.forEach(result => { if (result.status === "fulfilled") feedSources.push(...result.value); });
   }
