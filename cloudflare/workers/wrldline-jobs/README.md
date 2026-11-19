@@ -139,3 +139,57 @@ Do not deploy or shift traffic until an operator approves the production step. O
 | dead-letter | no consumer | 1,429 | 2026-11-15 14:23:23 |
 
 All four main queues remain paused. Total backlog is 4,473 messages. The recent `peek` sample contained scheduled task envelopes only; it did not contain article payloads. No message was replayed or purged.
+
+
+## Latest read-only production and monetization recheck — 2026-11-19 06:18 UTC
+
+This snapshot supersedes the older point-in-time status sections above. It was collected with read-only Supabase SQL, Edge Function log queries, and Cloudflare Queue/Worker GET endpoints. No production queue, Worker, Cron, Edge Function, secret, migration, or database setting was changed.
+
+### Deployed Worker and producer gates
+
+- Cloudflare currently routes 100% of `wrldline-jobs` traffic to **version 15** (deployment created 2026-11-18 17:45:34 UTC).
+- All four Cron Triggers remain configured: classification every minute, breaking every 2 minutes, general ingestion every 3 minutes, and translation every 5 minutes. A configured trigger does not mean its producer is enabled.
+- The deployed Worker bindings are intentionally fail-closed: `WRLDLINE_PRODUCERS_ENABLED=false`; `WRLDLINE_GENERAL_PRODUCER_ENABLED=true`; `WRLDLINE_BREAKING_PRODUCER_ENABLED=false`; `WRLDLINE_CLASSIFICATION_PRODUCER_ENABLED=false`; `WRLDLINE_TRANSLATION_PRODUCER_ENABLED=false`.
+- The deployed Worker source checks the global opt-in OR the individual pipeline opt-in before enqueueing. This is a **General-only recovery**, not a failed classification consumer. The current `main` branch Worker source does not yet contain these guards; this release-readiness branch does. Keep PR #48 open until its code and production evidence are reconciled and reviewed.
+
+### Current Cloudflare Queue metrics
+
+| Queue | Delivery paused | Backlog | Notes |
+|---|---:|---:|---|
+| `wrldline-news-general` | no | 0 | General producer is enabled |
+| `wrldline-news-classification` | no | 0 | Classification producer is disabled |
+| `wrldline-news-breaking` | yes | 349 | Producer disabled |
+| `wrldline-news-translation` | yes | 144 | Producer disabled |
+| `wrldline-jobs-dead-letter` | no consumer | 1,429 | No DLQ consumer |
+
+Total observed queue depth: **1,922 messages**. The classification queue's zero backlog does not mean classification completed: its producer is disabled, while eligible rows remain pending in Supabase. The deployed Worker also acknowledges and skips scheduled queue envelopes older than 15 minutes; do not expect old scheduler ticks to replay useful work. Do not unpause queues or replay DLQ messages as a bulk action.
+
+### RSS and classification state in Supabase
+
+- The canonical RSS set contains **80 active feeds**. At the snapshot, zero active feeds were stale by more than two hours and zero had a current `last_error`; latest feed fetch was 2026-11-19 06:15:50 UTC.
+- In the previous 24 hours there were **254 general ingestion runs**, latest finished 06:15:50 UTC; 415,333 parsed items were reported in aggregate. The ingestion-run counters totalled 19,241 successful source attempts and 1,079 failed source attempts (approximately 5.3% of those attempts failed). Mean run time was 14.6 seconds. Continue to monitor source failures even though the current feed rows are fresh.
+- The most recent `classify-news-worker` request was 2026-11-18 17:39:29 UTC. The latest `classify-news` request was 17:39:23 UTC. No later classifier invocation appeared in the last-24-hour Edge log aggregation.
+- Pending classification rows by receipt age: **149 within 60 minutes**, **4,518 between 1 and 24 hours**, and **7,630 between 1 and 7 days**. The production classifier contract only permits stories published in the previous 60 minutes (with its documented future-clock tolerance). Only the 149 fresh rows are potentially eligible; older rows must be expired/left out of LLM processing, not bulk-replayed.
+
+### NewsData and support schedulers
+
+- The latest `newsdata_fetched_at` across articles was 2026-11-17 11:22:26 UTC; zero rows recorded a NewsData fetch in the last 24 hours.
+- All six WRLDLINE support `pg_cron` jobs were inactive at the read: NewsData sync, notification dispatch, source freshness, audience retention, security counters, and daily global briefing. There were no cron job runs in the last 24 hours.
+- `notification_runtime.email_enabled=false` and `push_enabled=true`. Newsletter confirmation/sending must remain unavailable until email and its scheduled dispatcher are deliberately restored and tested.
+
+### Commercial and audience baseline
+
+- The deployed `audience-events` Edge Function is active and the table contains 51 collected events; latest received event was 2026-11-18 16:21:11 UTC.
+- In the last 30 days, the consented-event sample contained 34 homepage page views across 12 sessions. This is not total traffic or unique people. No sponsorship-contact, newsletter-signup, or Plus-interest event was recorded.
+- `contact_messages`, `newsletter_subscribers`, `newsletter_optins`, and `audience_plus_verifications` had zero rows. The two subscription rows were both `free/inactive`; no paid Plus activation or collected revenue was evidenced.
+- The advertiser page is not yet represented as a distinct page in the client analytics page map, so its page views can fall into `other`. Add an `advertise` page key consistently in the browser mapper, collector validation, database constraint/migration, and tests before relying on sponsor-page conversion metrics.
+
+### Release and next actions
+
+1. Keep General ingestion as the only enabled producer while its source quality and latency are monitored.
+2. Diagnose the classification worker's no-write authentication path and provider route with a controlled, single-message canary before enabling its producer. The pending backlog older than 60 minutes is not an LLM backfill target.
+3. Review redacted DLQ message reasons/schema before deciding whether any fresh message is safe to replay; never bulk-replay all 1,429 messages.
+4. Repair and verify NewsData sync authorization/scheduling before enabling only that support job. Keep notification email disabled until delivery credentials and a real confirmation cycle are proven.
+5. Add the advertiser-page analytics taxonomy and end-to-end form test in a reviewed code change; do not insert synthetic events or contact records into production to make metrics look healthy.
+6. Keep PR #48 in draft until the production queue/auth findings, browser smoke test, authenticated admin smoke test, and real backup/restore requirements have been resolved. Synthetic restore CI is not a real production backup restore.
+
