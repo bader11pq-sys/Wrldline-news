@@ -64,10 +64,11 @@
       const q = state.q || "";
       const rows = D.context.filter(c => (state.tag === "all" || !state.tag || c.tag === state.tag) && (!q || (c.title + " " + c.dek + " " + (c.keywords || []).join(" ")).includes(q)));
       if ($("#ctxCount")) $("#ctxCount").textContent = rows.length + " ملفاً";
-      root.innerHTML = rows.length ? '<div class="nr-grid">' + rows.map(c => {
+      const methodNote = '<p class="nr-note" role="note">ملفات السياق مرجعية تحريرية تُحدّث بشكل منفصل. مطابقة العناوين المباشرة تتم بالكلمات المفتاحية، ولا تثبت وحدها أن الخبر مرتبط بالملف. السيناريوهات أدناه نوعية وليست نسب احتمالات إحصائية.</p>';
+      root.innerHTML = methodNote + (rows.length ? '<div class="nr-grid">' + rows.map(c => {
         const live = matchArticles(c, 99).length;
         return '<article class="nr-card" data-ctx="' + esc(c.id) + '" tabindex="0"><div class="nr-card-top"><span class="nr-tag">' + esc(c.tag || "سياق") + '</span><span class="nr-meta">' + (live > 0 ? live + " عنواناً مباشراً" : "ملف تحليلي") + '</span></div><h3>' + esc(c.title) + "</h3><p>" + esc(c.dek) + '</p><div class="nr-card-foot"><span>افتح الملف</span><span>←</span></div></article>';
-      }).join("") + "</div>" : empty("لا ملفات مطابقة", "جرّب كلمة أخرى أو أزل التصفية.");
+      }).join("") + "</div>" : empty("لا ملفات مطابقة", "جرّب كلمة أخرى أو أزل التصفية."));
       root.querySelectorAll("[data-ctx]").forEach(card => card.addEventListener("click", () => openContext(card.dataset.ctx)));
     };
     toolbar?.addEventListener("input", e => { if (e.target.id === "ctxSearch") { state.q = e.target.value.trim(); draw(); } });
@@ -86,11 +87,12 @@
     const c = D.context.find(x => x.id === id);
     if (!c) return;
     openDetail('<div class="nr-detail-head"><div><span class="nr-tag">' + esc(c.tag || "سياق") + "</span><h2>" + esc(c.title) + "</h2><p>" + esc(c.dek) + '</p></div><button class="nr-close" type="button" aria-label="إغلاق"><svg aria-hidden="true"><use href="#i-close"/></svg></button></div>' +
+      '<p class="nr-note" role="note">هذا ملف مرجعي تحريري؛ مطابقة العناوين المباشرة لا تثبت ارتباطها بالحدث. السيناريوهات أدناه تصورات نوعية وليست نسب احتمالات إحصائية.</p>' +
       '<div class="nr-block"><h3>الخلفية</h3><ul>' + (c.background || []).map(x => "<li>" + esc(x) + "</li>").join("") + "</ul></div>" +
       '<div class="nr-two"><div class="nr-known"><h4>ما نعرفه</h4><ul>' + (c.known || []).map(x => "<li>" + esc(x) + "</li>").join("") + '</ul></div><div class="nr-unknown"><h4>ما لا نعرفه بعد</h4><ul>' + (c.unknown || []).map(x => "<li>" + esc(x) + "</li>").join("") + "</ul></div></div>" +
       '<div class="nr-block"><h3>اللاعبون والمصالح</h3><div class="nr-players">' + (c.players || []).map(p => '<div class="nr-player"><b>' + esc(p[0]) + "</b><span>" + esc(p[1]) + "</span></div>").join("") + "</div></div>" +
       '<div class="nr-block"><h3>ما يجب مراقبته</h3><ul>' + (c.watch || []).map(x => "<li>" + esc(x) + "</li>").join("") + "</ul></div>" +
-      '<div class="nr-block"><h3>السيناريوهات</h3><div class="nr-scenarios">' + (c.scenarios || []).map(s => '<div class="nr-scenario"><div class="nr-scenario-top"><span>' + esc(s[0]) + "</span><b>" + esc(s[1]) + '%</b></div><div class="nr-bar"><i style="width:' + Math.max(0, Math.min(100, Number(s[1]) || 0)) + '%"></i></div><p>' + esc(s[2]) + "</p></div>").join("") + "</div></div>" +
+      '<div class="nr-block"><h3>سيناريوهات محتملة (نوعية)</h3><div class="nr-scenarios">' + (c.scenarios || []).map(s => '<div class="nr-scenario"><div class="nr-scenario-top"><b>' + esc(s[0]) + '</b></div><p>' + esc(s[2]) + "</p></div>").join("") + "</div></div>" +
       '<div class="nr-block"><h3>مصادر الملف</h3>' + srcLinks(c.sources) + "</div>" + liveBlock(c));
     detail().querySelector(".nr-close")?.addEventListener("click", closeDetail);
     history.replaceState(null, "", "#" + id);
@@ -101,7 +103,7 @@
     state = { min: 2, age: 168, q: "" };
     const toolbar = $("#nrToolbar");
     if (toolbar) toolbar.innerHTML = '<div class="nr-search"><svg aria-hidden="true"><use href="#i-search"/></svg><input id="balSearch" type="search" placeholder="ابحث في العناوين المتقاطعة…" aria-label="بحث في ميزان الروايات"></div>' +
-      [2, 3, 4].map(n => '<button class="nr-chip' + (n === 2 ? " is-active" : "") + '" data-min="' + n + '">' + n + "+ مصادر</button>").join("") +
+      [2, 3, 4].map(n => '<button class="nr-chip' + (n === 2 ? " is-active" : "") + '" data-min="' + n + '">' + n + "+ جهات نشر</button>").join("") +
       '<select class="nr-select" id="balAge" aria-label="النافذة الزمنية"><option value="72">72 ساعة</option><option value="168" selected>7 أيام</option><option value="720">30 يوماً</option></select>' +
       '<span class="nr-count" id="balCount"></span>';
     const root = $("#nrRoot");
@@ -109,20 +111,20 @@
       const clusters = window.WLNR.clusterArticles(articles, { minSources: state.min, maxAgeH: state.age });
       const rows = state.q ? clusters.filter(c => c.articles.some(a => (a.title || "").includes(state.q)) || c.tokens.some(t => t.includes(state.q))) : clusters;
       const sources = new Set(rows.flatMap(c => c.sources));
-      if ($("#balCount")) $("#balCount").textContent = rows.length + " تقاطعاً · " + sources.size + " مصدراً";
-      stats([[rows.length, "تقاطعاً"], [sources.size, "مصدراً"], [rows.length ? Math.round(rows.reduce((n, c) => n + c.sourceCount, 0) / rows.length) : 0, "متوسط المصادر"]]);
+      if ($("#balCount")) $("#balCount").textContent = rows.length + " تقاطعاً · " + sources.size + " جهة نشر مسجلة";
+      stats([[rows.length, "تقاطعاً"], [sources.size, "جهة نشر مسجلة"], [rows.length ? Math.round(rows.reduce((n, c) => n + c.sourceCount, 0) / rows.length) : 0, "متوسط أسماء جهات النشر"]]);
       if (!rows.length) {
-        root.innerHTML = empty("لا تقاطعات كافية الآن", "قد تكون التغطية الحالية من مصدر واحد، أو خارج النافذة الزمنية. وسّع النافذة أو قلّل الحد الأدنى للمصادر.");
+        root.innerHTML = '<p class="nr-note" role="note">تجميع آلي أولي لعناوين متشابهة زمنياً ولغوياً. عدد أسماء جهات النشر لا يثبت استقلالها، ولا يؤكد وحده أن العناوين تصف الحدث نفسه أو أن الروايات متوازنة.</p>' + empty("لا تقاطعات كافية الآن", "قد تكون التغطية الحالية من ناشر واحد، أو خارج النافذة الزمنية. وسّع النافذة أو قلّل الحد الأدنى لجهات النشر.");
         return;
       }
-      root.innerHTML = rows.map(c => {
+      root.innerHTML = '<p class="nr-note" role="note">تجميع آلي أولي لعناوين متشابهة زمنياً ولغوياً. عدد أسماء جهات النشر لا يثبت استقلالها، ولا يؤكد وحده أن العناوين تصف الحدث نفسه أو أن الروايات متوازنة.</p>' + rows.map(c => {
         const label = (c.articles.find(a => /[\u0600-\u06FF]/.test(a.title)) || c.articles[0])?.title || c.tokens.join(" · ");
-        return '<article class="nr-cluster"><div class="nr-cluster-head"><div><span class="nr-tag">تقاطع تغطية</span><h3>' + esc(label) + '</h3></div><div class="nr-balance"><b>' + c.sourceCount + "</b><small>مصادر</small></div></div>" +
+        return '<article class="nr-cluster"><div class="nr-cluster-head"><div><span class="nr-tag">تجميع عناوين أولي</span><h3>' + esc(label) + '</h3></div><div class="nr-balance"><b>' + c.sourceCount + "</b><small>جهات نشر</small></div></div>" +
           '<div class="nr-headlines">' + c.articles.slice(0, 6).map(a => {
             const f = c.framing.find(x => x.article === a)?.terms || [];
             const u = window.WLNR.safeURL(window.WLNR.articleURL(a));
             return '<div class="nr-headline"><div class="nr-headline-src"><b>' + esc(window.WLNR.sourceName(a)) + "</b>" + esc(window.WLNR.timeAgo(a.published_at)) + '</div><div><a href="' + esc(u || "#") + '" target="_blank" rel="noopener noreferrer">' + esc(a.title) + "</a>" + (f.length ? '<div class="nr-frames">' + f.map(t => '<span class="nr-frame">' + esc(t) + "</span>").join("") + "</div>" : "") + "</div></div>";
-          }).join("") + '</div><div class="nr-cluster-foot"><span>فارق التوقيت: ' + c.timeGapH + ' ساعة · ' + c.articles.length + ' عنواناً</span><span>مؤشر التوازن <span class="nr-balance-meter"><i style="width:' + c.balance + '%"></i></span> ' + c.balance + "/100</span></div></article>";
+          }).join("") + '</div><div class="nr-cluster-foot"><span>فارق التوقيت: ' + c.timeGapH + ' ساعة · ' + c.articles.length + ' عنواناً</span><span>المؤشر آلي ولا يقيس استقلال المصادر أو دقة الروايات</span></div></article>';
       }).join("");
     };
     toolbar?.addEventListener("input", e => { if (e.target.id === "balSearch") { state.q = e.target.value.trim(); draw(); } });
@@ -141,7 +143,7 @@
   function renderImpact() {
     stats([[D.impact.length, "سلاسل تأثير"], [new Set(D.impact.flatMap(i => (i.sectors || []).map(s => s[0]))).size, "قطاعاً"], [new Set(D.impact.flatMap(i => (i.countries || []).map(c => c[0]))).size, "دولة"]]);
     const root = $("#nrRoot");
-    root.innerHTML = '<div class="nr-grid">' + D.impact.map(i => '<article class="nr-card" data-impact="' + esc(i.id) + '" tabindex="0"><div class="nr-card-top"><span class="nr-tag">' + esc(i.kicker) + '</span><span class="nr-meta">' + (i.chain || []).length + ' خطوات</span></div><h3>' + esc(i.title) + "</h3><p>" + esc(i.event) + '</p><div class="nr-card-foot"><span>افتح السلسلة</span><span>←</span></div></article>').join("") + "</div>";
+    root.innerHTML = '<p class="nr-note" role="note">سلاسل التأثير أدناه نماذج مرجعية تحريرية مكتوبة مسبقاً؛ ليست تقديراً آلياً لأثر خبر بعينه أو توقعاً كمياً. يلزم ربط كل حدث بمصادره وبياناته قبل تطبيق السلسلة عليه.</p><div class="nr-grid">' + D.impact.map(i => '<article class="nr-card" data-impact="' + esc(i.id) + '" tabindex="0"><div class="nr-card-top"><span class="nr-tag">' + esc(i.kicker) + '</span><span class="nr-meta">' + (i.chain || []).length + ' خطوات</span></div><h3>' + esc(i.title) + "</h3><p>" + esc(i.event) + '</p><div class="nr-card-foot"><span>افتح السلسلة</span><span>←</span></div></article>').join("") + "</div>";
     root.querySelectorAll("[data-impact]").forEach(card => card.addEventListener("click", () => openImpact(card.dataset.impact)));
   }
   function openImpact(id) {
@@ -149,6 +151,7 @@
     if (!i) return;
     const dirClass = t => /إيجابي/.test(t) ? "nr-dir--pos" : /سلبي/.test(t) ? "nr-dir--neg" : "nr-dir--mix";
     openDetail('<div class="nr-detail-head"><div><span class="nr-tag">' + esc(i.kicker) + "</span><h2>" + esc(i.title) + "</h2><p>" + esc(i.event) + '</p></div><button class="nr-close" type="button" aria-label="إغلاق"><svg aria-hidden="true"><use href="#i-close"/></svg></button></div>' +
+      '<p class="nr-note" role="note">هذه سلسلة أثر مرجعية عامة وليست نتيجة تحليل خاص بهذا الخبر. اتجاهات التأثير وصفية، ولا تمثل قياساً كمياً أو توقعاً مؤكداً.</p>' +
       '<div class="nr-block"><h3>سلسلة الانتقال</h3><div class="nr-chain">' + (i.chain || []).map((s, n) => '<div class="nr-step"><div class="nr-step-num">' + (n + 1) + '</div><div><h4>' + esc(s[0]) + "</h4><b>" + esc(s[1]) + "</b><p>" + esc(s[2]) + "</p></div></div>").join("") + "</div></div>" +
       '<div class="nr-block"><h3>القطاعات المتأثرة</h3><div class="nr-sectors">' + (i.sectors || []).map(s => '<div class="nr-sector"><div><b>' + esc(s[0]) + "</b><br><span style=\"font-size:9px;color:var(--muted)\">" + esc(s[2]) + '</span></div><span class="nr-dir ' + dirClass(s[1]) + '">' + esc(s[1]) + "</span></div>").join("") + "</div></div>" +
       '<div class="nr-block"><h3>الدول الأكثر تأثراً</h3><div class="nr-players">' + (i.countries || []).map(c => '<div class="nr-player"><b>' + esc(c[0]) + "</b><span>" + esc(c[1]) + "</span></div>").join("") + "</div></div>" +

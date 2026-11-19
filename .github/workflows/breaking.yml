@@ -1,4 +1,6 @@
 name: WRLDLINE Breaking News Desk
+# Separate urgent-source collector and SMS dispatcher. This schedule is not the Cloudflare queue producer.
+# Keep it enabled until SMS delivery has a tested replacement; the Cloudflare breaking task only flags articles.
 on:
   push:
     branches: [main]

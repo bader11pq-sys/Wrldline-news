@@ -146,8 +146,8 @@
     if (s1) s1.textContent = sourceCount || "—";
     if (s2) s2.textContent = clusters.length || "—";
     if (!clusters.length) {
-      host.innerHTML = '<div class="wl-frame-card"><div class="wl-frame-head"><strong>لا توجد روايات متعددة كافية الآن</strong><span>تحديث مباشر</span></div><p style="font-size:11.5px;color:var(--muted);line-height:1.8">عندما تتوفر عناوين متعددة للحدث نفسه من مصادر مختلفة، سنعرض هنا المقارنة. لا نلفّق التوازن؛ نعرض ما هو موجود.</p></div>' +
-        '<div class="wl-balance-side"><div class="wl-balance-stat"><b>' + (sourceCount || "—") + '</b><span>مصادر في العينة</span><small>آخر 48 ساعة</small></div><div class="wl-balance-stat"><b>0</b><span>حدث متعدد الروايات</span><small>بانتظار مزيد من التغطية</small></div></div>';
+      host.innerHTML = '<div class="wl-frame-card"><div class="wl-frame-head"><strong>لا تتوفر مجموعات عناوين كافية الآن</strong><span>تحديث مباشر</span></div><p style="font-size:11.5px;color:var(--muted);line-height:1.8">التجميع الأولي يطابق عناوين متشابهة لغوياً وزمنياً فقط. لا يثبت أن العناوين تصف الحدث نفسه أو أن جهات النشر مستقلة.</p></div>' +
+        '<div class="wl-balance-side"><div class="wl-balance-stat"><b>' + (sourceCount || "—") + '</b><span>جهات النشر المسجلة</span><small>ضمن موجز الأخبار</small></div><div class="wl-balance-stat"><b>0</b><span>تجميع عناوين آلي</span><small>بانتظار مزيد من التغطية</small></div></div>';
       return;
     }
     const c = clusters[0];
@@ -155,9 +155,9 @@
       '<div class="wl-frame-row"><div><h4>' + NR.escapeHTML(f.article.title) + '</h4><small>' + NR.escapeHTML(NR.sourceName(f.article)) + " · " + NR.timeAgo(f.article.published_at) + "</small></div>" +
       '<div class="wl-frame-meter" title="تمثيل نسبي داخل العينة"><i style="width:' + Math.max(18, Math.round(100 / Math.max(1, c.sourceCount))) + '%"></i></div></div>'
     ).join("");
-    host.innerHTML = '<div class="wl-frame-card"><div class="wl-frame-head"><strong>' + NR.escapeHTML(c.articles[0].title.slice(0, 86)) + (c.articles[0].title.length > 86 ? '…' : '') + '</strong><span>' + c.sourceCount + " مصادر · " + c.articles.length + " عنوان</span></div>" + rows +
+    host.innerHTML = '<div class="wl-frame-card"><div class="wl-frame-head"><strong>' + NR.escapeHTML(c.articles[0].title.slice(0, 86)) + (c.articles[0].title.length > 86 ? '…' : '') + '</strong><span>' + c.sourceCount + " جهات نشر مسجلة · " + c.articles.length + " عنوان</span></div>" + rows +
       '<div style="display:flex;justify-content:space-between;align-items:center;padding-top:10px;border-top:1px solid var(--line);font-size:10px;color:var(--muted)"><span>فارق التوقيت: ' + c.timeGapH + ' ساعة</span><a href="balance.html" style="color:var(--gold-strong);font-weight:700">قارن كامل ←</a></div></div>' +
-      '<div class="wl-balance-side"><div class="wl-balance-stat"><b>' + sourceCount + '</b><span>مصادر مستقلة في العينة</span><small>آخر 72 ساعة</small></div><div class="wl-balance-stat"><b>' + clusters.length + '</b><span>حدث متعدد الروايات</span><small>قابل للمقارنة الآن</small></div><div class="wl-balance-note"><strong>كيف نقيس؟</strong><p>نطابق العناوين المتشابهة، ثم نقيس عدد المصادر المستقلة وفارق التوقيت. لا نعرض حدثاً بمصدر واحد لأنه لا يحتمل المقارنة.</p></div></div>';
+      '<div class="wl-balance-side"><div class="wl-balance-stat"><b>' + sourceCount + '</b><span>أسماء جهات النشر في العينة</span><small>ضمن العناوين المتجمعة</small></div><div class="wl-balance-stat"><b>' + clusters.length + '</b><span>تجميعات عناوين آلية أولية</span><small>قابل للمقارنة الآن</small></div><div class="wl-balance-note"><strong>حدود التجميع</strong><p>مطابقة أولية لعناوين متشابهة ضمن نافذة زمنية. عدد أسماء جهات النشر لا يثبت استقلالها أو أن العناوين تتناول الحدث نفسه. يلزم فحص الأدلة قبل اعتماد مقارنة تحريرية.</p></div></div>';
   }
 
   function renderMirror(articles) {

@@ -1,4 +1,5 @@
-import { createClient } from "npm:@supabase/supabase-js@2";
+import { createClient } from "npm:@supabase/supabase-js@2.119.0";
+import { resolveSupabaseServiceKey, serviceClientOptions } from "../_shared/service-key.mjs";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": Deno.env.get("SITE_URL") || "https://al-ghaib.us.ci",
@@ -385,12 +386,14 @@ Deno.serve(async (req: Request) => {
   if (suppliedSecret.length < 32) return json({ error: "Unauthorized" }, 401);
 
   const supabaseUrl = Deno.env.get("SUPABASE_URL") || "https://vmaxbnogmmfyrcucapnq.supabase.co";
-  const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || (() => {
-    try { return JSON.parse(Deno.env.get("SUPABASE_SECRET_KEYS") || "{}").default; } catch { return null; }
-  })();
+  const serviceKey = resolveSupabaseServiceKey({
+    SUPABASE_SECRET_KEY: Deno.env.get("SUPABASE_SECRET_KEY") || "",
+    SUPABASE_SECRET_KEYS: Deno.env.get("SUPABASE_SECRET_KEYS") || "",
+    SUPABASE_SERVICE_ROLE_KEY: Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "",
+  });
   if (!serviceKey) return json({ error: "Supabase server credentials are unavailable" }, 500);
 
-  const db = createClient(supabaseUrl, serviceKey, { auth: { persistSession: false, autoRefreshToken: false } });
+  const db = createClient(supabaseUrl, serviceKey, serviceClientOptions(serviceKey));
   const { data: authRow, error: authError } = await db.from("wrldline_daily_briefing_auth").select("secret_hash").eq("singleton", true).maybeSingle();
   if (authError || !authRow?.secret_hash) return json({ error: "Briefing authentication is not configured" }, 503);
 

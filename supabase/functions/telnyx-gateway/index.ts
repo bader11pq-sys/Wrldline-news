@@ -1,13 +1,18 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
-import { createClient } from "npm:@supabase/supabase-js@2";
+import { createClient } from "npm:@supabase/supabase-js@2.119.0";
+import { resolveSupabaseServiceKey, serviceClientOptions } from "../_shared/service-key.mjs";
 
 const URL = Deno.env.get("SUPABASE_URL")!;
-const SERVICE = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || Deno.env.get("SUPABASE_SECRET_KEY") || "";
+const SERVICE = resolveSupabaseServiceKey({
+    SUPABASE_SECRET_KEY: Deno.env.get("SUPABASE_SECRET_KEY") || "",
+    SUPABASE_SECRET_KEYS: Deno.env.get("SUPABASE_SECRET_KEYS") || "",
+    SUPABASE_SERVICE_ROLE_KEY: Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "",
+  });
 const TELNYX = Deno.env.get("TELNYX_API_KEY") || "";
 const VERIFY_PROFILE = Deno.env.get("TELNYX_VERIFY_PROFILE_ID") || "";
 const MESSAGING_PROFILE = Deno.env.get("TELNYX_MESSAGING_PROFILE_ID") || "";
 const FROM_NUMBER = Deno.env.get("TELNYX_FROM_NUMBER") || "";
-const db = createClient(URL, SERVICE, { auth: { persistSession: false, autoRefreshToken: false } });
+const db = createClient(URL, SERVICE, serviceClientOptions(SERVICE));
 const cors = { "Access-Control-Allow-Origin": Deno.env.get("SITE_URL") || "https://al-ghaib.us.ci", "Access-Control-Allow-Headers": "authorization, apikey, content-type", "Access-Control-Allow-Methods": "POST, OPTIONS", "Content-Type": "application/json", "Vary": "Origin" };
 const json = (body: unknown, status=200) => new Response(JSON.stringify(body), { status, headers: cors });
 const e164 = (v: unknown) => typeof v === "string" && /^\+[1-9]\d{7,14}$/.test(v);

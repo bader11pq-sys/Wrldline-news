@@ -1,5 +1,6 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
-import { createClient } from "npm:@supabase/supabase-js@2";
+import { createClient } from "npm:@supabase/supabase-js@2.119.0";
+import { resolveSupabaseServiceKey, isSupabaseServiceRequest, serviceClientOptions } from "../_shared/service-key.mjs";
 
 const cors={"Access-Control-Allow-Origin":Deno.env.get("SITE_URL")||"https://al-ghaib.us.ci","Access-Control-Allow-Headers":"authorization, apikey, content-type, x-client-info, x-wrldline-cron-secret","Access-Control-Allow-Methods":"POST, OPTIONS","Content-Type":"application/json","Vary":"Origin"};
 const schema={type:"object",additionalProperties:false,properties:{title:{type:"string"},summary:{type:"string"},ai_summary:{type:"string"}},required:["title","summary","ai_summary"]};
@@ -379,7 +380,11 @@ Deno.serve(async(req:Request)=>{
  if(req.method==="OPTIONS")return new Response("ok",{headers:cors});
  if(req.method!=="POST")return json({error:"Method not allowed"},405);
  const url=Deno.env.get("SUPABASE_URL"),anon=Deno.env.get("SUPABASE_ANON_KEY")||(()=>{try{return JSON.parse(Deno.env.get("SUPABASE_PUBLISHABLE_KEYS")||"{}").default}catch{return null}})();
- const service=Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")||(()=>{try{return JSON.parse(Deno.env.get("SUPABASE_SECRET_KEYS")||"{}").default}catch{return null}})();
+ const service=resolveSupabaseServiceKey({
+    SUPABASE_SECRET_KEY: Deno.env.get("SUPABASE_SECRET_KEY") || "",
+    SUPABASE_SECRET_KEYS: Deno.env.get("SUPABASE_SECRET_KEYS") || "",
+    SUPABASE_SERVICE_ROLE_KEY: Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "",
+  });
  const deeplKey=Deno.env.get("DEEPL_API_KEY") || Deno.env.get("deepl_API_KEY") || null;
  const gemini=Deno.env.get("GEMINI_API_KEY") || Deno.env.get("GOOGLE_API_KEY") || null;
  const groqKey=Deno.env.get("GROQ_API_KEY") || null;
@@ -393,7 +398,8 @@ Deno.serve(async(req:Request)=>{
  if(!url||!anon||!service)return json({error:"Supabase server configuration is incomplete."},500);
  if(!deeplKey&&!gemini&&!groqKey&&!nvidiaKey&&!gonkaKey&&!openRouterKey&&!bazaarlinkKey)return json({error:"Configure DEEPL_API_KEY or an AI translation provider."},503);
  const token=(req.headers.get("Authorization")||"").replace(/^Bearer\s+/i,"");
- if(token!==service){
+ const isTrustedWorker=isSupabaseServiceRequest(req.headers,service);
+ if(!isTrustedWorker){
   if(!token)return json({error:"Authentication required."},401);
   const auth=createClient(url,anon,{auth:{persistSession:false,autoRefreshToken:false}});
   const {data,error}=await auth.auth.getUser(token);
@@ -403,7 +409,7 @@ Deno.serve(async(req:Request)=>{
  let body:any;try{body=await req.json()}catch{return json({error:"Invalid JSON"},400)}
  const ids=Array.isArray(body.article_ids)?[...new Set(body.article_ids.filter((x:unknown)=>typeof x==="string"))].slice(0,20):[];
  if(!ids.length)return json({error:"Send 1 to 20 article_ids."},400);
- const db=createClient(url,service,{auth:{persistSession:false,autoRefreshToken:false}});
+ const db=createClient(url,service,serviceClientOptions(service));
  const {data:providerCooldownRows,error:providerCooldownError}=await db.from("ai_provider_cooldowns").select("provider,disabled_until");
  if(providerCooldownError)return json({error:"Could not load AI provider cooldowns: "+providerCooldownError.message},500);
  const providerCooldowns=new Set<string>((providerCooldownRows||[]).filter((row:any)=>Date.parse(row.disabled_until)>Date.now()).map((row:any)=>row.provider));

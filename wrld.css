@@ -792,3 +792,26 @@ body.modal-open{overflow:hidden}
 .news-card .story-source{padding-top:11px;margin-top:3px;font-size:10px}
 .news-card:hover{transform:translateY(-5px);box-shadow:0 18px 38px #0d1a2b18;border-color:color-mix(in srgb,var(--gold) 60%,var(--line))}
 @media(max-width:760px){.news-grid{grid-template-columns:1fr;gap:14px}.card-content{padding:16px 17px 17px}.news-card h3{font-size:16px;line-height:1.7}.news-card p{font-size:12px}}
+
+/* Editorial verification state: distinguish missing human review from falsehood. */
+.editorial-verification{
+  display:inline-flex;align-items:center;gap:4px;max-width:100%;
+  border:1px solid color-mix(in srgb,var(--gold) 48%,var(--line));
+  border-radius:999px;padding:2px 8px;
+  background:var(--gold-soft);color:var(--ink-2);
+  font-size:9px;font-weight:700;line-height:1.55;white-space:nowrap;
+}
+.editorial-verification--disputed{
+  border-color:color-mix(in srgb,var(--red) 55%,var(--line));
+  background:var(--red-soft);color:var(--red);
+}
+.editorial-verification-disclosure{
+  margin:10px 0 14px;padding:10px 13px;
+  border-inline-start:3px solid var(--gold);
+  border-radius:8px;background:var(--gold-soft);
+  color:var(--ink-2);font-size:11px;line-height:1.9;
+}
+@media(max-width:760px){
+  .editorial-verification{font-size:8px;padding:2px 6px}
+  .editorial-verification-disclosure{font-size:10.5px}
+}

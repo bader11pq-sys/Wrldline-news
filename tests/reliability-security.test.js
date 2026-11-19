@@ -71,3 +71,9 @@ test('freshness SQL is service-role only and does not widen article access', () 
   assert.ok(!/grant\s+select\s+on\s+(?:public\.)?articles\s+to\s+anon/i.test(sql));
   assert.ok(!/vault\.decrypted_secrets|cron\.schedule|https:\/\/.*secret=/i.test(sql));
 });
+
+test('user preference updated_at trigger has a fixed pg_catalog search_path', () => {
+  const sql = fs.readFileSync(path.join(root, 'supabase/migrations/20261118160000_harden_user_preferences_trigger_search_path.sql'), 'utf8');
+  assert.match(sql, /alter function public\.set_user_preferences_updated_at\(\)\s+set search_path\s*=\s*pg_catalog/i);
+  assert.doesNotMatch(sql, /security definer|execute format|dynamic sql/i);
+});

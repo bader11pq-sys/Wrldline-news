@@ -61,6 +61,7 @@ jobs:
           export PGBIN=/usr/lib/postgresql/16/bin
           bash tests/editorial-trust-db.sh
           bash tests/notifications-db.sh
+          bash tests/classification-queue-expiry-db.sh
       - name: Validate committed JSON and local HTML script/style assets
         shell: bash
         run: |

@@ -72,6 +72,10 @@ def verify(name, data):
             if key.startswith('mobile_'): assert result['sw'] <= result['iw'] + 1, f'{key}: horizontal overflow'
         assert data['failure']['retry'] > 0, 'Mock outage did not render retry control'
         assert data['failure']['hero'].strip(), 'Mock outage rendered a blank hero'
+        cached = data.get('cached_home', {})
+        assert 'WRLDLINE cached homepage recovery test' in cached.get('hero', ''), 'Recent cached public feed was not restored during RPC outage'
+        assert 'نسخة محفوظة' in cached.get('connection', ''), 'Cached fallback was not clearly identified to the reader'
+        assert cached.get('retry_buttons', 0) == 0, 'Cached fallback rendered an unnecessary retry control'
         titles = data.get('briefing',{}).get('all',[]); assert len(titles) == len(set(titles)), 'Briefing duplicates'
         assert data.get('generic_public',[]) == [], 'Publisher-only placeholder headlines'
 

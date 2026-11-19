@@ -1,3 +1,4 @@
+import { classifyCronVerifierResult } from "../_shared/cron-auth.mjs";
 import { articlePath, escapeHtml, hash, matchesPush, previousPeriod, retryDelay, tokenFor, type Article, type Preferences } from "../_shared/notifications/core.ts";
 import { adapters, DeliveryError, type Mail, type Senders } from "../_shared/notifications/adapters.ts";
 import { database, environment, health, json, resolveEnv, rpc, type DB, type Env } from "../_shared/notifications/server.ts";
@@ -95,7 +96,9 @@ export function createHandler(env: Env, db: DB, send?: Senders) {
       const secret = req.headers.get("x-wrldline-cron-secret") || "";
       if (!secret || secret.length > 512) return new Response("Unauthorized", { status: 401 });
       const { data: authorized, error: authError } = await db.rpc("verify_wrldline_cron_secret", { p_secret: secret });
-      if (authError || authorized !== true) return new Response("Unauthorized", { status: 401 });
+      const authResult = classifyCronVerifierResult({ ok: !authError, value: authorized });
+      if (authResult.status === 503) return json(env, { error: "Authorization verifier temporarily unavailable" }, 503);
+      if (!authResult.authorized) return new Response("Unauthorized", { status: 401 });
       const effectiveEnv = await resolveEnv(db,env);
       const sender = send || adapters(effectiveEnv);
       const config = await health(db, effectiveEnv);
