@@ -361,7 +361,7 @@ Deno.serve(async (req: Request) => {
       const g = await Promise.allSettled([searchWeb("Saudi Arabia Gulf policy energy economy November 2026", "en-US")]);
       const google = g[0].status === "fulfilled" ? g[0].value.length : -1;
       const googleError = g[0].status === "rejected" ? String(g[0].reason).slice(0, 250) : "";
-      const generated = await ai("Return this JSON object only: {\\"ok\\":true,\\"summary\\":\\"provider connectivity test\\"}");
+      const generated = await ai("Respond with a JSON object containing one field named ok, with boolean value true.");
       return reply({ ok: true, self_test: true, statuses, sample_blocks: sampleBlocks.length, sample_title: sampleTitle, sample_url: safeLink(sampleLink), sample_parsed_count: sampleParsed.length, google_rss_count: google, google_error: googleError, ai_provider: generated.provider, ai_ok: generated.data?.ok === true });
     }
     if (mode === "dossier") {
