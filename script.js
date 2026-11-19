@@ -45,7 +45,7 @@ function displaySourceName(a){
  const domain=sourceDomain(a?.url||a?.source_url||"");
  if(raw&&!GENERIC_SOURCE_NAMES.test(raw))return raw;
  if(domain)return domain;
- return ui("مصدر إخباري","News source");
+ return ui("المصدر غير متاح","Source unavailable");
 }
 function contentTypeOf(a){const value=String(a?.content_type||"").toLowerCase();return CONTENT_TYPES.has(value)?value:"news";}
 function contentKindLabel(value){return {news:ui("خبر","News"),analysis:ui("تحليل","Analysis"),opinion:ui("رأي","Opinion"),sponsored:ui("محتوى مدعوم","Sponsored")}[value]||ui("خبر","News");}
@@ -63,8 +63,7 @@ function typeBadgesMarkup(a){
  return html;
 }
 function sourceLineMarkup(a,extraClass=""){
- const domain=sourceDomain(a.sourceURL);
- const sourceText=(a.src||ui("مصدر إخباري","News source"))+(domain&&!String(a.src||"").toLocaleLowerCase().includes(domain)?" · "+domain:"");
+ const sourceText=displaySourceName(a);
  const source=escapeHTML(sourceText);
  const date=escapeHTML(formatDate(a.published_at));
  const iso=publicationISO(a);
@@ -73,8 +72,7 @@ function sourceLineMarkup(a,extraClass=""){
 }
 function sourceBoxMarkup(a){
  const kind=contentTypeOf(a);
- const domain=sourceDomain(a.sourceURL);
- const sourceText=(a.src||ui("مصدر إخباري","News source"))+(domain&&!String(a.src||"").toLocaleLowerCase().includes(domain)?" · "+domain:"");
+ const sourceText=displaySourceName(a);
  const source=escapeHTML(sourceText);
  const link=a.sourceURL?'<a class="source-link" href="'+escapeHTML(a.sourceURL)+'" target="_blank" rel="noopener noreferrer" data-source-link data-article-id="'+escapeHTML(a.id)+'">'+ui("قراءة الخبر لدى المصدر الأصلي ↗","Read at original source ↗")+'</a>':'<span class="source-missing">'+ui("رابط المصدر الأصلي غير متوفر. لا نستبدله برابط وهمي.","The original source link is unavailable. We do not substitute a fake link.")+'</span>';
  const sponsor=kind==="sponsored"?'<small class="sponsor-disclosure">'+ui("بالتعاون مع: ","In partnership with: ")+escapeHTML(a.sponsorName||ui("راعٍ لم يحدد","Unnamed sponsor"))+(a.sponsorURL?' · <a href="'+escapeHTML(a.sponsorURL)+'" target="_blank" rel="noopener noreferrer sponsored">'+ui("موقع الراعي ↗","Sponsor site ↗")+'</a>':"")+'</small>':"";

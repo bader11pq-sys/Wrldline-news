@@ -93,6 +93,18 @@ test("bot parseEntry turns an unknown feed category into uncategorized", () => {
   assert.equal(entry.classification_reason, "unclassified_source");
 });
 
+test("bot parseEntry holds entries without a source summary for review", () => {
+  const entry = parseEntry(rssBlock("Headline without a summary", ""), {
+    name: "Example feed",
+    url: "https://example.com/feed.xml",
+    lang: "en",
+    category: "world",
+    source_scope: "international",
+  });
+  assert.ok(entry);
+  assert.equal(entry.editorial_status, "review");
+});
+
 const fs = require("node:fs");
 const path = require("node:path");
 
