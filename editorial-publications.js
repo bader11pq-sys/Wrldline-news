@@ -129,7 +129,7 @@
       card.appendChild(el("div", (item.sector || "متابعة") + " · " + (item.when || item.timing || ""), "card-top"));
       card.appendChild(el("h3", item.what || "")); card.appendChild(el("p", item.why || ""));
       if (item.signal) card.appendChild(el("p", "الإشارة التي نراقبها: " + item.signal));
-      if (item.dossierSlug) { const a = el("a", "الملف المرتبط ←"); a.href = "/dossier/" + encodeURIComponent(item.dossierSlug) + ".html#watch"; card.appendChild(a); }
+      if (item.dossierSlug) { const a = el("a", "الملف المرتبط ←"); a.href = "/dossier/"; card.appendChild(a); }
       cards.appendChild(card);
     });
     panel.appendChild(cards);
