@@ -133,3 +133,10 @@ node --test tests/notifications-client.test.mjs
 SQL fixture: start a **new private local** PostgreSQL instance, create `notifications_fixture`, then run `psql -h 127.0.0.1 -p <local-port> -d notifications_fixture -f tests/notifications-fixture.sql`. The fixture refuses any other database name/non-loopback host and is not suitable for production. It defines the minimal documented live columns/roles, applies this migration, then verifies RLS/column grants, private RPC grants, rate limits, historical suppression, publication transitions, filter pagination, consent single-use/expiry behavior, legacy isolation, digest uniqueness, lease claiming/finalization and ambiguous push lease recovery.
 
 Activation blockers: parent migration/deploy; gateway JWT verification configuration; `SITE_URL` and exact global enabled flag; runtime channel activation; Vault RPC grants/return fields; application-native cron; canonical `/news/{uuid}` routing by the parent; public login/logout hook integration if additional sign-out controls exist; and **actual Resend credential, verified sender/domain, privacy-policy provider disclosure and management-URL log redaction before any email activation**. No real delivery has been verified, and no email sending is claimed.
+
+
+## Newsletter-only scheduler (production isolation)
+
+The live project now uses a dedicated `wrldline-newsletter-every-minute` cron job calling `notification-dispatch?channel=email`. The dispatcher validates the same existing service-only cron secret, but this channel **never plans or claims browser-push jobs**. This prevents enabling newsletter delivery from unexpectedly draining the separate push queue. The existing `wrldline-notifications-every-minute` job remains inactive.
+
+The newsletter-only job is safe while email is disabled: `email_enabled=false` or missing Resend/sender credentials causes a zero-claim no-op. After adding `RESEND_API_KEY` and `NEWSLETTER_FROM` as Supabase Edge Function secrets, verify `email_ready=true`, then explicitly set `email_enabled=true`. Do not enable the general all-channel job unless push delivery is also intended.
