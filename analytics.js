@@ -47,7 +47,7 @@
     const path = location.pathname;
     if (/^\/news\/[0-9a-f-]{36}\/?$/i.test(path)) return "news";
     const file = path.split("/").pop() || "index.html";
-    const known = { "index.html": "home", "account.html": "account", "markets.html": "markets", "map.html": "map", "history.html": "history", "newsletter.html": "newsletter", "contact.html": "contact", "about.html": "about", "privacy.html": "privacy", "terms.html": "terms", "sources.html": "sources", "daily-briefing.html": "briefing" };
+    const known = { "index.html": "home", "account.html": "account", "advertise.html": "advertise", "markets.html": "markets", "map.html": "map", "history.html": "history", "newsletter.html": "newsletter", "contact.html": "contact", "about.html": "about", "privacy.html": "privacy", "terms.html": "terms", "sources.html": "sources", "daily-briefing.html": "briefing" };
     return known[file] || "other";
   }
   // Parse only hostname. Never transmit or persist document.referrer or a URL/query.
