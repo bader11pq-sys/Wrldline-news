@@ -473,13 +473,34 @@ Deno.serve(async (req: Request) => {
       return reply({ ok: true, groq_browser_search: true, source_count: found.length, sources: found.map((x: Src) => ({ title: x.title, url: x.url, publisher: x.publisher, type: x.type })) });
     }
     if (mode === "self_test") {
-      const found = await searchWeb("UN IMF official latest global economy international security November 2026", "qdr:w");
-      if (!found.length) throw new Error("Firecrawl responded but returned no usable sources");
+      const feeds = await db.from("feeds").select("name,url").eq("active", true).in("lang", ["ar", "en"]).limit(8);
+      if (feeds.error) throw new Error("Feed catalogue query failed: " + feeds.error.message);
+      const feedResults = await Promise.allSettled((feeds.data || []).map((x: any) => fetchRss(x.url, x.name)));
+      const directSources: Src[] = [];
+      const feedErrors: string[] = [];
+      feedResults.forEach((x, i) => {
+        if (x.status === "fulfilled") directSources.push(...x.value);
+        else feedErrors.push(String((feeds.data || [])[i]?.name || "feed") + ": " + String(x.reason).slice(0, 100));
+      });
+      const googleResults = await Promise.allSettled([
+        searchWeb("Saudi Arabia Gulf policy energy economy November 2026", "en-US"),
+        searchWeb("السعودية الخليج سياسة اقتصاد طاقة نوفمبر 2026", "ar-SA")
+      ]);
+      const searchSources: Src[] = [];
+      const searchErrors: string[] = [];
+      googleResults.forEach(x => {
+        if (x.status === "fulfilled") searchSources.push(...x.value);
+        else searchErrors.push(String(x.reason).slice(0, 140));
+      });
+      const found = [...directSources, ...searchSources];
+      if (!found.length) throw new Error("No RSS research returned. feed_errors=" + feedErrors.join(" | ") + " search_errors=" + searchErrors.join(" | "));
       const expected = JSON.stringify({ ok: true, summary: "Provider connectivity test" });
-      const testPrompt = "Return the following JSON object without changing it: " + expected + "\nSources for connectivity validation: " + JSON.stringify(found.slice(0, 3).map((x: Src, i: number) => ({ id: "source_" + (i + 1), title: x.title, url: x.url })));
-      const generated = await ai(testPrompt);
-      await log(db, begun.data.id, "skipped", { provider: generated.provider, research_sources: found.length, details: { self_test: true, ai_provider: generated.provider, firecrawl_sources: found.length, ai_ok: generated.data?.ok === true } });
-      return reply({ ok: true, self_test: true, firecrawl_sources: found.length, ai_provider: generated.provider, ai_ok: generated.data?.ok === true });
+      const generated = await ai("Return this JSON exactly: " + expected + "\nThis is a provider connectivity test, not publication.");
+      await log(db, begun.data.id, "skipped", {
+        provider: generated.provider, research_sources: found.length,
+        details: { self_test: true, ai_provider: generated.provider, direct_rss_sources: directSources.length, google_news_rss_sources: searchSources.length, ai_ok: generated.data?.ok === true, feed_errors: feedErrors.slice(0, 6), search_errors: searchErrors.slice(0, 4) }
+      });
+      return reply({ ok: true, self_test: true, direct_rss_sources: directSources.length, google_news_rss_sources: searchSources.length, ai_provider: generated.provider, ai_ok: generated.data?.ok === true });
     }
     if (mode === "dossier") {
       const st = await db.from("editorial_runtime_state").select("state_value").eq("state_key", "dossier_next_due_at").maybeSingle();
