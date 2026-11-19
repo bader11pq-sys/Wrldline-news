@@ -21,17 +21,19 @@ function xmlDecode(value: string) {
     .replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
 }
 function readXmlTag(block: string, name: string) {
-  const re = new RegExp("<" + name + "[^>]*>([\\s\\S]*?)</" + name + ">", "i");
-  const m = block.match(re);
-  return m ? xmlDecode(m[1]) : "";
+  const tag = name.toLowerCase();
+  const open = block.match(new RegExp("<" + tag + "[^>]*>", "i"));
+  if (!open) return "";
+  const start = block.indexOf(open[0]) + open[0].length;
+  const end = block.toLowerCase().indexOf("</" + tag + ">", start);
+  return end >= 0 ? xmlDecode(block.slice(start, end)) : "";
 }
 function readXmlAttr(block: string, tag: string, attr: string) {
-  const re = new RegExp("<" + tag + "\\b([^>]*)>", "i");
-  const hit = block.match(re);
-  if (!hit) return "";
-  const attrs = [...hit[1].matchAll(/([A-Za-z_:][\w:.-]*)\s*=\s*(?:"([^"]*)"|'([^']*)')/g)];
-  const value = attrs.find(x => x[1].toLowerCase() === attr.toLowerCase());
-  return value ? xmlDecode(value[2] || value[3] || "") : "";
+  const open = block.match(new RegExp("<" + tag + "\\\\b([^>]*)>", "i"));
+  if (!open) return "";
+  const attrs = [...open[1].matchAll(/([A-Za-z_:][\w:.-]*)\s*=\s*(?:"([^"]*)"|'([^']*)')/g)];
+  const found = attrs.find(x => x[1].toLowerCase() === attr.toLowerCase());
+  return found ? xmlDecode(found[2] || found[3] || "") : "";
 }
 function classifyPublisher(publisher: string, sourceUrl: string) {
   const h = (host(sourceUrl) + " " + publisher).toLowerCase();
@@ -40,8 +42,24 @@ function classifyPublisher(publisher: string, sourceUrl: string) {
   if (/(britannica|archives\.gov|history\.state\.gov|loc\.gov|sipri|cfr\.org|chatham house|crisis group)/i.test(h)) return "historical";
   return "news";
 }
+function extractXmlBlocks(xml: string, tag: string) {
+  const lower = xml.toLowerCase(), open = "<" + tag.toLowerCase(), close = "</" + tag.toLowerCase() + ">";
+  const out: string[] = [];
+  let cursor = 0;
+  while (out.length < 40) {
+    const at = lower.indexOf(open, cursor);
+    if (at < 0) break;
+    const afterName = lower[at + open.length];
+    if (afterName && !/[\\s>]/.test(afterName)) { cursor = at + open.length; continue; }
+    const end = lower.indexOf(close, at + open.length);
+    if (end < 0) break;
+    out.push(xml.slice(at, end + close.length));
+    cursor = end + close.length;
+  }
+  return out;
+}
 function parseFeedXml(xml: string, feedName: string, feedUrl: string): Src[] {
-  const blocks = [...xml.matchAll(/<(item|entry)\b[\s\S]*?<\/\1>/gi)].map(x => x[0]);
+  const blocks = extractXmlBlocks(xml, "item");
   const out: Src[] = [];
   for (const block of blocks.slice(0, 10)) {
     const title = readXmlTag(block, "title");
@@ -51,11 +69,7 @@ function parseFeedXml(xml: string, feedName: string, feedUrl: string): Src[] {
     const description = readXmlTag(block, "description") || readXmlTag(block, "summary") || readXmlTag(block, "content");
     const published = readXmlTag(block, "pubDate") || readXmlTag(block, "published") || readXmlTag(block, "updated");
     if (!title || !url) continue;
-    out.push({
-      id: "rss_" + (out.length + 1), title: txt(title, 230), url,
-      publisher: feedName || host(feedUrl), published_at: published || null,
-      type: "news", excerpt: txt(description, 2200), source_confidence: "reported"
-    });
+    out.push({ id: "rss_" + (out.length + 1), title: txt(title, 230), url, publisher: feedName || host(feedUrl), published_at: published || null, type: "news", excerpt: txt(description, 2200), source_confidence: "reported" });
   }
   return out;
 }
@@ -70,7 +84,7 @@ async function searchWeb(query: string, locale = "en-US"): Promise<Src[]> {
     "&hl=" + (ar ? "ar" : "en-US") + "&gl=" + (ar ? "SA" : "US") + "&ceid=" + (ar ? "SA:ar" : "US:en");
   const r = await fetch(url, { headers: { "User-Agent": "Mozilla/5.0 WRLDLINE-News research bot", "Accept": "application/rss+xml, application/xml, text/xml" }, signal: AbortSignal.timeout(12000) });
   if (!r.ok) throw new Error("Google News RSS HTTP " + r.status);
-  const xml = await r.text(), blocks = [...xml.matchAll(/<item\b[\s\S]*?<\/item>/gi)].map(x => x[0]), out: Src[] = [];
+  const xml = await r.text(), blocks = extractXmlBlocks(xml, "item"), out: Src[] = [];
   for (const block of blocks.slice(0, 12)) {
     const title = readXmlTag(block, "title"), link = http(readXmlTag(block, "link"));
     const sourceTag = block.match(/<source\b([^>]*)>([\s\S]*?)<\/source>/i);
