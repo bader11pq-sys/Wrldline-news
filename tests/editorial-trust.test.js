@@ -135,7 +135,10 @@ test("all current browser article and embedded translation projections fit safe 
   const saved=main.match(/\.select\("article_id, article:articles\(([^"]+)\)"\)/)[1];
   check(saved,"script.js saved-library embed");
   check(read("intelligence-sources.js").match(/const select="([^"]+)"/)[1],"intelligence-sources.js");
- for(const file of ["map.js","shorts.js"])check(read(file).match(/articles\?select=([^"&]+)/)[1],file);
+ check(read("map.js").match(/articles\?select=([^"&]+)/)[1],"map.js");
+ const shorts=read("shorts.js");
+ assert.match(shorts,/\/rest\/v1\/rpc\/public_home_news_recent_v2/,"Shorts must use the allowlisted public feed RPC");
+ assert.doesNotMatch(shorts,/\/rest\/v1\/articles\?/,"Shorts must not SELECT directly from public.articles");
  const admin=read("admin.js");
  check(admin.match(/const core="([^"]+)"/)[1],"admin.js core");
  check(admin.match(/const trust="([^"]+)"/)[1],"admin.js safe trust");
