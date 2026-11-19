@@ -64,3 +64,10 @@ Deno.test("durable DB cap returns 429 and database details remain private", asyn
   const unavailable = createHandler({ origins: new Set([origin]), now: () => now, user: async () => null, rpc: async () => { throw new Error("service-role secret internal details"); } });
   const result = await unavailable(request(base())); assert(result.status === 503); assert(!(await result.text()).includes("secret"));
 });
+
+Deno.test("advertiser page has an accepted finite page key", () => {
+  const advertiser = base();
+  advertiser.events[0].page = "advertise";
+  validatePayload(advertiser, now);
+  rejects({ ...base(), events: [{ ...base().events[0], page: "/advertise.html" }] });
+});
