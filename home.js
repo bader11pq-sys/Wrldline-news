@@ -33,6 +33,7 @@
   });
   navWrap?.addEventListener("click", e => {
     if (e.target.closest("a")) {
+      closeMore();
       navWrap.classList.remove("is-open", "mobile-open");
       menuButton?.setAttribute("aria-expanded", "false");
     }
@@ -147,7 +148,7 @@
     if (s2) s2.textContent = clusters.length || "—";
     if (!clusters.length) {
       host.innerHTML = '<div class="wl-frame-card"><div class="wl-frame-head"><strong>لا توجد روايات متعددة كافية الآن</strong><span>تحديث مباشر</span></div><p style="font-size:11.5px;color:var(--muted);line-height:1.8">عندما تتوفر عناوين متعددة للحدث نفسه من مصادر مختلفة، سنعرض هنا المقارنة. لا نلفّق التوازن؛ نعرض ما هو موجود.</p></div>' +
-        '<div class="wl-balance-side"><div class="wl-balance-stat"><b>' + (sourceCount || "—") + '</b><span>مصادر في العينة</span><small>آخر 48 ساعة</small></div><div class="wl-balance-stat"><b>0</b><span>حدث متعدد الروايات</span><small>بانتظار مزيد من التغطية</small></div></div>';
+        '<div class="wl-balance-side"><div class="wl-balance-stat"><b>' + (sourceCount || "—") + '</b><span>أسماء مصادر مختلفة</span><small>ضمن العينة المعروضة</small></div><div class="wl-balance-stat"><b>0</b><span>حدث متعدد الروايات</span><small>بانتظار تغطيات كافية للمقارنة</small></div></div>';
       return;
     }
     const c = clusters[0];
@@ -157,7 +158,7 @@
     ).join("");
     host.innerHTML = '<div class="wl-frame-card"><div class="wl-frame-head"><strong>' + NR.escapeHTML(c.articles[0].title.slice(0, 86)) + (c.articles[0].title.length > 86 ? '…' : '') + '</strong><span>' + c.sourceCount + " مصادر · " + c.articles.length + " عنوان</span></div>" + rows +
       '<div style="display:flex;justify-content:space-between;align-items:center;padding-top:10px;border-top:1px solid var(--line);font-size:10px;color:var(--muted)"><span>فارق التوقيت: ' + c.timeGapH + ' ساعة</span><a href="balance.html" style="color:var(--gold-strong);font-weight:700">قارن كامل ←</a></div></div>' +
-      '<div class="wl-balance-side"><div class="wl-balance-stat"><b>' + sourceCount + '</b><span>مصادر مستقلة في العينة</span><small>آخر 72 ساعة</small></div><div class="wl-balance-stat"><b>' + clusters.length + '</b><span>حدث متعدد الروايات</span><small>قابل للمقارنة الآن</small></div><div class="wl-balance-note"><strong>كيف نقيس؟</strong><p>نطابق العناوين المتشابهة، ثم نقيس عدد المصادر المستقلة وفارق التوقيت. لا نعرض حدثاً بمصدر واحد لأنه لا يحتمل المقارنة.</p></div></div>';
+      '<div class="wl-balance-side"><div class="wl-balance-stat"><b>' + sourceCount + '</b><span>أسماء مصادر مختلفة</span><small>ضمن العينة المعروضة</small></div><div class="wl-balance-stat"><b>' + clusters.length + '</b><span>تجمعات تغطية متشابهة</span><small>خلال 72 ساعة</small></div><div class="wl-balance-note"><strong>كيف نقيس؟</strong><p>نقارن تشابه العناوين وتوقيت التغطية وتعدد أسماء المصادر. تعدد الأسماء وحده لا يثبت استقلال المصادر أو صحة الرواية؛ لذلك نعرضه كمؤشر تغطية لا كدليل تأكيد.</p></div></div>';
   }
 
   function renderMirror(articles) {
