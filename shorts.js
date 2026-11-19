@@ -86,7 +86,8 @@
     catch(error){
       console.error("WRLDLINE Shorts:",error);
       const reason=String(error?.message||"");
-      const status=Number(reason.match(/HTTP (\\d{3})/)?.[1]||0);
+      const httpMarker=reason.indexOf("HTTP ");
+      const status=httpMarker>=0?Number(reason.slice(httpMarker+5,httpMarker+8))||0:0;
       const explanation=status===401||status===403
         ?t("خدمة الأخبار رفضت الطلب بسبب صلاحيات الوصول. أعد المحاولة لاحقاً.","The news service denied access. Please retry later.")
         :status===404
