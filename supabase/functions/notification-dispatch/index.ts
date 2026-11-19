@@ -99,10 +99,14 @@ export function createHandler(env: Env, db: DB, send?: Senders) {
       const effectiveEnv = await resolveEnv(db,env);
       const sender = send || adapters(effectiveEnv);
       const config = await health(db, effectiveEnv);
-      if (new URL(req.url).searchParams.get("action") === "health") return json(env, { ok: true, ...config });
+      const url = new URL(req.url);
+      if (url.searchParams.get("action") === "health") return json(env, { ok: true, ...config });
+      const channel = url.searchParams.get("channel") || "all";
+      if (!["all", "push", "email"].includes(channel)) return json(env, { error: "invalid_channel" }, 400);
       const kinds: string[] = [];
-      if (config.push_ready) { kinds.push("push"); await rpc(db, "notification_plan_push", { p_limit: 100 }); }
-      if (config.email_ready) {
+      // Email-only scheduling must never plan or claim push deliveries.
+      if (channel !== "email" && config.push_ready) { kinds.push("push"); await rpc(db, "notification_plan_push", { p_limit: 100 }); }
+      if (channel !== "push" && config.email_ready) {
         kinds.push("digest", "confirmation");
         for (const cadence of ["daily", "weekly"] as const) {
           const period = previousPeriod(cadence);
