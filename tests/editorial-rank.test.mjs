@@ -75,3 +75,10 @@ test('lead eligibility excludes sports, culture, entertainment and utility copy'
   assert.equal(isLeadEligible({ ...ok, title: 'خبر قصير' }), false);
   assert.equal(isLeadEligible({ ...ok, summary: ok.title }), false);
 });
+
+test('headline cleanup strips platform suffixes that follow a separator', () => {
+  const { cleanHeadline } = require('../editorial-rank.js');
+  assert.equal(cleanHeadline('نمو: صفقتان خاصتان على أساس مكين - ارقام : اخبار ومعلومات سوق الأسهم السعودي - تاسي', 'أرقام'), 'نمو: صفقتان خاصتان على أساس مكين');
+  assert.equal(cleanHeadline('البنك المركزي الروسي يرفع سعر صرف الروبل - صحيفة مال', 'مال'), 'البنك المركزي الروسي يرفع سعر صرف الروبل');
+  assert.equal(cleanHeadline('هل تنتهي الحرب - تحليل مالي', 'الرياض'), 'هل تنتهي الحرب - تحليل مالي');
+});

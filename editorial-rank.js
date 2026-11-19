@@ -34,6 +34,7 @@
   const SOFT = /حرفة|تراث|أزياء|موضة|مهرجان|موسيقى|فيلم|مسلسل|ممثل|ممثلة|ديكور|طهي|وصفات/;
   const LOW_VALUE = /أسعار العملات|سعر الصرف|سعر الدولار|الريال مقابل|مواعيد|حالة الطقس|درجات الحرارة|أسعار الذهب|سعر الذهب|نتائج مباريات|جدول الترتيب|برجك|حظك/;
 
+  const OUTLET_HINT = /(?:^|\s)(?:صحيفة|جريدة|وكالة|أخبار|اخبار|قناة|راديو|مجلة|تايمز|بوست|نيوز|ريبورت|تاسي|أرقام|ارقام)(?:\s|:|$)/;
   const OUTLET_SUFFIX = /Forbes Middle East|Forbes|بلومبرغ|CNBC|العربية Business|جريدة الرياض|الرياض|الشرق الأوسط|عكاظ|الوطن|الجزيرة نت|العربية|سي إن إن بالعربية|بي بي سي عربي|رويترز|فرانس برس|سبوتنيك|إرم نيوز|الحدث|سكاي نيوز عربية/;
 
   function cleanHeadline(title, sourceName) {
@@ -45,6 +46,14 @@
       value = value.replace(new RegExp(`\\s*[-–—|]\\s*${escaped}\\s*$`, "i"), "").trim();
     }
     value = value.replace(new RegExp(`\\s*[-–—|]\\s*(?:${OUTLET_SUFFIX.source})\\s*$`), "").trim();
+    const parts = value.split(/\s+[-–—|]\s+/);
+    for (let i = 1; i < parts.length; i += 1) {
+      const suffix = parts.slice(i).join(" - ");
+      if (OUTLET_HINT.test(parts[i]) && suffix.length <= 90) {
+        value = parts.slice(0, i).join(" - ").trim();
+        break;
+      }
+    }
     return value || String(title || "").trim();
   }
 
