@@ -295,6 +295,30 @@
   async function boot() {
     initChrome();
     try { articles = await window.WLNR.fetchArticles(300); } catch { articles = []; }
+    if (page === "context" || page === "mirror") {
+      try {
+        const section = page === "context" ? "context" : "mirror";
+        const rows = await window.WLNR.fetchEditorialPublications(section, 12);
+        rows.slice().reverse().forEach(row => {
+          const item = row.content || {};
+          const id = String(item.id || row.slug || "");
+          if (!id) return;
+          item.id = id;
+          if (section === "context") {
+            item.title = item.title || row.title;
+            item.tag = item.tag || "تحديث تحريري";
+            item.sources = item.sources || (row.sources || []).map(s => [s.title || s.publisher, s.url]);
+            const index = D.context.findIndex(x => x.id === id);
+            if (index >= 0) D.context[index] = item; else D.context.push(item);
+          } else {
+            item.nowTitle = item.nowTitle || row.title;
+            item.sources = item.sources || (row.sources || []).map(s => [s.title || s.publisher, s.url]);
+            const index = D.mirror.findIndex(x => x.id === id);
+            if (index >= 0) D.mirror[index] = item; else D.mirror.push(item);
+          }
+        });
+      } catch (error) { console.warn("WRLDLINE dynamic editorial feed:", error); }
+    }
     ({ context: renderContext, balance: renderBalance, impact: renderImpact, promises: renderPromises, mirror: renderMirror, explainers: renderExplainers }[page] || renderContext)();
   }
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot);
