@@ -105,3 +105,9 @@ test('advertiser page is recorded with a distinct finite page key', () => {
   assert(!JSON.stringify(f.calls).includes('/advertise.html'));
   f.close();
 });
+
+test('advertiser page loads the consent UI and analytics collector', () => {
+  const html = fs.readFileSync(path.join(__dirname, '../advertise.html'), 'utf8');
+  assert.match(html, /<script src="analytics-config\.js[^"]*"><\/script>/);
+  assert.match(html, /<script src="analytics\.js[^"]*" defer><\/script>/);
+});
