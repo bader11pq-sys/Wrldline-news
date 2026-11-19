@@ -305,7 +305,8 @@ function normalizeArticle(a){
  const sameLanguage=sourceLang===state.lang;
  const sourceScope=String(a.source_scope||"").toLowerCase();
  const eventCountry=a.event_country||a.country||null;
- const title=translation?.title||sourceTitle;
+ const rawTitle=translation?.title||sourceTitle;
+ const title=window.WLRank&&typeof window.WLRank.cleanHeadline==="function"?window.WLRank.cleanHeadline(rawTitle,displaySourceName(a)):rawTitle;
  const summary=translation?.summary||a.summary||ui("الملخص غير متوفر. افتح المصدر لقراءة الخبر كاملًا.","Summary unavailable. Open the source to read the full story.");
  const published=String(a.published_at||"");
  const kind=contentTypeOf(a);
@@ -446,8 +447,11 @@ function renderHero(){
  const host=document.getElementById("heroLayout");
  if(!host)return;
  if(!state.filtered.length){host.innerHTML='<div class="wl-empty"><strong>لا توجد نتائج في هذا القسم</strong><p>جرّب تغيير الدولة أو اختيار قسم آخر.</p></div>';return;}
- const lead=state.filtered.slice(0,8).find(a=>a.img&&a.img!=="#")||state.filtered[0];
- const others=state.filtered.filter(a=>a.id!==lead.id).slice(0,3);
+ const ranked=window.WLRank&&typeof window.WLRank.rank==="function"?window.WLRank.rank(state.filtered):state.filtered;
+ const eligible=window.WLRank&&typeof window.WLRank.isLeadEligible==="function"?ranked.filter(window.WLRank.isLeadEligible):ranked;
+ const pool=eligible.length>=4?eligible:ranked;
+ const lead=pool[0];
+ const others=pool.filter(a=>a.id!==lead.id).slice(0,3);
  host.innerHTML='<article class="lead-story" role="button" tabindex="0" data-open="'+escapeHTML(lead.id)+'">'+imageMarkup(lead,"lead-image")+'<div class="lead-overlay"><div class="story-meta"><span class="category-label">'+escapeHTML(categoryName(lead.cat))+'</span>'+typeBadgesMarkup(lead)+'<span>'+escapeHTML(countryName(lead.country,lead.aiCountryCode))+'</span><span class="read-time" style="color:#ffffffb0">'+wlReadingTime(lead)+'</span></div><h2>'+escapeHTML(lead.title)+'</h2><p>'+escapeHTML(lead.summary)+'</p>'+sourceLineMarkup(lead,"lead-source")+'</div></article>'+
  '<div class="lead-rail"><div class="lead-rail-head"><span>TOP STORIES</span><strong>أهم ما يحدث الآن</strong></div>'+
  others.map((a,idx)=>'<article class="rail-story" role="button" tabindex="0" data-open="'+escapeHTML(a.id)+'"><div><div class="story-meta"><span class="rail-number">0'+(idx+1)+'</span><span class="category-label">'+escapeHTML(categoryName(a.cat))+'</span></div><h3>'+escapeHTML(a.title)+'</h3><div class="rail-source">'+escapeHTML(a.src||"WRLDLINE")+' · '+timeAgo(a.published_at)+'</div></div>'+imageMarkup(a,"rail-image")+'</article>').join("")+

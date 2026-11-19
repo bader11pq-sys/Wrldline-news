@@ -486,7 +486,7 @@ function renderIndex(list, now) {
   const sectors = [...new Set(list.flatMap((d) => d.sectors))];
   const cards = list.map((d) => {
     const status = STATUS[d.status];
-    return `<article class="card" data-dossier-card="${attr(d.slug)}" data-status="${attr(d.status)}" data-sectors="${attr(d.sectors.join("|"))}">
+    return `<article class="card" data-dossier-card="${attr(d.slug)}" data-status="${attr(d.status)}" data-sectors="${attr(d.sectors.join("|"))}" data-search="${attr([d.title, d.summary, d.keywords.join(" "), d.sectors.join(" "), d.location].join(" "))}">
       <div class="card-top"><span class="status status-${attr(d.status)}"><span class="dot" aria-hidden="true"></span>${esc(status.label)}</span><span class="muted">${esc(arabicDate(d.updatedAt))}</span></div>
       <h2><a href="/dossier/${attr(d.slug)}.html">${esc(d.title)}</a></h2>
       <p>${esc(d.summary)}</p>
@@ -503,11 +503,16 @@ function renderIndex(list, now) {
   <div class="index-stats"><div><b>${list.length}</b><span>ملفات منشورة</span></div><div><b>${active}</b><span>ملف نشط</span></div><div><b>${list.reduce((n, d) => n + d.sources.length, 0)}</b><span>مصدراً موثقاً</span></div></div>
 </div></section>
 <section class="wrap index-body">
+  <div class="dossier-search">
+    <label for="dossierSearch">ابحث في الملفات</label>
+    <input id="dossierSearch" type="search" inputmode="search" placeholder="هرمز، أوبك، الغاز، الشحن…" autocomplete="off">
+    <span id="searchStatus" class="muted" aria-live="polite"></span>
+  </div>
   <div class="filters" role="group" aria-label="تصفية الملفات">
     <button type="button" class="chip is-on" data-filter-status="all">الكل</button>
-    <button type="button" class="chip" data-filter-status="active">نشط</button>
-    <button type="button" class="chip" data-filter-status="monitoring">قيد المراقبة</button>
-    <button type="button" class="chip" data-filter-status="closed">مغلق</button>
+    <button type="button" class="chip" data-filter-status="active" aria-pressed="false">نشط</button>
+    <button type="button" class="chip" data-filter-status="monitoring" aria-pressed="false">قيد المراقبة</button>
+    <button type="button" class="chip" data-filter-status="closed" aria-pressed="false">مغلق</button>
     <button type="button" class="chip" data-filter-followed aria-pressed="false" hidden>ملفاتي</button>
     <span class="filter-sep" aria-hidden="true"></span>
     ${sectors.map((s) => `<button type="button" class="chip" data-filter-sector="${attr(s)}">${esc(s)}</button>`).join("")}

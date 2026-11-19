@@ -44,35 +44,40 @@
   <div class="index-stats"><div><b>4</b><span>ملفات منشورة</span></div><div><b>2</b><span>ملف نشط</span></div><div><b>21</b><span>مصدراً موثقاً</span></div></div>
 </div></section>
 <section class="wrap index-body">
+  <div class="dossier-search">
+    <label for="dossierSearch">ابحث في الملفات</label>
+    <input id="dossierSearch" type="search" inputmode="search" placeholder="هرمز، أوبك، الغاز، الشحن…" autocomplete="off">
+    <span id="searchStatus" class="muted" aria-live="polite"></span>
+  </div>
   <div class="filters" role="group" aria-label="تصفية الملفات">
     <button type="button" class="chip is-on" data-filter-status="all">الكل</button>
-    <button type="button" class="chip" data-filter-status="active">نشط</button>
-    <button type="button" class="chip" data-filter-status="monitoring">قيد المراقبة</button>
-    <button type="button" class="chip" data-filter-status="closed">مغلق</button>
+    <button type="button" class="chip" data-filter-status="active" aria-pressed="false">نشط</button>
+    <button type="button" class="chip" data-filter-status="monitoring" aria-pressed="false">قيد المراقبة</button>
+    <button type="button" class="chip" data-filter-status="closed" aria-pressed="false">مغلق</button>
     <button type="button" class="chip" data-filter-followed aria-pressed="false" hidden>ملفاتي</button>
     <span class="filter-sep" aria-hidden="true"></span>
     <button type="button" class="chip" data-filter-sector="الطاقة">الطاقة</button><button type="button" class="chip" data-filter-sector="الشحن">الشحن</button><button type="button" class="chip" data-filter-sector="الأمن">الأمن</button><button type="button" class="chip" data-filter-sector="التجارة">التجارة</button><button type="button" class="chip" data-filter-sector="الأمن الغذائي">الأمن الغذائي</button><button type="button" class="chip" data-filter-sector="الموانئ">الموانئ</button><button type="button" class="chip" data-filter-sector="الاقتصاد">الاقتصاد</button><button type="button" class="chip" data-filter-sector="الأسواق">الأسواق</button><button type="button" class="chip" data-filter-sector="الغاز">الغاز</button>
   </div>
   <p class="muted" id="filterStatus" role="status" aria-live="polite">4 ملفاً</p>
-  <div class="cards" id="dossierCards"><article class="card" data-dossier-card="hormuz-closure-2026" data-status="active" data-sectors="الطاقة|الشحن|الأمن|التجارة|الأمن الغذائي">
+  <div class="cards" id="dossierCards"><article class="card" data-dossier-card="hormuz-closure-2026" data-status="active" data-sectors="الطاقة|الشحن|الأمن|التجارة|الأمن الغذائي" data-search="هرمز: ممر مغلق ومفاوضات تبحث عن مخرج منذ 28 فبراير 2026، تحوّل مضيق هرمز من شريان للنفط العالمي إلى نقطة اشتعال. ضربات إسرائيلية وأمريكية على إيران، وردّ إيراني طال دول الخليج، ثم إغلاق فعلي للممر ووساطة قطرية ومساعٍ أممية. هذا الملف يجمع ما جرى، وما تغيّر، وأين تختلف الروايات، وما يعنيه ذلك للسعودية والخليج. هرمز Hormuz إيران الخليج ناقلات UKMTO ملاحة نفط غاز الطاقة الشحن الأمن التجارة الأمن الغذائي مضيق هرمز، الخليج العربي وخليج عمان">
       <div class="card-top"><span class="status status-active"><span class="dot" aria-hidden="true"></span>نشط</span><span class="muted">19 نوفمبر 2026</span></div>
       <h2><a href="/dossier/hormuz-closure-2026.html">هرمز: ممر مغلق ومفاوضات تبحث عن مخرج</a></h2>
       <p>منذ 28 فبراير 2026، تحوّل مضيق هرمز من شريان للنفط العالمي إلى نقطة اشتعال. ضربات إسرائيلية وأمريكية على إيران، وردّ إيراني طال دول الخليج، ثم إغلاق فعلي للممر ووساطة قطرية ومساعٍ أممية. هذا الملف يجمع ما جرى، وما تغيّر، وأين تختلف الروايات، وما يعنيه ذلك للسعودية والخليج.</p>
       <div class="card-tags"><span>الطاقة</span><span>الشحن</span><span>الأمن</span><span>التجارة</span><span>الأمن الغذائي</span></div>
       <div class="card-foot"><span>مضيق هرمز، الخليج العربي وخليج عمان</span><a href="/dossier/hormuz-closure-2026.html">افتح الملف ←</a></div>
-    </article><article class="card" data-dossier-card="bab-al-mandab-2026" data-status="active" data-sectors="الشحن|الطاقة|الأمن|التجارة|الموانئ">
+    </article><article class="card" data-dossier-card="bab-al-mandab-2026" data-status="active" data-sectors="الشحن|الطاقة|الأمن|التجارة|الموانئ" data-search="باب المندب: الحوثيون يعودون إلى الممر في 15 نوفمبر 2026 انسحبت القوات الموالية للحكومة اليمنية من منطقة باب المندب إلى عدن، وأعلن الحوثيون سيطرتهم على الممر. يأتي ذلك بعد حصار بحري أعلنوه على السعودية في يوليو، وهجمات على مطارات ومنشآت نفطية، بينما تعتمد السعودية على البحر الأحمر لتصدير النفط بعد إغلاق هرمز. هذا الملف يفصل ما هو مثبت عما هو متداول. باب المندب Bab al-Mandab الحوثيون اليمن البحر الأحمر جدة السعودية شحن الشحن الطاقة الأمن التجارة الموانئ باب المندب، جنوب البحر الأحمر وغرب اليمن">
       <div class="card-top"><span class="status status-active"><span class="dot" aria-hidden="true"></span>نشط</span><span class="muted">19 نوفمبر 2026</span></div>
       <h2><a href="/dossier/bab-al-mandab-2026.html">باب المندب: الحوثيون يعودون إلى الممر</a></h2>
       <p>في 15 نوفمبر 2026 انسحبت القوات الموالية للحكومة اليمنية من منطقة باب المندب إلى عدن، وأعلن الحوثيون سيطرتهم على الممر. يأتي ذلك بعد حصار بحري أعلنوه على السعودية في يوليو، وهجمات على مطارات ومنشآت نفطية، بينما تعتمد السعودية على البحر الأحمر لتصدير النفط بعد إغلاق هرمز. هذا الملف يفصل ما هو مثبت عما هو متداول.</p>
       <div class="card-tags"><span>الشحن</span><span>الطاقة</span><span>الأمن</span><span>التجارة</span><span>الموانئ</span></div>
       <div class="card-foot"><span>باب المندب، جنوب البحر الأحمر وغرب اليمن</span><a href="/dossier/bab-al-mandab-2026.html">افتح الملف ←</a></div>
-    </article><article class="card" data-dossier-card="opec-plus-december-2026" data-status="monitoring" data-sectors="الطاقة|الاقتصاد|الأسواق|التجارة">
+    </article><article class="card" data-dossier-card="opec-plus-december-2026" data-status="monitoring" data-sectors="الطاقة|الاقتصاد|الأسواق|التجارة" data-search="أوبك+ ديسمبر: تثبيت الإنتاج وخفض العلاوات الآسيوية في 1 نوفمبر 2026 قررت الدول السبع في أوبك+ الإبقاء على الإنتاج المطلوب لشهر ديسمبر عند مستوى سبتمبر. بعدها بأيام خفضت أرامكو علاوة بيع خامها العربي Light إلى آسيا إلى خصم 7 دولارات للبرميل. القراران معاً يرسلان إشارة عن المعروض والسعر قبل اجتماع 29 نوفمبر، وسط استمرار إغلاق هرمز. أوبك OPEC أرامكو Aramco النفط برنت علاوة OSP السعودية الطاقة الاقتصاد الأسواق التجارة فيينا وأسواق آسيا وأوروبا وأمريكا الشمالية">
       <div class="card-top"><span class="status status-monitoring"><span class="dot" aria-hidden="true"></span>قيد المراقبة</span><span class="muted">19 نوفمبر 2026</span></div>
       <h2><a href="/dossier/opec-plus-december-2026.html">أوبك+ ديسمبر: تثبيت الإنتاج وخفض العلاوات الآسيوية</a></h2>
       <p>في 1 نوفمبر 2026 قررت الدول السبع في أوبك+ الإبقاء على الإنتاج المطلوب لشهر ديسمبر عند مستوى سبتمبر. بعدها بأيام خفضت أرامكو علاوة بيع خامها العربي Light إلى آسيا إلى خصم 7 دولارات للبرميل. القراران معاً يرسلان إشارة عن المعروض والسعر قبل اجتماع 29 نوفمبر، وسط استمرار إغلاق هرمز.</p>
       <div class="card-tags"><span>الطاقة</span><span>الاقتصاد</span><span>الأسواق</span><span>التجارة</span></div>
       <div class="card-foot"><span>فيينا وأسواق آسيا وأوروبا وأمريكا الشمالية</span><a href="/dossier/opec-plus-december-2026.html">افتح الملف ←</a></div>
-    </article><article class="card" data-dossier-card="qatarenergy-lng-2026" data-status="monitoring" data-sectors="الطاقة|الغاز|التجارة|الأسواق">
+    </article><article class="card" data-dossier-card="qatarenergy-lng-2026" data-status="monitoring" data-sectors="الطاقة|الغاز|التجارة|الأسواق" data-search="قطر للطاقة: التوسع خارج هرمز بعد أن أوقف هجوم إيراني شحناتها وأجبرها على إعلان القوة القاهرة، وسّعت قطر للطاقة محفظتها بعقود طويلة الأجل للغاز الأمريكي. الشركة ترفع طاقتها المحلية من 77 إلى 142 مليون طن سنوياً، وقد تتحكم بما بين 175 و185 مليون طن مطلع ثلاثينيات القرن وفق تقدير محللين. السؤال: هل يجعلها ذلك أقوى أم أكثر تركيزاً وأقل تحوطاً؟ قطر QatarEnergy غاز مسال LNG هرمز Cheniere Woodside North Field الطاقة الغاز التجارة الأسواق قطر والولايات المتحدة وأسواق آسيا وأوروبا">
       <div class="card-top"><span class="status status-monitoring"><span class="dot" aria-hidden="true"></span>قيد المراقبة</span><span class="muted">19 نوفمبر 2026</span></div>
       <h2><a href="/dossier/qatarenergy-lng-2026.html">قطر للطاقة: التوسع خارج هرمز</a></h2>
       <p>بعد أن أوقف هجوم إيراني شحناتها وأجبرها على إعلان القوة القاهرة، وسّعت قطر للطاقة محفظتها بعقود طويلة الأجل للغاز الأمريكي. الشركة ترفع طاقتها المحلية من 77 إلى 142 مليون طن سنوياً، وقد تتحكم بما بين 175 و185 مليون طن مطلع ثلاثينيات القرن وفق تقدير محللين. السؤال: هل يجعلها ذلك أقوى أم أكثر تركيزاً وأقل تحوطاً؟</p>

@@ -98,6 +98,8 @@ test("rendered dossier exposes the required product sections", () => {
   assert.match(html, /application\/ld\+json/);
   assert.match(html, /"@type":"AnalysisNewsArticle"/);
   assert.match(html, /rel="canonical"/);
+  assert.match(html, /id="dossierSearch"/);
+  assert.match(html, /data-search="/);
 });
 
 test("user-supplied text is escaped in HTML output", () => {

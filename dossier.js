@@ -81,6 +81,9 @@
     const status = { value: "all" };
     const sector = { value: "" };
     const followedOnly = { value: false };
+    const query = { value: "" };
+    const search = $("#dossierSearch");
+    const searchStatus = $("#searchStatus");
     const empty = $("#dossierEmpty");
     const counter = $("#filterStatus");
     function apply() {
@@ -89,12 +92,15 @@
         const okStatus = status.value === "all" || card.dataset.status === status.value;
         const okSector = !sector.value || (card.dataset.sectors || "").split("|").includes(sector.value);
         const okFollow = !followedOnly.value || followed().includes(card.dataset.dossierCard);
-        const ok = okStatus && okSector && okFollow;
+        const hay = (card.dataset.search || "").toLowerCase();
+        const okQuery = !query.value || hay.includes(query.value);
+        const ok = okStatus && okSector && okFollow && okQuery;
         card.hidden = !ok;
         if (ok) shown++;
       });
       if (empty) empty.hidden = shown !== 0;
       if (counter) counter.textContent = `${shown} ${shown === 1 ? "ملف" : "ملفات"}`;
+      if (searchStatus) searchStatus.textContent = query.value ? `${shown} نتيجة` : "";
     }
     $$("[data-filter-status]").forEach((chip) => chip.addEventListener("click", () => {
       status.value = chip.dataset.filterStatus;
@@ -106,6 +112,10 @@
       $$("[data-filter-sector]").forEach((c) => { c.classList.toggle("is-on", c.dataset.filterSector === sector.value); c.setAttribute("aria-pressed", String(c.dataset.filterSector === sector.value)); });
       apply();
     }));
+    search?.addEventListener("input", () => {
+      query.value = search.value.trim().toLowerCase();
+      apply();
+    });
     const followChip = $("[data-filter-followed]");
     followChip?.addEventListener("click", () => {
       followedOnly.value = !followedOnly.value;
