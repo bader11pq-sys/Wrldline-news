@@ -281,7 +281,7 @@ async function publishMode(db: any, mode: string, pack: any) {
   const foundIds = idsIn(content), sourceMap = new Map(pack.sources.map((s: Src) => [s.id, s]));
   const selected = [...foundIds].map(id => sourceMap.get(id)).filter(Boolean) as Src[];
   if (!selected.length) throw new Error("No valid citations were returned by the model");
-  const selectedHosts = new Set(selected.map(s => host(s.url)));
+  const selectedHosts = new Set(selected.map(s => txt(s.publisher || host(s.url), 120).toLowerCase()));
   const authoritative = selected.filter(s => ["official", "academic", "historical", "research"].includes(s.type));
   if (mode === "dossier" && selectedHosts.size < 2) throw new Error("Dossier needs evidence from at least two distinct publishers");
   if (mode === "watchlist" && (selected.length < 3 || selectedHosts.size < 2)) throw new Error("Weekly watchlist needs multiple independent source links");
