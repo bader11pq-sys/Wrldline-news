@@ -16,7 +16,45 @@ Open Supabase Dashboard → SQL Editor and run:
 - Add `https://al-ghaib.us.ci/account.html` to allowed redirect URLs.
 - Configure SMTP for production email delivery and set suitable confirmation/password policies.
 
-## 3. Configure Stripe before enabling paid checkout
+## 3. Enable social sign-in (Google and Apple)
+
+The account page now provides **Continue with Google** and **Continue with Apple** using Supabase Auth OAuth. These are identity providers; Apple Pay is a separate payment wallet.
+
+Supabase project:
+- Project: `vmaxbnogmmfyrcucapnq`
+- Site URL: `https://al-ghaib.us.ci`
+- Add this exact URL under Authentication → URL Configuration → Redirect URLs: `https://al-ghaib.us.ci/account.html`
+- Provider callback URL (use this as the OAuth callback in both providers): `https://vmaxbnogmmfyrcucapnq.supabase.co/auth/v1/callback`
+
+### Google
+1. In Google Cloud Console, create an OAuth Client ID of type **Web application**.
+2. Add `https://al-ghaib.us.ci` as an Authorized JavaScript origin.
+3. Add the Supabase callback URL above as an Authorized redirect URI.
+4. Copy the Google Client ID and Client Secret.
+5. In Supabase Dashboard → Authentication → Providers → Google, enable Google and enter those two values.
+
+### Apple
+1. An Apple Developer account is required. Create/choose an App ID and enable **Sign in with Apple**.
+2. Create a **Services ID** and configure its domain as `al-ghaib.us.ci` and its Return URL as the Supabase callback URL above.
+3. Create a Sign in with Apple key and keep the downloaded `.p8` private key secure. Record the Apple Team ID and Key ID.
+4. In Supabase Dashboard → Authentication → Providers → Apple, enable Apple and provide the Services ID (Client ID) and the generated Apple client secret/JWT, with the required Team ID, Key ID and private key values.
+5. Apple OAuth may not return a user's full name. The account profile lets the user add or edit their display name after signing in. Plan to renew the Apple client secret before its six-month expiry.
+
+Do not place either provider's client secret, Apple `.p8` key, or JWT in Git, HTML, browser JavaScript, or public configuration. Configure them only in the corresponding provider dashboard.
+
+## 4. Apple Pay and other payment methods
+
+WRLDLINE already uses a **Stripe-hosted Checkout Session** for monthly and annual PLUS subscriptions. The server intentionally does not hard-code `payment_method_types`, allowing Stripe Checkout to dynamically present the payment methods enabled and eligible for the customer.
+
+- Apple Pay is a payment wallet, not an identity provider. Stripe Checkout supports Apple Pay and Google Pay out of the box for eligible devices/browsers.
+- In Stripe Dashboard, open Business settings / Payment methods and confirm Apple Pay (and Google Pay, where available) are enabled for this Stripe account.
+- The current flow redirects customers to Stripe-hosted Checkout. A custom Stripe Checkout domain is optional; domain registration is required for Apple Pay when using Stripe Elements or embedded Checkout on WRLDLINE's own origin.
+- The payment page decides which methods to show based on Stripe account configuration, customer country, browser/device eligibility and payment rules. Do not promise that every customer will see every wallet.
+- Keep card payment support available as the fallback. The existing Stripe Billing Portal lets subscribers update their payment methods and manage invoices/cancellation.
+
+The existing prices are USD 5.00 monthly and USD 29.99 yearly. Do not switch the currency or add Mada/local acquiring without confirming the Stripe account's registered country, available payment methods, settlement currency and tax setup.
+
+## 5. Configure Stripe before enabling paid checkout
 The live Stripe catalog has been created:
 - Product: `prod_Vc7f2bsyLOJFUW` — WRLDLINE PLUS
 - Monthly: `price_1UatQQPGptBsofwHNagEdVKY` — USD 5.00 every month
