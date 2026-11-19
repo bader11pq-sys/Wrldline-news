@@ -193,3 +193,18 @@ Total observed queue depth: **1,922 messages**. The classification queue's zero 
 5. Add the advertiser-page analytics taxonomy and end-to-end form test in a reviewed code change; do not insert synthetic events or contact records into production to make metrics look healthy.
 6. Keep PR #48 in draft until the production queue/auth findings, browser smoke test, authenticated admin smoke test, and real backup/restore requirements have been resolved. Synthetic restore CI is not a real production backup restore.
 
+
+
+## Fresh classification eligibility and source recheck — 2026-11-19 06:26 UTC
+
+This recheck corrects the earlier use of `received_at` as a proxy for classification eligibility. The classifier contract is based on **publication time**, not when the row arrived in Supabase.
+
+- Pending rows with `published_at` inside the allowed window (last 60 minutes, with a five-minute future-clock tolerance): **83**.
+- Pending rows received in the last hour: **155**. Of these, 83 are in the publication-time window; receipt time alone overstates the eligible count.
+- Pending rows with `published_at` older than 60 minutes: **12,240**. Do not bulk-backfill these through Groq/NVIDIA or any other LLM. They should follow the existing expiry policy.
+- General ingestion continues: latest run finished at 2026-11-19 06:24:50 UTC. The 24-hour run counters showed 420,513 parsed items, 19,480 successful source attempts, and 1,080 failed source attempts. Parsed items are pipeline counters, not unique published stories.
+- The 80-feed active catalog has one unresolved source: Kuwait News Agency (`كونا`, `https://www.kuna.net.kw/rss`) has no successful fetch timestamp and reports `Feed returned no parseable RSS/Atom entries`. The other 79 active sources had no stale/error flag in this read. Validate KUNA's official feed format or replace it with a verified official endpoint; do not silently remove it without recording the source decision.
+- Fresh Cloudflare queue metrics: General 0, classification 0, breaking 349 (paused), translation 138 (paused), DLQ 1,429 (no consumer). Total **1,916**. Classification queue empty means its producer is disabled, not that the 83 currently eligible articles have been processed.
+- All six support `pg_cron` jobs remain inactive. NewsData has not updated its article fetch timestamp since 2026-11-17 11:22:26 UTC; email delivery remains disabled. Do not enable either support job until its authentication and endpoint are validated.
+
+No production settings or records were changed during this recheck.
