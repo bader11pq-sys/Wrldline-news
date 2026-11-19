@@ -46,7 +46,7 @@ Deno.serve(async (req: Request) => {
     }));
   }
 
-  const claimed = await db.rpc("claim_classification_batch", { p_limit: 10 });
+  const claimed = await db.rpc("claim_classification_batch", { p_limit: 1 });
   if (claimed.error) {
     return json({ error: "Could not claim classification batch", detail: claimed.error.message }, 500);
   }
