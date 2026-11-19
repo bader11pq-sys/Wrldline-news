@@ -370,10 +370,15 @@ Deno.serve(async (req: Request) => {
   if (mismatch !== 0) return reply({ error: "Unauthorized" }, 401);
   let body: any = {}; try { body = await req.json(); } catch {}
   const mode = String(body.mode || "");
-  if (!["dossier", "watchlist", "context_monthly", "context_monitor", "mirror", "self_test"].includes(mode)) return reply({ error: "Unsupported mode" }, 400);
+  if (!["dossier", "watchlist", "context_monthly", "context_monitor", "mirror", "self_test", "groq_self_test"].includes(mode)) return reply({ error: "Unsupported mode" }, 400);
   const begun = await db.from("editorial_run_log").insert({ mode, status: "started" }).select("id").single();
   if (begun.error) return reply({ error: begun.error.message }, 500);
   try {
+    if (mode === "groq_self_test") {
+      const found = await searchWithGroq("Reuters latest Saudi Arabia Gulf economy and regional security official sources November 19 2026");
+      await log(db, begun.data.id, "skipped", { provider: "groq-browser-search", research_sources: found.length, details: { groq_search_ok: true, sources: found.map((x: Src) => ({ title: x.title, url: x.url, publisher: x.publisher, type: x.type })) } });
+      return reply({ ok: true, groq_browser_search: true, source_count: found.length, sources: found.map((x: Src) => ({ title: x.title, url: x.url, publisher: x.publisher, type: x.type })) });
+    }
     if (mode === "self_test") {
       const found = await searchWeb("UN IMF official latest global economy international security November 2026", "qdr:w");
       if (!found.length) throw new Error("Firecrawl responded but returned no usable sources");
