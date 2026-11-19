@@ -27,12 +27,24 @@ Deno.serve(async (req: Request) => {
   const { data: authorized, error: authError } = await db.rpc("verify_wrldline_cron_secret", { p_secret: secret });
   if (authError || authorized !== true) return json({ error: "Unauthorized" }, 401);
 
-  // Maintenance is deliberately idempotent. The first run expires the legacy
-  // backlog; subsequent runs are cheap because the queue indexes cover it.
+  // Queue maintenance is best-effort: failures must not block fresh stories.
+  // The claim RPC below independently enforces the strict one-hour window
+  // (and five-minute future-clock tolerance), so stale rows can never reach an LLM.
   const expired = await db.rpc("expire_stale_classification_queue");
-  if (expired.error) return json({ error: "Could not expire out-of-window queue rows", detail: expired.error.message }, 500);
+  if (expired.error) {
+    console.warn("WRLDLINE_CLASSIFICATION_MAINTENANCE_WARNING", JSON.stringify({
+      operation: "expire_stale_classification_queue",
+      detail: String(expired.error.message || expired.error).slice(0, 220),
+    }));
+  }
+
   const released = await db.rpc("release_stale_classification_claims");
-  if (released.error) return json({ error: "Could not release stale claims", detail: released.error.message }, 500);
+  if (released.error) {
+    console.warn("WRLDLINE_CLASSIFICATION_MAINTENANCE_WARNING", JSON.stringify({
+      operation: "release_stale_classification_claims",
+      detail: String(released.error.message || released.error).slice(0, 220),
+    }));
+  }
 
   const claimed = await db.rpc("claim_classification_batch", { p_limit: 10 });
   if (claimed.error) {
