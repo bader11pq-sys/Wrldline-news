@@ -49,7 +49,7 @@
   const header = `<header class="wl-header" id="siteHeader">
   <div class="wl-container">
     <div class="wl-masthead">
-      <a class="wl-brand" href="index.html" aria-label="${t("brandHome")}"><span class="wl-brand-mark">W</span><span class="wl-brand-copy"><strong>WRLDLINE</strong><small>GLOBAL NEWS NETWORK</small></span></a>
+      <a class="wl-brand" href="index.html" aria-label="${t("brandHome")}"><span class="wl-brand-mark"><img src="/assets/brand/wrldline-symbol.png" alt="" width="44" height="34"></span><span class="wl-brand-copy"><strong>WRLDLINE</strong><small>GLOBAL NEWS NETWORK</small></span></a>
       <div class="wl-head-actions">
         <button class="wl-icon-btn wl-mobile-menu" id="menuButton" type="button" aria-label="${t("menu")}" aria-expanded="false" aria-controls="mainNav"><svg aria-hidden="true"><use href="#i-menu"/></svg></button>
         <a class="wl-icon-btn" href="index.html" aria-label="${t("home")}"><svg aria-hidden="true"><use href="#i-home"/></svg></a>
@@ -81,7 +81,7 @@
   const footer = `<footer class="site-footer">
   <div class="wl-container">
     <div class="footer-main">
-      <div><a class="wl-brand footer-brand" href="index.html"><span class="wl-brand-mark">W</span><span class="wl-brand-copy"><strong>WRLDLINE</strong><small>GLOBAL NEWS NETWORK</small></span></a><p class="footer-about">${t("about")}</p></div>
+      <div><a class="wl-brand footer-brand" href="index.html"><img class="footer-logo" src="/assets/brand/wrldline-logo-main.jpg" alt="WRLDLINE NEWS" width="420" height="145"></a><p class="footer-about">${t("about")}</p></div>
       <div class="footer-col"><h3>${t("newsrooms")}</h3><a href="index.html">${t("navHome")}</a><a href="dossier/">${t("dossiers")}</a><a href="dossier/watchlist.html">${t("watchlist")}</a><a href="context.html">${t("context")}</a><a href="balance.html">${t("balance")}</a><a href="impact.html">${t("impact")}</a></div>
       <div class="footer-col"><h3>${t("knowledge")}</h3><a href="history.html">${t("history")}</a><a href="mirror.html">${t("mirror")}</a><a href="explainers.html">${t("explainers")}</a><a href="promises.html">${t("promises")}</a></div>
       <div class="footer-col"><h3>${t("encyclopediaCol")}</h3><a href="history-explore.html">${t("atlas")}</a><a href="history-compare.html">${t("compare")}</a><a href="history-library.html">${t("library")}</a><a href="about.html">${t("aboutLink")}</a></div>
