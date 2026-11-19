@@ -44,16 +44,27 @@ SQL
 
 "${PSQL[@]}" -f "$ROOT/supabase/migrations/20261118170600_batch_stale_classification_expiry_50.sql" >"$TMP/migration.log" 2>&1 || { cat "$TMP/migration.log"; exit 1; }
 
+"${PSQL[@]}" -f "$ROOT/supabase/migrations/20261119074000_classification_expiry_index_and_batch.sql" >>"$TMP/migration.log" 2>&1 || { cat "$TMP/migration.log"; exit 1; }
+
+
 "${PSQL[@]}" <<'SQL'
-do $$
+do $
 declare
   v_expected integer;
   v_actual integer;
+  v_previous integer := 0;
   v_pass integer;
 begin
-  for v_pass in 1..6 loop
+  if not exists (
+    select 1 from pg_indexes
+    where schemaname='public' and indexname='articles_classification_expiry_idx'
+  ) then
+    raise exception 'The partial classification expiry index was not created';
+  end if;
+
+  for v_pass in 1..30 loop
     perform public.expire_stale_classification_queue();
-    v_expected := least(v_pass * 50, 295);
+    v_expected := least(v_pass * 10, 295);
     select count(*) into v_actual
     from public.articles
     where editorial_status='published'
@@ -61,13 +72,17 @@ begin
     if v_actual <> v_expected then
       raise exception 'Pass % expected % expired rows; got %', v_pass, v_expected, v_actual;
     end if;
+    if v_actual - v_previous > 10 then
+      raise exception 'Pass % exceeded the ten-row maintenance cap', v_pass;
+    end if;
+    v_previous := v_actual;
   end loop;
-end $$;
+end $;
 
 do $$
 begin
   if (select count(*) from public.articles where editorial_status='published' and ai_classification_status='pending' and published_at<now()-interval '1 hour') <> 0 then
-    raise exception 'All old published queue rows should be expired after six 50-row passes';
+    raise exception 'All old published queue rows should be expired after thirty 10-row passes';
   end if;
   if (select count(*) from public.articles where editorial_status='published' and ai_classification_status='pending' and published_at>=now()-interval '1 hour') <> 25 then
     raise exception 'Recent pending rows must remain eligible';
@@ -89,4 +104,4 @@ begin
 end $$;
 SQL
 
-echo "classification-expiry: bounded batches, recent-row preservation, non-published preservation and idempotence passed"
+echo "classification-expiry: indexed bounded batches (10), recent-row preservation, non-published preservation and idempotence passed"
