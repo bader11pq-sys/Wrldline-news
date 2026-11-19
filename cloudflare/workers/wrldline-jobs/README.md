@@ -221,3 +221,31 @@ A single explicit `{task:"auth-check", scheduled_at:<current ISO timestamp>}` me
 - No article was selected or modified; no LLM provider was called. This proves the Worker-to-Edge auth path only. It does **not** prove Groq/NVIDIA availability, a successful classification, or backlog recovery.
 
 The per-pipeline classification producer remains disabled. The next controlled test, if authorized, is a one-article canary restricted to a record whose `published_at` is inside the 60-minute policy window, followed by verification of the stored result and provider attribution. Do not enable the recurring classification schedule based on this auth-only result.
+
+
+## Classification expiry timeout diagnosis and proposed fix — 2026-11-19 06:34 UTC
+
+The one-story canary queued at 06:30 UTC reached the deployed `classify-news-worker` v40 but returned HTTP 500 after 9.9 seconds. Postgres recorded SQLSTATE `57014` (statement timeout) inside `expire_stale_classification_queue()`; PostgREST recorded the matching RPC response as 500. The candidate story remained `pending`, with zero attempts and no claim, so the worker failed **before** the provider call or article claim.
+
+The failure is not attributed to Firecrawl: Firecrawl separately returned HTTP 402 (`insufficient_credits`, zero remaining credits, reset 2026-12-14), but the classifier treats text-extraction failures as warnings/fallbacks. The timeout occurs earlier, in the database cleanup RPC.
+
+### Query-plan and workload findings
+
+- The mixed-status expiry predicate (`pending`, `failed`, `processing`) used `idx_articles_published`, then an incremental sort by `published_at,id` and a status filter. This did not use the classification-specific index for the combined predicate.
+- A single-status pending query can use `articles_classification_queue_idx`, but the combined three-state query chooses a less suitable plan.
+- `pg_stat_statements` showed 2,096 cleanup RPC calls (mean ~627 ms, max ~7,794 ms) and two historical direct calls averaging ~11.9 s (max ~22.3 s). The latest 50-row batch can therefore exceed the PostgREST statement budget under load.
+- Updating each article invokes the article trust guard and audit triggers. They must remain enabled; the cleanup must be made cheaper rather than bypassing editorial trust protections.
+- Current pending queue state is approximately 12.3k old rows, while only 83 rows were inside the publication-time 60-minute eligibility window at the earlier 06:24 UTC snapshot. Do not send stale rows to LLMs.
+
+### Proposed branch-only optimization
+
+Migration `20261119074000_classification_expiry_index_and_batch.sql` adds a partial index on `(published_at ASC, id ASC)` for the exact published classification states, then reduces the expiry write batch from 50 to 10 rows per call. This retains the one-hour cutoff, `FOR UPDATE SKIP LOCKED`, and all existing trust/audit triggers. The migration is in this PR branch only; it has **not** been applied to production.
+
+### Verification still required
+
+1. Run an `EXPLAIN` after applying the migration in a disposable/test database and confirm the candidate scan uses `articles_classification_expiry_idx` without incremental sort.
+2. Run the SQL regression test for expiry boundaries, status filtering, batch cap, and concurrent `SKIP LOCKED` behavior.
+3. After review/CI, apply the migration in a controlled maintenance window; measure the RPC duration and ensure each invocation stays comfortably below the statement timeout.
+4. Only then repeat a single fresh-article classification canary. Keep the recurring classification producer disabled until one article succeeds end-to-end with provider attribution and persisted output.
+
+The classification queue returned to zero after the failed one-message canary; no new canary was enqueued. No production index, function, trigger, queue setting, schedule, or article was changed by this diagnosis.
