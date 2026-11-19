@@ -98,8 +98,6 @@ test("rendered dossier exposes the required product sections", () => {
   assert.match(html, /application\/ld\+json/);
   assert.match(html, /"@type":"AnalysisNewsArticle"/);
   assert.match(html, /rel="canonical"/);
-  assert.match(html, /id="dossierSearch"/);
-  assert.match(html, /data-search="/);
 });
 
 test("user-supplied text is escaped in HTML output", () => {
@@ -130,6 +128,8 @@ test("index, feed and sitemap cover every dossier exactly once", () => {
   const html = renderIndex(dossiers, Date.parse("2026-11-19T12:00:00Z"));
   const feed = renderFeed(dossiers);
   const sitemap = renderSitemap(dossiers);
+  assert.match(html, /id="dossierSearch"/);
+  assert.match(html, /data-search="/);
   for (const d of dossiers) {
     assert.ok(html.includes(`/dossier/${d.slug}.html`), `index missing ${d.slug}`);
     assert.equal((feed.match(new RegExp(`/dossier/${d.slug}.html`, "g")) || []).length >= 1, true);
