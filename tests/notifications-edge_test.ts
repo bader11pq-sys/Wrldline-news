@@ -169,3 +169,14 @@ Deno.test("Confirmation delivery reconstructs token, snapshots choices, and retr
   const m=mock({tables:{newsletter_optins:[{id:user,email:"fixture@example.invalid",locale:"ar",cadence:"weekly",topics:["politics"],countries:["السعودية"],status:"pending",token_nonce:other,confirmation_hash:await hash(token),unsubscribe_hash:await hash(unsub),confirmation_expires_at:new Date(Date.now()+3600000).toISOString()}]}});
   let captured="";const outcome=await deliver(m.db,env,{id:user,kind:"confirmation",lease_token:other,attempts:1,created_at:new Date().toISOString(),push_subscription_id:"",newsletter_id:user,article_id:"",token_nonce:other,period_start:"",period_end:"",content:null},{email:(mail,key)=>{equal(key,"wrldline-"+user);assert(mail.text.includes("السعودية"));captured=mail.text;return Promise.reject(new DeliveryError("email_network",true,true));},push:()=>Promise.reject()});equal(outcome,"retry");assert(captured.includes("#confirm="+token));const snapshot=m.calls.find(c=>c.name==="notification_prepare_delivery");assert(!JSON.stringify(snapshot).includes(token));
 });
+
+Deno.test("Email-only dispatch never plans or claims browser push",async()=>{
+  const m=mock();
+  const r=await dispatch(env,m.db,{email:()=>Promise.resolve("mock-email"),push:()=>Promise.reject(new Error("push must not run"))})(new Request("https://edge.invalid/notification-dispatch?channel=email",{method:"POST",headers:{"x-wrldline-cron-secret":"fixture-cron"}}));
+  equal(r.status,200);
+  assert(!m.calls.some(c=>c.name==="notification_plan_push"));
+  const claim=m.calls.find(c=>c.name==="notification_claim");
+  assert(JSON.stringify(claim?.args).includes("digest"));
+  assert(JSON.stringify(claim?.args).includes("confirmation"));
+  assert(!JSON.stringify(claim?.args).includes('"push"'));
+});
