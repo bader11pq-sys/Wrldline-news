@@ -214,7 +214,7 @@
   function articleCard(a, opts = {}) {
     const imagePlaceholder = '<div class="image-placeholder card-image" aria-hidden="true">WRLDLINE</div>';
     const img = opts.compact ? "" : (a.image_url
-      ? '<img class="card-image" src="' + escapeHTML(a.image_url) + '" alt="' + escapeHTML(a.title) + '" loading="lazy" decoding="async" referrerpolicy="no-referrer" onerror="this.replaceWith(Object.assign(document.createElement(\\'div\\'),{className: \\'image-placeholder card-image\\',textContent: \\'WRLDLINE\\'}))">'
+      ? `<img class="card-image" src="${escapeHTML(a.image_url)}" alt="${escapeHTML(a.title)}" loading="lazy" decoding="async" referrerpolicy="no-referrer" onerror="this.replaceWith(Object.assign(document.createElement('div'),{className:'image-placeholder card-image',textContent:'WRLDLINE'}))">`
       : imagePlaceholder);
     const cls = opts.compact ? "wl-live-story" : "news-card news-card--editorial";
     return '<article class="' + cls + '">' + (opts.compact ? "" : '<div class="card-open">' + img) +
