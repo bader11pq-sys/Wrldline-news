@@ -208,10 +208,19 @@ Deno.serve(async (req: Request) => {
   if (mismatch !== 0) return reply({ error: "Unauthorized" }, 401);
   let body: any = {}; try { body = await req.json(); } catch {}
   const mode = String(body.mode || "");
-  if (!["dossier", "watchlist", "context_monthly", "context_monitor", "mirror"].includes(mode)) return reply({ error: "Unsupported mode" }, 400);
+  if (!["dossier", "watchlist", "context_monthly", "context_monitor", "mirror", "self_test"].includes(mode)) return reply({ error: "Unsupported mode" }, 400);
   const begun = await db.from("editorial_run_log").insert({ mode, status: "started" }).select("id").single();
   if (begun.error) return reply({ error: begun.error.message }, 500);
   try {
+    if (mode === "self_test") {
+      const found = await searchWeb("UN IMF official latest global economy international security November 2026", "qdr:w");
+      if (!found.length) throw new Error("Firecrawl responded but returned no usable sources");
+      const expected = JSON.stringify({ ok: true, summary: "Provider connectivity test" });
+      const testPrompt = "Return the following JSON object without changing it: " + expected + "\nSources for connectivity validation: " + JSON.stringify(found.slice(0, 3).map((x: Src, i: number) => ({ id: "source_" + (i + 1), title: x.title, url: x.url })));
+      const generated = await ai(testPrompt);
+      await log(db, begun.data.id, "skipped", { provider: generated.provider, research_sources: found.length, details: { self_test: true, ai_provider: generated.provider, firecrawl_sources: found.length, ai_ok: generated.data?.ok === true } });
+      return reply({ ok: true, self_test: true, firecrawl_sources: found.length, ai_provider: generated.provider, ai_ok: generated.data?.ok === true });
+    }
     if (mode === "dossier") {
       const st = await db.from("editorial_runtime_state").select("state_value").eq("state_key", "dossier_next_due_at").maybeSingle();
       const due = Date.parse(st.data?.state_value?.at || "2026-11-19T15:00:00.000Z");
