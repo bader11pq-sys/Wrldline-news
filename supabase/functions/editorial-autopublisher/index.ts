@@ -30,6 +30,23 @@ function readXmlTag(block: string, name: string) {
   const end = lower.indexOf(close, openEnd + 1);
   return end < 0 ? "" : xmlDecode(block.slice(openEnd + 1, end));
 }
+ 
+function readXmlAttr(block: string, tag: string, attr: string) {
+  const lower = block.toLowerCase(), token = "<" + tag.toLowerCase();
+  const at = lower.indexOf(token);
+  if (at < 0) return "";
+  const end = block.indexOf(">", at);
+  if (end < 0) return "";
+  const header = block.slice(at, end);
+  const key = attr.toLowerCase() + "=";
+  const pos = header.toLowerCase().indexOf(key);
+  if (pos < 0) return "";
+  const quote = header[pos + key.length];
+  if (quote !== '"' && quote !== "'") return "";
+  const start = pos + key.length + 1;
+  const finish = header.indexOf(quote, start);
+  return finish < 0 ? "" : xmlDecode(header.slice(start, finish));
+}
 function classifyPublisher(publisher: string, sourceUrl: string) {
   const h = (host(sourceUrl) + " " + publisher).toLowerCase();
   if (/(\.gov|\.int|united nations|un\.org|nato|imf|world bank|opec|who|european commission|european union|iea|bis\.org|world trade organization|wto)/i.test(h)) return "official";
