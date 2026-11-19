@@ -54,6 +54,8 @@ test('dedupe event IDs, reject free text, ignore unpublished/nonexistent article
   const db = await setup();
   try {
     await claims(db);
+    const authProbe = await db.query("select auth.role() as role, current_setting('request.jwt.claims', true) as claims");
+    assert.equal(authProbe.rows[0].role, 'service_role', 'test fixture must establish service_role JWT claims before ingest');
     const view = event('view_article', { article_id: article, category: 'security' });
     assert.equal((await ingest(db, [view])).accepted, 1); assert.equal((await ingest(db, [view])).accepted, 0);
     assert.equal((await ingest(db, [event('view_article', { article_id: '66666666-6666-4666-8666-666666666666' })])).accepted, 0);
