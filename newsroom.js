@@ -118,6 +118,24 @@
     }
   }
 
+  async function fetchEditorialPublications(section, limit = 10) {
+    const query = new URLSearchParams({
+      select: "section,slug,title,content,sources,published_at,updated_at",
+      section: "eq." + section,
+      status: "eq.published",
+      order: "published_at.desc",
+      limit: String(Math.max(1, Math.min(20, Number(limit) || 10)))
+    });
+    const response = await fetch(SUPABASE_URL + "/rest/v1/editorial_publications?" + query.toString(), {
+      headers: { apikey: SUPABASE_ANON_KEY, Accept: "application/json" },
+      cache: "no-store",
+      signal: AbortSignal.timeout(12000)
+    });
+    if (!response.ok) throw new Error("Editorial publication feed HTTP " + response.status);
+    const rows = await response.json();
+    return Array.isArray(rows) ? rows : [];
+  }
+
   function clusterArticles(articles, options = {}) {
     const minSources = options.minSources || 2;
     const maxAgeH = options.maxAgeH || 72;
@@ -233,6 +251,7 @@
   window.WLNR = {
     data,
     fetchArticles,
+    fetchEditorialPublications,
     clusterArticles,
     riskScore,
     categoryCounts,
