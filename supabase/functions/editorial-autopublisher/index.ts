@@ -324,14 +324,12 @@ Deno.serve(async (req: Request) => {
       const f = await db.from("feeds").select("name,url").eq("active", true).limit(8);
       if (f.error) throw new Error(f.error.message);
       const results = await Promise.allSettled((f.data || []).map((x: any) => fetchRss(x.url, x.name)));
-      const items: Src[] = [];
-      results.forEach(x => { if (x.status === "fulfilled") items.push(...x.value); });
-      const search = await searchWeb("Saudi Arabia Gulf policy energy economy November 2026", "en-US");
-      items.push(...search);
-      if (!items.length) throw new Error("No usable RSS items; active feeds checked: " + (f.data || []).length);
-      const test = await ai("Return JSON only: {\"ok\":true,\"summary\":\"provider connectivity test\"}");
-      await log(db, begun.data.id, "skipped", { provider: test.provider, research_sources: items.length, details: { self_test: true, rss_count: items.length, ai_ok: test.data?.ok === true } });
-      return reply({ ok: true, self_test: true, rss_count: items.length, ai_provider: test.provider, ai_ok: test.data?.ok === true });
+      const statuses = results.map((x, i) => ({ feed: f.data[i]?.name, ok: x.status === "fulfilled", count: x.status === "fulfilled" ? x.value.length : 0, error: x.status === "rejected" ? String(x.reason).slice(0, 160) : "" }));
+      const sample = parseFeedXml("<rss><channel><item><title>WRLDLINE TEST</title><link>https://example.com/test</link><description>test item</description></item></channel></rss>", "test", "https://example.com/rss");
+      const g = await Promise.allSettled([searchWeb("Saudi Arabia Gulf policy energy economy November 2026", "en-US")]);
+      const google = g[0].status === "fulfilled" ? g[0].value.length : -1;
+      const googleError = g[0].status === "rejected" ? String(g[0].reason).slice(0, 250) : "";
+      return reply({ ok: true, self_test: true, statuses, sample_parser_count: sample.length, google_rss_count: google, google_error: googleError });
     }
     if (mode === "dossier") {
       const st = await db.from("editorial_runtime_state").select("state_value").eq("state_key", "dossier_next_due_at").maybeSingle();
