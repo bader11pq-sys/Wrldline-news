@@ -67,6 +67,7 @@ test('dedupe event IDs, reject free text, ignore unpublished/nonexistent article
     assert.equal(data.top_news[0].avg_active_seconds, 30); assert.equal(data.top_news[0].read_sessions, 1); assert.equal(data.top_news[0].views, 1);
     assert.equal(data.categories[0].category, 'politics'); assert.equal(data.funnel.plus_interest_sessions, 1); assert.equal(data.funnel.account_signup_sessions, 1);
     assert.equal(data.funnel.paid_receipt_verified, false);
+    await claims(db); // dashboard() switches the JWT to authenticated/editor; ingestion must return to service_role.
     const advertiserPageEvent = event('page_view', { page: 'advertise', session_id: randomUUID() });
     assert.equal((await ingest(db, [advertiserPageEvent])).accepted, 1);
     const advertiserStored = await db.query('select page from public.audience_events where event_id=$1', [advertiserPageEvent.event_id]);
