@@ -12,15 +12,97 @@ const slug = (x: unknown, fallback: string) => String(x || "").toLowerCase().rep
 const parse = (s: string) => { const a = s.indexOf("{"), b = s.lastIndexOf("}"); if (a < 0 || b <= a) throw new Error("AI returned invalid JSON"); return JSON.parse(s.slice(a, b + 1)); };
 type Src = { id: string; title: string; url: string; publisher: string; published_at: string | null; type: string; excerpt: string; source_confidence: string };
 
+let FIRECRAWL_DISABLED = false;
+
+async function searchWithGoogle(query: string): Promise<Src[]> {
+  const key = Deno.env.get("GEMINI_API_KEY") || Deno.env.get("GOOGLE_API_KEY");
+  if (!key) throw new Error("Neither Firecrawl credits nor Gemini Search are available");
+  const input = [
+    "استخدم Google Search لإجراء بحث ويب حقيقي باللغة العربية والإنجليزية حول السؤال التالي.",
+    "أعط الأولوية للمصادر الرسمية والأكاديمية والوكالات المعروفة، وأدرج روابط صفحات يمكن فتحها فعلياً.",
+    "أخرج JSON فقط بهذا الشكل: {results:[{title,url,excerpt,published_at}]}",
+    "لا تخترع روابط. يجب أن تكون كل روابط النتائج مرتبطة بمراجع Google Search في الرد.",
+    "عبارة البحث: " + query
+  ].join("\n");
+  const response = await fetch("https://generativelanguage.googleapis.com/v1beta/interactions", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "x-goog-api-key": key },
+    signal: AbortSignal.timeout(85000),
+    body: JSON.stringify({ model: "gemini-3.5-flash-lite", input, tools: [{ type: "google_search" }] })
+  });
+  if (!response.ok) throw new Error("Gemini Google Search HTTP " + response.status + ": " + (await response.text()).slice(0, 250));
+  const payload = await response.json();
+  const blocks: any[] = [];
+  const annotations: any[] = [];
+  for (const step of Array.isArray(payload.steps) ? payload.steps : []) {
+    if (step.type !== "model_output" || !Array.isArray(step.content)) continue;
+    for (const block of step.content) {
+      if (block.type !== "text") continue;
+      if (typeof block.text === "string") blocks.push(block.text);
+      if (Array.isArray(block.annotations)) annotations.push(...block.annotations);
+    }
+  }
+  const outputText = typeof payload.output_text === "string" ? payload.output_text : blocks.join("\n");
+  if (!outputText.trim()) throw new Error("Gemini Google Search returned no text");
+  const decoded = parse(outputText);
+  const citations = new Map<string, any>();
+  for (const annotation of annotations) {
+    if (annotation.type !== "url_citation") continue;
+    const url = http(annotation.url);
+    if (!url) continue;
+    const normalized = url.replace(/[?#].*$/, "").replace(/\/+$/, "").toLowerCase();
+    citations.set(normalized, annotation);
+  }
+  const rows = Array.isArray(decoded.results) ? decoded.results : [];
+  const output: Src[] = [];
+  const seen = new Set<string>();
+  for (const row of rows) {
+    const url = http(row.url);
+    if (!url) continue;
+    const normalized = url.replace(/[?#].*$/, "").replace(/\/+$/, "").toLowerCase();
+    const annotation = citations.get(normalized);
+    if (!annotation || seen.has(normalized)) continue;
+    seen.add(normalized);
+    const publisher = host(url);
+    const title = txt(row.title || annotation.title || publisher, 220);
+    const domain = publisher.toLowerCase();
+    const type = /(\.gov|\.int|un\.org|nato\.int|imf\.org|worldbank\.org|opec\.org|who\.int|europa\.eu|iea\.org)/i.test(domain) ? "official" :
+      /(edu|jstor|cambridge|oxfordacademic|nature\.com|academic\.oup|arxiv)/i.test(domain) ? "academic" :
+      /(britannica|loc\.gov|archives\.gov|history\.state\.gov|sipri|cfr\.org|chathamhouse|carnegieendowment)/i.test(domain) ? "historical" :
+      /(reuters|apnews|bbc|aljazeera|ft\.com|bloomberg|nytimes|theguardian|afp\.com)/i.test(domain) ? "news" : "institutional";
+    output.push({
+      id: "web_" + (output.length + 1),
+      title,
+      url,
+      publisher,
+      published_at: row.published_at || null,
+      type,
+      excerpt: txt(row.excerpt || "", 2800),
+      source_confidence: type === "official" ? "primary" : ["academic", "historical"].includes(type) ? "established" : "reported"
+    });
+    if (output.length >= 10) break;
+  }
+  if (!output.length) throw new Error("Gemini Google Search yielded no usable cited URLs");
+  return output;
+}
+
 async function searchWeb(query: string, tbs: string): Promise<Src[]> {
+  if (FIRECRAWL_DISABLED) return await searchWithGoogle(query);
   const key = Deno.env.get("FIRECRAWL_API_KEY");
-  if (!key) throw new Error("FIRECRAWL_API_KEY is not configured");
+  if (!key) { FIRECRAWL_DISABLED = true; return await searchWithGoogle(query); }
   const r = await fetch("https://api.firecrawl.dev/v2/search", {
     method: "POST", headers: { "Authorization": "Bearer " + key, "Content-Type": "application/json" },
     signal: AbortSignal.timeout(35000),
     body: JSON.stringify({ query, limit: 5, sources: ["web", "news"], ...(tbs ? { tbs } : {}), scrapeOptions: { formats: [{ type: "markdown" }] } }),
   });
-  if (!r.ok) throw new Error("Firecrawl HTTP " + r.status + ": " + (await r.text()).slice(0, 180));
+  if (!r.ok) {
+    const detail = await r.text();
+    if (r.status === 402 && /insufficient_credits/i.test(detail)) {
+      FIRECRAWL_DISABLED = true;
+      return await searchWithGoogle(query);
+    }
+    throw new Error("Firecrawl HTTP " + r.status + ": " + detail.slice(0, 180));
+  }
   const p = await r.json(), d = p.data || {}, rows = [...(d.web || []), ...(d.news || [])], out: Src[] = [], seen = new Set<string>();
   for (const x of rows) {
     const u = http(x.url); if (!u || seen.has(u)) continue; seen.add(u);
@@ -106,7 +188,10 @@ async function buildPack(mode: string, db: any, recent: any[]) {
   if (mode.startsWith("context")) queries = ["deep background timeline political economic interests " + top + " official sources", "historical background policy documents regional security energy trade " + top, "Saudi Arabia GCC strategic context implications official research " + top];
   if (mode === "mirror") queries = ["historical precedents academic research archival records relevant to " + top, "historical comparison institutional primary sources archives " + top, "historical scholarship differences between past crises and contemporary " + top];
   const tbs = mode === "context_monthly" ? "qdr:m" : "qdr:w";
-  const web = await Promise.all(queries.map((q, i) => searchWeb(q, mode === "mirror" || (mode.startsWith("context") && i > 0) ? "" : tbs)));
+  const web: Src[][] = [];
+  for (let i = 0; i < queries.length; i++) {
+    web.push(await searchWeb(queries[i], mode === "mirror" || (mode.startsWith("context") && i > 0) ? "" : tbs));
+  }
   const all = combine(a.src, web.flat());
   return { articles: a.story, sources: all, prior: p.data || [], query: queries.join(" || ") };
 }
