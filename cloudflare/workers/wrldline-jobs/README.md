@@ -208,3 +208,16 @@ This recheck corrects the earlier use of `received_at` as a proxy for classifica
 - All six support `pg_cron` jobs remain inactive. NewsData has not updated its article fetch timestamp since 2026-11-17 11:22:26 UTC; email delivery remains disabled. Do not enable either support job until its authentication and endpoint are validated.
 
 No production settings or records were changed during this recheck.
+
+
+## Classification auth-only canary — 2026-11-19 06:28 UTC
+
+A single explicit `{task:"auth-check", scheduled_at:<current ISO timestamp>}` message was submitted to `wrldline-news-classification` while its consumer was unpaused and the classification producer remained disabled.
+
+- Cloudflare accepted the one-message request.
+- Supabase Edge logs recorded `POST /functions/v1/classify-news-worker` with HTTP **200**, function version **40**, execution time **725 ms**, at 2026-11-19 06:28:00 UTC.
+- The deployed function's `auth-check` branch validates the cron secret and returns before expiry, claim, provider calls, article writes, or any classification RPC.
+- The classification queue returned to **0** messages after the canary.
+- No article was selected or modified; no LLM provider was called. This proves the Worker-to-Edge auth path only. It does **not** prove Groq/NVIDIA availability, a successful classification, or backlog recovery.
+
+The per-pipeline classification producer remains disabled. The next controlled test, if authorized, is a one-article canary restricted to a record whose `published_at` is inside the 60-minute policy window, followed by verification of the stored result and provider attribution. Do not enable the recurring classification schedule based on this auth-only result.
