@@ -110,7 +110,7 @@ h1,h2,h3,h4{font-family:var(--font-display);font-weight:700;line-height:1.35;let
 .wl-more-btn:hover{border-color:var(--line-strong)}
 .wl-more-btn svg{width:14px;height:14px;transition:transform .2s}
 .wl-more-btn[aria-expanded="true"] svg{transform:rotate(180deg)}
-.wl-more-menu{position:absolute;inset-inline-end:0;top:calc(100% + 8px);width:300px;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow-lg);padding:8px;opacity:0;visibility:hidden;transform:translateY(-6px);transition:.18s var(--ease);z-index:90}
+.wl-more-menu{position:absolute;inset-inline-end:0;top:calc(100% + 8px);width:min(320px,calc(100vw - 24px));max-height:min(72vh,560px);overflow-y:auto;overscroll-behavior:contain;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow-lg);padding:8px;opacity:0;visibility:hidden;transform:translateY(-6px);transition:.18s var(--ease);z-index:90}
 .wl-more-menu.is-open{opacity:1;visibility:visible;transform:none}
 .wl-more-menu a{display:flex;align-items:center;gap:11px;padding:9px 10px;border-radius:9px;font-size:12.5px;font-weight:600}
 .wl-more-menu a:hover{background:var(--surface-2)}
@@ -792,3 +792,11 @@ body.modal-open{overflow:hidden}
 .news-card .story-source{padding-top:11px;margin-top:3px;font-size:10px}
 .news-card:hover{transform:translateY(-5px);box-shadow:0 18px 38px #0d1a2b18;border-color:color-mix(in srgb,var(--gold) 60%,var(--line))}
 @media(max-width:760px){.news-grid{grid-template-columns:1fr;gap:14px}.card-content{padding:16px 17px 17px}.news-card h3{font-size:16px;line-height:1.7}.news-card p{font-size:12px}}
+
+/* Grouped navigation for the focused homepage information architecture. */
+.wl-more-group-label{padding:8px 10px 4px;color:var(--muted);font-size:10px;font-weight:800;letter-spacing:.02em}
+@media(max-width:760px){
+  .wl-nav-wrap.is-open .wl-nav-more,.wl-nav-wrap.mobile-open .wl-nav-more{display:block;position:relative;margin:6px 0 0}
+  .wl-nav-wrap.is-open .wl-more-btn,.wl-nav-wrap.mobile-open .wl-more-btn{display:flex;width:100%;justify-content:space-between;padding:11px 12px;font-size:13px}
+  .wl-nav-wrap.is-open .wl-more-menu,.wl-nav-wrap.mobile-open .wl-more-menu{position:static;width:100%;max-height:42vh;margin-top:6px;box-shadow:none;transform:none}
+}
