@@ -48,7 +48,7 @@ SQL
 
 
 "${PSQL[@]}" <<'SQL'
-do $
+do $body$
 declare
   v_expected integer;
   v_actual integer;
@@ -77,7 +77,7 @@ begin
     end if;
     v_previous := v_actual;
   end loop;
-end $;
+end $body$;
 
 do $$
 begin
