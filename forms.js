@@ -35,29 +35,80 @@
   const notification = window.WRLDLINE_NOTIFICATIONS;
   if (newsletter) {
     const status = document.getElementById("newsletterStatus");
-    notification?.readiness().then(config => {
-      document.getElementById("newsletterReadiness").textContent = config.email_ready ? "خدمة طلب التأكيد متاحة. لا يبدأ الإرسال الدوري قبل تأكيد بريدك." : "خدمة الإرسال غير مفعلة أو غير متاحة حالياً. لا يمكن تفعيل اشتراك أو إرسال بريد حتى اكتمال إعدادها.";
-      newsletter.querySelector("button[type=submit]").disabled = !config.email_ready;
-    }).catch(() => {
-      document.getElementById("newsletterReadiness").textContent = "تعذر التحقق من جاهزية خدمة الإرسال. بقي الاشتراك معطلاً ولم يُحفظ أي بريد.";
-      newsletter.querySelector("button[type=submit]").disabled = true;
-    });
-    newsletter.addEventListener("submit", async event => {
-      event.preventDefault(); if (!newsletter.reportValidity()) return;
-      const button = newsletter.querySelector("button[type=submit]"); button.disabled = true;
-      status.textContent = "جارٍ طلب رسالة التأكيد..."; status.className = "form-status";
+    const readiness = document.getElementById("newsletterReadiness");
+    const submitButton = newsletter.querySelector("button[type=submit]");
+    const recheckButton = document.getElementById("newsletterRecheck");
+    let emailReady = false;
+
+    async function checkNewsletterReadiness(force = false) {
+      submitButton.disabled = true;
+      if (recheckButton) recheckButton.disabled = true;
+      if (!notification || typeof notification.readiness !== "function") {
+        emailReady = false;
+        readiness.textContent = "تعذر تحميل وحدة النشرة البريدية. حدّث الصفحة؛ لم يُحفظ بريدك ولم يُرسل أي شيء.";
+        if (recheckButton) recheckButton.disabled = false;
+        return false;
+      }
       try {
-        if (!notification || !(await notification.readiness(true)).email_ready) throw new Error("خدمة الإرسال غير مفعلة الآن. لم يتم تفعيل الاشتراك.");
-        await notification.request("newsletter_subscribe", { email: newsletter.elements.namedItem("email").value.trim(), locale: document.documentElement.lang === "en" ? "en" : "ar", cadence: newsletter.elements.namedItem("cadence").value, topics: [...newsletter.querySelectorAll('[name="topics"]:checked')].map(el=>el.value), countries: [...newsletter.querySelectorAll('[name="countries"]:checked')].map(el=>el.value), website: newsletter.elements.namedItem("website")?.value || "", consent: newsletter.elements.namedItem("consent").checked === true });
-        newsletter.reset(); status.textContent = "تم استلام طلبك. إذا كان الاشتراك يحتاج تأكيداً فستصلك رسالة عند معالجة الطابور. افتح رابطها وأكّد بريدك؛ لم يبدأ الاشتراك الدوري بعد."; status.className = "form-status ok";
-      } catch(e) { status.textContent = e.message || "تعذر طلب التأكيد الآن. حاول لاحقاً."; status.className = "form-status error"; }
-      finally { button.disabled = false; }
+        const config = await notification.readiness(force);
+        if (config?.unavailable) {
+          throw new Error("تعذر الوصول إلى خدمة الإشعارات. تحقق من اتصال الموقع بالخدمة ثم أعد الفحص.");
+        }
+        emailReady = config?.email_ready === true;
+        readiness.textContent = emailReady
+          ? "خدمة تأكيد البريد جاهزة. لن يبدأ الإرسال الدوري إلا بعد تأكيد بريدك."
+          : "النشرة البريدية غير مفعّلة بعد. يلزم إعداد RESEND_API_KEY وعنوان NEWSLETTER_FROM على نطاق موثّق، ثم تفعيل قناة البريد. لن نحفظ طلبك أو نرسل نشرة قبل الجاهزية.";
+        return emailReady;
+      } catch {
+        emailReady = false;
+        readiness.textContent = "تعذر التحقق من جاهزية خدمة البريد. لم يُقبل الاشتراك؛ أعد الفحص لاحقاً.";
+        return false;
+      } finally {
+        submitButton.disabled = !emailReady;
+        if (recheckButton) recheckButton.disabled = false;
+      }
+    }
+
+    recheckButton?.addEventListener("click", () => checkNewsletterReadiness(true));
+    void checkNewsletterReadiness();
+
+    newsletter.addEventListener("submit", async event => {
+      event.preventDefault();
+      if (!newsletter.reportValidity()) return;
+      submitButton.disabled = true;
+      status.textContent = "جارٍ طلب رسالة التأكيد...";
+      status.className = "form-status";
+      try {
+        if (!(await checkNewsletterReadiness(true))) {
+          throw new Error("خدمة البريد غير جاهزة حالياً. لم يتم حفظ الاشتراك أو إرسال رسالة.");
+        }
+        await notification.request("newsletter_subscribe", {
+          email: newsletter.elements.namedItem("email").value.trim(),
+          locale: document.documentElement.lang === "en" ? "en" : "ar",
+          cadence: newsletter.elements.namedItem("cadence").value,
+          topics: [...newsletter.querySelectorAll('[name="topics"]:checked')].map(el => el.value),
+          countries: [...newsletter.querySelectorAll('[name="countries"]:checked')].map(el => el.value),
+          website: newsletter.elements.namedItem("website")?.value || "",
+          consent: newsletter.elements.namedItem("consent").checked === true
+        });
+        newsletter.reset();
+        status.textContent = "استلمنا طلب الاشتراك ووضعنا رسالة التأكيد في طابور الإرسال. لن تصلك النشرة الدورية قبل فتح رابط التأكيد في بريدك.";
+        status.className = "form-status ok";
+      } catch (e) {
+        status.textContent = e.message || "تعذر طلب رسالة التأكيد الآن. حاول لاحقاً.";
+        status.className = "form-status error";
+      } finally {
+        await checkNewsletterReadiness();
+      }
     });
-    // Early inline script scrubbed email token fragment before third-party scripts/analytics loaded.
+
+    // The inline script scrubs email-token fragments before analytics or external scripts load.
     const intent = window.WRLDLINE_NEWSLETTER_INTENT;
     if (intent) {
       delete window.WRLDLINE_NEWSLETTER_INTENT;
-      const panel = document.getElementById("newsletterTokenPanel"), button = document.getElementById("newsletterTokenButton"), message = document.getElementById("newsletterTokenStatus");
+      const panel = document.getElementById("newsletterTokenPanel");
+      const button = document.getElementById("newsletterTokenButton");
+      const message = document.getElementById("newsletterTokenStatus");
       panel.hidden = false;
       document.getElementById("newsletterTokenTitle").textContent = intent.action === "confirm" ? "تأكيد اشتراك البريد" : "إلغاء اشتراك البريد";
       button.textContent = intent.action === "confirm" ? "أؤكد الاشتراك وفق الاختيارات الواردة في رسالة التأكيد" : "تأكيد إلغاء الاشتراك";
@@ -69,7 +120,11 @@
           intent.token = null;
           message.textContent = intent.action === "confirm" ? "تم تأكيد بريدك واشتراكك. يمكنك الإلغاء من رابط أي رسالة." : "تم إلغاء الاشتراك. لن تتم جدولة نشرات أخرى لهذا البريد.";
           message.className = "form-status ok";
-        } catch(e) { message.textContent = e.message; message.className = "form-status error"; button.disabled = false; }
+        } catch (e) {
+          message.textContent = e.message;
+          message.className = "form-status error";
+          button.disabled = false;
+        }
       });
     }
   }
