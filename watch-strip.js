@@ -28,15 +28,29 @@
     return link;
   };
 
-  fetch("/dossier/watchlist.json", { cache: "no-store" })
-    .then((response) => (response.ok ? response.json() : null))
-    .then((data) => {
-      const items = (data && Array.isArray(data.items) ? data.items : [])
-        .filter((item) => item && item.timing !== "undated")
-        .slice(0, 4);
-      if (!items.length) return;
-      grid.replaceChildren(...items.map(card));
-      section.hidden = false;
+  const API = "https://vmaxbnogmmfyrcucapnq.supabase.co/rest/v1/editorial_publications";
+  const KEY = "sb_publishable_D3c88u75_LcEN460Y3Jcpw__EfqUnBx";
+  const render = items => {
+    const selected = (items || []).filter(item => item && item.timing !== "undated").slice(0, 4);
+    if (!selected.length) return false;
+    grid.replaceChildren(...selected.map(card));
+    section.hidden = false;
+    return true;
+  };
+  const query = new URLSearchParams({ select:"content", section:"eq.watchlist", status:"eq.published", order:"published_at.desc", limit:"1" });
+  fetch(API + "?" + query.toString(), { cache:"no-store", headers:{ apikey:KEY, Accept:"application/json" } })
+    .then(r => r.ok ? r.json() : [])
+    .then(rows => {
+      const weekly = rows?.[0]?.content;
+      if (weekly && Array.isArray(weekly.items) && render(weekly.items.map(item => ({
+        dossierTitle: item.sector || "متابعة",
+        what: item.what,
+        why: item.why,
+        when: item.when,
+        approximate: item.timing === "approximate",
+        url: item.dossierSlug ? "/dossier/" + encodeURIComponent(item.dossierSlug) + ".html#watch" : "/dossier/watchlist.html"
+      })))) return;
+      return fetch("/dossier/watchlist.json", { cache:"no-store" }).then(r => r.ok ? r.json() : null).then(data => render(data?.items || []));
     })
-    .catch(() => {});
+    .catch(() => fetch("/dossier/watchlist.json", { cache:"no-store" }).then(r => r.ok ? r.json() : null).then(data => render(data?.items || [])).catch(() => {}));
 })();
