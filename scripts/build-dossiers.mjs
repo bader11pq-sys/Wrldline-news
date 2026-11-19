@@ -833,7 +833,8 @@ function renderDigest(list, now) {
   }
   recent.sort((a, b) => Date.parse(b.at) - Date.parse(a.at));
   const fallback = list.flatMap((d) => d.whatChanged.slice(0, 1).map((c) => ({ ...c, dossier: d }))).sort((a, b) => Date.parse(b.at) - Date.parse(a.at));
-  const changes = (recent.length ? recent : fallback).slice(0, 8);
+  const usingFallback = recent.length === 0;
+  const changes = (usingFallback ? fallback : recent).slice(0, 8);
   const top = list.find((d) => d.status === "active") || list[0];
   const watch = collectWatch(list, now).filter((i) => i.timing !== "undated").slice(0, 5);
   const unverified = collectClaims(list).filter((i) => i.type === "unverified").slice(0, 4);
@@ -858,7 +859,7 @@ function renderDigest(list, now) {
     <div class="hero-meta"><span><b>الحالة</b> ${esc(STATUS[top.status].label)}</span><span><b>آخر تحديث</b> ${esc(arabicDate(top.updatedAt))}</span><span><b>المصادر</b> ${top.sources.length}</span></div>
     <a class="btn btn-primary" href="/dossier/${attr(top.slug)}.html">افتح الملف</a>
   </article>
-  <section class="digest-section"><h2>ما تغيّر هذا الأسبوع</h2><ol class="digest-list">${changeItems || '<li class="empty">لا توجد تحديثات مؤرخة في هذه النافذة.</li>'}</ol></section>
+  <section class="digest-section"><h2>${usingFallback ? "آخر التغييرات المسجلة" : "ما تغيّر هذا الأسبوع"}</h2>${usingFallback ? '<p class="muted">لا توجد تحديثات مؤرخة خلال آخر 7 أيام؛ نعرض آخر تغيير مسجل لكل ملف بدلاً من تقديمه كتغيير هذا الأسبوع.</p>' : ""}<ol class="digest-list">${changeItems || '<li class="empty">لا توجد تحديثات مؤرخة في هذه النافذة.</li>'}</ol></section>
   <section class="digest-section"><h2>ما نراقبه بعد ذلك</h2><ol class="digest-list">${watchItems || '<li class="empty">لا توجد بنود متابعة موسومة بموعد أو مؤشر مستمر.</li>'}</ol><p><a href="/dossier/watchlist.html">كل ما نراقبه ←</a></p></section>
   <section class="digest-section"><h2>ما بقي غير متحقق</h2><ul class="digest-unverified">${unverifiedItems || '<li class="empty">لا توجد ادعاءات معلقة في هذا الإصدار.</li>'}</ul><p><a href="/dossier/claims.html">ميزان الادعاءات ←</a></p></section>
   <section class="digest-section"><h2>الملفات النشطة</h2><div class="digest-grid">${activeCards}</div></section>
