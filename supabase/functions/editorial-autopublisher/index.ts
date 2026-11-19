@@ -6,8 +6,8 @@ const CORS = { "Access-Control-Allow-Origin": SITE, "Access-Control-Allow-Header
 const reply = (x: unknown, status = 200) => new Response(JSON.stringify(x), { status, headers: { ...CORS, "Content-Type": "application/json" } });
 const stamp = () => new Date().toISOString();
 const txt = (x: unknown, n = 3000) => String(x ?? "").replace(/\s+/g, " ").trim().slice(0, n);
-const http = (x: unknown) => { try { const u = new URL(String(x || "")); return ["https:", "http:"].includes(u.protocol) ? u.href : ""; } catch { return ""; } };
-const host = (u: string) => { try { return new URL(u).hostname.replace(/^www\./, ""); } catch { return ""; } };
+const safeLink = (x: unknown) => { const value = String(x || "").trim(); return /^https?:\/\//i.test(value) ? value : ""; };
+const host = (u: string) => { const match = /^https?:\/\/([^/]+)/i.exec(String(u || "")); return match ? match[1].replace(/^www\./i, "") : ""; };
 const slug = (x: unknown, fallback: string) => String(x || "").toLowerCase().replace(/[^a-z0-9-]+/g, "-").replace(/-+/g, "-").replace(/^-|-$/g, "").slice(0, 76) || fallback;
 const parse = (s: string) => { const a = s.indexOf("{"), b = s.lastIndexOf("}"); if (a < 0 || b <= a) throw new Error("AI returned invalid JSON"); return JSON.parse(s.slice(a, b + 1)); };
 type Src = { id: string; title: string; url: string; publisher: string; published_at: string | null; type: string; excerpt: string; source_confidence: string };
@@ -79,7 +79,7 @@ function parseFeedXml(xml: string, feedName: string, feedUrl: string): Src[] {
     const title = readXmlTag(block, "title");
     const directLink = readXmlTag(block, "link");
     const atomLink = readXmlAttr(block, "link", "href");
-    const url = http(directLink || atomLink || readXmlTag(block, "guid"));
+    const url = safeLink(directLink || atomLink || readXmlTag(block, "guid"));
     const description = readXmlTag(block, "description") || readXmlTag(block, "summary") || readXmlTag(block, "content");
     const published = readXmlTag(block, "pubDate") || readXmlTag(block, "published") || readXmlTag(block, "updated");
     if (!title || !url) continue;
@@ -100,7 +100,7 @@ async function searchWeb(query: string, locale = "en-US"): Promise<Src[]> {
   if (!r.ok) throw new Error("Google News RSS HTTP " + r.status);
   const xml = await r.text(), blocks = extractXmlBlocks(xml, "item"), out: Src[] = [];
   for (const block of blocks.slice(0, 12)) {
-    const title = readXmlTag(block, "title"), link = http(readXmlTag(block, "link"));
+    const title = readXmlTag(block, "title"), link = safeLink(readXmlTag(block, "link"));
     const sourceTag = block.match(/<source\b([^>]*)>([\s\S]*?)<\/source>/i);
     const publisher = sourceTag ? xmlDecode(sourceTag[2]) : "Google News RSS";
     const sourceUrl = sourceTag ? (sourceTag[1].match(/\burl=["']([^"']+)["']/i) || [])[1] || "" : "";
@@ -162,7 +162,7 @@ async function articles(db: any, hours: number, limit: number) {
   if (r.error) throw new Error(r.error.message);
   const story: any[] = [], src: Src[] = [], seen = new Set<string>();
   for (const x of r.data || []) {
-    const u = http(x.url), key = txt(x.title, 180).toLowerCase(); if (!u || !key || seen.has(key)) continue; seen.add(key);
+    const u = safeLink(x.url), key = txt(x.title, 180).toLowerCase(); if (!u || !key || seen.has(key)) continue; seen.add(key);
     const id = "article_" + (story.length + 1);
     story.push({ id, title: txt(x.title, 240), summary: txt(x.summary, 650), source: txt(x.source_name || host(u), 80), url: u, published_at: x.published_at, category: x.category, country: x.country, breaking: x.is_breaking === true, trust: x.editorial_trust_status || "unconfirmed", needs_human_review: x.trust_needs_review !== false });
     src.push({ id, title: txt(x.title, 240), url: u, publisher: txt(x.source_name || host(u), 80), published_at: x.published_at, type: "news", excerpt: txt(x.summary, 900), source_confidence: x.editorial_trust_status === "confirmed" && x.trust_needs_review === false ? "established" : "reported" });
@@ -172,7 +172,7 @@ async function articles(db: any, hours: number, limit: number) {
 }
 function combine(base: Src[], extra: Src[]) {
   const seen = new Set<string>(), out: Src[] = [];
-  for (const x of [...base, ...extra]) { if (!http(x.url) || seen.has(x.url)) continue; seen.add(x.url); out.push(x); }
+  for (const x of [...base, ...extra]) { if (!safeLink(x.url) || seen.has(x.url)) continue; seen.add(x.url); out.push(x); }
   return out.slice(0, 26).map((x, i) => ({ ...x, id: "source_" + (i + 1) }));
 }
 async function buildPack(mode: string, db: any, recent: any[]) {
@@ -228,8 +228,8 @@ async function buildPack(mode: string, db: any, recent: any[]) {
     .select("institution,title,url,source_type,source_quality,publication_year,bibliographic_note")
     .in("source_quality", ["academic", "institutional"]).limit(24) : { data: [], error: null };
   if (historical.error) throw new Error("Could not load historical reference catalogue: " + historical.error.message);
-  const historySources: Src[] = (historical.data || []).filter((x: any) => http(x.url)).map((x: any, i: number) => ({
-    id: "historical_" + (i + 1), title: txt(x.title, 220), url: http(x.url),
+  const historySources: Src[] = (historical.data || []).filter((x: any) => safeLink(x.url)).map((x: any, i: number) => ({
+    id: "historical_" + (i + 1), title: txt(x.title, 220), url: safeLink(x.url),
     publisher: txt(x.institution, 120), published_at: x.publication_year ? String(x.publication_year) : null,
     type: x.source_quality === "academic" ? "academic" : "historical",
     excerpt: txt(x.bibliographic_note || x.source_type, 1800),
@@ -239,7 +239,7 @@ async function buildPack(mode: string, db: any, recent: any[]) {
   const sourceSet = [...a.src, ...webSources, ...feedSources, ...historySources];
   const sourceMap = new Map<string, Src>(), unique: Src[] = [];
   for (const source of sourceSet) {
-    const url = http(source.url);
+    const url = safeLink(source.url);
     if (!url || sourceMap.has(url)) continue;
     sourceMap.set(url, source); unique.push(source);
   }
@@ -361,7 +361,7 @@ Deno.serve(async (req: Request) => {
       const g = await Promise.allSettled([searchWeb("Saudi Arabia Gulf policy energy economy November 2026", "en-US")]);
       const google = g[0].status === "fulfilled" ? g[0].value.length : -1;
       const googleError = g[0].status === "rejected" ? String(g[0].reason).slice(0, 250) : "";
-      return reply({ ok: true, self_test: true, statuses, sample_blocks: sampleBlocks.length, sample_title: sampleTitle, sample_link: sampleLink, sample_url: http(sampleLink), sample_parsed_count: sampleParsed.length, google_rss_count: google, google_error: googleError });
+      return reply({ ok: true, self_test: true, statuses, sample_blocks: sampleBlocks.length, sample_title: sampleTitle, sample_link: sampleLink, sample_url: safeLink(sampleLink), sample_parsed_count: sampleParsed.length, google_rss_count: google, google_error: googleError });
     }
     if (mode === "dossier") {
       const st = await db.from("editorial_runtime_state").select("state_value").eq("state_key", "dossier_next_due_at").maybeSingle();
