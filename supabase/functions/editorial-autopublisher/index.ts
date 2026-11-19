@@ -18,7 +18,7 @@ async function searchWeb(query: string, tbs: string): Promise<Src[]> {
   const r = await fetch("https://api.firecrawl.dev/v2/search", {
     method: "POST", headers: { "Authorization": "Bearer " + key, "Content-Type": "application/json" },
     signal: AbortSignal.timeout(35000),
-    body: JSON.stringify({ query, limit: 5, sources: ["web", "news"], tbs, scrapeOptions: { formats: [{ type: "markdown" }] } }),
+    body: JSON.stringify({ query, limit: 5, sources: ["web", "news"], ...(tbs ? { tbs } : {}), scrapeOptions: { formats: [{ type: "markdown" }] } }),
   });
   if (!r.ok) throw new Error("Firecrawl HTTP " + r.status + ": " + (await r.text()).slice(0, 180));
   const p = await r.json(), d = p.data || {}, rows = [...(d.web || []), ...(d.news || [])], out: Src[] = [], seen = new Set<string>();
@@ -95,7 +95,7 @@ function combine(base: Src[], extra: Src[]) {
   return out.slice(0, 26).map((x, i) => ({ ...x, id: "source_" + (i + 1) }));
 }
 async function buildPack(mode: string, db: any, recent: any[]) {
-  const a = await articles(db, mode === "context_monthly" ? 24 * 45 : mode === "mirror" ? 24 * 5 : 24 * 8, mode === "context_monthly" ? 220 : 160);
+  const a = await articles(db, mode === "context_monthly" ? 24 * 45 : mode === "context_monitor" ? 48 : mode === "mirror" ? 24 * 5 : 24 * 8, mode === "context_monthly" ? 220 : 160);
   const p = await db.from("editorial_publications").select("section,slug,title,content,published_at")
     .in("section", ["dossier", "context"]).eq("status", "published").order("updated_at", { ascending: false }).limit(12);
   if (p.error) throw new Error(p.error.message);
@@ -105,8 +105,8 @@ async function buildPack(mode: string, db: any, recent: any[]) {
   if (mode === "watchlist") queries = ["official meetings decisions deadlines next 7 days Saudi Arabia GCC OPEC November 2026", "official calendars central banks United Nations energy shipping Gulf next week", "upcoming elections diplomatic meetings economic data releases next week official"];
   if (mode.startsWith("context")) queries = ["deep background timeline political economic interests " + top + " official sources", "historical background policy documents regional security energy trade " + top, "Saudi Arabia GCC strategic context implications official research " + top];
   if (mode === "mirror") queries = ["historical precedents academic research archival records relevant to " + top, "historical comparison institutional primary sources archives " + top, "historical scholarship differences between past crises and contemporary " + top];
-  const tbs = mode === "mirror" ? "qdr:y" : mode === "context_monthly" ? "qdr:m" : "qdr:w";
-  const web = await Promise.all(queries.map(q => searchWeb(q, tbs)));
+  const tbs = mode === "context_monthly" ? "qdr:m" : "qdr:w";
+  const web = await Promise.all(queries.map((q, i) => searchWeb(q, mode === "mirror" || (mode.startsWith("context") && i > 0) ? "" : tbs)));
   const all = combine(a.src, web.flat());
   return { articles: a.story, sources: all, prior: p.data || [], query: queries.join(" || ") };
 }
@@ -145,6 +145,12 @@ async function publishMode(db: any, mode: string, pack: any) {
   const foundIds = idsIn(content), sourceMap = new Map(pack.sources.map((s: Src) => [s.id, s]));
   const selected = [...foundIds].map(id => sourceMap.get(id)).filter(Boolean) as Src[];
   if (!selected.length) throw new Error("No valid citations were returned by the model");
+  const selectedHosts = new Set(selected.map(s => host(s.url)));
+  const authoritative = selected.filter(s => ["official", "academic", "historical", "research"].includes(s.type));
+  if (mode === "dossier" && selectedHosts.size < 2) throw new Error("Dossier needs evidence from at least two distinct publishers");
+  if (mode === "watchlist" && (selected.length < 3 || selectedHosts.size < 2)) throw new Error("Weekly watchlist needs multiple independent source links");
+  if (mode.startsWith("context") && (selected.length < 3 || authoritative.length < 2)) throw new Error("Context needs at least two official, academic or institutional references");
+  if (mode === "mirror" && (selected.length < 3 || authoritative.filter(s => ["academic", "historical", "official"].includes(s.type)).length < 2)) throw new Error("Historical comparison needs at least two academic, historical or primary references");
   const section = mode === "dossier" ? "dossier" : mode === "watchlist" ? "watchlist" : mode.startsWith("context") ? "context" : "mirror";
   let key = "", title = txt(obj.title || content.title || content.nowTitle, 220);
   if (mode === "dossier") {
@@ -216,11 +222,12 @@ Deno.serve(async (req: Request) => {
     }
     let recent = await articles(db, mode === "context_monthly" ? 24 * 45 : mode === "mirror" ? 24 * 5 : 24 * 8, mode === "context_monthly" ? 220 : 160);
     if (mode === "context_monitor") {
-      recent = recent.filter((x: any) => x.is_breaking === true);
+      const highImpactCategories = new Set(["politics", "economy", "security", "world"]);
+      recent = recent.filter((x: any) => x.is_breaking === true || highImpactCategories.has(String(x.category || "").toLowerCase()));
       const sources = new Set(recent.map((x: any) => txt(x.source_name, 90)));
-      if (recent.length < 4 || sources.size < 3) {
-        await log(db, begun.data.id, "skipped", { details: { reason: "no_material_breaking_cluster", count: recent.length, sources: sources.size } });
-        return reply({ ok: true, skipped: true, reason: "no_material_breaking_cluster" });
+      if (recent.length < 7 || sources.size < 4) {
+        await log(db, begun.data.id, "skipped", { details: { reason: "no_material_development_cluster", count: recent.length, sources: sources.size } });
+        return reply({ ok: true, skipped: true, reason: "no_material_development_cluster", candidates: recent.length, distinct_sources: sources.size });
       }
     }
     if (recent.length < 8) throw new Error("Insufficient recent published articles for a research-backed update");
