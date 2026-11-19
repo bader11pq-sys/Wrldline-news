@@ -473,34 +473,17 @@ Deno.serve(async (req: Request) => {
       return reply({ ok: true, groq_browser_search: true, source_count: found.length, sources: found.map((x: Src) => ({ title: x.title, url: x.url, publisher: x.publisher, type: x.type })) });
     }
     if (mode === "self_test") {
-      const feeds = await db.from("feeds").select("name,url").eq("active", true).in("lang", ["ar", "en"]).limit(8);
-      if (feeds.error) throw new Error("Feed catalogue query failed: " + feeds.error.message);
-      const feedResults = await Promise.allSettled((feeds.data || []).map((x: any) => fetchRss(x.url, x.name)));
-      const directSources: Src[] = [];
-      const feedErrors: string[] = [];
-      feedResults.forEach((x, i) => {
-        if (x.status === "fulfilled") directSources.push(...x.value);
-        else feedErrors.push(String((feeds.data || [])[i]?.name || "feed") + ": " + String(x.reason).slice(0, 100));
-      });
-      const googleResults = await Promise.allSettled([
-        searchWeb("Saudi Arabia Gulf policy energy economy November 2026", "en-US"),
-        searchWeb("السعودية الخليج سياسة اقتصاد طاقة نوفمبر 2026", "ar-SA")
-      ]);
-      const searchSources: Src[] = [];
-      const searchErrors: string[] = [];
-      googleResults.forEach(x => {
-        if (x.status === "fulfilled") searchSources.push(...x.value);
-        else searchErrors.push(String(x.reason).slice(0, 140));
-      });
-      const found = [...directSources, ...searchSources];
-      if (!found.length) throw new Error("No RSS research returned. feed_errors=" + feedErrors.join(" | ") + " search_errors=" + searchErrors.join(" | "));
-      const expected = JSON.stringify({ ok: true, summary: "Provider connectivity test" });
-      const generated = await ai("Return this JSON exactly: " + expected + "\nThis is a provider connectivity test, not publication.");
-      await log(db, begun.data.id, "skipped", {
-        provider: generated.provider, research_sources: found.length,
-        details: { self_test: true, ai_provider: generated.provider, direct_rss_sources: directSources.length, google_news_rss_sources: searchSources.length, ai_ok: generated.data?.ok === true, feed_errors: feedErrors.slice(0, 6), search_errors: searchErrors.slice(0, 4) }
-      });
-      return reply({ ok: true, self_test: true, direct_rss_sources: directSources.length, google_news_rss_sources: searchSources.length, ai_provider: generated.provider, ai_ok: generated.data?.ok === true });
+      const f = await db.from("feeds").select("name,url").eq("active", true).limit(8);
+      if (f.error) throw new Error(f.error.message);
+      const results = await Promise.allSettled((f.data || []).map((x: any) => fetchRss(x.url, x.name)));
+      const items: Src[] = [];
+      results.forEach(x => { if (x.status === "fulfilled") items.push(...x.value); });
+      const search = await searchWeb("Saudi Arabia Gulf policy energy economy November 2026", "en-US");
+      items.push(...search);
+      if (!items.length) throw new Error("No usable RSS items; active feeds checked: " + (f.data || []).length);
+      const test = await ai("Return JSON only: {\"ok\":true,\"summary\":\"provider connectivity test\"}");
+      await log(db, begun.data.id, "skipped", { provider: test.provider, research_sources: items.length, details: { self_test: true, rss_count: items.length, ai_ok: test.data?.ok === true } });
+      return reply({ ok: true, self_test: true, rss_count: items.length, ai_provider: test.provider, ai_ok: test.data?.ok === true });
     }
     if (mode === "dossier") {
       const st = await db.from("editorial_runtime_state").select("state_value").eq("state_key", "dossier_next_due_at").maybeSingle();
