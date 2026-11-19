@@ -64,10 +64,14 @@ test('dedupe event IDs, reject free text, ignore unpublished/nonexistent article
     assert.equal(data.top_news[0].avg_active_seconds, 30); assert.equal(data.top_news[0].read_sessions, 1); assert.equal(data.top_news[0].views, 1);
     assert.equal(data.categories[0].category, 'politics'); assert.equal(data.funnel.plus_interest_sessions, 1); assert.equal(data.funnel.account_signup_sessions, 1);
     assert.equal(data.funnel.paid_receipt_verified, false);
-    const advertiserPageEvent = event('page_view', { page: 'advertise' });
+    const advertiserPageEvent = event('page_view', { page: 'advertise', session_id: randomUUID() });
     assert.equal((await ingest(db, [advertiserPageEvent])).accepted, 1);
     const advertiserStored = await db.query('select page from public.audience_events where event_id=$1', [advertiserPageEvent.event_id]);
     assert.equal(advertiserStored.rows[0].page, 'advertise');
+    const pageData = await dashboard(db);
+    const advertiserAggregate = pageData.pages.find(row => row.page === 'advertise');
+    assert.equal(advertiserAggregate.views, 1);
+    assert.equal(advertiserAggregate.sessions, 1);
     assert(!JSON.stringify(data).includes(user)); assert(!JSON.stringify(data).includes('sub_fixture_verified'));
   } finally { await db.close(); }
 });
