@@ -29,8 +29,8 @@
     "lang": "ar",
     "source_scope": "international",
     "pipeline": "general",
-    "breaking": false,
-    "breaking_domain": null
+    "breaking": true,
+    "breaking_domain": "aawsat.com"
   },
   {
     "name": "سكاي نيوز عربية",
@@ -227,8 +227,8 @@
     "lang": "ar",
     "source_scope": "national",
     "pipeline": "general",
-    "breaking": false,
-    "breaking_domain": null
+    "breaking": true,
+    "breaking_domain": "kuna.net.kw"
   },
   {
     "name": "المدن",
@@ -326,8 +326,8 @@
     "lang": "ar",
     "source_scope": "national",
     "pipeline": "general",
-    "breaking": false,
-    "breaking_domain": null
+    "breaking": true,
+    "breaking_domain": "maaal.com"
   },
   {
     "name": "مباشر",
@@ -557,8 +557,8 @@
     "lang": "ar",
     "source_scope": "national",
     "pipeline": "general",
-    "breaking": false,
-    "breaking_domain": null
+    "breaking": true,
+    "breaking_domain": "madamasr.com"
   },
   {
     "name": "إيلاف",
