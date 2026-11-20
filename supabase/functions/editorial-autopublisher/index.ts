@@ -197,11 +197,14 @@ async function buildPack(mode: string, db: any, recent: any[]) {
     "historical background legal framework political economy regional security " + top,
     "Saudi Arabia GCC strategic implications energy trade diplomacy research " + top
   ];
-  else queries = [
-    "historical precedents academic research archives relevant to " + top,
-    "site:britannica.com OR site:history.state.gov OR site:archives.gov OR site:loc.gov historical precedent " + top,
-    "institutional academic historical sources differences between past crises and " + top
-  ];
+  else {
+    const dateLabel = new Intl.DateTimeFormat("en-US", { timeZone: "Asia/Riyadh", month: "long", day: "numeric" }).format(new Date());
+    queries = [
+      "important historical events on " + dateLabel + " primary sources official archives",
+      "Middle East and world history anniversaries on " + dateLabel + " institutional historical sources",
+      "academic and official historical precedents compare with current developments " + top
+    ];
+  }
 
   const searchResults = await Promise.allSettled(queries.flatMap((q, i) => [
     searchWeb(q, i === 0 && mode !== "mirror" ? "ar-SA" : "en-US"),
@@ -236,7 +239,9 @@ async function buildPack(mode: string, db: any, recent: any[]) {
     source_confidence: x.source_quality === "academic" ? "established" : "primary"
   }));
 
-  const sourceSet = [...a.src, ...webSources, ...feedSources, ...historySources];
+  const sourceSet = mode === "mirror"
+    ? [...historySources, ...webSources, ...feedSources, ...a.src]
+    : [...a.src, ...webSources, ...feedSources, ...historySources];
   const sourceMap = new Map<string, Src>(), unique: Src[] = [];
   for (const source of sourceSet) {
     const url = safeLink(source.url);
@@ -267,9 +272,9 @@ function promptFor(mode: string, pack: any, date: string) {
     "اكتب بعمق، وبيّن تضارب المصالح وتوازن القوة والقيود القانونية، ولا تستخدم نسباً مئوية مختلقة للسيناريوهات."
   ].join("\n");
   else task = [
-    "اكتب مقارنة واحدة في «مرآة التاريخ» تربط تطوراً حاضراً مهماً بسابقة تاريخية موثقة. لا تستخدم التشبيه السطحي أو عبارة التاريخ يعيد نفسه. اختبر الشبه والفروق البنيوية والمؤسسات وميزان القوى والتكنولوجيا والقانون الدولي والاقتصاد والنتائج. يجب أن تكون المصادر التاريخية أكاديمية أو أولية أو مؤسسية موثوقة، وإلا no_update.",
-    'JSON: {"action":"publish|no_update","slug":"mirror-YYYY-MM-DD","title":"...","content":{"id":"...","nowTitle":"...","nowKeywords":["..."],"nowSummary":"...","pastTitle":"...","pastEra":"...","pastDossier":"معرف موسوعة موجود أو فارغ","similarities":["5-8 نقاط"],"differences":["5-8 نقاط"],"lesson":"...","comparativeAnalysis":["تحليل مؤسسي","تحليل اقتصادي","تحليل دولي أو قانوني"],"limits":"حدود المقارنة","source_ids":["source_1"]}}',
-    "اكتب تحليلاً مقارناً لا يقل عن 3 فقرات، واختم بدرس محدد وحدود واضحة لمنع إسقاط الماضي على الحاضر بلا دليل."
+    "أنشئ مادة يومية لمرآة التاريخ مرتبطة بالتاريخ المحلي الحالي " + date + ". اختر حدثاً موثقاً وقع في هذا اليوم أو قريباً منه (ضمن ثلاثة أيام) من قائمة المصادر التاريخية، ثم قارنه بأهم تطور معاصر ذي صلة في الأخبار المقدمة. إذا لم يوجد تطور مطابق تماماً، اختر قضية معاصرة مستمرة وصرّح بذلك. لا تشترط وجود اختراق سياسي أو تطور استثنائي حتى تنشر؛ لا تستخدم action=no_update لمجرد أن التطورات لم تتغير. استخدم no_update فقط إذا لم تتضمن حزمة المصادر ثلاثة مصادر قابلة للاستخدام على الأقل، منها مصدران أوليان أو رسميان أو أكاديميان/تاريخيان، أو تعذر التحقق من الواقعة التاريخية الأساسية. لا تخترع حدثاً أو مصدراً.",
+    'JSON: {"action":"publish|no_update","slug":"mirror-YYYY-MM-DD","title":"...","content":{"id":"...","nowTitle":"...","nowKeywords":["..."],"nowSummary":"...","pastTitle":"...","pastEra":"...","pastDossier":"معرف موسوعة موجود أو فارغ","similarities":["5-8 نقاط"],"differences":["5-8 نقاط"],"lesson":"...","comparativeAnalysis":["3-5 فقرات تحليلية","..."],"limits":"حدود المقارنة","source_ids":["source_1"]}}',
+    "اكتب تحليلاً مقارناً لا يقل عن ثلاث فقرات، واذكر تاريخ الواقعة التاريخية وتاريخ التطور المعاصر، وافصل بين الخبر والتحليل، واختم بدرس محدد وحدود واضحة لمنع إسقاط الماضي على الحاضر بلا دليل."
   ].join("\n");
   return guard + "\n\n" + task + "\n\nأخبار حديثة:\n" + JSON.stringify(pack.articles.slice(0, 65)) + "\n\nملفات سابقة:\n" + JSON.stringify(pack.prior).slice(0, 12000) + "\n\nمصادر البحث المسموح بها:\n" + JSON.stringify(pack.sources.map((s: Src) => ({ id: s.id, title: s.title, publisher: s.publisher, url: s.url, published_at: s.published_at, type: s.type, source_confidence: s.source_confidence, excerpt: s.excerpt.slice(0, 2200) }))).slice(0, 25000);
 }
