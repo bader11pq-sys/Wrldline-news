@@ -52,11 +52,10 @@ test("breaking collection monitors exactly 24 Arabic sources from the same 80-so
   assert.doesNotMatch(breaking, /Array\.from\(\{ length: 10 \}/, "do not restore high source concurrency");
 });
 test("breaking ticker calls the existing dedicated-source predicate", () => {
-  assert.match(publicScript, /function isDedicatedBreakingSource\\(name\\)/);
-  assert.match(publicScript, /if\\(!isDedicatedBreakingSource\\(a\\.raw\\?\\.source_name\\|\\|a\\.src\\)\\)return false;/);
-  assert.doesNotMatch(publicScript, /isBreakingSource/);
+  assert.ok(publicScript.includes("function isDedicatedBreakingSource(name)"));
+  assert.ok(publicScript.includes("if(!isDedicatedBreakingSource(a.raw?.source_name||a.src))return false;"));
+  assert.equal(publicScript.includes("isBreakingSource"), false);
 });
-
 test("general ingestion rejects a registry or source catalog larger than the approved 80", () => {
   assert.match(ingest, /catalog\.length!==80/);
   assert.match(ingest, /RSS registry must have exactly 80 active unique sources/);
