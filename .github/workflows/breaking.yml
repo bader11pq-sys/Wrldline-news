@@ -4,14 +4,13 @@ on:
     branches: [main]
     paths:
       - 'bot-breaking.js'
+      - 'source-catalog.json'
       - '.github/workflows/breaking.yml'
-  schedule:
-    - cron: '2-59/5 * * * *'
   workflow_dispatch:
 permissions:
   contents: read
 concurrency:
-  group: wrldline-breaking-ingestion
+  group: wrldline-breaking-manual
   cancel-in-progress: false
 jobs:
   breaking:
@@ -24,18 +23,8 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-      - name: Collect breaking alerts from Arabic and global publishers
+      - name: Validate catalog and invoke the shared Supabase monitor
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
         run: node bot-breaking.js
-      - name: Dispatch opted-in SMS alerts
-        env:
-          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
-        run: |
-          curl --fail-with-body --silent --show-error -X POST "$SUPABASE_URL/functions/v1/telnyx-gateway" \
-            -H "apikey: $SUPABASE_SERVICE_ROLE_KEY" \
-            -H "Authorization: Bearer $SUPABASE_SERVICE_ROLE_KEY" \
-            -H "Content-Type: application/json" \
-            -d '{"action":"dispatch_breaking"}' || echo "SMS dispatch skipped: Telnyx is not configured"
