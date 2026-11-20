@@ -7,8 +7,8 @@ const WRLDLINE_PUBLIC_NEWS_API = SUPABASE_URL;
 const PAGE_SIZE = 24;
 // Keep public reads small: the RPC also builds published-translation JSON per row.
 // Large parallel projections were saturating the Data API and leaving the homepage loading.
-const MAIN_FEED_LIMIT = 80;
-const SUPPLEMENTAL_FEED_LIMIT = 32;
+const MAIN_FEED_LIMIT = 24;
+const SUPPLEMENTAL_FEED_LIMIT = 8;
 const WRLDLINE_TAXONOMY = window.WRLDLINE_TAXONOMY || null;
 const CATEGORY_NAMES = WRLDLINE_TAXONOMY?.CATEGORY_NAMES || { ar:{politics:"سياسة",economy:"اقتصاد",security:"أمن ودفاع",tech:"تكنولوجيا",sports:"رياضة",culture:"ثقافة",health:"صحة",science:"علوم",environment:"بيئة",society:"مجتمع",world:"حول العالم",uncategorized:"غير مصنف"}, en:{politics:"Politics",economy:"Economy",security:"Security & Defence",tech:"Technology",sports:"Sports",culture:"Culture",health:"Health",science:"Science",environment:"Environment",society:"Society",world:"Around the world",uncategorized:"Uncategorized"} };
 function normalizeCategory(value){if(WRLDLINE_TAXONOMY?.normalizeCategory)return WRLDLINE_TAXONOMY.normalizeCategory(value);const key=String(value||"").trim().toLowerCase();return CATEGORY_NAMES.ar[key]?key:"uncategorized";}
@@ -231,7 +231,7 @@ async function fetchNews(manual=false){
   const since24h=new Date(Date.now()-24*60*60*1000).toISOString();
   const getRows=async(params,required=false)=>{
    try{
-    const response=await fetch(rpcURL,{method:"POST",headers:{...headers,"Content-Type":"application/json","Accept":"application/json"},body:JSON.stringify(params),signal:AbortSignal.timeout(12000)});
+    const response=await fetch(rpcURL,{method:"POST",headers:{...headers,"Content-Type":"application/json","Accept":"application/json"},body:JSON.stringify(params),signal:AbortSignal.timeout(required?8000:3500)});
     if(!response.ok)throw new Error("HTTP "+response.status);
     const data=await response.json();
     if(!Array.isArray(data))throw new Error("Invalid response");
@@ -244,7 +244,7 @@ async function fetchNews(manual=false){
   };
   const getPopularRows=async()=>{
    try{
-    const response=await fetch(WRLDLINE_PUBLIC_NEWS_API+"/rest/v1/rpc/public_top_read_articles",{method:"POST",headers:{...headers,"Content-Type":"application/json","Accept":"application/json"},body:JSON.stringify({p_days:7,p_limit:5}),signal:AbortSignal.timeout(8000)});
+    const response=await fetch(WRLDLINE_PUBLIC_NEWS_API+"/rest/v1/rpc/public_top_read_articles",{method:"POST",headers:{...headers,"Content-Type":"application/json","Accept":"application/json"},body:JSON.stringify({p_days:7,p_limit:5}),signal:AbortSignal.timeout(3500)});
     if(!response.ok)throw new Error("HTTP "+response.status);
     const data=await response.json();
     return Array.isArray(data)?data:[];
@@ -253,22 +253,30 @@ async function fetchNews(manual=false){
   // Fetch the critical feed first. Optional sections must not compete with it for
   // database connections when the public API is under pressure.
   const mainRows=await getRows({p_limit:MAIN_FEED_LIMIT,p_before:now,p_since:null,p_offset:0,p_newsdata_only:false},true);
+  const renderFeed=(extraRows=[],popularRows=[])=>{
+   const unique=new Map();[...mainRows,...extraRows,...popularRows].forEach(row=>{if(row?.id)unique.set(String(row.id),row);});
+   const rows=[...unique.values()];
+   state.lastFetchAt=Date.now();
+   const normalized=rows.map(normalizeArticle).filter(a=>a.title&&!BLOCKED_EDITORIAL_STATUSES.has(a.editorialStatus)&&!isLowQualityArticle(a)&&(!isTelegramArticle(a.raw)||(a.isBreaking===true&&isDedicatedBreakingSource(a.src))));
+   state.articles=dedupeArticles(normalized);
+   state.missedArticles=dedupeArticles(state.articles.filter(a=>a.isNewsDataOnly));
+   populateCountries();renderMissedStories();applyFilters();renderCoveragePulse();renderExclusive();renderPopularStories(popularRows);updateBreaking();
+   if(state.user&&extraRows.length)syncLocalSavedToCloud();
+   const linkedId=new URLSearchParams(location.search).get("article");if(linkedId)openArticle(linkedId,false);
+   document.getElementById("lastUpdated").textContent=ui("آخر تحديث: ","Last updated: ")+formatDate(new Date());
+   document.getElementById("connectionLabel").textContent=ui("الأخبار محدثة","News updated");
+   document.getElementById("newsStatus")?.classList.remove("is-updating","is-error");
+  };
+  // Paint the main feed immediately. Optional widgets must never hold the newsroom
+  // hostage when their extra database queries time out.
+  renderFeed();
   const [missedRows,breakingRows,exclusiveRows,popularRows]=await Promise.all([
    getRows({p_limit:SUPPLEMENTAL_FEED_LIMIT,p_before:now,p_since:null,p_offset:0,p_newsdata_only:true}),
    getRows({p_limit:SUPPLEMENTAL_FEED_LIMIT,p_before:now,p_since:since24h,p_offset:0,p_is_breaking:true}),
    getRows({p_limit:SUPPLEMENTAL_FEED_LIMIT,p_before:now,p_since:null,p_offset:0,p_is_exclusive:true}),
    getPopularRows()
   ]);
-  const unique=new Map();[...mainRows,...missedRows,...breakingRows,...exclusiveRows,...popularRows].forEach(row=>{if(row?.id)unique.set(String(row.id),row);});
-  const rows=[...unique.values()];
-  state.lastFetchAt=Date.now();
-  const normalized=rows.map(normalizeArticle).filter(a=>a.title&&!BLOCKED_EDITORIAL_STATUSES.has(a.editorialStatus)&&!isLowQualityArticle(a)&&(!isTelegramArticle(a.raw)||(a.isBreaking===true&&isDedicatedBreakingSource(a.src))));
-  state.articles=dedupeArticles(normalized);
-  state.missedArticles=dedupeArticles(state.articles.filter(a=>a.isNewsDataOnly));
-  populateCountries();renderMissedStories();applyFilters();renderCoveragePulse();renderExclusive();renderPopularStories(popularRows);updateBreaking();if(state.user)syncLocalSavedToCloud();const linkedId=new URLSearchParams(location.search).get("article");if(linkedId)openArticle(linkedId,false);
-  document.getElementById("lastUpdated").textContent=ui("آخر تحديث: ","Last updated: ")+formatDate(new Date());
-  document.getElementById("connectionLabel").textContent=ui("الأخبار محدثة","News updated");
-  document.getElementById("newsStatus")?.classList.remove("is-updating","is-error");
+  renderFeed([...missedRows,...breakingRows,...exclusiveRows],popularRows);
   if(manual)showToast(ui("تم تحديث الأخبار","News updated"));
  }catch(err){
   console.error("WRLDLINE fetch:",err);
