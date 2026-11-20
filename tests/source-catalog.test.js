@@ -58,6 +58,8 @@ test("breaking ticker calls the existing dedicated-source predicate", () => {
 });
 test("general ingestion rejects a registry or source catalog larger than the approved 80", () => {
   assert.match(ingest, /catalog\.length!==80/);
+  assert.match(ingest, /breakingSources\.length!==24/, "ingestion must accept the canonical 24 breaking sources");
+  assert.doesNotMatch(ingest, /breakingSources\.length!==20/, "the old 20-source guard must not regress");
   assert.match(ingest, /RSS registry must have exactly 80 active unique sources/);
   assert.doesNotMatch(ingest, /catalog\.length<1000|slice\(0,1000\)|batchSize=250/);
   assert.match(ingest, /\[408,425,429,500,502,503,504\]/, "transient provider errors must be retried");
