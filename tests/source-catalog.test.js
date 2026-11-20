@@ -72,5 +72,5 @@ test("general ingestion rejects a registry or source catalog larger than the app
 
 test("homepage deduplicates identical headlines across different publishers", () => {
   assert.match(publicScript, /const titleKey=title;/);
-  assert.doesNotMatch(publicScript, /normalizeText\(a\.src\)[^;]*\|\+title/);
+  assert.doesNotMatch(publicScript, /const titleKey=normalizeText\(a\.src\)/);
 });
