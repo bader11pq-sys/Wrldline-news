@@ -492,7 +492,6 @@ function renderMissedStories(){
  const host=document.getElementById("missedNewsGrid");if(!host)return;
  const feedIds=new Set((state.filtered||[]).slice(0,24).map(a=>a.id));
  let pool=(state.articles||[]).filter(a=>!a.isNewsDataOnly&&/[\u0600-\u06FF]/.test(a.title||"")&&!["sports","culture","entertainment"].includes(a.cat)&&!feedIds.has(a.id));
- if(pool.length<8)pool=(state.articles||[]).filter(a=>!a.isNewsDataOnly&&/[\u0600-\u06FF]/.test(a.title||"")&&!["sports","culture","entertainment"].includes(a.cat));
  const all=pool.slice(0,40),items=all.slice(0,state.missedLimit||8);
  const count=document.getElementById("missedNewsCount");
  if(count)count.textContent=all.length+" قصة إضافية";
