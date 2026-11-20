@@ -90,7 +90,7 @@ function dedupeArticles(list){
  for(const a of sorted){
   const url=String(a.sourceURL||"").replace(/#.*$/,"").replace(/\/$/,"").toLowerCase();
   const title=normalizeText(a.originalTitle||a.title).toLocaleLowerCase();
-  const titleKey=normalizeText(a.src).toLocaleLowerCase()+"|"+title;
+  const titleKey=title;
   if(url&&seenUrl.has(url))continue;
   if(title&&seenTitle.has(titleKey))continue;
   if(url)seenUrl.add(url);
