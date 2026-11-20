@@ -456,7 +456,9 @@ function renderHero(){
  const host=document.getElementById("heroLayout");
  if(!host)return;
  if(!state.filtered.length){host.innerHTML='<div class="wl-empty"><strong>لا توجد نتائج في هذا القسم</strong><p>جرّب تغيير الدولة أو اختيار قسم آخر.</p></div>';return;}
- // Rank only the newest 24 eligible stories so the lead and top rail cannot get stuck on older high-scoring coverage.\n const recentPool=state.filtered.slice(0,24);\n const ranked=window.WLRank&&typeof window.WLRank.rank==="function"?window.WLRank.rank(recentPool):recentPool;
+ // Rank only the newest 24 eligible stories so the lead and top rail cannot get stuck on older high-scoring coverage.
+ const recentPool=state.filtered.slice(0,24);
+ const ranked=window.WLRank&&typeof window.WLRank.rank==="function"?window.WLRank.rank(recentPool):recentPool;
  const eligible=window.WLRank&&typeof window.WLRank.isLeadEligible==="function"?ranked.filter(window.WLRank.isLeadEligible):ranked;
  const pool=eligible.length>=4?eligible:ranked;
  const lead=pool[0];
