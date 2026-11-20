@@ -79,22 +79,31 @@ function sourceBoxMarkup(a){
  return '<div class="source-box source-box-'+kind+'"><span>'+ui("المصدر الأصلي","Original source")+'</span><strong>'+source+'</strong>'+link+sponsor+'<small class="publication-date">'+ui("تاريخ النشر: ","Published: ")+escapeHTML(formatDate(a.published_at))+'</small></div>';
 }
 function correctionMarkup(a){if(!a.correctionNote)return "";return '<div class="correction-note" role="note"><strong>'+ui("تصحيح منشور","Published correction")+'</strong><p>'+escapeHTML(a.correctionNote)+'</p><small>'+escapeHTML(formatDate(a.correctedAt||a.published_at))+'</small></div>';}
+const GENERIC_FEED_HEADLINES=/^(?:آخر الأخبار العاجلة في العراق وكوردستان والعالم|نوفمبر\\s+20\\d{2}(?:\\s*[-–—|]\\s*شفق نيوز)?|أرقام\\s*:\\s*.*(?:الاخبار|الأخبار).*(?:تاسي|سوق الأسهم)|مباشر\\s*[—–-]\\s*الأخبار المالية والأسواق والرؤى الاستثمارية)$/i;
 function isLowQualityArticle(a){
  const title=normalizeText(a.originalTitle||a.title);
  if(!title||title.length<4)return true;
+ if(GENERIC_FEED_HEADLINES.test(title))return true;
  return title.length<55&&LOW_QUALITY_TITLE.test(title);
+}
+function headlineDedupeKey(value=""){
+ return normalizeText(value).normalize("NFKD")
+  .replace(/[\\u0300-\\u036f\\u064B-\\u065F\\u0670\\u0640]/g,"")
+  .replace(/[أإآ]/g,"ا").replace(/ى/g,"ي")
+  .toLocaleLowerCase()
+  .replace(/[^\\p{L}\\p{N}\\s]/gu," ")
+  .replace(/\\s+/g," ").trim();
 }
 function dedupeArticles(list){
  const out=[],seenUrl=new Set(),seenTitle=new Set();
  const sorted=[...list].sort((a,b)=>(Date.parse(b.published_at||"")||0)-(Date.parse(a.published_at||"")||0));
  for(const a of sorted){
-  const url=String(a.sourceURL||"").replace(/#.*$/,"").replace(/\/$/,"").toLowerCase();
-  const title=normalizeText(a.originalTitle||a.title).toLocaleLowerCase();
-  const titleKey=title;
+  const url=String(a.sourceURL||"").replace(/#.*$/,"").replace(/\\/$/,"").toLowerCase();
+  const titleKey=headlineDedupeKey(a.title||a.originalTitle||"");
   if(url&&seenUrl.has(url))continue;
-  if(title&&seenTitle.has(titleKey))continue;
+  if(titleKey&&seenTitle.has(titleKey))continue;
   if(url)seenUrl.add(url);
-  if(title)seenTitle.add(titleKey);
+  if(titleKey)seenTitle.add(titleKey);
   out.push(a);
  }
  return out;
@@ -125,7 +134,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 async function registerServiceWorker(){
  if(!("serviceWorker" in navigator))return;
-  const workerBuild="v66";
+  const workerBuild="v67-newsfeedfix";
  navigator.serviceWorker.addEventListener("controllerchange",()=>{
   if(sessionStorage.getItem("wrldline:sw-build")!==workerBuild){
    sessionStorage.setItem("wrldline:sw-build",workerBuild);
@@ -447,7 +456,7 @@ function renderHero(){
  const host=document.getElementById("heroLayout");
  if(!host)return;
  if(!state.filtered.length){host.innerHTML='<div class="wl-empty"><strong>لا توجد نتائج في هذا القسم</strong><p>جرّب تغيير الدولة أو اختيار قسم آخر.</p></div>';return;}
- const ranked=window.WLRank&&typeof window.WLRank.rank==="function"?window.WLRank.rank(state.filtered):state.filtered;
+ // Rank only the newest 24 eligible stories so the lead and top rail cannot get stuck on older high-scoring coverage.\n const recentPool=state.filtered.slice(0,24);\n const ranked=window.WLRank&&typeof window.WLRank.rank==="function"?window.WLRank.rank(recentPool):recentPool;
  const eligible=window.WLRank&&typeof window.WLRank.isLeadEligible==="function"?ranked.filter(window.WLRank.isLeadEligible):ranked;
  const pool=eligible.length>=4?eligible:ranked;
  const lead=pool[0];
