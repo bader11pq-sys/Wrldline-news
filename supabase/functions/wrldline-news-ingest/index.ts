@@ -82,7 +82,7 @@ function googleFallback(feed: any) {
 }
 function isPublisherNoise(title: string) {
  const value=String(title||"").trim().toLowerCase();
- return /^(?:kuna news agency\s*-\s*كونا|- trt world|nam news network \(nnn\) - the non aligned movement - bernama|the non aligned movement - bernama|- japan wire by kyodo news|- جريدة الوطن السعودية|bernama mrem \(eng\) - bernama mrem|\| afp\.com - afp\.com|latest news - xinhua|جريدة الغد المطبوعة - جريدة الغد|- efe - agencia de noticias)$/i.test(value);
+ return /^(?:kuna news agency\\s*-\\s*كونا|- trt world|nam news network \\(nnn\\) - the non aligned movement - bernama|the non aligned movement - bernama|- japan wire by kyodo news|- جريدة الوطن السعودية|bernama mrem \\(eng\\) - bernama mrem|\\| afp\\.com - afp\\.com|latest news - xinhua|جريدة الغد المطبوعة - جريدة الغد|- efe - agencia de noticias|آخر الأخبار العاجلة في العراق وكوردستان والعالم(?:\\s*[-–—|]\\s*شفق نيوز)?|نوفمبر\\s+20\\d{2}(?:\\s*[-–—|]\\s*شفق نيوز)?|أرقام\\s*:\\s*.*(?:الاخبار|الأخبار).*(?:تاسي|سوق الأسهم)|مباشر\\s*[—–-]\\s*الأخبار المالية والأسواق والرؤى الاستثمارية)$/i.test(value);
 }
 function parseGeneral(xml: string,feed: any) {
  return xmlEntries(xml).slice(0,25).map((block: string)=>{
