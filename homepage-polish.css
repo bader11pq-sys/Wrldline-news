@@ -1,0 +1,96 @@
+/* WRLDLINE homepage polish — restrained motion and balanced themes */
+.wl-home{
+  --home-glow:color-mix(in srgb,var(--gold) 12%,transparent);
+  --home-card-shadow:0 10px 28px color-mix(in srgb,var(--ink) 7%,transparent);
+}
+body.wl-home{background:var(--paper)}
+.wl-home .wl-hero{position:relative;isolation:isolate;padding-top:clamp(24px,3.5vw,42px)}
+.wl-home .wl-hero::before{
+  content:"";position:absolute;z-index:-1;inset:0 0 auto;height:460px;pointer-events:none;
+  background:radial-gradient(ellipse at 12% 8%,var(--home-glow),transparent 52%),
+             radial-gradient(ellipse at 88% 0%,color-mix(in srgb,var(--blue) 7%,transparent),transparent 48%);
+}
+.wl-home .wl-hero-title h1{animation:home-title-in .7s cubic-bezier(.16,1,.3,1) both}
+.wl-home .wl-hero-title p{max-width:660px}
+.wl-home .wl-hero-motto{
+  display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin-top:15px;
+  color:var(--muted);font-size:11px;font-weight:600;min-height:30px;
+}
+.wl-home .wl-hero-motto .motto-mark{
+  display:inline-flex;align-items:center;gap:7px;padding:5px 10px;border-radius:99px;
+  color:var(--gold-strong);background:var(--gold-soft);border:1px solid color-mix(in srgb,var(--gold) 24%,var(--line));
+}
+.wl-home .wl-hero-motto .motto-mark i{width:6px;height:6px;border-radius:50%;background:var(--gold);box-shadow:0 0 0 4px color-mix(in srgb,var(--gold) 14%,transparent)}
+.wl-home .wl-motto-word{display:inline-block;min-width:10ch;color:var(--ink-2);transition:opacity .24s ease,transform .24s ease}
+.wl-home .wl-motto-word.is-changing{opacity:0;transform:translateY(5px)}
+.wl-home .wl-edition{transition:transform .25s ease,border-color .25s ease,box-shadow .25s ease}
+.wl-home .wl-edition:hover{transform:translateY(-3px);border-color:var(--gold);box-shadow:var(--home-card-shadow)}
+.wl-home .wl-hero-grid{position:relative}
+.wl-home .lead-story{box-shadow:var(--home-card-shadow);transition:box-shadow .3s ease,transform .3s ease}
+.wl-home .lead-story:hover{transform:translateY(-3px);box-shadow:0 22px 48px color-mix(in srgb,var(--ink) 16%,transparent)}
+.wl-home .lead-rail{box-shadow:var(--home-card-shadow)}
+.wl-home .rail-story{transition:background .2s ease,transform .2s ease}
+.wl-home .rail-story:hover{transform:translateX(-3px)}
+.wl-home .wl-room{box-shadow:0 2px 8px color-mix(in srgb,var(--ink) 3%,transparent)}
+.wl-home .wl-room:active{transform:translateY(0) scale(.98)}
+.wl-home .wl-section,.wl-home .wl-feature,.wl-home .wl-band,.wl-home .wl-watch-strip,.wl-home .wl-dossier-strip,.wl-home .wl-signal-hub,.wl-home .coverage-pulse{
+  scroll-margin-top:130px;
+}
+.wl-home .wl-home-reveal{opacity:0;transform:translateY(16px);transition:opacity .55s ease,transform .55s cubic-bezier(.16,1,.3,1)}
+.wl-home .wl-home-reveal.is-visible{opacity:1;transform:none}
+.wl-home .wl-home-reveal:nth-child(2){transition-delay:45ms}
+.wl-home .wl-home-reveal:nth-child(3){transition-delay:90ms}
+.wl-home .wl-home-reveal:nth-child(4){transition-delay:135ms}
+.wl-home .wl-nav-link,.wl-home .wl-icon-btn,.wl-home .wl-search-trigger,.wl-home .wl-account{transition:background .2s ease,color .2s ease,border-color .2s ease,transform .2s ease}
+.wl-home .wl-nav-link:hover{transform:translateY(-1px)}
+.wl-home .wl-icon-btn:active,.wl-home .wl-search-trigger:active{transform:scale(.96)}
+.wl-home #themeButton{position:relative;overflow:hidden}
+.wl-home #themeButton::after{content:"";position:absolute;inset:5px;border:1px solid color-mix(in srgb,var(--gold) 30%,transparent);border-radius:8px;opacity:0;transform:scale(.7);transition:opacity .25s,transform .25s}
+.wl-home #themeButton:hover::after{opacity:1;transform:scale(1)}
+.wl-home .wl-icon-btn svg{transition:transform .35s cubic-bezier(.16,1,.3,1)}
+.wl-home #themeButton:hover svg{transform:rotate(-14deg)}
+.wl-home .news-card,.wl-home .wl-context-card,.wl-home .wl-promise,.wl-home .wl-signal-card,.wl-home .dossier-strip-card,.wl-home .watch-strip-card{
+  transition:transform .24s ease,border-color .24s ease,box-shadow .24s ease,background-color .24s ease;
+}
+html[data-theme="light"] .wl-home{
+  --paper:#f7f7f4;--paper-2:#f0f1ed;--surface:#fff;--surface-2:#f4f5f1;--surface-3:#e9ece7;
+  --ink:#172333;--ink-2:#354456;--muted:#687789;--muted-2:#8793a0;
+  --line:#e2e7e3;--line-strong:#cbd4ce;--gold:#a77a32;--gold-strong:#886322;--gold-soft:#f4ecd9;
+  --blue:#376d91;--blue-soft:#e8f0f5;
+}
+html[data-theme="dark"] .wl-home{
+  --paper:#09121e;--paper-2:#0c1724;--surface:#111f30;--surface-2:#17283b;--surface-3:#20354b;
+  --ink:#edf2f7;--ink-2:#d2dce7;--muted:#9aaabd;--muted-2:#7f92a8;
+  --line:#24384d;--line-strong:#38516a;--gold:#d8b46f;--gold-strong:#e7ca91;--gold-soft:#2a251a;
+  --blue:#8db9dc;--blue-soft:#172d40;
+  --shadow-xs:0 1px 2px rgba(0,0,0,.28);--shadow-sm:0 5px 16px rgba(0,0,0,.28);
+  --shadow-md:0 16px 42px rgba(0,0,0,.38);--shadow-lg:0 30px 80px rgba(0,0,0,.52);
+}
+html[data-theme="dark"] .wl-home .wl-header{background:color-mix(in srgb,#09121e 88%,transparent);border-bottom-color:#263b51}
+html[data-theme="dark"] .wl-home .wl-utility{background:#050b13}
+html[data-theme="dark"] .wl-home .wl-breaking{background:#a9323a}
+html[data-theme="dark"] .wl-home .news-card{background:linear-gradient(145deg,var(--surface),color-mix(in srgb,var(--surface) 88%,#d8b46f 12%));box-shadow:0 8px 26px #0003}
+html[data-theme="dark"] .wl-home .wl-room,
+html[data-theme="dark"] .wl-home .wl-edition,
+html[data-theme="dark"] .wl-home .wl-frame-card,
+html[data-theme="dark"] .wl-home .wl-balance-stat{box-shadow:0 5px 18px #0002}
+html[data-theme="dark"] .wl-home .dossier-strip-status--active{background:#163328;color:#91d6b3}
+html[data-theme="dark"] .wl-home .dossier-strip-status--monitoring{background:#352b18;color:#e9c982}
+html[data-theme="dark"] .wl-home .wl-dossier-strip{background:linear-gradient(180deg,#142235,transparent)}
+html[data-theme="dark"] .wl-home .wl-watch-strip{background:linear-gradient(180deg,#152438,#101e2e)}
+html[data-theme="dark"] .wl-home .wl-feature--paper{background:#0d1a29}
+html[data-theme="dark"] .wl-home .wl-band{background:#07111d}
+html[data-theme="dark"] .wl-home .wl-signal-hub .wl-container{background:linear-gradient(135deg,#142438,#0f1d2d)}
+html[data-theme="dark"] .wl-home .wl-newsletter-banner{background:linear-gradient(115deg,#142438,#101d2c)}
+html[data-theme="dark"] .wl-home .coverage-pulse{background:transparent}
+@keyframes home-title-in{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+@media(max-width:760px){
+ .wl-home .wl-hero{padding-top:22px}
+ .wl-home .wl-hero-top{gap:12px}
+ .wl-home .wl-hero-motto{font-size:10px;margin-top:12px}
+ .wl-home .wl-home-reveal{transform:translateY(10px)}
+}
+@media(prefers-reduced-motion:reduce){
+ .wl-home *, .wl-home *::before,.wl-home *::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
+ .wl-home .wl-home-reveal{opacity:1;transform:none}
+}
