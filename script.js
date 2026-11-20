@@ -134,7 +134,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 async function registerServiceWorker(){
  if(!("serviceWorker" in navigator))return;
-  const workerBuild="v67-newsfeedfix";
+  const workerBuild="v68-feedfast";
  navigator.serviceWorker.addEventListener("controllerchange",()=>{
   if(sessionStorage.getItem("wrldline:sw-build")!==workerBuild){
    sessionStorage.setItem("wrldline:sw-build",workerBuild);
@@ -142,7 +142,7 @@ async function registerServiceWorker(){
   }
  });
  try{
-  const registration=await navigator.serviceWorker.register("/sw.js?v=v66",{scope:"/"});
+  const registration=await navigator.serviceWorker.register("/sw.js?v=v68",{scope:"/"});
   registration.update().catch(()=>{});
   registration.addEventListener("updatefound",()=>{
    const worker=registration.installing;if(!worker)return;
