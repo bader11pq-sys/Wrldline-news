@@ -32,23 +32,23 @@ test("breaking collection monitors exactly 24 Arabic sources from the same 80-so
 
   assert.match(breakingCli, /EXPECTED_CATALOG_SIZE = 80/);
   assert.match(breakingCli, /EXPECTED_BREAKING_SOURCES = 24/);
-  assert.match(breakingCli, /urgent\\.length !== EXPECTED_BREAKING_SOURCES/);
+  assert.match(breakingCli, /urgent\.length !== EXPECTED_BREAKING_SOURCES/);
 
-  const sourceBlock = breaking.match(/const SOURCES = \\[([\\s\\S]*?)\\n\\];/);
+  const sourceBlock = breaking.match(/const SOURCES = \[([\s\S]*?)\n\];/);
   assert.ok(sourceBlock, "the shared Supabase monitor must declare its source catalog");
-  const monitorSources = [...sourceBlock[1].matchAll(/\\{ publisher: "([^"]+)", domain: "([^"]+)"/g)];
+  const monitorSources = [...sourceBlock[1].matchAll(/\{\s*publisher: "([^"]+)", domain: "([^"]+)"/g)];
   assert.equal(monitorSources.length, 24);
   for (const [, publisher, domain] of monitorSources) {
     const catalogSource = breakingSources.find((source) => source.name === publisher);
-    assert.ok(catalogSource, `monitor source ${publisher} must exist in the canonical catalog`);
-    assert.equal(catalogSource.breaking_domain, domain, `${publisher} domain must match the canonical catalog`);
+    assert.ok(catalogSource, "monitor source " + publisher + " must exist in the canonical catalog");
+    assert.equal(catalogSource.breaking_domain, domain, publisher + " domain must match the canonical catalog");
   }
 
   assert.match(breaking, /async function retryFetch/);
   assert.match(breaking, /retry-after/i, "honour Retry-After when providers rate-limit");
   assert.match(breaking, /claim_breaking_monitor/);
-  assert.match(breaking, /Array\\.from\\(\\{ length: 4 \\}/, "limit source concurrency to four lanes");
-  assert.doesNotMatch(breaking, /Array\\.from\\(\\{ length: 10 \\}/, "do not restore high source concurrency");
+  assert.match(breaking, /Array\.from\(\{ length: 4 \}/, "limit source concurrency to four lanes");
+  assert.doesNotMatch(breaking, /Array\.from\(\{ length: 10 \}/, "do not restore high source concurrency");
 });
 test("general ingestion rejects a registry or source catalog larger than the approved 80", () => {
   assert.match(ingest, /catalog\.length!==80/);
