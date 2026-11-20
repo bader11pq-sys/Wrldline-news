@@ -68,3 +68,9 @@ test("general ingestion rejects a registry or source catalog larger than the app
   assert.match(ingest, /entries.length===0&&isFeedDocument\(xml\)/, "valid empty RSS/Atom feeds are healthy no-new-story polls");
   assert.match(ingest, /no_new_items:true/);
 });
+
+
+test("homepage deduplicates identical headlines across different publishers", () => {
+  assert.match(publicScript, /const titleKey=title;/);
+  assert.doesNotMatch(publicScript, /const titleKey=normalizeText\(a\.src\)/);
+});

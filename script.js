@@ -90,7 +90,7 @@ function dedupeArticles(list){
  for(const a of sorted){
   const url=String(a.sourceURL||"").replace(/#.*$/,"").replace(/\/$/,"").toLowerCase();
   const title=normalizeText(a.originalTitle||a.title).toLocaleLowerCase();
-  const titleKey=normalizeText(a.src).toLocaleLowerCase()+"|"+title;
+  const titleKey=title;
   if(url&&seenUrl.has(url))continue;
   if(title&&seenTitle.has(titleKey))continue;
   if(url)seenUrl.add(url);
@@ -125,7 +125,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 async function registerServiceWorker(){
  if(!("serviceWorker" in navigator))return;
-  const workerBuild="v61";
+  const workerBuild="v66";
  navigator.serviceWorker.addEventListener("controllerchange",()=>{
   if(sessionStorage.getItem("wrldline:sw-build")!==workerBuild){
    sessionStorage.setItem("wrldline:sw-build",workerBuild);
@@ -133,7 +133,7 @@ async function registerServiceWorker(){
   }
  });
  try{
-  const registration=await navigator.serviceWorker.register("/sw.js?v=v61",{scope:"/"});
+  const registration=await navigator.serviceWorker.register("/sw.js?v=v66",{scope:"/"});
   registration.update().catch(()=>{});
   registration.addEventListener("updatefound",()=>{
    const worker=registration.installing;if(!worker)return;
