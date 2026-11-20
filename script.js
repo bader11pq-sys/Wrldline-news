@@ -540,7 +540,7 @@ function breakingItems(maxAge=15*60*1000,ageField="published_at"){
  const now=Date.now(), seen=new Set();
  return state.articles.filter(a=>{
   if(a.isNewsDataOnly||a.isBreaking!==true)return false;
-   if(!isBreakingSource(a.raw?.source_name||a.src))return false;
+   if(!isDedicatedBreakingSource(a.raw?.source_name||a.src))return false;
   if(!/[\u0600-\u06FF]/.test(a.title||""))return false;
   if(/مباراة|الدوري|مانشستر|تشيلسي|ريال مدريد|برشلونة|مباشر|بث مباشر|ملخص|هدف|sports|sport/i.test(a.title||""))return false;
   const sourceUrl=String(a.sourceURL||a.raw?.source_url||"");

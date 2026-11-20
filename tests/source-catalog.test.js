@@ -8,6 +8,7 @@ const catalog = JSON.parse(fs.readFileSync(path.join(root, "source-catalog.json"
 const ingest = fs.readFileSync(path.join(root, "supabase/functions/wrldline-news-ingest/index.ts"), "utf8");
 const breakingCli = fs.readFileSync(path.join(root, "bot-breaking.js"), "utf8");
 const breaking = fs.readFileSync(path.join(root, "supabase/functions/breaking-news-monitor/index.ts"), "utf8");
+const publicScript = fs.readFileSync(path.join(root, "script.js"), "utf8");
 
 test("canonical RSS catalog has exactly 80 unique source endpoints", () => {
   assert.equal(catalog.length, 80);
@@ -49,6 +50,11 @@ test("breaking collection monitors exactly 24 Arabic sources from the same 80-so
   assert.match(breaking, /claim_breaking_monitor/);
   assert.match(breaking, /Array\.from\(\{ length: 4 \}/, "limit source concurrency to four lanes");
   assert.doesNotMatch(breaking, /Array\.from\(\{ length: 10 \}/, "do not restore high source concurrency");
+});
+test("breaking ticker calls the existing dedicated-source predicate", () => {
+  assert.ok(publicScript.includes("function isDedicatedBreakingSource(name)"));
+  assert.ok(publicScript.includes("if(!isDedicatedBreakingSource(a.raw?.source_name||a.src))return false;"));
+  assert.equal(publicScript.includes("isBreakingSource"), false);
 });
 test("general ingestion rejects a registry or source catalog larger than the approved 80", () => {
   assert.match(ingest, /catalog\.length!==80/);
