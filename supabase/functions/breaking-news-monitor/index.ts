@@ -267,7 +267,7 @@ Deno.serve(async (request) => {
   if (request.method !== "POST") return responseJson({ error: "POST required" }, 405);
   if (!SUPABASE_URL || !SERVICE_KEY) return responseJson({ error: "Monitor credentials missing" }, 503);
   const secret = request.headers.get("x-wrldline-cron-secret") ?? "";
-  const bearer = (request.headers.get("Authorization") ?? "").replace(/^Bearer\\s+/i, "");
+  const bearer = (request.headers.get("Authorization") ?? "").replace(/^Bearer\s+/i, "");
   let authorized = false;
   if (secret && secret.length <= 512) {
     try {
