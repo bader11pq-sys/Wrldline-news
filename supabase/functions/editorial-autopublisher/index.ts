@@ -92,7 +92,43 @@ async function fetchRss(url: string, name: string): Promise<Src[]> {
   if (!r.ok) throw new Error(name + " RSS HTTP " + r.status);
   return parseFeedXml(await r.text(), name, url);
 }
-async function searchWeb(_query: string, _locale = "en-US"): Promise<Src[]> { return []; }
+async function searchWeb(query: string, locale = "ar-SA"): Promise<Src[]> {
+  const apiKey = Deno.env.get("NEWSDATA_API_KEY");
+  if (!apiKey) throw new Error("NEWSDATA_API_KEY is missing from Edge Function secrets");
+  const url = new URL("https://newsdata.io/api/1/latest");
+  url.searchParams.set("apikey", apiKey);
+  url.searchParams.set("q", query.slice(0, 180));
+  url.searchParams.set("language", locale === "ar-SA" ? "ar,en" : "en");
+  url.searchParams.set("size", "10");
+  url.searchParams.set("removeduplicate", "1");
+  const response = await fetch(url, {
+    headers: { "Accept": "application/json", "User-Agent": "WRLDLINE-Editorial/1.0" },
+    signal: AbortSignal.timeout(12000)
+  });
+  const body = await response.json().catch(() => ({}));
+  if (!response.ok || body?.status === "error") {
+    throw new Error("NewsData research HTTP " + response.status + ": " + String(body?.results?.message || body?.message || "request failed").slice(0, 180));
+  }
+  const results = Array.isArray(body.results) ? body.results : [];
+  const out: Src[] = [];
+  for (const item of results) {
+    const link = safeLink(item?.link);
+    const title = txt(item?.title, 230);
+    const published = item?.pubDate ? new Date(item.pubDate).toISOString() : null;
+    if (!link || !title || !published || Date.now() - Date.parse(published) > 18 * 60 * 60 * 1000 || Date.parse(published) > Date.now() + 5 * 60_000) continue;
+    const publisher = txt(item?.source_name || item?.source_id || host(link), 120);
+    const publisherUrl = safeLink(item?.source_url) || "https://" + host(link);
+    const categories = Array.isArray(item?.category) ? item.category : [];
+    const type = classifyPublisher(publisher, publisherUrl);
+    out.push({
+      id: "search_" + (out.length + 1), title, url: link, publisher, published_at: published,
+      type, excerpt: txt(item?.description || item?.content || item?.ai_summary || "", 1800),
+      source_confidence: type === "official" ? "primary" : "reported",
+      category: categories.join(",")
+    } as Src);
+  }
+  return out;
+}
 async function ai(prompt: string) {
   const errors: string[] = [];
   const attempts: Array<[string, (timeoutMs: number) => Promise<any>, number]> = [];
@@ -257,8 +293,10 @@ async function buildPack(mode: string, db: any, recent: any[]) {
     ];
   }
 
-  // RSS collection is disabled; use retained newsroom articles and institutional history sources.
-  const webSources: Src[] = [];
+  // RSS is disabled. Research uses the NewsData.io JSON API and retained newsroom articles.
+  const researchQueries = mode === "hourly" ? queries.slice(0, 4) : queries.slice(0, 2);
+  const researchResults = await Promise.allSettled(researchQueries.map((query) => searchWeb(query, "ar-SA")));
+  const webSources: Src[] = researchResults.flatMap((result) => result.status === "fulfilled" ? result.value : []);
   const feedSources: Src[] = [];
 
   const historical = mode === "mirror" ? await db.from("history_sources")
@@ -274,10 +312,10 @@ async function buildPack(mode: string, db: any, recent: any[]) {
   }));
 
   const sourceSet = mode === "hourly"
-    ? [...a.src.slice(0, 80)]
+    ? [...webSources, ...a.src.slice(0, 80)]
     : mode === "mirror"
-      ? [...historySources, ...a.src]
-      : [...a.src, ...historySources];
+      ? [...historySources, ...webSources, ...a.src]
+      : [...a.src, ...webSources, ...historySources];
   const sourceMap = new Map<string, Src>(), unique: Src[] = [];
   for (const source of sourceSet) {
     const url = safeLink(source.url);
@@ -304,7 +342,7 @@ function promptFor(mode: string, pack: any, date: string) {
   if (mode === "hourly") task = [
     "أنت غرفة أخبار دولية عربية. أعدّ نشرة تحريرية كل ساعة عن أهم التطورات العالمية السياسية والاقتصادية والأمنية والرياضية والتقنية والصحية والعلمية والثقافية، مع أولوية لما يهم السعودية والخليج والمنطقة العربية.",
     "اختر من 2 إلى 8 قصص فقط من نافذة آخر 8 ساعات. لا تشترط حدثاً استثنائياً أو عاجلاً؛ إذا لم يوجد حدث كبير، اختر تطورات متوسطة الأهمية في السياسة والاقتصاد والأمن والرياضة والتقنية والصحة والعلوم والثقافة. لا تستخدم no_update لمجرد غياب حدث ضخم؛ استخدمه فقط إذا لم توجد قصتان لهما مصدران مستقلان حديثان على الأقل. لا تملأ العدد بقصص هامشية ولا تكرر قصة نُشرت في أي نشرة من آخر 8 ساعات إلا إذا ظهر تطور جوهري جديد؛ عند التكرار اكتب update_note يحدد بدقة ما الجديد. إذا لم تتوافر قصتان تستوفيان التحقق ولا التحديث، أخرج action=no_update.",
-    "كل قصة يجب أن تعتمد على مصدرين مستقلين على الأقل من ناشرين مختلفين، مع روابط مباشرة وتوقيت نشر حديث. قدّم مصدر الخبر الأساسي المرافق له في الأخبار الحديثة عبر source_id، ثم أضف مصدراً مستقلاً ثانياً من قائمة المصادر المسموح بها. استخدم معرفات source_ فقط في source_ids، ولا تستخدم article_ كمعرف مصدر. مهم: لا ترفض القصة لمجرد عدم وجود ثلاثة مصادر؛ مصدران مستقلان حديثان يكفيان للنشر بوسم reported. لا تستخدم confirmed إلا عند توفر ثلاثة مصادر مستقلة بينها مصدر رسمي أو أولي. إذا كان هناك بيان رسمي أو مصدر أولي متاح فأدرجه. لا تعتبر نتائج Google News مصدراً مستقلاً بحد ذاتها؛ اعتمد اسم الناشر والرابط الفعلي للمادة. لا تخلط بين إعادة نشر الوكالة الواحدة ومصدرين مستقلين.",
+    "كل قصة يجب أن تعتمد على مصدرين مستقلين على الأقل من ناشرين مختلفين، مع روابط مباشرة وتوقيت نشر حديث. قدّم مصدر الخبر الأساسي المرافق له في الأخبار الحديثة عبر source_id، ثم أضف مصدراً مستقلاً ثانياً من قائمة المصادر المسموح بها. استخدم معرفات source_ فقط في source_ids، ولا تستخدم article_ كمعرف مصدر. مهم: لا ترفض القصة لمجرد عدم وجود ثلاثة مصادر؛ مصدران مستقلان حديثان يكفيان للنشر بوسم reported. لا تستخدم confirmed إلا عند توفر ثلاثة مصادر مستقلة بينها مصدر رسمي أو أولي. إذا كان هناك بيان رسمي أو مصدر أولي متاح فأدرجه. لا تعتبر NewsData.io أو أي مجمّع أخبار مصدراً مستقلاً بحد ذاته؛ اعتمد رابط الناشر الأصلي واسم المؤسسة الفعلية؛ اعتمد اسم الناشر والرابط الفعلي للمادة. لا تخلط بين إعادة نشر الوكالة الواحدة ومصدرين مستقلين.",
     "افصل بين الوقائع المؤكدة والتقارير الأولية والادعاءات. لا تستخدم كلمة مؤكد إلا إذا كان هناك ثلاثة مصادر مستقلة على الأقل بينها مصدر أولي/رسمي، وإلا ضع reported. لا تنشر تكهنات على أنها حقائق.",
     'JSON: {"action":"publish|no_update","slug":"hourly-YYYYMMDD-HH","title":"نشرة وردلاين التحريرية — [وقت الرياض]","editorial_note":"...","content":{"edition_at":"ISO timestamp","window_hours":8,"executive_summary":"فقرة عربية موجزة تلخص المشهد","items":[{"headline":"عنوان خبري واضح لا دعائي","category":"politics|economy|security|world|tech|sports|culture|health|science|environment|society","region":"...","published_at":"ISO timestamp","summary":"ملخص واقعي 100-160 كلمة","context":"سياق مستقل يشرح الخلفية دون إعادة صياغة الخبر","significance":"لماذا يهم التطور السعودية أو الخليج أو العالم العربي أو الاقتصاد العالمي","watch_next":"ما المؤشر أو الخطوة التالية التي تستحق المتابعة","confidence":"reported|confirmed|developing","update_note":"ما التغير الجوهري إذا كانت القصة تحديثاً لقصة سابقة، وإلا فارغ","source_ids":["source_1","source_2"]}]}}',
     "لكل قصة اكتب ملخصاً أصلياً بالعربية الفصحى، ثم سياقاً وتحليلاً منفصلين. لا تنسخ صياغة الناشر. لا تضع اقتباساً مباشراً إلا إذا كان موجوداً حرفياً في المصدر. لا تخترع تاريخاً أو رقماً أو منصباً أو علاقة سببية. أعد 2-8 قصص مرتبة بالأهمية، ولا تنشر قصة لا تحقق حد المصدرين المستقلين."
