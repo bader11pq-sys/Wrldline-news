@@ -172,7 +172,7 @@ async function articles(db: any, hours: number, limit: number) {
     const id = "article_" + (story.length + 1);
     story.push({ id, title: txt(x.title, 240), summary: txt(x.summary, 650), source: txt(x.source_name || host(u), 80), url: u, published_at: x.published_at, category: x.category, country: x.country, breaking: x.is_breaking === true, trust: x.editorial_trust_status || "unconfirmed", needs_human_review: x.trust_needs_review !== false });
     src.push({ id, title: txt(x.title, 240), url: u, publisher: txt(x.source_name || host(u), 80), published_at: x.published_at, type: "news", excerpt: txt(x.summary, 900), source_confidence: x.editorial_trust_status === "confirmed" && x.trust_needs_review === false ? "established" : "reported" });
-    if (story.length >= 75) break;
+    if (story.length >= 120) break;
   }
   return { story, src };
 }
@@ -222,7 +222,7 @@ async function enrichSources(sources: Src[]): Promise<Map<string, string>> {
 }
 
 async function buildPack(mode: string, db: any, recent: any[]) {
-  const a = await articles(db, mode === "context_monthly" ? 24 * 45 : mode === "context_monitor" ? 48 : mode === "mirror" ? 24 * 5 : 24 * 8, mode === "context_monthly" ? 220 : 160);
+  const a = await articles(db, mode === "context_monthly" ? 24 * 45 : mode === "context_monitor" ? 48 : mode === "mirror" ? 24 * 5 : 24 * 8, mode === "context_monthly" ? 220 : mode === "hourly" ? 240 : 160);
   const p = await db.from("editorial_publications").select("section,slug,title,content,published_at")
     .in("section", ["dossier", "context", "mirror", "hourly"]).eq("status", "published").order("updated_at", { ascending: false }).limit(15);
   if (p.error) throw new Error(p.error.message);
@@ -303,7 +303,7 @@ function promptFor(mode: string, pack: any, date: string) {
   let task = "";
   if (mode === "hourly") task = [
     "أنت غرفة أخبار دولية عربية. أعدّ نشرة تحريرية كل ساعة عن أهم التطورات العالمية السياسية والاقتصادية والأمنية، مع أولوية لما يهم السعودية والخليج والمنطقة العربية.",
-    "اختر من 3 إلى 8 قصص فقط من نافذة آخر 8 ساعات. لا تشترط حدثاً استثنائياً أو عاجلاً؛ إذا لم يوجد حدث كبير، اختر تطورات متوسطة الأهمية في السياسة والاقتصاد والأمن. لا تستخدم no_update لمجرد غياب حدث ضخم؛ استخدمه فقط إذا لم توجد ثلاث قصص لها مصدران مستقلان حديثان على الأقل. لا تملأ العدد بقصص هامشية ولا تكرر قصة نُشرت في أي نشرة من آخر 8 ساعات إلا إذا ظهر تطور جوهري جديد؛ عند التكرار اكتب update_note يحدد بدقة ما الجديد. إذا لم تتوافر ثلاث قصص تستوفي التحقق ولا التحديث، أخرج action=no_update.",
+    "اختر من 2 إلى 8 قصص فقط من نافذة آخر 8 ساعات. لا تشترط حدثاً استثنائياً أو عاجلاً؛ إذا لم يوجد حدث كبير، اختر تطورات متوسطة الأهمية في السياسة والاقتصاد والأمن. لا تستخدم no_update لمجرد غياب حدث ضخم؛ استخدمه فقط إذا لم توجد قصتان لهما مصدران مستقلان حديثان على الأقل. لا تملأ العدد بقصص هامشية ولا تكرر قصة نُشرت في أي نشرة من آخر 8 ساعات إلا إذا ظهر تطور جوهري جديد؛ عند التكرار اكتب update_note يحدد بدقة ما الجديد. إذا لم تتوافر قصتان تستوفيان التحقق ولا التحديث، أخرج action=no_update.",
     "كل قصة يجب أن تعتمد على مصدرين مستقلين على الأقل من ناشرين مختلفين، مع روابط مباشرة وتوقيت نشر حديث. قدّم مصدر الخبر الأساسي المرافق له في الأخبار الحديثة عبر source_id، ثم أضف مصدراً مستقلاً ثانياً من قائمة المصادر المسموح بها. استخدم معرفات source_ فقط في source_ids، ولا تستخدم article_ كمعرف مصدر. مهم: لا ترفض القصة لمجرد عدم وجود ثلاثة مصادر؛ مصدران مستقلان حديثان يكفيان للنشر بوسم reported. لا تستخدم confirmed إلا عند توفر ثلاثة مصادر مستقلة بينها مصدر رسمي أو أولي. إذا كان هناك بيان رسمي أو مصدر أولي متاح فأدرجه. لا تعتبر نتائج Google News مصدراً مستقلاً بحد ذاتها؛ اعتمد اسم الناشر والرابط الفعلي للمادة. لا تخلط بين إعادة نشر الوكالة الواحدة ومصدرين مستقلين.",
     "افصل بين الوقائع المؤكدة والتقارير الأولية والادعاءات. لا تستخدم كلمة مؤكد إلا إذا كان هناك ثلاثة مصادر مستقلة على الأقل بينها مصدر أولي/رسمي، وإلا ضع reported. لا تنشر تكهنات على أنها حقائق.",
     'JSON: {"action":"publish|no_update","slug":"hourly-YYYYMMDD-HH","title":"نشرة وردلاين التحريرية — [وقت الرياض]","editorial_note":"...","content":{"edition_at":"ISO timestamp","window_hours":8,"executive_summary":"فقرة عربية موجزة تلخص المشهد","items":[{"headline":"عنوان خبري واضح لا دعائي","category":"politics|economy|security|world|tech","region":"...","published_at":"ISO timestamp","summary":"ملخص واقعي 100-160 كلمة","context":"سياق مستقل يشرح الخلفية دون إعادة صياغة الخبر","significance":"لماذا يهم التطور السعودية أو الخليج أو العالم العربي أو الاقتصاد العالمي","watch_next":"ما المؤشر أو الخطوة التالية التي تستحق المتابعة","confidence":"reported|confirmed|developing","update_note":"ما التغير الجوهري إذا كانت القصة تحديثاً لقصة سابقة، وإلا فارغ","source_ids":["source_1","source_2"]}]}}',
@@ -331,7 +331,7 @@ function promptFor(mode: string, pack: any, date: string) {
     'JSON: {"action":"publish|no_update","slug":"mirror-YYYY-MM-DD","title":"...","content":{"id":"...","nowTitle":"...","nowKeywords":["..."],"nowSummary":"...","pastTitle":"...","pastEra":"...","pastDossier":"معرف موسوعة موجود أو فارغ","similarities":["5-8 نقاط"],"differences":["5-8 نقاط"],"lesson":"...","comparativeAnalysis":["3-5 فقرات تحليلية","..."],"limits":"حدود المقارنة","source_ids":["source_1"]}}',
     "اكتب تحليلاً مقارناً لا يقل عن ثلاث فقرات، واذكر تاريخ الواقعة التاريخية وتاريخ التطور المعاصر، وافصل بين الخبر والتحليل، واختم بدرس محدد وحدود واضحة لمنع إسقاط الماضي على الحاضر بلا دليل."
   ].join("\n");
-  return guard + "\n\n" + task + "\n\nأخبار حديثة:\n" + JSON.stringify(pack.articles.slice(0, mode === "hourly" ? 12 : 10)) + "\n\nملفات سابقة:\n" + JSON.stringify(pack.prior).slice(0, 4000) + "\n\nمصادر البحث المسموح بها:\n" + JSON.stringify(pack.sources.map((s: Src) => ({ id: s.id, title: s.title, publisher: s.publisher, url: s.url, published_at: s.published_at, type: s.type, source_confidence: s.source_confidence, excerpt: s.excerpt.slice(0, 400) }))).slice(0, mode === "hourly" ? 10000 : 8000);
+  return guard + "\n\n" + task + "\n\nأخبار حديثة:\n" + JSON.stringify(pack.articles.slice(0, mode === "hourly" ? 30 : 18)) + "\n\nملفات سابقة:\n" + JSON.stringify(pack.prior).slice(0, 4000) + "\n\nمصادر البحث المسموح بها:\n" + JSON.stringify(pack.sources.map((s: Src) => ({ id: s.id, title: s.title, publisher: s.publisher, url: s.url, published_at: s.published_at, type: s.type, source_confidence: s.source_confidence, excerpt: s.excerpt.slice(0, 600) }))).slice(0, mode === "hourly" ? 16000 : 11000);
 }
 async function publishMode(db: any, mode: string, pack: any) {
   const result = await ai(promptFor(mode, pack, riyadhDate())), obj = result.data || {};
@@ -352,7 +352,7 @@ async function publishMode(db: any, mode: string, pack: any) {
   if (mode === "hourly") {
     key = slug(obj.slug, "hourly-" + riyadhHour());
     content.id = key;
-    if (!Array.isArray(content.items) || content.items.length < 3 || content.items.length > 8) throw new Error("Hourly edition must contain 3 to 8 qualified stories");
+    if (!Array.isArray(content.items) || content.items.length < 2 || content.items.length > 8) throw new Error("Hourly edition must contain 2 to 8 qualified stories");
     const now = Date.now();
     const normalizeHeadline = (value: unknown) => txt(value, 260).toLowerCase().normalize("NFKC").replace(/[\u064B-\u065F\u0670]/g, "").replace(/[^\p{L}\p{N}]+/gu, " ").trim();
     const similarity = (left: unknown, right: unknown) => {
@@ -389,7 +389,7 @@ async function publishMode(db: any, mode: string, pack: any) {
       qualifiedItems.push(item);
     }
     content.items = qualifiedItems;
-    if (content.items.length < 3) return { skipped: true, reason: "Only " + content.items.length + " stories passed freshness, independent-source and editorial-depth checks; no edition was published.", provider: result.provider };
+    if (content.items.length < 2) return { skipped: true, reason: "Only " + content.items.length + " stories passed freshness, independent-source and editorial-depth checks; no edition was published.", provider: result.provider };
     selected = [...idsIn(content)].map(id => sourceMap.get(id)).filter(Boolean) as Src[];
   } else if (mode === "dossier") {
     const target = txt(obj.target_slug, 90), old = pack.prior.find((x: any) => x.section === "dossier" && x.slug === target);
