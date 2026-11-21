@@ -120,3 +120,35 @@ html[data-theme="dark"] .wl-home .coverage-pulse{background:transparent}
   .wl-home .wl-section-head h2{font-size:22px}
   .wl-home .wl-section-head p{font-size:11px}
 }
+
+/* Product map: explain the site's value before the long-form sections begin. */
+.wl-product-rail{
+  display:flex;align-items:center;gap:14px;margin-top:16px;padding:10px 0 2px;
+  border-top:1px solid color-mix(in srgb,var(--line) 72%,transparent);
+}
+.wl-product-rail-label{flex:none;color:var(--muted);font-size:10px;font-weight:700;white-space:nowrap}
+.wl-product-links{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:7px;flex:1;min-width:0}
+.wl-product-link{
+  display:flex;align-items:center;gap:8px;min-width:0;padding:8px 9px;border:1px solid transparent;border-radius:11px;
+  color:var(--ink-2);transition:background .2s var(--ease),border-color .2s var(--ease),transform .2s var(--ease);
+}
+.wl-product-link:hover{background:var(--surface);border-color:var(--line);transform:translateY(-2px);box-shadow:var(--shadow-xs)}
+.wl-product-icon{display:grid;place-items:center;width:27px;height:27px;flex:none;border-radius:8px;background:var(--gold-soft);color:var(--gold-strong)}
+.wl-product-icon svg{width:14px;height:14px}
+.wl-product-link span:nth-child(2){display:flex;flex-direction:column;min-width:0;line-height:1.35}
+.wl-product-link strong{font-size:10.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.wl-product-link small{font-size:9px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px}
+.wl-product-link>b{margin-inline-start:auto;color:var(--muted-2);font:700 13px var(--font-latin);line-height:1}
+html[data-theme="dark"] .wl-product-link:hover{background:var(--surface-2)}
+@media(max-width:1000px){
+  .wl-product-rail{align-items:flex-start;flex-direction:column;gap:7px}
+  .wl-product-links{width:100%;grid-template-columns:repeat(3,minmax(0,1fr))}
+}
+@media(max-width:560px){
+  .wl-product-rail{margin-top:12px;padding-top:9px}
+  .wl-product-links{display:flex;overflow-x:auto;scroll-snap-type:x proximity;padding-bottom:4px;scrollbar-width:none}
+  .wl-product-links::-webkit-scrollbar{display:none}
+  .wl-product-link{flex:0 0 156px;scroll-snap-align:start;background:var(--surface);border-color:var(--line);padding:8px}
+  .wl-product-link:hover{transform:none}
+  .wl-product-rail-label{font-size:9.5px}
+}
