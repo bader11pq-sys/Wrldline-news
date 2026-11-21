@@ -328,7 +328,7 @@ Deno.serve(async (req) => {
   if(mode==="auth-check") return Response.json({ok:true,mode:"auth-check"});
   if(mode==="general"||mode==="breaking") return Response.json({
    ok:false,disabled:true,code:"RSS_INGESTION_DISABLED",
-   message:"RSS collection is disabled. Existing articles are retained; translation and provider health checks remain available."
+   message:"RSS collection is disabled. Existing articles remain untouched; translation and provider health checks remain available."
   },{status:410});
   const result=mode==="translation"?await runTranslation():mode==="provider-healthcheck"?await runProviderHealthcheck():null;
   if(!result) return Response.json({error:"mode must be auth-check, translation, or provider-healthcheck"},{status:400});
