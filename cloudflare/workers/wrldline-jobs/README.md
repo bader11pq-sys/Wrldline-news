@@ -6,8 +6,8 @@ This Worker moves the scheduling and buffering of the existing WRLDLINE news job
 
 | Queue | Supabase function | Payload | Intended schedule |
 |---|---|---|---|
-| `wrldline-news-general` | `wrldline-news-ingest` | `{ "mode": "general" }` | Every 3 minutes |
-| `wrldline-news-breaking` | `wrldline-news-ingest` | `{ "mode": "breaking" }` | Every 2 minutes |
+| `wrldline-news-general` | **Paused** | Legacy RSS ingestion disabled | Disabled |
+| `wrldline-news-breaking` | **Paused** | Legacy RSS ingestion disabled | Disabled |
 | `wrldline-news-classification` | `classify-news-worker` | `{}` | Every minute |
 | `wrldline-news-translation` | `wrldline-news-ingest` | `{ "mode": "translation" }` | Every 5 minutes |
 
@@ -23,15 +23,15 @@ The publishable API key is already configured as a non-secret Worker binding bec
 
 ## Production cutover status — verified 15 November 2026
 
-The Cloudflare cutover is already active in production; do not repeat it or enable duplicate Supabase schedules.
+The production system was updated on 21 November 2026 to permanently stop legacy RSS ingestion. Do not re-enable the general or breaking queues.
 
-- `wrldline-jobs` has four active Cron Triggers: `* * * * *` (classification), `*/2 * * * *` (breaking), `*/3 * * * *` (general ingestion), and `*/5 * * * *` (translation draft generation).
-- All four queues have a single serialized consumer using `wrldline-jobs`; the dead-letter queue is configured. Queue metrics were checked and showed no sustained backlog; short-lived one-message backlogs can appear between scheduled triggers and consumers.
+- `wrldline-jobs` has only two active Cron Triggers: `* * * * *` (classification) and `*/5 * * * *` (translation draft generation). The `*/2` breaking and `*/3` general triggers were removed.
+- The classification and translation queues remain enabled. Delivery for `wrldline-news-general` and `wrldline-news-breaking` is paused, and their queue mappings were removed from the Worker so legacy messages cannot invoke the RSS ingestion function.
 - The `WRLDLINE_CRON_SECRET` secret binding and `SUPABASE_PUBLISHABLE_KEY` binding are present on the Worker. The secret value must never be put in this repository or exposed to a browser.
-- Cloudflare-to-Supabase requests were observed successfully for `wrldline-news-ingest` and `classify-news-worker` (HTTP 200). Ingestion summaries reported successful general/breaking runs, and the translation mode generated review drafts.
+- Cloudflare-to-Supabase requests continue only for supported classification and translation work. General and breaking ingestion are rejected by the Edge Function with HTTP 410 and are no longer scheduled or consumed.
 - The duplicate Supabase Cron classifier job was removed after Cloudflare classification calls were confirmed. The remaining Supabase Cron jobs are support tasks only: audience retention, daily global briefing, NewsData sync, notification dispatch, security counter retention, and source freshness. Do not remove these without a separate review.
 
-To audit the live schedule, inspect the Worker Cron Triggers and each queue consumer, then compare with `cron.job`. Never run the same ingestion/classification/translation schedule in both Cloudflare and Supabase Cron at the same time.
+To audit the live schedule, inspect the Worker Cron Triggers and queue delivery settings, then compare with `cron.job`. Never re-enable the general or breaking queues while RSS ingestion remains disabled.
 
 ## Safety
 
