@@ -93,7 +93,7 @@
       const cached = JSON.parse(sessionStorage.getItem(cacheKey) || "null");
       if (cached && Date.now() - cached.at < CACHE_TTL && Array.isArray(cached.rows)) return cached.rows;
     } catch {}
-    const url = PUBLIC_NEWS_API + "/rest/v1/rpc/public_home_news_recent_v2";
+    const url = PUBLIC_NEWS_API + "/rest/v1/rpc/public_home_news_recent_v3";
     try {
       const token = await window.WRLDLINE_AUTH?.getAccessToken?.();
       const headers = { apikey: SUPABASE_ANON_KEY, ...(token ? { Authorization: "Bearer " + token } : {}), "Content-Type": "application/json", "Accept": "application/json" };
