@@ -23,7 +23,7 @@ test("the archived RSS catalog remains intact but is not an active collection so
 
 test("general RSS ingestion Edge Function is explicitly disabled without deleting old articles", () => {
   assert.match(ingest, /RSS_INGESTION_DISABLED/);
-  assert.match(ingest, /status: 410/);
+  assert.match(ingest, /status:\\s*410/);
   assert.match(ingest, /Existing articles remain untouched/);
   assert.match(ingestCli, /WRLDLINE_RSS_DISABLED/);
   assert.doesNotMatch(ingestCli, /news\.google\.com\/rss|fetch\(/i);
