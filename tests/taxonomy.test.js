@@ -45,7 +45,7 @@ test("legacy RSS CLI cannot fetch or publish new stories", () => {
   const path = require("node:path");
   const bot = fs.readFileSync(path.resolve(__dirname, "../bot-ingest.js"), "utf8");
   assert.match(bot, /WRLDLINE_RSS_DISABLED/);
-  assert.doesNotMatch(bot, /fetch\\(|news\\.google\\.com\\/rss/i);
+  assert.doesNotMatch(bot, /news\.google\.com\/rss|fetch\(/i);
 });
 
 const fs = require("node:fs");
