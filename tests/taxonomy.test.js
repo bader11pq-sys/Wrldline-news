@@ -2,7 +2,6 @@ const test = require("node:test");
 const assert = require("node:assert/strict");
 
 const taxonomy = require("../taxonomy.js");
-const { parseEntry } = require("../bot-ingest.js");
 
 test("unknown categories never become world", () => {
   assert.equal(taxonomy.normalizeCategory("world"), "world");
@@ -41,93 +40,12 @@ test("translation labels distinguish review from published", () => {
   assert.equal(taxonomy.translationStatusLabel("none", "", "ar"), "");
 });
 
-function rssBlock(title, description) {
-  return `<item><title>${title}</title><link>https://example.com/story</link><description>${description}</description><pubDate>Sat, 14 Nov 2026 10:00:00 GMT</pubDate></item>`;
-}
-
-test("bot parseEntry uses feed category and never invents an event country", () => {
-  const entry = parseEntry(rssBlock("A football result", "Match report"), {
-    name: "BBC Sport",
-    url: "https://feeds.bbci.co.uk/sport/rss.xml",
-    lang: "en",
-    category: "sports",
-    source_scope: "international",
-    country: "دولي",
-  });
-  assert.ok(entry);
-  assert.equal(entry.category, "sports");
-  assert.equal(entry.country, null);
-  assert.equal(entry.source_country, null);
-  assert.equal(entry.source_language, "en");
-  assert.equal(entry.language_detection, "declared");
-  assert.equal(entry.source_scope, "international");
-});
-
-test("bot parseEntry records a language conflict but keeps the declared language", () => {
-  const entry = parseEntry(rssBlock("English title", "English summary"), {
-    name: "Arabic publisher",
-    url: "https://example.com/rss",
-    lang: "ar",
-    category: "world",
-    source_scope: "international",
-    country: "دولي",
-  });
-  assert.ok(entry);
-  assert.equal(entry.lang, "ar");
-  assert.equal(entry.source_language, "ar");
-  assert.equal(entry.language_detection, "conflict");
-  assert.equal(entry.category, "world");
-  assert.equal(entry.country, null);
-});
-
-test("bot parseEntry holds entries whose summary only repeats the headline", () => {
-  const entry = parseEntry(rssBlock("Headline repeated as summary", "Headline repeated as summary"), {
-    name: "Example feed",
-    url: "https://example.com/feed.xml",
-    lang: "en",
-    category: "world",
-    source_scope: "international",
-  });
-  assert.ok(entry);
-  assert.equal(entry.editorial_status, "review");
-  assert.equal(entry.classification_reason, "rss_source_section");
-});
-
-test("bot parseEntry publishes a headline with a genuinely different summary", () => {
-  const entry = parseEntry(rssBlock("Headline about a decision", "The cabinet approved the measure after a long debate and said it would take effect next month."), {
-    name: "Example feed",
-    url: "https://example.com/feed.xml",
-    lang: "en",
-    category: "world",
-    source_scope: "international",
-  });
-  assert.ok(entry);
-  assert.equal(entry.editorial_status, "published");
-});
-
-test("bot parseEntry turns an unknown feed category into uncategorized", () => {
-  const entry = parseEntry(rssBlock("General story", "General summary"), {
-    name: "General feed",
-    url: "https://example.com/general.xml",
-    lang: "en",
-    category: "news",
-    source_scope: "unknown",
-  });
-  assert.ok(entry);
-  assert.equal(entry.category, "uncategorized");
-  assert.equal(entry.classification_reason, "unclassified_source");
-});
-
-test("bot parseEntry holds entries without a source summary for review", () => {
-  const entry = parseEntry(rssBlock("Headline without a summary", ""), {
-    name: "Example feed",
-    url: "https://example.com/feed.xml",
-    lang: "en",
-    category: "world",
-    source_scope: "international",
-  });
-  assert.ok(entry);
-  assert.equal(entry.editorial_status, "review");
+test("legacy RSS CLI cannot fetch or publish new stories", () => {
+  const fs = require("node:fs");
+  const path = require("node:path");
+  const bot = fs.readFileSync(path.resolve(__dirname, "../bot-ingest.js"), "utf8");
+  assert.match(bot, /WRLDLINE_RSS_DISABLED/);
+  assert.doesNotMatch(bot, /fetch\\(|news\\.google\\.com\\/rss/i);
 });
 
 const fs = require("node:fs");
