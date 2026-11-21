@@ -426,6 +426,24 @@ async function publishMode(db: any, mode: string, pack: any) {
         ? await db.from("articles").update(row).eq("id", existing.data.id).select("id").single()
         : await db.from("articles").insert(row).select("id").single();
       if (write.error) throw new Error("Could not publish editorial article to newsroom: " + write.error.message);
+      const articleId = write.data.id;
+      const existingEvidence = await db.from("article_evidence").select("evidence_url").eq("article_id", articleId);
+      if (existingEvidence.error) throw new Error("Could not load article evidence: " + existingEvidence.error.message);
+      const knownEvidence = new Set((existingEvidence.data || []).map((entry: any) => entry.evidence_url));
+      const evidenceRows = evidence.filter((source: any) => !knownEvidence.has(safeLink(source.url))).map((source: any) => ({
+        article_id: articleId,
+        publisher: txt(source.publisher || source.title || host(source.url), 180),
+        evidence_url: safeLink(source.url),
+        evidence_type: source.type === "official" ? "official_statement" : "independent_report",
+        independent_source: false,
+        notes: "Source cited by WRLDLINE. Publisher independence is algorithmically assessed and awaits human review.",
+        provenance_group: host(source.url),
+        independence_note: "Not independently reviewed by an editor yet."
+      }));
+      if (evidenceRows.length) {
+        const evidenceWrite = await db.from("article_evidence").insert(evidenceRows);
+        if (evidenceWrite.error) throw new Error("Could not save article evidence: " + evidenceWrite.error.message);
+      }
     }
   }
   return { skipped: false, row: saved.data, provider: result.provider, researchSources: selected.filter(s => s.id.startsWith("source_")).length, articleSources: selected.filter(s => s.id.startsWith("article_")).length };
