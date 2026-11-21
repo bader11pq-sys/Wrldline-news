@@ -88,7 +88,7 @@ function isLowQualityArticle(a){
 }
 function headlineDedupeKey(value=""){
  return normalizeText(value).normalize("NFKD")
-  .replace(/[\\u0300-\\u036f\\u064B-\\u065F\\u0670\\u0640]/g,"")
+  .replace(/[\u0300-\u036f\u064B-\u065F\u0670\u0640]/g,"")
   .replace(/[أإآ]/g,"ا").replace(/ى/g,"ي")
   .toLocaleLowerCase()
   .replace(/[^\\p{L}\\p{N}\\s]/gu," ")
@@ -98,7 +98,7 @@ function dedupeArticles(list){
  const out=[],seenUrl=new Set(),seenTitle=new Set();
  const sorted=[...list].sort((a,b)=>(Date.parse(b.published_at||"")||0)-(Date.parse(a.published_at||"")||0));
  for(const a of sorted){
-  const url=String(a.sourceURL||"").replace(/#.*$/,"").replace(/\\/$/,"").toLowerCase();
+  const url=String(a.sourceURL||"").replace(/#.*$/,"").replace(/\/$/,"").toLowerCase();
   const titleKey=headlineDedupeKey(a.title||a.originalTitle||"");
   if(url&&seenUrl.has(url))continue;
   if(titleKey&&seenTitle.has(titleKey))continue;

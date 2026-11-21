@@ -1,6 +1,6 @@
 (() => {
   const feed=document.getElementById("shortsFeed"),counter=document.getElementById("shortsCounter");
-  const langButton=document.getElementById("shortsLanguage"),themeButton=document.getElementById("shortsTheme"),hint=document.getElementById("shortsHint");
+  const langButton=document.getElementById("shortsLanguage"),themeButton=document.getElementById("shortsTheme"),musicButton=document.getElementById("shortsMusic"),hint=document.getElementById("shortsHint");
   let lang=localStorage.getItem("wrldline:language")==="en"?"en":"ar",stories=[],active=0,apiUrl="https://vmaxbnogmmfyrcucapnq.supabase.co",apiKey="sb_publishable_D3c88u75_LcEN460Y3Jcpw__EfqUnBx",loading=false,nextOffset=0,hasMore=false,loadingMore=false;
   const labels={ar:{politics:"سياسة",economy:"اقتصاد",security:"أمن ودفاع",tech:"تكنولوجيا",sports:"رياضة",culture:"ثقافة",health:"صحة",world:"حول العالم"},en:{politics:"Politics",economy:"Economy",security:"Security & Defence",tech:"Technology",sports:"Sports",culture:"Culture",health:"Health",world:"Around the world"}};
   const t=(ar,en)=>lang==="ar"?ar:en;
@@ -8,6 +8,14 @@
   const safe=v=>{try{const u=new URL(v);return ["https:","http:"].includes(u.protocol)?u.href:"";}catch{return "";}};
   const date=v=>{const d=new Date(v);return Number.isNaN(d.getTime())?"":new Intl.DateTimeFormat(lang==="ar"?"ar-SA":"en-US",{dateStyle:"medium",timeStyle:"short"}).format(d);};
   function setLanguage(){document.documentElement.lang=lang;document.documentElement.dir=lang==="ar"?"rtl":"ltr";langButton.textContent=lang==="ar"?"English":"العربية";}
+  let audioContext=null,musicGain=null,musicTimer=null,musicOn=false;
+  function updateMusicButton(){if(!musicButton)return;musicButton.textContent=musicOn?t("♫ الموسيقى مفعلة","♫ Music on"):t("♫ موسيقى","♫ Music");musicButton.setAttribute("aria-pressed",String(musicOn));musicButton.setAttribute("aria-label",musicOn?t("إيقاف موسيقى التوتر","Turn off tension music"):t("تشغيل موسيقى التوتر","Turn on tension music"));musicButton.classList.toggle("is-on",musicOn);}
+  function tensionPulse(){if(!audioContext||!musicGain||!musicOn)return;const now=audioContext.currentTime;const osc=audioContext.createOscillator(),gain=audioContext.createGain();osc.type="sine";osc.frequency.setValueAtTime(92,now);osc.frequency.exponentialRampToValueAtTime(66,now+.8);gain.gain.setValueAtTime(.0001,now);gain.gain.exponentialRampToValueAtTime(.045,now+.08);gain.gain.exponentialRampToValueAtTime(.0001,now+1.8);osc.connect(gain).connect(musicGain);osc.start(now);osc.stop(now+1.85);}
+  async function toggleMusic(){
+    if(musicOn){musicOn=false;clearInterval(musicTimer);musicTimer=null;if(musicGain){musicGain.gain.setTargetAtTime(.0001,audioContext.currentTime,.12);}updateMusicButton();localStorage.setItem("wrldline:shorts:music","off");return;}
+    try{audioContext=audioContext||new (window.AudioContext||window.webkitAudioContext)();await audioContext.resume();musicGain=musicGain||audioContext.createGain();musicGain.gain.value=.0001;musicGain.connect(audioContext.destination);musicOn=true;musicGain.gain.setTargetAtTime(.18,audioContext.currentTime,.35);tensionPulse();musicTimer=setInterval(tensionPulse,2600);localStorage.setItem("wrldline:shorts:music","on");updateMusicButton();}
+    catch(error){console.warn("WRLDLINE Shorts music:",error);musicOn=false;updateMusicButton();}
+  }
   function currentStoryId(){return feed.querySelector(".shorts-slide[data-index='"+active+"']")?.dataset.id||"";}
   const savedKey="wrldline:shorts:saved";
   function savedSet(){try{return new Set(JSON.parse(localStorage.getItem(savedKey)||"[]"));}catch{return new Set();}}
@@ -120,10 +128,11 @@
   feed.addEventListener("pointerup",e=>{const slide=e.target.closest(".shorts-slide");if(!slide)return;const now=Date.now();if(now-lastTap<320){const btn=slide.querySelector(".shorts-save");if(btn)btn.click();}lastTap=now;},{passive:true});
   function jumpToHash(){const id=decodeURIComponent(location.hash.slice(1));if(!id)return;const slide=[...feed.querySelectorAll(".shorts-slide")].find(x=>x.dataset.id===id);slide?.scrollIntoView({behavior:"smooth",block:"start"});}
   langButton.addEventListener("click",()=>{const preserve=currentStoryId();lang=lang==="ar"?"en":"ar";localStorage.setItem("wrldline:language",lang);setLanguage();render(preserve);});
+  musicButton?.addEventListener("click",toggleMusic);
   themeButton.addEventListener("click",()=>{const next=document.documentElement.dataset.theme==="dark"?"light":"dark";document.documentElement.dataset.theme=next;localStorage.setItem("wrldline:theme",next);themeButton.textContent=next==="dark"?"☀":"☾";});
   document.addEventListener("keydown",e=>{if(!["ArrowDown","ArrowUp"].includes(e.key))return;const slides=feed.querySelectorAll(".shorts-slide");if(!slides.length)return;e.preventDefault();const next=Math.max(0,Math.min(slides.length-1,active+(e.key==="ArrowDown"?1:-1)));slides[next]?.scrollIntoView({behavior:"smooth",block:"start"});});
   feed.addEventListener("scroll",()=>hint.classList.add("is-hidden"),{passive:true});
   document.addEventListener("visibilitychange",()=>{if(!document.hidden)refreshLatest();});
-  setLanguage();const theme=localStorage.getItem("wrldline:theme")||"light";document.documentElement.dataset.theme=theme;themeButton.textContent=theme==="dark"?"☀":"☾";setTimeout(()=>hint.classList.add("is-hidden"),5000);
+  setLanguage();updateMusicButton();const theme=localStorage.getItem("wrldline:theme")||"light";document.documentElement.dataset.theme=theme;themeButton.textContent=theme==="dark"?"☀":"☾";setTimeout(()=>hint.classList.add("is-hidden"),5000);
   loadAll().then(()=>setTimeout(jumpToHash,250));window.addEventListener("hashchange",jumpToHash);setInterval(refreshLatest,60000);
 })();

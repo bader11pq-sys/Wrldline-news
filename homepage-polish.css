@@ -94,3 +94,29 @@ html[data-theme="dark"] .wl-home .coverage-pulse{background:transparent}
  .wl-home *, .wl-home *::before,.wl-home *::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
  .wl-home .wl-home-reveal{opacity:1;transform:none}
 }
+
+/* Focus-first homepage: a calm front page with the newsroom tools still one tap away. */
+.wl-home .wl-hero{padding-block:clamp(18px,2.6vw,30px) 6px}
+.wl-home .wl-hero-top{margin-bottom:16px}
+.wl-home .wl-hero-title h1{font-size:clamp(28px,3.7vw,48px)}
+.wl-home .wl-hero-title p{max-width:570px;line-height:1.75}
+.wl-home .wl-hero-grid{gap:16px}
+.wl-home .hero-layout{gap:16px}
+.wl-home .wl-rooms{margin-top:14px;gap:8px}
+.wl-home .wl-room{padding:11px 6px 10px;min-height:88px}
+.wl-home .wl-room small{font-size:10px}
+.wl-home .wl-section-head{gap:16px;margin-bottom:14px}
+.wl-home .wl-section-head p{max-width:640px;line-height:1.7}
+.wl-home .wl-dossier-strip,.wl-home .wl-watch-strip,.wl-home .wl-band,.wl-home .wl-feature{padding-block:clamp(24px,3.4vw,40px)}
+.wl-home .intel-hub{padding-block:26px}
+.wl-home .shorts-preview-section{margin-top:26px}
+.wl-home .wl-main{padding-top:28px}
+.wl-home .wl-signal-hub{padding-top:24px}
+@media(max-width:760px){
+  .wl-home .wl-hero-title h1{font-size:clamp(27px,8vw,35px)}
+  .wl-home .wl-hero-title p{font-size:12px;line-height:1.8}
+  .wl-home .wl-rooms{grid-template-columns:repeat(4,minmax(0,1fr));overflow-x:visible}
+  .wl-home .wl-room{min-height:78px}
+  .wl-home .wl-section-head h2{font-size:22px}
+  .wl-home .wl-section-head p{font-size:11px}
+}

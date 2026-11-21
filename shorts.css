@@ -9,6 +9,7 @@
 .shorts-brand small{font:700 8px Manrope,sans-serif;letter-spacing:2px;color:#e9c47e;margin-top:4px}
 .shorts-tools{display:flex;align-items:center;gap:8px}
 .shorts-tool,.shorts-icon{border:1px solid #40516a;background:#17263a;color:#fff;border-radius:9px;padding:7px 10px;font-size:11px}
+.shorts-music{transition:background .2s,border-color .2s,color .2s}.shorts-music.is-on{background:#e9c47e;border-color:#e9c47e;color:#102039;font-weight:800}
 .shorts-icon{font-size:17px;min-width:36px}
 .shorts-feed{height:calc(100svh - 62px);overflow-y:auto;overscroll-behavior-y:contain;scroll-snap-type:y mandatory;scrollbar-width:none;background:#080f1b}
 .shorts-feed::-webkit-scrollbar{display:none}
