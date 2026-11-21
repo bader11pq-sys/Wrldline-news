@@ -137,7 +137,7 @@ async function ai(prompt: string) {
   const openrouter = Deno.env.get("OPENROUTER_API_KEY");
   if (groq) attempts.push(["groq", (ms) => compatible("https://api.groq.com/openai/v1/chat/completions", groq, "openai/gpt-oss-20b", prompt, ms), 10000]);
   if (nvidia) attempts.push(["nvidia", (ms) => compatible("https://integrate.api.nvidia.com/v1/chat/completions", nvidia, "nvidia/nemotron-3.5-lightning-30b-a3b", prompt, ms), 18000]);
-  const gonka = Deno.env.get("GONKA_BROKER_API_KEY");
+  const gonka = ""; // Disabled: the configured broker key is paused and returns HTTP 401.
   if (gonka) attempts.push(["gonka", async (timeoutMs) => {
     const modelResponse = await fetch("https://proxy.gonkabroker.com/v1/models", {
       headers: { "Authorization": "Bearer " + gonka }, signal: AbortSignal.timeout(Math.min(8000, timeoutMs))
@@ -369,7 +369,7 @@ function promptFor(mode: string, pack: any, date: string) {
     'JSON: {"action":"publish|no_update","slug":"mirror-YYYY-MM-DD","title":"...","content":{"id":"...","nowTitle":"...","nowKeywords":["..."],"nowSummary":"...","pastTitle":"...","pastEra":"...","pastDossier":"معرف موسوعة موجود أو فارغ","similarities":["5-8 نقاط"],"differences":["5-8 نقاط"],"lesson":"...","comparativeAnalysis":["3-5 فقرات تحليلية","..."],"limits":"حدود المقارنة","source_ids":["source_1"]}}',
     "اكتب تحليلاً مقارناً لا يقل عن ثلاث فقرات، واذكر تاريخ الواقعة التاريخية وتاريخ التطور المعاصر، وافصل بين الخبر والتحليل، واختم بدرس محدد وحدود واضحة لمنع إسقاط الماضي على الحاضر بلا دليل."
   ].join("\n");
-  return guard + "\n\n" + task + "\n\nأخبار حديثة:\n" + JSON.stringify(pack.articles.slice(0, mode === "hourly" ? 45 : 20)) + "\n\nملفات سابقة:\n" + JSON.stringify(pack.prior).slice(0, 4000) + "\n\nمصادر البحث المسموح بها:\n" + JSON.stringify(pack.sources.map((s: Src) => ({ id: s.id, title: s.title, publisher: s.publisher, url: s.url, published_at: s.published_at, type: s.type, source_confidence: s.source_confidence, excerpt: s.excerpt.slice(0, 600) }))).slice(0, mode === "hourly" ? 22000 : 11000);
+  return guard + "\n\n" + task + "\n\nأخبار حديثة:\n" + JSON.stringify(pack.articles.slice(0, mode === "hourly" ? 12 : 20)) + "\n\nملفات سابقة:\n" + JSON.stringify(pack.prior).slice(0, 4000) + "\n\nمصادر البحث المسموح بها:\n" + JSON.stringify(pack.sources.map((s: Src) => ({ id: s.id, title: s.title, publisher: s.publisher, url: s.url, published_at: s.published_at, type: s.type, source_confidence: s.source_confidence, excerpt: s.excerpt.slice(0, 320) }))).slice(0, mode === "hourly" ? 11000 : 9000);
 }
 async function publishMode(db: any, mode: string, pack: any) {
   const result = await ai(promptFor(mode, pack, riyadhDate())), obj = result.data || {};
@@ -464,7 +464,7 @@ async function publishMode(db: any, mode: string, pack: any) {
       const verified = item.confidence === "confirmed" && evidence.length >= 3 && uniquePublishers.size >= 2;
       const articleSlug = key + "-" + String(index + 1);
       const row: any = {
-        url: SITE + "/editorial/" + articleSlug, guid: "wrldline-editorial:" + articleSlug,
+        url: SITE.replace(/\/+$/, "") + "/editorial/" + articleSlug, guid: "wrldline-editorial:" + articleSlug,
         title: txt(item.headline, 240),
         summary: [
           txt(item.summary, 4200),
