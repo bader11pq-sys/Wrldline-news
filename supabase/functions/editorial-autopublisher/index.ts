@@ -92,39 +92,15 @@ async function fetchRss(url: string, name: string): Promise<Src[]> {
   if (!r.ok) throw new Error(name + " RSS HTTP " + r.status);
   return parseFeedXml(await r.text(), name, url);
 }
-async function searchWeb(query: string, locale = "en-US"): Promise<Src[]> {
-  const ar = locale === "ar-SA";
-  const url = "https://news.google.com/rss/search?q=" + encodeURIComponent(query) +
-    "&hl=" + (ar ? "ar" : "en-US") + "&gl=" + (ar ? "SA" : "US") + "&ceid=" + (ar ? "SA:ar" : "US:en");
-  const r = await fetch(url, { headers: { "User-Agent": "Mozilla/5.0 WRLDLINE-News research bot", "Accept": "application/rss+xml, application/xml, text/xml" }, signal: AbortSignal.timeout(12000) });
-  if (!r.ok) throw new Error("Google News RSS HTTP " + r.status);
-  const xml = await r.text(), blocks = extractXmlBlocks(xml, "item"), out: Src[] = [];
-  for (const block of blocks.slice(0, 12)) {
-    const title = readXmlTag(block, "title"), link = safeLink(readXmlTag(block, "link"));
-    const sourceTag = block.match(/<source\b([^>]*)>([\s\S]*?)<\/source>/i);
-    const publisher = sourceTag ? xmlDecode(sourceTag[2]) : "Google News RSS";
-    const sourceUrl = sourceTag ? (sourceTag[1].match(/\burl=["']([^"']+)["']/i) || [])[1] || "" : "";
-    const published = readXmlTag(block, "pubDate");
-    const excerpt = readXmlTag(block, "description");
-    if (!title || !link) continue;
-    const type = classifyPublisher(publisher, sourceUrl);
-    out.push({
-      id: "search_" + (out.length + 1), title: txt(title, 230), url: link,
-      publisher: txt(publisher, 120), published_at: published || null,
-      type, excerpt: txt(excerpt, 2200),
-      source_confidence: type === "official" ? "primary" : ["academic", "historical"].includes(type) ? "established" : "reported"
-    });
-  }
-  return out;
-}
+async function searchWeb(_query: string, _locale = "en-US"): Promise<Src[]> { return []; }
 async function ai(prompt: string) {
   const errors: string[] = [];
   const attempts: Array<[string, (timeoutMs: number) => Promise<any>, number]> = [];
   const groq = Deno.env.get("GROQ_API_KEY"), nvidia = Deno.env.get("NVIDIA_API_KEY");
   const gemini = Deno.env.get("GEMINI_API_KEY") || Deno.env.get("GOOGLE_API_KEY");
   const openrouter = Deno.env.get("OPENROUTER_API_KEY");
-  if (groq) attempts.push(["groq", (ms) => compatible("https://api.groq.com/openai/v1/chat/completions", groq, "openai/gpt-oss-20b", prompt, ms), 15000]);
-  if (nvidia) attempts.push(["nvidia", (ms) => compatible("https://integrate.api.nvidia.com/v1/chat/completions", nvidia, "nvidia/nemotron-3.5-lightning-30b-a3b", prompt, ms), 15000]);
+  if (groq) attempts.push(["groq", (ms) => compatible("https://api.groq.com/openai/v1/chat/completions", groq, "openai/gpt-oss-20b", prompt, ms), 10000]);
+  if (nvidia) attempts.push(["nvidia", (ms) => compatible("https://integrate.api.nvidia.com/v1/chat/completions", nvidia, "nvidia/nemotron-3.5-lightning-30b-a3b", prompt, ms), 10000]);
   if (gemini) attempts.push(["gemini", async (timeoutMs) => {
     const r = await fetch("https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:generateContent", {
       method: "POST", headers: { "Content-Type": "application/json", "x-goog-api-key": gemini }, signal: AbortSignal.timeout(timeoutMs),
@@ -133,9 +109,9 @@ async function ai(prompt: string) {
     if (!r.ok) throw new Error("Gemini HTTP " + r.status);
     const p = await r.json(), raw = p.candidates?.[0]?.content?.parts?.map((x: any) => x.text || "").join("");
     return parse(raw || "");
-  }, 45000]);
-  if (openrouter) attempts.push(["openrouter", (ms) => compatible("https://openrouter.ai/api/v1/chat/completions", openrouter, Deno.env.get("OPENROUTER_MODEL") || "openrouter/free", prompt, ms), 15000]);
-  const deadline = Date.now() + 75000;
+  }, 15000]);
+  if (openrouter) attempts.push(["openrouter", (ms) => compatible("https://openrouter.ai/api/v1/chat/completions", openrouter, Deno.env.get("OPENROUTER_MODEL") || "openrouter/free", prompt, ms), 10000]);
+  const deadline = Date.now() + 45000;
   for (const [name, run, preferredTimeout] of attempts) {
     const remaining = deadline - Date.now();
     if (remaining < 5000) break;
@@ -186,7 +162,7 @@ async function enrichSources(sources: Src[]): Promise<Map<string, string>> {
   const candidates = sources
     .filter((s) => safeLink(s.url) && Date.parse(String(s.published_at || "")) > Date.now() - 18 * 60 * 60 * 1000)
     .sort((a, b) => Date.parse(String(b.published_at || "")) - Date.parse(String(a.published_at || "")))
-    .slice(0, 12);
+    .slice(0, 6);
   const excerpts = new Map<string, string>();
   let cursor = 0;
   async function lane() {
@@ -258,28 +234,9 @@ async function buildPack(mode: string, db: any, recent: any[]) {
     ];
   }
 
-  const searchResults = await Promise.allSettled(mode === "hourly"
-    ? queries.flatMap((q) => [searchWeb(q, "ar-SA"), searchWeb(q, "en-US")])
-    : queries.flatMap((q, i) => [
-        searchWeb(q, i === 0 && mode !== "mirror" ? "ar-SA" : "en-US"),
-        searchWeb(q, "en-US")
-      ]));
+  // RSS collection is disabled; use retained newsroom articles and institutional history sources.
   const webSources: Src[] = [];
-  searchResults.forEach(result => { if (result.status === "fulfilled") webSources.push(...result.value); });
-
-  const feedQuery = await db.from("feeds").select("name,url,lang,category,source_scope")
-    .eq("active", true).in("category", ["world", "politics", "economy"]).order("source_scope", { ascending: true }).limit(28);
   const feedSources: Src[] = [];
-  if (!feedQuery.error) {
-    const selectedFeeds = (feedQuery.data || []).filter((x: any) => {
-      if (mode === "mirror") return x.lang === "en" && x.source_scope === "international";
-      if (mode.startsWith("context")) return x.source_scope === "international" || x.category === "politics" || x.category === "economy";
-      if (mode === "watchlist") return x.category === "politics" || x.category === "economy";
-      return x.source_scope === "international" || x.category === "politics" || x.category === "economy";
-    }).slice(0, 18);
-    const feedResults = await Promise.allSettled(selectedFeeds.map((x: any) => fetchRss(x.url, x.name)));
-    feedResults.forEach(result => { if (result.status === "fulfilled") feedSources.push(...result.value); });
-  }
 
   const historical = mode === "mirror" ? await db.from("history_sources")
     .select("institution,title,url,source_type,source_quality,publication_year,bibliographic_note")
@@ -294,10 +251,10 @@ async function buildPack(mode: string, db: any, recent: any[]) {
   }));
 
   const sourceSet = mode === "hourly"
-    ? [...webSources.slice(0, 60), ...feedSources.slice(0, 20), ...a.src.slice(0, 20), ...historySources]
+    ? [...a.src.slice(0, 80)]
     : mode === "mirror"
-      ? [...historySources, ...webSources, ...feedSources, ...a.src]
-      : [...a.src, ...webSources, ...feedSources, ...historySources];
+      ? [...historySources, ...a.src]
+      : [...a.src, ...historySources];
   const sourceMap = new Map<string, Src>(), unique: Src[] = [];
   for (const source of sourceSet) {
     const url = safeLink(source.url);
@@ -433,6 +390,49 @@ async function publishMode(db: any, mode: string, pack: any) {
     research_query: txt(pack.query, 700), generated_by: result.provider, published_at: stamp(), updated_at: stamp()
   }, { onConflict: "section,slug" }).select("id,section,slug,title,published_at,updated_at").single();
   if (saved.error) throw new Error("Save failed: " + saved.error.message);
+
+  if (mode === "hourly" && Array.isArray(content.items)) {
+    for (let index = 0; index < content.items.length; index++) {
+      const item = content.items[index] || {};
+      const evidence = (Array.isArray(item.sources) ? item.sources : []).filter((s: any) => safeLink(s.url));
+      const firstSource = evidence[0];
+      const uniquePublishers = new Set(evidence.map((s: any) => host(s.url).toLowerCase()).filter(Boolean));
+      const verified = item.confidence === "confirmed" && evidence.length >= 3 && uniquePublishers.size >= 2;
+      const articleSlug = key + "-" + String(index + 1);
+      const row: any = {
+        url: SITE + "/editorial/" + articleSlug, guid: "wrldline-editorial:" + articleSlug,
+        title: txt(item.headline, 240),
+        summary: [
+          txt(item.summary, 4200),
+          "السياق: " + txt(item.context, 3000),
+          "لماذا يهم؟ " + txt(item.significance, 2200),
+          "ما الذي نراقبه تالياً؟ " + txt(item.watch_next, 1800),
+          "المصادر: " + evidence.map((s: any) => txt(s.publisher || s.title, 120) + " — " + safeLink(s.url)).join(" | ")
+        ].filter(Boolean).join("\\n\\n").slice(0, 11800),
+        image_url: safeLink(item.image_url) || null, author: "WRLDLINE NEWS",
+        lang: "ar", source_language: "ar", language_detection: "declared",
+        category: ["politics","economy","security","tech","sports","culture","health","science","environment","society","world"].includes(String(item.category)) ? item.category : "world",
+        country: null, event_country: txt(item.region, 120) || null,
+        geographic_scope: "international", source_scope: "international",
+        source_name: "WRLDLINE NEWS", source_url: firstSource ? safeLink(firstSource.url) : SITE,
+        published_at: stamp(), verification: verified ? "confirmed" : (evidence.length >= 2 ? "multi" : "unconfirmed"),
+        verification_source_count: evidence.length, verification_independent_count: uniquePublishers.size,
+        verification_updated_at: stamp(),
+        verification_note: verified ? "تأكيد آلي متعدد المصادر مع مصدر أولي؛ قابل للتحديث عند ظهور أدلة جديدة." : "مادة مدعومة بالمصادر المذكورة ولم تستوفِ معيار التأكيد الأعلى.",
+        editorial_status: "published", content_type: "analysis", is_breaking: false,
+        ai_classification_status: "classified", ai_summary: txt(item.summary, 1200),
+        ai_reader_impact: txt(item.significance, 900), ai_watch_next: txt(item.watch_next, 900),
+        editorial_trust_status: verified ? "confirmed" : "unconfirmed", trust_needs_review: !verified,
+        trust_review_note: verified ? "تحقق آلي متعدد المصادر؛ لا يُنسب إلى مراجعة بشرية." : "تحتاج إلى مراجعة تحريرية قبل رفع حالة الثقة."
+      };
+      const existing = await db.from("articles").select("id").eq("guid", row.guid).maybeSingle();
+      if (existing.error) throw new Error("Could not check editorial article: " + existing.error.message);
+      const write = existing.data
+        ? await db.from("articles").update(row).eq("id", existing.data.id).select("id").single()
+        : await db.from("articles").insert(row).select("id").single();
+      if (write.error) throw new Error("Could not publish editorial article to newsroom: " + write.error.message);
+    }
+  }
   return { skipped: false, row: saved.data, provider: result.provider, researchSources: selected.filter(s => s.id.startsWith("source_")).length, articleSources: selected.filter(s => s.id.startsWith("article_")).length };
 }
 function riyadhDate() { return new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Riyadh", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date()); }
