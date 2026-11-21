@@ -59,7 +59,7 @@ function typeBadgesMarkup(a){
  if(a.isBreaking)html+='<span class="breaking-badge">'+ui("عاجل","Breaking")+'</span>';
  html+=contentBadgeMarkup(a);
  if(String(a.src||"").toUpperCase().includes("WRLDLINE")){
-  const labels={confirmed:ui("مؤكد بمصادر متعددة","Confirmed by multiple sources"),multi:ui("متعدد المصادر — غير مؤكد","Multiple sources — unconfirmed"),preliminary:ui("أولي","Preliminary"),unconfirmed:ui("غير مؤكد","Unconfirmed")};
+  const count=Number(a.verification_source_count)||0;const labels={confirmed:ui("مؤكد بمصادر متعددة · "+count+" مصادر","Confirmed by multiple sources · "+count),multi:ui("متعدد المصادر — غير مؤكد · "+count,"Multiple sources — unconfirmed · "+count),preliminary:ui("أولي","Preliminary"),unconfirmed:ui("غير مؤكد","Unconfirmed")};
   html+='<span class="translation-badge editorial-verification">'+escapeHTML(labels[a.verification]||labels.unconfirmed)+'</span>';
  }
  if(a.hasTranslation&&a.translationStatus&&a.translationStatus!=="none")html+='<span class="translation-badge translation-source">'+escapeHTML(translationBadge(a))+'</span>';
@@ -231,7 +231,7 @@ async function fetchNews(manual=false){
  try{
   const token=await window.WRLDLINE_AUTH?.getAccessToken?.();
   const headers={apikey:SUPABASE_ANON_KEY,...(token?{Authorization:"Bearer "+token}:{})};
-  const rpcURL=WRLDLINE_PUBLIC_NEWS_API+"/rest/v1/rpc/public_home_news_recent_v2";
+  const rpcURL=WRLDLINE_PUBLIC_NEWS_API+"/rest/v1/rpc/public_home_news_recent_v3";
   const now=new Date().toISOString();
   const since24h=new Date(Date.now()-24*60*60*1000).toISOString();
   const getRows=async(params,required=false)=>{
