@@ -389,7 +389,8 @@ async function publishMode(db: any, mode: string, pack: any) {
       const evidence = (Array.isArray(item.sources) ? item.sources : []).filter((s: any) => safeLink(s.url));
       const firstSource = evidence[0];
       const uniquePublishers = new Set(evidence.map((s: any) => host(s.url).toLowerCase()).filter(Boolean));
-      const verified = item.confidence === "confirmed" && evidence.length >= 3 && uniquePublishers.size >= 2;
+      const officialCount = evidence.filter((s: any) => s.type === "official").length;
+      const verified = item.confidence === "confirmed" && evidence.length >= 3 && uniquePublishers.size >= 3 && officialCount >= 1;
       const articleSlug = key + "-" + String(index + 1);
       const row: any = {
         url: SITE.replace(/\/+$/, "") + "/editorial/" + articleSlug, guid: "wrldline-editorial:" + articleSlug,
@@ -409,6 +410,8 @@ async function publishMode(db: any, mode: string, pack: any) {
         source_name: "WRLDLINE NEWS", source_url: firstSource ? safeLink(firstSource.url) : SITE,
         published_at: stamp(), verification: verified ? "confirmed" : (evidence.length >= 2 ? "multi" : "unconfirmed"),
         verification_source_count: evidence.length, verification_independent_count: uniquePublishers.size,
+        verification_official_count: officialCount, verification_conflict_count: 0,
+        verification_correction_count: 0, verification_retraction_count: 0,
         verification_updated_at: stamp(),
         verification_note: verified ? "تأكيد آلي متعدد المصادر مع مصدر أولي؛ قابل للتحديث عند ظهور أدلة جديدة." : "مادة مدعومة بالمصادر المذكورة ولم تستوفِ معيار التأكيد الأعلى.",
         editorial_status: "published", content_type: "analysis", is_breaking: false,
