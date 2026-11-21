@@ -601,7 +601,7 @@ function updateBreaking(){
  const strip=document.getElementById("breakingStrip"),title=document.getElementById("breakingText"),time=document.getElementById("breakingTime");
  if(!strip||!title)return;
  const marquee=title.querySelector(".breaking-marquee")||title;
- if(!items.length){state.breakingTickerIndex=0;state.breakingTickerCurrentId=null;strip.hidden=true;marquee.textContent="";marquee.classList.remove("is-moving","is-ltr","is-rtl");delete marquee.dataset.articleId;delete marquee.dataset.articleTitle;title.removeAttribute("title");if(time)time.textContent="";return;}
+ if(!items.length){state.breakingTickerIndex=0;state.breakingTickerCurrentId=null;strip.hidden=true;strip.removeAttribute("dir");marquee.textContent="";marquee.classList.remove("is-moving","is-ltr","is-rtl");delete marquee.dataset.articleId;delete marquee.dataset.articleTitle;title.removeAttribute("title");if(time)time.textContent="";return;}
  let item=items.find(a=>a.id===state.breakingTickerCurrentId);
  if(!item){state.breakingTickerIndex=0;item=items[0];state.breakingTickerCurrentId=item.id;}
  state.breakingTickerIndex=Math.max(0,items.findIndex(a=>a.id===item.id));strip.hidden=false;
@@ -609,7 +609,7 @@ function updateBreaking(){
   const cleanTitle=String(item.title||"").replace(/[\u061C\u200E\u200F\u202A-\u202E\u2066-\u2069]/g,"").normalize("NFC").trim();
   const isRTL=/[\u0590-\u08FF]/.test(cleanTitle),direction=isRTL?"rtl":"ltr";
   marquee.textContent=cleanTitle;marquee.dataset.articleId=item.id;marquee.dataset.articleTitle=String(item.title||"");
-  marquee.classList.remove("is-moving","is-ltr","is-rtl");title.setAttribute("dir",direction);title.style.direction=direction;title.style.textAlign=isRTL?"right":"left";
+  marquee.classList.remove("is-moving","is-ltr","is-rtl");strip.setAttribute("dir",direction);strip.style.direction=direction;title.setAttribute("dir",direction);title.style.direction=direction;title.style.textAlign=isRTL?"right":"left";
   marquee.setAttribute("dir",direction);marquee.style.direction=direction;marquee.style.unicodeBidi="isolate";
   marquee.classList.add(isRTL?"is-rtl":"is-ltr");marquee.style.removeProperty("--breaking-duration");
   requestAnimationFrame(()=>{const viewportWidth=title.clientWidth,distance=Math.max(viewportWidth,marquee.scrollWidth)+viewportWidth;marquee.style.setProperty("--breaking-duration",Math.max(10,distance/55)+"s");marquee.classList.add("is-moving");});

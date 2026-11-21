@@ -123,7 +123,8 @@ h1,h2,h3,h4{font-family:var(--font-display);font-weight:700;line-height:1.35;let
 /* Breaking strip */
 .wl-breaking{background:var(--red);color:#fff;overflow:hidden}
 .wl-breaking[hidden]{display:none}
-.wl-breaking-in{display:flex;align-items:center;gap:16px;min-height:42px}
+.wl-breaking-in{display:flex;align-items:center;gap:16px;min-height:42px;direction:rtl}
+.wl-breaking[dir="ltr"] .wl-breaking-in{direction:ltr}
 .wl-breaking-label{display:inline-flex;align-items:center;gap:7px;font-size:11px;font-weight:800;letter-spacing:.08em;background:#ffffff1f;padding:4px 10px;border-radius:6px;flex:none}
 .wl-breaking-label i{width:6px;height:6px;border-radius:50%;background:#fff;animation:wl-pulse 2s infinite}
 .wl-breaking-text{flex:1;min-width:0;font-size:12.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;direction:rtl;text-align:right;unicode-bidi:plaintext}
