@@ -167,7 +167,7 @@ async function ensureSourceCatalog() {
   });
   if(!saved.ok) throw new Error("Source catalog write HTTP "+saved.status+" "+(await saved.text()).slice(0,180));
  }
- return {configured_sources:80,breaking_monitors:20};
+ return {configured_sources:80,breaking_monitors:24};
 }
 async function runGeneral() {
  const catalog=await ensureSourceCatalog();
