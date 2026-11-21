@@ -2,6 +2,9 @@
  'use strict';
  if(document.body.dataset.wlEnhanced==='1')return;
  document.body.dataset.wlEnhanced='1';document.body.classList.add('wl-enhanced');
+ if(!document.querySelector('link[href*="wl-modern.css"]')){const l=document.createElement('link');l.rel='stylesheet';l.href='/wl-modern.css?v=20261121-1';document.head.appendChild(l);}
+ if(!document.querySelector('script[src*="wl-modern.js"]')){const sc=document.createElement('script');sc.src='/wl-modern.js?v=20261121-1';sc.defer=true;document.body.appendChild(sc);}
+
  const bar=document.createElement('div');bar.className='wl-reading-progress';bar.setAttribute('aria-hidden','true');document.body.prepend(bar);
  const skip=document.createElement('a');skip.className='wl-skip-enhanced';skip.href=document.querySelector('#main')?'#main':'#mainContent';skip.textContent='انتقل إلى المحتوى';document.body.prepend(skip);
  const top=document.createElement('button');top.className='wl-top-button';top.type='button';top.setAttribute('aria-label','العودة إلى أعلى الصفحة');top.textContent='↑';document.body.append(top);

@@ -623,7 +623,8 @@ function resolveLocale(){
  const account=localStorage.getItem("wrldline:account-language");
  if(account==="ar"||account==="en")return {lang:account,source:"account"};
  const candidates=Array.isArray(navigator.languages)&&navigator.languages.length?navigator.languages:[navigator.language||""];
- for(const candidate of candidates){const normalized=String(candidate||"").toLowerCase();if(/^ar\b/.test(normalized))return {lang:"ar",source:"browser"};if(/^en\b/.test(normalized))return {lang:"en",source:"browser"};}
+ // Arabic-first newsroom: content is Arabic, so an English browser locale alone must not flip the layout to LTR.
+ for(const candidate of candidates){const normalized=String(candidate||"").toLowerCase();if(/^ar\b/.test(normalized))return {lang:"ar",source:"browser"};}
  return {lang:"ar",source:"default"};
 }
 const initialLocale=resolveLocale();

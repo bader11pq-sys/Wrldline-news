@@ -236,12 +236,13 @@ async function fetchNews(manual=false){
   const since24h=new Date(Date.now()-24*60*60*1000).toISOString();
   const getRows=async(params,required=false)=>{
    try{
-    const response=await fetch(rpcURL,{method:"POST",headers:{...headers,"Content-Type":"application/json","Accept":"application/json"},body:JSON.stringify(params),signal:AbortSignal.timeout(required?8000:3500)});
+    const response=await fetch(rpcURL,{method:"POST",headers:{...headers,"Content-Type":"application/json","Accept":"application/json"},body:JSON.stringify((({__retried,...p})=>p)(params)),signal:AbortSignal.timeout(required?8000:3500)});
     if(!response.ok)throw new Error("HTTP "+response.status);
     const data=await response.json();
     if(!Array.isArray(data))throw new Error("Invalid response");
     return data;
    }catch(error){
+    if(required&&!params.__retried){await new Promise(r=>setTimeout(r,1200));return getRows({...params,__retried:true},true);}
     if(required)throw error;
     console.warn("WRLDLINE supplemental section RPC:",error);
    return [];
