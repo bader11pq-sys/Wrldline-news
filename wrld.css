@@ -126,7 +126,7 @@ h1,h2,h3,h4{font-family:var(--font-display);font-weight:700;line-height:1.35;let
 .wl-breaking-in{display:flex;align-items:center;gap:16px;min-height:42px}
 .wl-breaking-label{display:inline-flex;align-items:center;gap:7px;font-size:11px;font-weight:800;letter-spacing:.08em;background:#ffffff1f;padding:4px 10px;border-radius:6px;flex:none}
 .wl-breaking-label i{width:6px;height:6px;border-radius:50%;background:#fff;animation:wl-pulse 2s infinite}
-.wl-breaking-text{flex:1;font-size:12.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.wl-breaking-text{flex:1;min-width:0;font-size:12.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;direction:rtl;text-align:right;unicode-bidi:plaintext}
 .wl-breaking-text a:hover{text-decoration:underline}
 .wl-breaking-time{font-family:var(--font-latin);font-size:10px;opacity:.8;letter-spacing:.08em;flex:none}
 
@@ -352,11 +352,11 @@ html[data-theme="dark"] .skeleton::after{background:linear-gradient(90deg,transp
 /* breaking section */
 .breaking-news-section{padding:22px;border:1px solid color-mix(in srgb,var(--red) 26%,var(--line));border-radius:var(--radius);background:linear-gradient(140deg,color-mix(in srgb,var(--red) 5%,var(--surface)),var(--surface));margin-top:30px}
 .breaking-news-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
-.breaking-news-card{display:grid;grid-template-columns:120px 1fr;gap:12px;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius-sm);overflow:hidden;cursor:pointer;transition:.18s}
+.breaking-news-card{display:grid;grid-template-columns:120px minmax(0,1fr);gap:12px;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius-sm);overflow:hidden;cursor:pointer;transition:.18s;min-width:0}
 .breaking-news-card:hover{border-color:var(--red);box-shadow:var(--shadow-sm)}
 .breaking-news-image{width:120px;height:100%;min-height:108px;object-fit:cover}
-.breaking-news-copy{padding:11px 12px 11px 0;display:flex;flex-direction:column;gap:4px}
-.breaking-news-copy h3{font-size:12px;line-height:1.55;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.breaking-news-copy{min-width:0;padding:12px 14px 12px 0;display:flex;flex-direction:column;gap:6px}
+.breaking-news-copy h3{font-size:12.5px;line-height:1.75;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;overflow-wrap:anywhere}
 .breaking-news-copy p{font-size:10px;color:var(--muted);display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden}
 .breaking-badge{font-size:8.5px;font-weight:800;background:var(--red);color:#fff;padding:2px 6px;border-radius:4px}
 .breaking-source{font-size:9px;color:var(--muted);margin-top:auto;padding-top:5px}
@@ -774,14 +774,14 @@ body.modal-open{overflow:hidden}
 
 /* ---------- Live breaking ticker: always moving, newest first ---------- */
 .wl-breaking-text{position:relative;display:block;flex:1;min-width:0;height:24px;line-height:24px;overflow:hidden;white-space:nowrap;text-overflow:clip}
-.wl-breaking-text .breaking-marquee{display:inline-block;min-width:max-content;will-change:transform;transform:translateX(0);padding-inline:10px}
+.wl-breaking-text .breaking-marquee{display:inline-block;min-width:max-content;will-change:transform;transform:translate3d(0,0,0);padding-inline:10px;direction:rtl;unicode-bidi:plaintext}
 .wl-breaking-text .breaking-marquee.is-moving{animation-duration:var(--breaking-duration,14s);animation-timing-function:linear;animation-iteration-count:1;animation-fill-mode:both}
-.wl-breaking-text .breaking-marquee.is-rtl.is-moving{animation-name:wrld-breaking-rtl}
+.wl-breaking-text .breaking-marquee.is-rtl.is-moving{animation-name:wrld-breaking-rtl;direction:rtl}
 .wl-breaking-text .breaking-marquee.is-ltr.is-moving{animation-name:wrld-breaking-ltr}
-@keyframes wrld-breaking-rtl{from{transform:translateX(100%)}to{transform:translateX(-100%)}}
+@keyframes wrld-breaking-rtl{from{transform:translate3d(105%,0,0)}to{transform:translate3d(-105%,0,0)}}
 @keyframes wrld-breaking-ltr{from{transform:translateX(-100%)}to{transform:translateX(100%)}}
 @media(prefers-reduced-motion:reduce){.wl-breaking-text .breaking-marquee.is-moving{animation:none;transform:none;max-width:100%;overflow:hidden;text-overflow:ellipsis}}
-@media(max-width:760px){.wl-breaking-in{gap:8px;min-height:40px}.wl-breaking-label{padding-inline:7px;font-size:10px}.wl-breaking-time{font-size:9px}.wl-breaking-text{font-size:11.5px}}
+@media(max-width:760px){.wl-breaking-in{gap:8px;min-height:40px}.wl-breaking-label{padding-inline:7px;font-size:10px}.wl-breaking-time{font-size:9px}.wl-breaking-text{font-size:11.5px}.breaking-news-card{grid-template-columns:104px minmax(0,1fr);gap:10px;min-height:132px}.breaking-news-image{width:104px;min-height:132px}.breaking-news-copy{padding:13px 13px 13px 0;gap:7px}.breaking-news-copy .story-meta{gap:5px;line-height:1.6}.breaking-news-copy h3{font-size:13px;line-height:1.8}.breaking-news-copy p{font-size:10.5px;line-height:1.7;-webkit-line-clamp:2}.breaking-news-copy .breaking-source{font-size:9px;line-height:1.5}}
 
 /* WRLDLINE authenticated reading cards — wider editorial treatment */
 .news-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:20px}

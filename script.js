@@ -551,6 +551,13 @@ function isDedicatedBreakingSource(name){
  const source=String(name||"").trim().toLocaleLowerCase();
  return /breaking desk|news alert|غرفة الأخبار العاجلة|مصادر العاجل/.test(source);
 }
+const BREAKING_HEADLINE_NOISE=/^(?:مختص|استشاري|باحث|أكاديمي|خبير|محلل|محام|الأرصاد|طقس|موجز الصباح|التقويم الدراسي|دوري|مباراة|الأهلي|الهلال|النصر|الشباب|الاتحاد|يستعرض العلاقات|يثمن جهود|يدعو إلى|يؤكد ما يجب|فرص استثمارية)/i;
+const BREAKING_EVENT_SIGNAL=/(?:عاجل\s*[|:،]|أعلن(?:ت|وا)?|يعلن|يعلنون|اعتراض|إسقاط|تدمير|قصف|غارة|هجوم|هجمات|إطلاق نار|انفجار|حريق|اشتباك|مقتل|وفاة|إصابة|جرحى|اعتقال|ضبط|إحباط|سقوط|تحطم|إغلاق|إخلاء|استقالة|تعيين|عقوبات|زلزال|فيضانات|طائرة مسيرة|صاروخ|سفينة|ناقلة)/i;
+function isLikelyBreakingArticle(a){
+ const title=String(a?.title||"").replace(/[\u061C\u200E\u200F\u202A-\u202E\u2066-\u2069]/g,"").trim();
+ if(!title||BREAKING_HEADLINE_NOISE.test(title))return false;
+ return BREAKING_EVENT_SIGNAL.test(title);
+}
 function breakingFingerprint(a){
  return String(a?.title||"").toLocaleLowerCase().replace(/https?:\/\/\S+/g," ").replace(/[^\p{L}\p{N}]+/gu," ").trim().replace(/\s+/g," ");
 }
@@ -560,6 +567,7 @@ function breakingItems(maxAge=15*60*1000,ageField="published_at"){
   if(a.isNewsDataOnly||a.isBreaking!==true)return false;
    if(!isDedicatedBreakingSource(a.raw?.source_name||a.src))return false;
   if(!/[\u0600-\u06FF]/.test(a.title||""))return false;
+  if(!isLikelyBreakingArticle(a))return false;
   if(/مباراة|الدوري|مانشستر|تشيلسي|ريال مدريد|برشلونة|مباشر|بث مباشر|ملخص|هدف|sports|sport/i.test(a.title||""))return false;
   const sourceUrl=String(a.sourceURL||a.raw?.source_url||"");
   if(/t\.me|telegram\.me|telegram/i.test(sourceUrl))return false;
@@ -600,7 +608,7 @@ function updateBreaking(){
   const cleanTitle=String(item.title||"").replace(/[\u061C\u200E\u200F\u202A-\u202E\u2066-\u2069]/g,"").normalize("NFC").trim();
   const isRTL=/[\u0590-\u08FF]/.test(cleanTitle),direction=isRTL?"rtl":"ltr";
   marquee.textContent=cleanTitle;marquee.dataset.articleId=item.id;marquee.dataset.articleTitle=String(item.title||"");
-  marquee.classList.remove("is-moving","is-ltr","is-rtl");title.setAttribute("dir",direction);title.style.direction=direction;textAlign="start";
+  marquee.classList.remove("is-moving","is-ltr","is-rtl");title.setAttribute("dir",direction);title.style.direction=direction;title.style.textAlign=isRTL?"right":"left";
   marquee.setAttribute("dir",direction);marquee.style.direction=direction;marquee.style.unicodeBidi="isolate";
   marquee.classList.add(isRTL?"is-rtl":"is-ltr");marquee.style.removeProperty("--breaking-duration");
   requestAnimationFrame(()=>{const viewportWidth=title.clientWidth,distance=Math.max(viewportWidth,marquee.scrollWidth)+viewportWidth;marquee.style.setProperty("--breaking-duration",Math.max(10,distance/55)+"s");marquee.classList.add("is-moving");});
