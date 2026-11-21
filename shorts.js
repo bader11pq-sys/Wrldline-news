@@ -8,12 +8,11 @@
   const safe=v=>{try{const u=new URL(v);return ["https:","http:"].includes(u.protocol)?u.href:"";}catch{return "";}};
   const date=v=>{const d=new Date(v);return Number.isNaN(d.getTime())?"":new Intl.DateTimeFormat(lang==="ar"?"ar-SA":"en-US",{dateStyle:"medium",timeStyle:"short"}).format(d);};
   function setLanguage(){document.documentElement.lang=lang;document.documentElement.dir=lang==="ar"?"rtl":"ltr";langButton.textContent=lang==="ar"?"English":"العربية";}
-  let audioContext=null,musicGain=null,musicTimer=null,musicOn=false;
+  let musicAudio=null,musicOn=false;
   function updateMusicButton(){if(!musicButton)return;musicButton.textContent=musicOn?t("♫ الموسيقى مفعلة","♫ Music on"):t("♫ موسيقى","♫ Music");musicButton.setAttribute("aria-pressed",String(musicOn));musicButton.setAttribute("aria-label",musicOn?t("إيقاف موسيقى التوتر","Turn off tension music"):t("تشغيل موسيقى التوتر","Turn on tension music"));musicButton.classList.toggle("is-on",musicOn);}
-  function tensionPulse(){if(!audioContext||!musicGain||!musicOn)return;const now=audioContext.currentTime;const osc=audioContext.createOscillator(),gain=audioContext.createGain();osc.type="sine";osc.frequency.setValueAtTime(92,now);osc.frequency.exponentialRampToValueAtTime(66,now+.8);gain.gain.setValueAtTime(.0001,now);gain.gain.exponentialRampToValueAtTime(.045,now+.08);gain.gain.exponentialRampToValueAtTime(.0001,now+1.8);osc.connect(gain).connect(musicGain);osc.start(now);osc.stop(now+1.85);}
   async function toggleMusic(){
-    if(musicOn){musicOn=false;clearInterval(musicTimer);musicTimer=null;if(musicGain){musicGain.gain.setTargetAtTime(.0001,audioContext.currentTime,.12);}updateMusicButton();localStorage.setItem("wrldline:shorts:music","off");return;}
-    try{audioContext=audioContext||new (window.AudioContext||window.webkitAudioContext)();await audioContext.resume();musicGain=musicGain||audioContext.createGain();musicGain.gain.value=.0001;musicGain.connect(audioContext.destination);musicOn=true;musicGain.gain.setTargetAtTime(.18,audioContext.currentTime,.35);tensionPulse();musicTimer=setInterval(tensionPulse,2600);localStorage.setItem("wrldline:shorts:music","on");updateMusicButton();}
+    if(musicOn){musicOn=false;if(musicAudio){musicAudio.pause();musicAudio.currentTime=0;}updateMusicButton();localStorage.setItem("wrldline:shorts:music","off");return;}
+    try{musicAudio=musicAudio||new Audio("assets/shorts-news-tension-theme.mp3");musicAudio.loop=true;musicAudio.preload="auto";musicAudio.volume=.78;await musicAudio.play();musicOn=true;localStorage.setItem("wrldline:shorts:music","on");updateMusicButton();}
     catch(error){console.warn("WRLDLINE Shorts music:",error);musicOn=false;updateMusicButton();}
   }
   function currentStoryId(){return feed.querySelector(".shorts-slide[data-index='"+active+"']")?.dataset.id||"";}
