@@ -20,6 +20,13 @@ function xmlDecode(value: string) {
     .replace(/&#x([0-9a-f]+);/gi, (_m, n) => String.fromCodePoint(parseInt(n, 16)))
     .replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
 }
+function classifyPublisher(publisher: string, sourceUrl: string) {
+  const h = (host(sourceUrl) + " " + publisher).toLowerCase();
+  if (/(\.gov|\.int|united nations|un\.org|nato|imf|world bank|opec|who|european commission|european union|iea|bis\.org|world trade organization|wto)/i.test(h)) return "official";
+  if (/(university|journal|academic|jstor|cambridge|oxford|nature|science|arxiv|met museum|library of congress|national archives)/i.test(h)) return "academic";
+  if (/(britannica|archives\.gov|history\.state\.gov|loc\.gov|sipri|cfr\.org|chatham house|crisis group)/i.test(h)) return "historical";
+  return "news";
+}
 async function searchWeb(query: string, locale = "ar-SA"): Promise<Src[]> {
   const apiKey = Deno.env.get("NEWSDATA_API_KEY");
   if (!apiKey) throw new Error("NEWSDATA_API_KEY is missing from Edge Function secrets");
