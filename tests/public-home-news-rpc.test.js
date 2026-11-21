@@ -32,14 +32,14 @@ test("public feed migration does not grant anonymous table access", () => {
 test("homepage consumes the backward-compatible v2 feed and exposes bounded reader-context fields", () => {
   const homepage = read("script.js");
   const newsroom = read("newsroom.js");
-  const migration = read("supabase/migrations/20261115100000_reader_impact_intelligence.sql");
+  const migration = read("supabase/migrations/20261121120000_public_home_news_recent_v3.sql");
   assert.ok(homepage.includes("/rest/v1/rpc/public_home_news_recent_v3"));
   assert.ok(newsroom.includes("/rest/v1/rpc/public_home_news_recent_v3"));
   assert.match(homepage, /ai_reader_impact/);
   assert.match(homepage, /ai_watch_next/);
-  assert.ok(migration.includes("create or replace function public.public_home_news_recent_v2"));
+  assert.ok(migration.includes("create or replace function public.public_home_news_recent_v3"));
   assert.ok(migration.includes("security definer\nset search_path = pg_catalog"));
-  assert.ok(migration.includes("grant execute on function public.public_home_news_recent_v2("));
+  assert.ok(migration.includes("grant execute on function public.public_home_news_recent_v3("));
   assert.ok(migration.includes("to anon, authenticated;"));
   assert.match(migration, /public_news_article_intelligence/);
   assert.ok(!migration.includes("grant select on public.articles to anon"));
@@ -70,7 +70,10 @@ test("WRLDLINE Shorts uses the allowlisted public news RPC instead of direct art
   assert.match(shorts, /p_limit:limit/);
   assert.match(shorts, /p_offset:offset/);
   assert.doesNotMatch(shorts, /\/rest\/v1\/articles\?/);
-  assert.match(migration, /create or replace function public\.public_home_news_recent_v2/);
+  assert.match(migration, /create or replace function public\.public_home_news_recent_v3/);
   assert.match(migration, /article_translations jsonb/);
+  assert.match(migration, /verification_independent_count integer/);
+  assert.match(migration, /editorial_trust_status text/);
+  assert.match(migration, /revoke all on function public\.public_home_news_recent_v3/);
   assert.match(migration, /media_type text/);
 });
