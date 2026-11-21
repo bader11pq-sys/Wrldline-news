@@ -99,7 +99,8 @@ function dedupeArticles(list){
  const sorted=[...list].sort((a,b)=>(Date.parse(b.published_at||"")||0)-(Date.parse(a.published_at||"")||0));
  for(const a of sorted){
   const url=String(a.sourceURL||"").replace(/#.*$/,"").replace(/\/$/,"").toLowerCase();
-  const titleKey=headlineDedupeKey(a.title||a.originalTitle||"");
+  const title=headlineDedupeKey(a.title||a.originalTitle||"");
+  const titleKey=title;
   if(url&&seenUrl.has(url))continue;
   if(titleKey&&seenTitle.has(titleKey))continue;
   if(url)seenUrl.add(url);
