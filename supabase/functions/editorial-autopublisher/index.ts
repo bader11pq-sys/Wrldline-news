@@ -261,7 +261,7 @@ async function buildPack(mode: string, db: any, recent: any[]) {
     if (!url || sourceMap.has(url)) continue;
     sourceMap.set(url, source); unique.push(source);
   }
-  const sources = unique.slice(0, 100).map((x, i) => ({ ...x, id: "source_" + (i + 1) }));
+  const sources = unique.slice(0, 60).map((x, i) => ({ ...x, id: "source_" + (i + 1) }));
   if (mode === "hourly") {
     for (const story of a.story) {
       const matchingSource = sources.find((s) => s.url === story.url);
@@ -308,7 +308,7 @@ function promptFor(mode: string, pack: any, date: string) {
     'JSON: {"action":"publish|no_update","slug":"mirror-YYYY-MM-DD","title":"...","content":{"id":"...","nowTitle":"...","nowKeywords":["..."],"nowSummary":"...","pastTitle":"...","pastEra":"...","pastDossier":"معرف موسوعة موجود أو فارغ","similarities":["5-8 نقاط"],"differences":["5-8 نقاط"],"lesson":"...","comparativeAnalysis":["3-5 فقرات تحليلية","..."],"limits":"حدود المقارنة","source_ids":["source_1"]}}',
     "اكتب تحليلاً مقارناً لا يقل عن ثلاث فقرات، واذكر تاريخ الواقعة التاريخية وتاريخ التطور المعاصر، وافصل بين الخبر والتحليل، واختم بدرس محدد وحدود واضحة لمنع إسقاط الماضي على الحاضر بلا دليل."
   ].join("\n");
-  return guard + "\n\n" + task + "\n\nأخبار حديثة:\n" + JSON.stringify(pack.articles.slice(0, mode === "hourly" ? 40 : 65)) + "\n\nملفات سابقة:\n" + JSON.stringify(pack.prior).slice(0, 12000) + "\n\nمصادر البحث المسموح بها:\n" + JSON.stringify(pack.sources.map((s: Src) => ({ id: s.id, title: s.title, publisher: s.publisher, url: s.url, published_at: s.published_at, type: s.type, source_confidence: s.source_confidence, excerpt: s.excerpt.slice(0, 2200) }))).slice(0, mode === "hourly" ? 50000 : 25000);
+  return guard + "\n\n" + task + "\n\nأخبار حديثة:\n" + JSON.stringify(pack.articles.slice(0, mode === "hourly" ? 24 : 20)) + "\n\nملفات سابقة:\n" + JSON.stringify(pack.prior).slice(0, 7000) + "\n\nمصادر البحث المسموح بها:\n" + JSON.stringify(pack.sources.map((s: Src) => ({ id: s.id, title: s.title, publisher: s.publisher, url: s.url, published_at: s.published_at, type: s.type, source_confidence: s.source_confidence, excerpt: s.excerpt.slice(0, 900) }))).slice(0, mode === "hourly" ? 22000 : 14000);
 }
 async function publishMode(db: any, mode: string, pack: any) {
   const result = await ai(promptFor(mode, pack, riyadhDate())), obj = result.data || {};
@@ -316,7 +316,7 @@ async function publishMode(db: any, mode: string, pack: any) {
   const content = obj.content;
   if (!content || typeof content !== "object") throw new Error("AI did not return content");
   const foundIds = idsIn(content), sourceMap = new Map(pack.sources.map((s: Src) => [s.id, s]));
-  const selected = [...foundIds].map(id => sourceMap.get(id)).filter(Boolean) as Src[];
+  let selected = [...foundIds].map(id => sourceMap.get(id)).filter(Boolean) as Src[];
   if (!selected.length) throw new Error("No valid citations were returned by the model");
   const selectedHosts = new Set(selected.map(s => txt(s.publisher || host(s.url), 120).toLowerCase()));
   const authoritative = selected.filter(s => ["official", "academic", "historical", "research"].includes(s.type));
@@ -342,10 +342,10 @@ async function publishMode(db: any, mode: string, pack: any) {
     const priorTitles = pack.prior.filter((p: any) => p.section === "hourly" && Date.parse(String(p.published_at || "")) >= now - 8 * 60 * 60 * 1000)
       .flatMap((p: any) => Array.isArray(p.content?.items) ? p.content.items.map((x: any) => x.headline) : []);
     const currentTitles: string[] = [];
+    const qualifiedItems: any[] = [];
     for (const item of content.items) {
       const duplicate = [...priorTitles, ...currentTitles].find((headline) => similarity(headline, item.headline) >= 0.72);
-      if (duplicate && txt(item.update_note, 600).length < 35) throw new Error("Hourly story repeats recent coverage without a material update: " + txt(item.headline, 100));
-      currentTitles.push(txt(item.headline, 240));
+      if (duplicate && txt(item.update_note, 600).length < 35) continue;
 
       const ids = Array.isArray(item.source_ids) ? [...new Set(item.source_ids.filter((x: any) => typeof x === "string"))] : [];
       const evidence = ids.map((id: string) => sourceMap.get(id)).filter((s: any) => s && safeLink(s.url)) as Src[];
@@ -356,15 +356,18 @@ async function publishMode(db: any, mode: string, pack: any) {
           && domain && domain !== "news.google.com" && domain !== "google.com";
       });
       const publishers = new Set(fresh.map((s) => host(s.url).toLowerCase().replace(/^www\./, "")).filter(Boolean));
-      if (fresh.length < 2 || publishers.size < 2) throw new Error("Hourly story failed independent-source verification: " + txt(item.headline, 100));
-      if (txt(item.headline, 240).length < 18 || txt(item.summary, 1200).length < 100 || txt(item.context, 1600).length < 80 || txt(item.significance, 1000).length < 45 || txt(item.watch_next, 800).length < 35) {
-        throw new Error("Hourly story failed editorial depth checks: " + txt(item.headline, 100));
-      }
-      if (!["politics", "economy", "security", "world", "tech"].includes(String(item.category || ""))) throw new Error("Hourly story has invalid category");
+      if (fresh.length < 2 || publishers.size < 2) continue;
+      if (txt(item.headline, 240).length < 18 || txt(item.summary, 1200).length < 100 || txt(item.context, 1600).length < 80 || txt(item.significance, 1000).length < 45 || txt(item.watch_next, 800).length < 35) continue;
+      if (!["politics", "economy", "security", "world", "tech", "sports", "culture", "health", "science", "environment", "society"].includes(String(item.category || ""))) continue;
       item.source_ids = fresh.map((s) => s.id);
       item.sources = fresh.map((s) => ({ title: s.title, publisher: s.publisher, url: s.url, published_at: s.published_at }));
       item.confidence = fresh.length >= 3 && fresh.some((s) => s.type === "official") ? "confirmed" : "reported";
+      currentTitles.push(txt(item.headline, 240));
+      qualifiedItems.push(item);
     }
+    content.items = qualifiedItems;
+    if (content.items.length < 3) return { skipped: true, reason: "Only " + content.items.length + " stories passed freshness, independent-source and editorial-depth checks; no edition was published.", provider: result.provider };
+    selected = [...idsIn(content)].map(id => sourceMap.get(id)).filter(Boolean) as Src[];
   } else if (mode === "dossier") {
     const target = txt(obj.target_slug, 90), old = pack.prior.find((x: any) => x.section === "dossier" && x.slug === target);
     key = old ? old.slug : slug(obj.slug, "event-" + riyadhDate());
