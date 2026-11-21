@@ -59,7 +59,7 @@ function typeBadgesMarkup(a){
  if(a.isBreaking)html+='<span class="breaking-badge">'+ui("عاجل","Breaking")+'</span>';
  html+=contentBadgeMarkup(a);
  if(String(a.src||"").toUpperCase().includes("WRLDLINE")){
-  const labels={confirmed:ui("مؤكد بمصادر متعددة","Confirmed by multiple sources"),multi:ui("متعدد المصادر","Multiple sources"),preliminary:ui("أولي","Preliminary"),unconfirmed:ui("غير مؤكد بعد","Not yet confirmed")};
+  const count=Number(a.verification_source_count)||0;const labels={confirmed:ui("مؤكد · "+count+" مصادر","Confirmed · "+count+" sources"),multi:ui("متعدد المصادر · "+count,"Multiple sources · "+count),preliminary:ui("أولي","Preliminary"),unconfirmed:ui("غير مؤكد بعد","Not yet confirmed")};
   html+='<span class="translation-badge editorial-verification">'+escapeHTML(labels[a.verification]||labels.unconfirmed)+'</span>';
  }
  if(a.hasTranslation&&a.translationStatus&&a.translationStatus!=="none")html+='<span class="translation-badge translation-source">'+escapeHTML(translationBadge(a))+'</span>';
