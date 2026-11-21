@@ -427,7 +427,7 @@ async function publishMode(db: any, mode: string, pack: any) {
       qualifiedItems.push(item);
     }
     content.items = qualifiedItems;
-    if (content.items.length < 1) return { skipped: true, reason: "Only " + content.items.length + " stories passed freshness, independent-source and editorial-depth checks; no edition was published.", provider: result.provider };
+    if (content.items.length === 0) return { skipped: true, reason: "No story passed freshness, independent-source and editorial-depth checks; no edition was published.", provider: result.provider };
     selected = [...idsIn(content)].map(id => sourceMap.get(id)).filter(Boolean) as Src[];
   } else if (mode === "dossier") {
     const target = txt(obj.target_slug, 90), old = pack.prior.find((x: any) => x.section === "dossier" && x.slug === target);
