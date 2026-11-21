@@ -127,7 +127,7 @@ async function ai(prompt: string) {
   if (gemini) attempts.push(["gemini", async (timeoutMs) => {
     const r = await fetch("https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:generateContent", {
       method: "POST", headers: { "Content-Type": "application/json", "x-goog-api-key": gemini }, signal: AbortSignal.timeout(timeoutMs),
-      body: JSON.stringify({ contents: [{ role: "user", parts: [{ text: prompt }] }], generationConfig: { responseMimeType: "application/json", maxOutputTokens: 9000 } })
+      body: JSON.stringify({ contents: [{ role: "user", parts: [{ text: prompt }] }], generationConfig: { responseMimeType: "application/json", maxOutputTokens: 4500 } })
     });
     if (!r.ok) throw new Error("Gemini HTTP " + r.status);
     const p = await r.json(), raw = p.candidates?.[0]?.content?.parts?.map((x: any) => x.text || "").join("");
