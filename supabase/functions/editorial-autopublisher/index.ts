@@ -175,6 +175,46 @@ function combine(base: Src[], extra: Src[]) {
   for (const x of [...base, ...extra]) { if (!safeLink(x.url) || seen.has(x.url)) continue; seen.add(x.url); out.push(x); }
   return out.slice(0, 26).map((x, i) => ({ ...x, id: "source_" + (i + 1) }));
 }
+async function enrichSources(sources: Src[]): Promise<Map<string, string>> {
+  const candidates = sources
+    .filter((s) => safeLink(s.url) && Date.parse(String(s.published_at || "")) > Date.now() - 18 * 60 * 60 * 1000)
+    .sort((a, b) => Date.parse(String(b.published_at || "")) - Date.parse(String(a.published_at || "" ))
+    .slice(0, 18);
+  const excerpts = new Map<string, string>();
+  let cursor = 0;
+  async function lane() {
+    while (cursor < candidates.length) {
+      const source = candidates[cursor++];
+      const originalUrl = source.url;
+      try {
+        const response = await fetch(originalUrl, {
+          redirect: "follow",
+          headers: { "User-Agent": "Mozilla/5.0 (compatible; WRLDLINE-Editorial/1.0)", "Accept": "text/html,application/xhtml+xml" },
+          signal: AbortSignal.timeout(8000)
+        });
+        if (!response.ok) continue;
+        if (safeLink(response.url)) source.url = response.url;
+        const html = (await response.text()).slice(0, 1200000);
+        const article = html.match(/<article\b[^>]*>([\s\S]*?)<\/article>/i);
+        const main = html.match(/<main\b[^>]*>([\s\S]*?)<\/main>/i);
+        const selected = article?.[1] || main?.[1] || html;
+        const cleaned = selected
+          .replace(/<(script|style|noscript|svg|nav|footer|header|aside)[^>]*>[\s\S]*?<\/\1>/gi, " ")
+          .replace(/<(br|\/p|\/div|\/article|\/section|\/h[1-6])\b[^>]*>/gi, " ");
+        const excerpt = xmlDecode(cleaned).slice(0, 3200);
+        if (excerpt.length > 500) {
+          source.excerpt = excerpt;
+          excerpts.set(originalUrl, excerpt);
+        }
+      } catch {
+        // A blocked or unavailable publisher page must not block the hourly edition.
+      }
+    }
+  }
+  await Promise.all(Array.from({ length: 4 }, () => lane()));
+  return excerpts;
+}
+
 async function buildPack(mode: string, db: any, recent: any[]) {
   const a = await articles(db, mode === "context_monthly" ? 24 * 45 : mode === "context_monitor" ? 48 : mode === "mirror" ? 24 * 5 : 24 * 8, mode === "context_monthly" ? 220 : 160);
   const p = await db.from("editorial_publications").select("section,slug,title,content,published_at")
@@ -254,6 +294,13 @@ async function buildPack(mode: string, db: any, recent: any[]) {
     sourceMap.set(url, source); unique.push(source);
   }
   const sources = unique.slice(0, 100).map((x, i) => ({ ...x, id: "source_" + (i + 1) }));
+  if (mode === "hourly") {
+    const excerpts = await enrichSources(sources);
+    for (const story of a.story) {
+      const excerpt = excerpts.get(story.url);
+      if (excerpt) story.source_text = excerpt.slice(0, 2600);
+    }
+  }
   return { articles: a.story.slice(0, 75), sources, prior: p.data || [], query: queries.join(" || ") };
 }
 function promptFor(mode: string, pack: any, date: string) {
@@ -262,7 +309,7 @@ function promptFor(mode: string, pack: any, date: string) {
   if (mode === "hourly") task = [
     "أنت غرفة أخبار دولية عربية. أعدّ نشرة تحريرية كل ساعة عن أهم التطورات العالمية السياسية والاقتصادية والأمنية، مع أولوية لما يهم السعودية والخليج والمنطقة العربية.",
     "اختر من 3 إلى 8 قصص فقط من نافذة آخر 8 ساعات. لا تملأ العدد بقصص هامشية ولا تكرر القصة نفسها بصيغ مختلفة. إذا لم تتوافر ثلاث قصص تستوفي التحقق، أخرج action=no_update.",
-    "كل قصة يجب أن تعتمد على مصدرين مستقلين على الأقل من ناشرين مختلفين، مع روابط مباشرة وتوقيت نشر حديث. إذا كان هناك بيان رسمي أو مصدر أولي متاح فأدرجه. لا تعتبر نتائج Google News مصدراً مستقلاً بحد ذاتها؛ اعتمد اسم الناشر والرابط الفعلي للمادة. لا تخلط بين إعادة نشر الوكالة الواحدة ومصدرين مستقلين.",
+    "كل قصة يجب أن تعتمد على مصدرين مستقلين على الأقل من ناشرين مختلفين، مع روابط مباشرة وتوقيت نشر حديث. مهم: لا ترفض القصة لمجرد عدم وجود ثلاثة مصادر؛ مصدران مستقلان حديثان يكفيان للنشر بوسم reported. لا تستخدم confirmed إلا عند توفر ثلاثة مصادر مستقلة بينها مصدر رسمي أو أولي. إذا كان هناك بيان رسمي أو مصدر أولي متاح فأدرجه. لا تعتبر نتائج Google News مصدراً مستقلاً بحد ذاتها؛ اعتمد اسم الناشر والرابط الفعلي للمادة. لا تخلط بين إعادة نشر الوكالة الواحدة ومصدرين مستقلين.",
     "افصل بين الوقائع المؤكدة والتقارير الأولية والادعاءات. لا تستخدم كلمة مؤكد إلا إذا كان هناك ثلاثة مصادر مستقلة على الأقل بينها مصدر أولي/رسمي، وإلا ضع reported. لا تنشر تكهنات على أنها حقائق.",
     'JSON: {"action":"publish|no_update","slug":"hourly-YYYYMMDD-HH","title":"نشرة وردلاين التحريرية — [وقت الرياض]","editorial_note":"...","content":{"edition_at":"ISO timestamp","window_hours":8,"executive_summary":"فقرة عربية موجزة تلخص المشهد","items":[{"headline":"عنوان خبري واضح لا دعائي","category":"politics|economy|security|world|tech","region":"...","published_at":"ISO timestamp","summary":"ملخص واقعي 100-160 كلمة","context":"سياق مستقل يشرح الخلفية دون إعادة صياغة الخبر","significance":"لماذا يهم التطور السعودية أو الخليج أو العالم العربي أو الاقتصاد العالمي","watch_next":"ما المؤشر أو الخطوة التالية التي تستحق المتابعة","confidence":"reported|confirmed|developing","source_ids":["source_1","source_2"]}]}}',
     "لكل قصة اكتب ملخصاً أصلياً بالعربية الفصحى، ثم سياقاً وتحليلاً منفصلين. لا تنسخ صياغة الناشر. لا تضع اقتباساً مباشراً إلا إذا كان موجوداً حرفياً في المصدر. لا تخترع تاريخاً أو رقماً أو منصباً أو علاقة سببية. أعد 3-8 قصص مرتبة بالأهمية، ولا تنشر قصة لا تحقق حد المصدرين المستقلين."
