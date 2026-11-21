@@ -118,7 +118,7 @@ async function ai(prompt: string) {
     try { return { data: await run(Math.min(preferredTimeout, remaining)), provider: name }; }
     catch (e) { errors.push(name + ": " + String(e).slice(0, 180)); }
   }
-  throw new Error("AI providers failed or exceeded the 75-second budget: " + (errors.join(" | ") || "no configured key"));
+  throw new Error("AI providers failed or exceeded the 45-second budget: " + (errors.join(" | ") || "no configured key"));
 }
 async function compatible(endpoint: string, key: string, model: string, prompt: string, timeoutMs = 30000) {
   const r = await fetch(endpoint, { method: "POST", headers: { "Authorization": "Bearer " + key, "Content-Type": "application/json" },
@@ -408,7 +408,7 @@ async function publishMode(db: any, mode: string, pack: any) {
           "لماذا يهم؟ " + txt(item.significance, 2200),
           "ما الذي نراقبه تالياً؟ " + txt(item.watch_next, 1800),
           "المصادر: " + evidence.map((s: any) => txt(s.publisher || s.title, 120) + " — " + safeLink(s.url)).join(" | ")
-        ].filter(Boolean).join("\\n\\n").slice(0, 11800),
+        ].filter(Boolean).join("\n\n").slice(0, 11800),
         image_url: safeLink(item.image_url) || null, author: "WRLDLINE NEWS",
         lang: "ar", source_language: "ar", language_detection: "declared",
         category: ["politics","economy","security","tech","sports","culture","health","science","environment","society","world"].includes(String(item.category)) ? item.category : "world",
