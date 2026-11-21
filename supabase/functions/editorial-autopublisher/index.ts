@@ -223,9 +223,9 @@ async function buildPack(mode: string, db: any, recent: any[]) {
   const top = a.story.slice(0, 5).map((x: any) => x.title).join(" / ").slice(0, 260);
   let queries: string[] = [];
   if (mode === "hourly") queries = [
-    "Saudi Arabia Gulf world politics economy security latest developments last 8 hours " + top,
-    "Middle East diplomacy conflict energy oil trade central banks latest official statements " + top,
-    "Reuters AP AFP BBC latest world politics economy security developments " + top
+    ...a.story.slice(0, 8).map((x: any) => '"' + txt(x.title, 180) + '" news coverage'),
+    "Saudi Arabia GCC diplomacy politics economy security latest developments",
+    "global politics economy security energy markets latest developments"
   ];
   else if (mode === "dossier") queries = [
     "latest Saudi Arabia Gulf regional developments " + top + " official statement",
@@ -251,10 +251,12 @@ async function buildPack(mode: string, db: any, recent: any[]) {
     ];
   }
 
-  const searchResults = await Promise.allSettled(queries.flatMap((q, i) => [
-    searchWeb(q, i === 0 && mode !== "mirror" ? "ar-SA" : "en-US"),
-    searchWeb(q, "en-US")
-  ]));
+  const searchResults = await Promise.allSettled(mode === "hourly"
+    ? queries.flatMap((q) => [searchWeb(q, "ar-SA"), searchWeb(q, "en-US")])
+    : queries.flatMap((q, i) => [
+        searchWeb(q, i === 0 && mode !== "mirror" ? "ar-SA" : "en-US"),
+        searchWeb(q, "en-US")
+      ]));
   const webSources: Src[] = [];
   searchResults.forEach(result => { if (result.status === "fulfilled") webSources.push(...result.value); });
 
@@ -285,7 +287,7 @@ async function buildPack(mode: string, db: any, recent: any[]) {
   }));
 
   const sourceSet = mode === "hourly"
-    ? [...webSources, ...feedSources, ...a.src, ...historySources]
+    ? [...webSources.slice(0, 60), ...feedSources.slice(0, 20), ...a.src.slice(0, 20), ...historySources]
     : mode === "mirror"
       ? [...historySources, ...webSources, ...feedSources, ...a.src]
       : [...a.src, ...webSources, ...feedSources, ...historySources];
