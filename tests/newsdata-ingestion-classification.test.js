@@ -24,5 +24,5 @@ test("legacy NewsData rows falsely marked classified are expired, not reprocesse
   assert.match(migration, /ai_country_code IS NULL/);
   assert.match(migration, /ai_confidence IS NULL/);
   assert.match(migration, /ai_summary IS NULL/);
-  assert.match(migration, /SET\\s+ai_classification_status = 'expired'/);
+  assert.match(migration, /SET\s+ai_classification_status = 'expired'/);
 });
