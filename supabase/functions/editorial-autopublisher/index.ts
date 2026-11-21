@@ -218,7 +218,7 @@ async function enrichSources(sources: Src[]): Promise<Map<string, string>> {
 async function buildPack(mode: string, db: any, recent: any[]) {
   const a = await articles(db, mode === "context_monthly" ? 24 * 45 : mode === "context_monitor" ? 48 : mode === "mirror" ? 24 * 5 : 24 * 8, mode === "context_monthly" ? 220 : 160);
   const p = await db.from("editorial_publications").select("section,slug,title,content,published_at")
-    .in("section", ["dossier", "context", "mirror"]).eq("status", "published").order("updated_at", { ascending: false }).limit(15);
+    .in("section", ["dossier", "context", "mirror", "hourly"]).eq("status", "published").order("updated_at", { ascending: false }).limit(15);
   if (p.error) throw new Error(p.error.message);
   const top = a.story.slice(0, 5).map((x: any) => x.title).join(" / ").slice(0, 260);
   let queries: string[] = [];
@@ -314,10 +314,10 @@ function promptFor(mode: string, pack: any, date: string) {
   let task = "";
   if (mode === "hourly") task = [
     "أنت غرفة أخبار دولية عربية. أعدّ نشرة تحريرية كل ساعة عن أهم التطورات العالمية السياسية والاقتصادية والأمنية، مع أولوية لما يهم السعودية والخليج والمنطقة العربية.",
-    "اختر من 3 إلى 8 قصص فقط من نافذة آخر 8 ساعات. لا تملأ العدد بقصص هامشية ولا تكرر القصة نفسها بصيغ مختلفة. إذا لم تتوافر ثلاث قصص تستوفي التحقق، أخرج action=no_update.",
+    "اختر من 3 إلى 8 قصص فقط من نافذة آخر 8 ساعات. لا تملأ العدد بقصص هامشية ولا تكرر قصة نُشرت في أي نشرة من آخر 8 ساعات إلا إذا ظهر تطور جوهري جديد؛ عند التكرار اكتب update_note يحدد بدقة ما الجديد. إذا لم تتوافر ثلاث قصص تستوفي التحقق ولا التحديث، أخرج action=no_update.",
     "كل قصة يجب أن تعتمد على مصدرين مستقلين على الأقل من ناشرين مختلفين، مع روابط مباشرة وتوقيت نشر حديث. قدّم مصدر الخبر الأساسي المرافق له في الأخبار الحديثة عبر source_id، ثم أضف مصدراً مستقلاً ثانياً من قائمة المصادر المسموح بها. استخدم معرفات source_ فقط في source_ids، ولا تستخدم article_ كمعرف مصدر. مهم: لا ترفض القصة لمجرد عدم وجود ثلاثة مصادر؛ مصدران مستقلان حديثان يكفيان للنشر بوسم reported. لا تستخدم confirmed إلا عند توفر ثلاثة مصادر مستقلة بينها مصدر رسمي أو أولي. إذا كان هناك بيان رسمي أو مصدر أولي متاح فأدرجه. لا تعتبر نتائج Google News مصدراً مستقلاً بحد ذاتها؛ اعتمد اسم الناشر والرابط الفعلي للمادة. لا تخلط بين إعادة نشر الوكالة الواحدة ومصدرين مستقلين.",
     "افصل بين الوقائع المؤكدة والتقارير الأولية والادعاءات. لا تستخدم كلمة مؤكد إلا إذا كان هناك ثلاثة مصادر مستقلة على الأقل بينها مصدر أولي/رسمي، وإلا ضع reported. لا تنشر تكهنات على أنها حقائق.",
-    'JSON: {"action":"publish|no_update","slug":"hourly-YYYYMMDD-HH","title":"نشرة وردلاين التحريرية — [وقت الرياض]","editorial_note":"...","content":{"edition_at":"ISO timestamp","window_hours":8,"executive_summary":"فقرة عربية موجزة تلخص المشهد","items":[{"headline":"عنوان خبري واضح لا دعائي","category":"politics|economy|security|world|tech","region":"...","published_at":"ISO timestamp","summary":"ملخص واقعي 100-160 كلمة","context":"سياق مستقل يشرح الخلفية دون إعادة صياغة الخبر","significance":"لماذا يهم التطور السعودية أو الخليج أو العالم العربي أو الاقتصاد العالمي","watch_next":"ما المؤشر أو الخطوة التالية التي تستحق المتابعة","confidence":"reported|confirmed|developing","source_ids":["source_1","source_2"]}]}}',
+    'JSON: {"action":"publish|no_update","slug":"hourly-YYYYMMDD-HH","title":"نشرة وردلاين التحريرية — [وقت الرياض]","editorial_note":"...","content":{"edition_at":"ISO timestamp","window_hours":8,"executive_summary":"فقرة عربية موجزة تلخص المشهد","items":[{"headline":"عنوان خبري واضح لا دعائي","category":"politics|economy|security|world|tech","region":"...","published_at":"ISO timestamp","summary":"ملخص واقعي 100-160 كلمة","context":"سياق مستقل يشرح الخلفية دون إعادة صياغة الخبر","significance":"لماذا يهم التطور السعودية أو الخليج أو العالم العربي أو الاقتصاد العالمي","watch_next":"ما المؤشر أو الخطوة التالية التي تستحق المتابعة","confidence":"reported|confirmed|developing","update_note":"ما التغير الجوهري إذا كانت القصة تحديثاً لقصة سابقة، وإلا فارغ","source_ids":["source_1","source_2"]}]}}',
     "لكل قصة اكتب ملخصاً أصلياً بالعربية الفصحى، ثم سياقاً وتحليلاً منفصلين. لا تنسخ صياغة الناشر. لا تضع اقتباساً مباشراً إلا إذا كان موجوداً حرفياً في المصدر. لا تخترع تاريخاً أو رقماً أو منصباً أو علاقة سببية. أعد 3-8 قصص مرتبة بالأهمية، ولا تنشر قصة لا تحقق حد المصدرين المستقلين."
   ].join("\n");
   else if (mode === "dossier") task = [
@@ -365,7 +365,22 @@ async function publishMode(db: any, mode: string, pack: any) {
     content.id = key;
     if (!Array.isArray(content.items) || content.items.length < 3 || content.items.length > 8) throw new Error("Hourly edition must contain 3 to 8 qualified stories");
     const now = Date.now();
+    const normalizeHeadline = (value: unknown) => txt(value, 260).toLowerCase().normalize("NFKC").replace(/[\u064B-\u065F\u0670]/g, "").replace(/[^\p{L}\p{N}]+/gu, " ").trim();
+    const similarity = (left: unknown, right: unknown) => {
+      const a = new Set(normalizeHeadline(left).split(" ").filter((x) => x.length > 2));
+      const b = new Set(normalizeHeadline(right).split(" ").filter((x) => x.length > 2));
+      if (!a.size || !b.size) return 0;
+      let overlap = 0; for (const word of a) if (b.has(word)) overlap++;
+      return overlap / (a.size + b.size - overlap);
+    };
+    const priorTitles = pack.prior.filter((p: any) => p.section === "hourly" && Date.parse(String(p.published_at || "")) >= now - 8 * 60 * 60 * 1000)
+      .flatMap((p: any) => Array.isArray(p.content?.items) ? p.content.items.map((x: any) => x.headline) : []);
+    const currentTitles: string[] = [];
     for (const item of content.items) {
+      const duplicate = [...priorTitles, ...currentTitles].find((headline) => similarity(headline, item.headline) >= 0.72);
+      if (duplicate && txt(item.update_note, 600).length < 35) throw new Error("Hourly story repeats recent coverage without a material update: " + txt(item.headline, 100));
+      currentTitles.push(txt(item.headline, 240));
+
       const ids = Array.isArray(item.source_ids) ? [...new Set(item.source_ids.filter((x: any) => typeof x === "string"))] : [];
       const evidence = ids.map((id: string) => sourceMap.get(id)).filter((s: any) => s && safeLink(s.url)) as Src[];
       const fresh = evidence.filter((s) => {
