@@ -385,11 +385,11 @@ async function publishMode(db: any, mode: string, pack: any) {
       const evidence = ids.map((id: string) => sourceMap.get(id)).filter((s: any) => s && safeLink(s.url)) as Src[];
       const fresh = evidence.filter((s) => {
         const published = Date.parse(String(s.published_at || ""));
-        const domain = host(s.url).toLowerCase().replace(/^www\\./, "");
+        const domain = host(s.url).toLowerCase().replace(/^www\./, "");
         return Number.isFinite(published) && published <= now + 5 * 60_000 && now - published <= 18 * 60 * 60_000
           && domain && domain !== "news.google.com" && domain !== "google.com";
       });
-      const publishers = new Set(fresh.map((s) => host(s.url).toLowerCase().replace(/^www\\./, "")).filter(Boolean));
+      const publishers = new Set(fresh.map((s) => host(s.url).toLowerCase().replace(/^www\./, "")).filter(Boolean));
       if (fresh.length < 2 || publishers.size < 2) throw new Error("Hourly story failed independent-source verification: " + txt(item.headline, 100));
       if (txt(item.headline, 240).length < 18 || txt(item.summary, 1200).length < 100 || txt(item.context, 1600).length < 80 || txt(item.significance, 1000).length < 45 || txt(item.watch_next, 800).length < 35) {
         throw new Error("Hourly story failed editorial depth checks: " + txt(item.headline, 100));
