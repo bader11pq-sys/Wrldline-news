@@ -360,7 +360,7 @@ async function publishMode(db: any, mode: string, pack: any) {
       const duplicate = [...priorTitles, ...currentTitles].find((headline) => similarity(headline, item.headline) >= 0.72);
       if (duplicate && txt(item.update_note, 600).length < 35) continue;
 
-      const ids = Array.isArray(item.source_ids) ? [...new Set(item.source_ids.filter((x: any) => typeof x === "string"))] : [];
+      const ids: string[] = Array.isArray(item.source_ids) ? [...new Set<string>(item.source_ids.filter((x: any): x is string => typeof x === "string"))] : [];
       const evidence = ids.map((id: string) => sourceMap.get(id)).filter((s: any) => s && safeLink(s.url)) as Src[];
       const fresh = evidence.filter((s) => {
         const published = Date.parse(String(s.published_at || ""));
