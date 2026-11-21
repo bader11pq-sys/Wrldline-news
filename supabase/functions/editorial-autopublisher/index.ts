@@ -185,7 +185,7 @@ async function enrichSources(sources: Src[]): Promise<Map<string, string>> {
   const candidates = sources
     .filter((s) => safeLink(s.url) && Date.parse(String(s.published_at || "")) > Date.now() - 18 * 60 * 60 * 1000)
     .sort((a, b) => Date.parse(String(b.published_at || "")) - Date.parse(String(a.published_at || "")))
-    .slice(0, 6);
+    .slice(0, 20);
   const excerpts = new Map<string, string>();
   let cursor = 0;
   async function lane() {
@@ -217,7 +217,7 @@ async function enrichSources(sources: Src[]): Promise<Map<string, string>> {
       }
     }
   }
-  await Promise.all(Array.from({ length: 4 }, () => lane()));
+  await Promise.all(Array.from({ length: 8 }, () => lane()));
   return excerpts;
 }
 
@@ -284,7 +284,7 @@ async function buildPack(mode: string, db: any, recent: any[]) {
     if (!url || sourceMap.has(url)) continue;
     sourceMap.set(url, source); unique.push(source);
   }
-  const sources = unique.slice(0, 40).map((x, i) => ({ ...x, id: "source_" + (i + 1) }));
+  const sources = unique.slice(0, 70).map((x, i) => ({ ...x, id: "source_" + (i + 1) }));
   if (mode === "hourly") {
     for (const story of a.story) {
       const matchingSource = sources.find((s) => s.url === story.url);
@@ -331,7 +331,7 @@ function promptFor(mode: string, pack: any, date: string) {
     'JSON: {"action":"publish|no_update","slug":"mirror-YYYY-MM-DD","title":"...","content":{"id":"...","nowTitle":"...","nowKeywords":["..."],"nowSummary":"...","pastTitle":"...","pastEra":"...","pastDossier":"معرف موسوعة موجود أو فارغ","similarities":["5-8 نقاط"],"differences":["5-8 نقاط"],"lesson":"...","comparativeAnalysis":["3-5 فقرات تحليلية","..."],"limits":"حدود المقارنة","source_ids":["source_1"]}}',
     "اكتب تحليلاً مقارناً لا يقل عن ثلاث فقرات، واذكر تاريخ الواقعة التاريخية وتاريخ التطور المعاصر، وافصل بين الخبر والتحليل، واختم بدرس محدد وحدود واضحة لمنع إسقاط الماضي على الحاضر بلا دليل."
   ].join("\n");
-  return guard + "\n\n" + task + "\n\nأخبار حديثة:\n" + JSON.stringify(pack.articles.slice(0, mode === "hourly" ? 30 : 18)) + "\n\nملفات سابقة:\n" + JSON.stringify(pack.prior).slice(0, 4000) + "\n\nمصادر البحث المسموح بها:\n" + JSON.stringify(pack.sources.map((s: Src) => ({ id: s.id, title: s.title, publisher: s.publisher, url: s.url, published_at: s.published_at, type: s.type, source_confidence: s.source_confidence, excerpt: s.excerpt.slice(0, 600) }))).slice(0, mode === "hourly" ? 16000 : 11000);
+  return guard + "\n\n" + task + "\n\nأخبار حديثة:\n" + JSON.stringify(pack.articles.slice(0, mode === "hourly" ? 45 : 20)) + "\n\nملفات سابقة:\n" + JSON.stringify(pack.prior).slice(0, 4000) + "\n\nمصادر البحث المسموح بها:\n" + JSON.stringify(pack.sources.map((s: Src) => ({ id: s.id, title: s.title, publisher: s.publisher, url: s.url, published_at: s.published_at, type: s.type, source_confidence: s.source_confidence, excerpt: s.excerpt.slice(0, 600) }))).slice(0, mode === "hourly" ? 22000 : 11000);
 }
 async function publishMode(db: any, mode: string, pack: any) {
   const result = await ai(promptFor(mode, pack, riyadhDate())), obj = result.data || {};
