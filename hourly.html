@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#101b2d">
+  <meta name="description" content="النشرة التحريرية كل ساعة من WRLDLINE: أهم التطورات السياسية والاقتصادية والأمنية مع السياق والمصادر المستقلة.">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="style.css?v=20261121-editorial5">
+  <link rel="stylesheet" href="daily-briefing.css?v=20261114-editorial5">
+  <title>غرفة التحرير كل ساعة | WRLDLINE</title>
+  <style>
+    .hourly-shell{max-width:1040px;margin:32px auto 80px;padding:0 18px}
+    .hourly-hero{background:linear-gradient(135deg,#101b2d,#1b2d46);color:#fff;border-radius:18px;padding:28px;margin-bottom:20px}
+    .hourly-kicker{color:#d9b878;font-size:11px;letter-spacing:.14em;font-weight:800}
+    .hourly-hero h1{font-size:clamp(26px,5vw,42px);margin:10px 0;line-height:1.35}
+    .hourly-hero p{color:#d9e1ec;line-height:1.9;margin:0}
+    .hourly-meta{display:flex;gap:14px;flex-wrap:wrap;margin-top:16px;color:#c8d2df;font-size:12px}
+    .hourly-status{padding:14px 16px;border:1px solid #d9e0e8;border-radius:12px;background:#fff;color:#475569;margin-bottom:18px}
+    .hourly-edition{display:flex;justify-content:space-between;gap:12px;align-items:center;margin:22px 0 14px}
+    .hourly-edition h2{font-size:22px;margin:0}
+    .hourly-edition small{color:#64748b}
+    .hourly-summary{padding:18px;border-right:3px solid #b89452;background:#f7f5f0;border-radius:10px;line-height:2;margin-bottom:20px;color:#253247}
+    .hourly-story{background:#fff;border:1px solid #e3e8ef;border-radius:14px;padding:20px;margin:14px 0;box-shadow:0 5px 18px #0f172a08}
+    .hourly-story-head{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:10px}
+    .hourly-tag{font-size:11px;color:#72582d;background:#f4eddf;border-radius:30px;padding:5px 10px}
+    .hourly-confidence{font-size:11px;color:#526173}
+    .hourly-story h3{font-size:20px;line-height:1.6;margin:6px 0 12px;color:#17263a}
+    .hourly-story p{line-height:2;color:#435166;margin:10px 0}
+    .hourly-story h4{font-size:13px;color:#17263a;margin:16px 0 4px}
+    .hourly-sources{display:flex;gap:8px;flex-wrap:wrap;margin-top:15px}
+    .hourly-sources a{font-size:12px;color:#245b88;border:1px solid #d8e2ed;border-radius:7px;padding:6px 9px;text-decoration:none}
+    .hourly-empty{text-align:center;padding:34px 18px;color:#64748b}
+    .hourly-footer{text-align:center;color:#64748b;font-size:12px;margin:24px 0}
+    @media(prefers-color-scheme:dark){.hourly-status,.hourly-story{background:#172438;border-color:#334155;color:#dbe5f1}.hourly-story h3,.hourly-story h4{color:#f1f5f9}.hourly-story p,.hourly-confidence{color:#bdc9d8}.hourly-summary{background:#202d40;color:#e2e8f0}.hourly-empty{color:#bdc9d8}}
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="container masthead">
+      <a class="brand" href="index.html" aria-label="WRLDLINE NEWS"><span class="brand-mark">W</span><span class="brand-copy"><strong>WRLDLINE</strong><small>GLOBAL NEWS NETWORK</small></span></a>
+      <div class="header-tools"><a class="tool-button" href="index.html">العودة إلى الأخبار</a></div>
+    </div>
+    <nav class="main-nav"><div class="container nav-inner">
+      <a class="nav-link" href="index.html">الرئيسية</a>
+      <a class="nav-link" href="index.html#breakingSection">الأخبار العاجلة</a>
+      <a class="nav-link active" href="hourly.html">غرفة التحرير</a>
+      <a class="nav-link" href="daily-briefing.html">ملخص العالم اليومي</a>
+      <a class="nav-link" href="markets.html">الأسواق العالمية</a>
+    </div></nav>
+  </header>
+  <main class="hourly-shell">
+    <section class="hourly-hero">
+      <span class="hourly-kicker">WRLDLINE · HOURLY EDITORIAL DESK</span>
+      <h1>غرفة التحرير كل ساعة</h1>
+      <p>تغطية تحريرية لأهم التطورات السياسية والاقتصادية والأمنية حول العالم، مع سياق مستقل وروابط المصادر التي استندت إليها كل مادة.</p>
+      <div class="hourly-meta"><span>تحديث آلي كل ساعة</span><span>توقيت الرياض</span><span>لا تُنشر المادة إذا لم تجتز حد التحقق التحريري</span></div>
+    </section>
+    <div id="hourlyStatus" class="hourly-status" role="status" aria-live="polite">جارٍ تحميل آخر نشرة تحريرية...</div>
+    <section id="hourlyEdition" hidden>
+      <div class="hourly-edition"><h2 id="hourlyTitle">آخر نشرة</h2><small id="hourlyTime"></small></div>
+      <div id="hourlySummary" class="hourly-summary" hidden></div>
+      <div id="hourlyStories"></div>
+    </section>
+    <div class="hourly-footer">تُعرض المواد المنشورة فقط. قد لا تصدر نشرة في ساعة لا تتوافر فيها ثلاث قصص تستوفي معايير التحقق.</div>
+  </main>
+  <script src="hourly.js?v=20261121-1" defer></script>
+</body>
+</html>
