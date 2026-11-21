@@ -161,3 +161,55 @@ html[data-theme="dark"] .wl-product-link:hover{background:var(--surface-2)}
   .wl-product-link:hover{transform:none}
   .wl-product-rail-label{font-size:9.5px}
 }
+
+/* Editorial front page: a strong ProPublica-inspired frame without copying its brand. */
+.wl-home{background:linear-gradient(180deg,#151b23 0 18px,var(--paper) 18px 100%)}
+.wl-home .wl-utility{border-bottom:1px solid #ffffff1c}
+.wl-home .wl-header{background:var(--surface);border-bottom:2px solid var(--navy)}
+.wl-home .wl-masthead{min-height:84px}
+.wl-home .wl-brand-copy strong{font-size:clamp(23px,2.3vw,34px);letter-spacing:.15em}
+.wl-home .wl-brand-copy small{letter-spacing:.28em}
+.wl-home .wl-nav-wrap{border-top:1px solid var(--line);background:var(--surface)}
+.wl-home .wl-nav{min-height:48px}
+.wl-home .wl-hero{padding-block:clamp(34px,5vw,66px) 28px;background:var(--paper);border-bottom:0}
+.wl-home .wl-hero-top{align-items:flex-end;margin-bottom:28px}
+.wl-home .wl-hero-title{max-width:900px}
+.wl-home .wl-hero-title h1{font-size:clamp(38px,5.8vw,78px);font-weight:800;line-height:1.12}
+.wl-home .wl-hero-title p{font-size:clamp(14px,1.4vw,18px);line-height:1.9;max-width:760px}
+.wl-home .wl-hero-grid{padding:12px;border:2px solid var(--navy);border-radius:4px;background:var(--navy);box-shadow:10px 10px 0 color-mix(in srgb,var(--gold) 50%,transparent)}
+.wl-home .hero-layout{gap:12px}
+.wl-home .lead-story{min-height:570px;border:1px solid #ffffff45;border-radius:2px;box-shadow:none}
+.wl-home .lead-rail{border:1px solid var(--line);border-inline-start:5px solid var(--gold);border-radius:2px;box-shadow:none}
+.wl-home .lead-rail-head{padding:17px 20px;border-bottom:2px solid var(--navy)}
+.wl-home .rail-story{padding:18px 20px}
+.wl-home .wl-rooms{padding:12px 0 0;border:0;border-radius:0;background:transparent}
+.wl-home .wl-room{border-radius:2px;border:1px solid var(--navy);box-shadow:none}
+.wl-home .wl-dossier-strip{border-top:1px solid var(--navy);background:var(--surface)}
+
+@media(max-width:760px){
+  .wl-home{background:var(--paper)}
+  .wl-home .wl-masthead{min-height:72px}
+  .wl-home .wl-brand-copy strong{font-size:18px;letter-spacing:.12em}
+  .wl-home .wl-brand-copy small{font-size:7px;letter-spacing:.15em}
+  .wl-home .wl-hero{padding-block:28px 20px}
+  .wl-home .wl-hero-top{align-items:center;text-align:center;margin-bottom:20px}
+  .wl-home .wl-hero-title{max-width:100%}
+  .wl-home .wl-hero-title .wl-kicker{font-size:8px;letter-spacing:.16em}
+  .wl-home .wl-hero-title h1{font-size:clamp(31px,9.5vw,43px);line-height:1.24}
+  .wl-home .wl-hero-title p{font-size:13px;line-height:1.9;margin-inline:auto}
+  .wl-home .wl-hero-side{justify-content:center}
+  .wl-home .wl-hero-grid{padding:7px;border-radius:5px;box-shadow:6px 6px 0 color-mix(in srgb,var(--gold) 48%,transparent)}
+  .wl-home .hero-layout{display:block}
+  .wl-home .lead-story{min-height:540px;border-radius:2px}
+  .wl-home .lead-overlay{padding:22px 18px}
+  .wl-home .lead-overlay h2{font-size:clamp(23px,6.5vw,30px);line-height:1.55;-webkit-line-clamp:5}
+  .wl-home .lead-overlay p{display:-webkit-box;font-size:12px;line-height:1.85;-webkit-line-clamp:3}
+  .wl-home .lead-rail{display:block;margin-top:12px;border-inline-start:0;border-top:4px solid var(--gold)}
+  .wl-home .lead-rail-head{padding:13px 15px}
+  .wl-home .rail-story{grid-template-columns:86px minmax(0,1fr);gap:13px;padding:15px;border-inline:0;border-bottom:1px solid var(--line)}
+  .wl-home .rail-image{width:86px;height:74px;grid-row:1/3}
+  .wl-home .rail-story h3{font-size:15px;line-height:1.75;-webkit-line-clamp:3}
+  .wl-home .wl-rooms{margin-top:18px;padding:9px;border:1px solid var(--line);background:var(--surface)}
+  .wl-home .wl-room{min-height:84px;border-radius:2px;border-color:var(--line);padding:12px 4px}
+  .wl-home .wl-product-rail{border-top:2px solid var(--navy);padding-top:12px}
+}
