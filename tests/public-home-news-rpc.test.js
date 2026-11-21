@@ -37,10 +37,10 @@ test("homepage and newsroom consume the enriched v3 feed and expose verification
   assert.ok(newsroom.includes("/rest/v1/rpc/public_home_news_recent_v3"));
   assert.match(homepage, /ai_reader_impact/);
   assert.match(homepage, /ai_watch_next/);
-  assert.ok(migration.includes("create or replace function public.public_home_news_recent_v3"));
+  assert.match(migration, /create or replace function public\.public_home_news_recent_v3/i);
   assert.match(migration, /security definer set search_path to 'pg_catalog'/i);
-  assert.ok(migration.includes("grant execute on function public.public_home_news_recent_v3("));
-  assert.ok(migration.includes("to anon, authenticated;"));
+  assert.match(migration, /grant execute on function public\.public_home_news_recent_v3\(/i);
+  assert.match(migration, /to anon,\s*authenticated;/i);
 
   assert.ok(!migration.includes("grant select on public.articles to anon"));
 });
@@ -70,10 +70,10 @@ test("WRLDLINE Shorts uses the allowlisted public news RPC instead of direct art
   assert.match(shorts, /p_limit:limit/);
   assert.match(shorts, /p_offset:offset/);
   assert.doesNotMatch(shorts, /\/rest\/v1\/articles\?/);
-  assert.match(migration, /create or replace function public\.public_home_news_recent_v3/);
+  assert.match(migration, /create or replace function public\.public_home_news_recent_v3/i);
   assert.match(migration, /article_translations jsonb/);
   assert.match(migration, /verification_independent_count integer/);
   assert.match(migration, /editorial_trust_status text/);
-  assert.match(migration, /revoke all on function public\.public_home_news_recent_v3/);
+  assert.match(migration, /revoke all on function public\.public_home_news_recent_v3/i);
   assert.match(migration, /media_type text/);
 });
