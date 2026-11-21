@@ -233,7 +233,10 @@
   function articleCard(a, opts = {}) {
     const publishedAt = Date.parse(a?.published_at || "");
     const publishedISO = Number.isFinite(publishedAt) ? new Date(publishedAt).toISOString() : "";
-    const img = a.image_url ? '<img src="' + escapeHTML(a.image_url) + '" alt="' + escapeHTML(a.title) + '" loading="lazy" decoding="async" referrerpolicy="no-referrer" onerror="this.style.display=\'none\'">' : "";
+    const imagePlaceholder = '<div class="image-placeholder card-image" aria-hidden="true">WRLDLINE</div>';
+    const img = opts.compact ? "" : (a.image_url
+      ? `<img class="card-image" src="${escapeHTML(a.image_url)}" alt="${escapeHTML(a.title)}" loading="lazy" decoding="async" referrerpolicy="no-referrer" onerror="this.replaceWith(Object.assign(document.createElement('div'),{className:'image-placeholder card-image',textContent:'WRLDLINE'}))">`
+      : imagePlaceholder);
     const cls = opts.compact ? "wl-live-story" : "news-card news-card--editorial";
     return '<article class="' + cls + '">' + (opts.compact ? "" : '<div class="card-open">' + img) +
       '<div class="' + (opts.compact ? "wl-live-copy" : "card-content") + '">' +
