@@ -178,7 +178,7 @@ function combine(base: Src[], extra: Src[]) {
 async function enrichSources(sources: Src[]): Promise<Map<string, string>> {
   const candidates = sources
     .filter((s) => safeLink(s.url) && Date.parse(String(s.published_at || "")) > Date.now() - 18 * 60 * 60 * 1000)
-    .sort((a, b) => Date.parse(String(b.published_at || "")) - Date.parse(String(a.published_at || "" ))
+    .sort((a, b) => Date.parse(String(b.published_at || "")) - Date.parse(String(a.published_at || "")))
     .slice(0, 18);
   const excerpts = new Map<string, string>();
   let cursor = 0;
