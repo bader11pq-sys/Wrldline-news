@@ -104,7 +104,9 @@ async function syncNews() {
       source_name:String(item.source_name||"NewsData.io").slice(0,180),
       source_url:publisherUrl||"https://newsdata.io",
       verification:"unconfirmed",published_at:validRecentDate(item.pubDate),
-      editorial_status:"published",ai_classification_status:"classified",
+      editorial_status:"published",
+      // Leave ai_classification_status to the database default (pending). This is an ingest,
+      // not an AI classification; omission also preserves existing classifications on upsert.
       is_breaking:/^(\s|[\[({])*(breaking|just in|عاجل|نبأ عاجل)/i.test(String(item.title))
     };
   });
