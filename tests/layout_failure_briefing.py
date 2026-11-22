@@ -14,7 +14,7 @@ async def main():
   c=await b.new_context(viewport={'width':1280,'height':800})
   await c.route('**/rest/v1/rpc/public_home_news_recent**',lambda r: r.abort())
   pg=await c.new_page();await pg.goto(BASE+'/',wait_until='domcontentloaded');await pg.wait_for_timeout(13500)
-  out['failure']={'hero':await pg.locator('#heroLayout').inner_text(),'retry':await pg.locator('#heroLayout button').count()}
+  out['failure']={'picks':await pg.locator('#heroLayout .front-pick-link').count(),'retry':await pg.locator('#newsGrid [data-reader-action=retry]').count()}
   await c.close()
   # briefing dedupe
   c=await b.new_context(viewport={'width':1280,'height':900})
@@ -22,7 +22,7 @@ async def main():
   out['briefing']=await pg.evaluate("()=>({status:document.querySelector('#briefingStatus')?.innerText,top:document.querySelectorAll('#topDevelopments .briefing-story').length,sections:[...document.querySelectorAll('.briefing-category')].map(s=>s.querySelectorAll('.briefing-story').length),all:[...document.querySelectorAll('.briefing-story h3')].map(h=>h.innerText.trim())})")
   # generic titles public
   await pg.goto(BASE+'/',wait_until='domcontentloaded');await pg.wait_for_timeout(4000)
-  out['generic_public']=await pg.evaluate("()=>[...document.querySelectorAll('.news-card h3,.rail-story h3,.lead-story h2')].map(h=>h.innerText.trim()).filter(t=>/^(- reuters|business|politics|tech now|tech life|al jazeera - al jazeera|kuna news agency - kuwait - kuna|quickreads:)/i.test(t)).slice(0,20)")
+  out['generic_public']=await pg.evaluate("()=>[...document.querySelectorAll('.news-card h3,.front-pick h3')].map(h=>h.innerText.trim()).filter(t=>/^(- reuters|business|politics|tech now|tech life|al jazeera - al jazeera|kuna news agency - kuwait - kuna|quickreads:)/i.test(t)).slice(0,20)")
   # admin fields exist and no analytics
   await pg.goto(BASE+'/admin.html',wait_until='domcontentloaded');await pg.wait_for_timeout(1000)
   out['admin']={'articleKind':await pg.locator('#articleKind').count(),'sponsorName':await pg.locator('#sponsorName').count(),'correctionNote':await pg.locator('#correctionNote').count(),'analytics':await pg.evaluate("()=>typeof window.WRLDLINE_ANALYTICS")}

@@ -41,6 +41,10 @@ jobs:
           tests=(tests/*.test.js tests/*.test.mjs tests/*.test.cjs)
           test "${#tests[@]}" -gt 0
           node --test "${tests[@]}"
+      - name: Verify generated event files and front page
+        run: |
+          node scripts/build-dossiers.mjs
+          git diff --exit-code -- index.html dossier/ sitemap.xml
       - uses: denoland/setup-deno@v2
         with:
           deno-version: 'v2.5.6'

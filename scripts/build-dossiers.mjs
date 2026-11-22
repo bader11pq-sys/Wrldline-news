@@ -14,6 +14,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { catalogScript, validateEventDesk, writeEdition } from "./front-page.mjs";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const CONTENT_DIR = path.join(ROOT, "content", "dossiers");
@@ -203,7 +204,7 @@ function validate(raw, file) {
     })),
     readerBrief: raw.readerBrief == null ? null : {
       reviewedOn: requireISO(raw.readerBrief, "reviewedOn", `${where} readerBrief`),
-      nextOn: requireISO(raw.readerBrief, "nextOn", `${where} readerBrief`),
+      nextOn: raw.readerBrief.nextOn == null ? "" : requireISO(raw.readerBrief, "nextOn", `${where} readerBrief`),
       ...Object.fromEntries(["change", "confirmed", "next"].map((key) => {
         const entry = raw.readerBrief[key];
         return [key, {
@@ -238,7 +239,7 @@ function validate(raw, file) {
   dossier.impact.actual.forEach((n) => checkRefs(n.sourceRefs, "impact.actual"));
   if (dossier.readerBrief) {
     const b = dossier.readerBrief;
-    if (day(b.reviewedOn) > day(dossier.updatedAt) || day(b.nextOn) < day(b.reviewedOn)) {
+    if (day(b.reviewedOn) > day(dossier.updatedAt) || (b.nextOn && day(b.nextOn) < day(b.reviewedOn))) {
       throw new DossierError(`${where}: تواريخ موجز القارئ لا تتوافق مع تاريخ التحديث أو الموعد المقبل.`);
     }
     for (const key of ["change", "confirmed", "next"]) checkRefs(b[key].sourceRefs, `readerBrief.${key}`);
@@ -297,11 +298,11 @@ function renderFooter() {
     <div><h2>الملفات</h2><a href="/dossier/">كل ملفات الأحداث</a><a href="/dossier/feed.xml">خلاصة الملفات</a><a href="/about.html">المنهجية والتحرير</a></div>
     <div><h2>السياسات</h2><a href="/corrections.html">التصحيح</a><a href="/privacy.html">الخصوصية</a><a href="/terms.html">الشروط</a><a href="/contact.html">التواصل</a></div>
   </div>
-  <div class="wrap footer-bottom"><span>© ${new Date().getUTCFullYear()} WRLDLINE NEWS</span><span>الملفات تحليل معلومات عامة موثقة، وليست معلومات سرية أو نصيحة استثمارية.</span></div>
+  <div class="wrap footer-bottom"><span>© 2026 WRLDLINE NEWS</span><span>الملفات تحليل معلومات عامة موثقة، وليست معلومات سرية أو نصيحة استثمارية.</span></div>
 </footer>`;
 }
 
-function pageShell({ title, description, canonical, body, jsonLd, extraHead = "", bodyClass = "", activeNav = "/dossier/" }) {
+function pageShell({ title, description, canonical, body, jsonLd, extraHead = "", bodyClass = "", activeNav = "/dossier/", detail = false }) {
   return `<!doctype html>
 <html lang="ar" dir="rtl" data-theme="light">
 <head>
@@ -334,12 +335,13 @@ ${extraHead}
 ${renderHeader(activeNav)}
 <main id="main">${body}</main>
 ${renderFooter()}
-<script src="/dossier.js?v=20261119-1" defer></script>
+${detail ? `<script src="/event-desk.js?v=20261122-event" defer></script>
+<script src="/dossier.js?v=20261122-event" defer></script>` : '<script src="/dossier.js?v=20261119-1" defer></script>'}
 </body>
 </html>`;
 }
 
-function renderDossier(d, now) {
+function renderDossier(d, now, catalog = []) {
   const status = STATUS[d.status];
   const canonical = `${ORIGIN}/dossier/${d.slug}.html`;
   const latest = d.timeline[d.timeline.length - 1];
@@ -348,10 +350,10 @@ function renderDossier(d, now) {
     <div class="reader-brief-head"><h2 id="readerBriefTitle">الملف في ثلاث إجابات</h2>
     <p>آخر مراجعة للموجز: <time datetime="${day(b.reviewedOn)}">${esc(arabicDate(b.reviewedOn))}</time></p></div>
     <dl>${[
-      ["change", "ما الذي تغيّر؟", "changed"],
-      ["confirmed", "ما الذي تأكّد؟", "facts"],
-      ["next", "ما الموعد التالي؟", "watch"],
-    ].map(([key, label, target]) => `<div><dt><a href="#${target}">${label}</a></dt><dd>${key === "next" ? `<time datetime="${day(b.nextOn)}">${esc(arabicDate(b.nextOn))}</time> · ` : ""}${esc(b[key].text)}${sourceLinks(b[key].sourceRefs, d.sourceMap)}</dd></div>`).join("")}</dl>
+      ["change", "ما الجديد منذ آخر تحديث؟", "changed"],
+      ["confirmed", "ما الذي تأكد؟", "facts"],
+      ["next", "متى نعرف التطور التالي؟", "watch"],
+    ].map(([key, label, target]) => `<div><dt><a href="#${target}">${label}</a></dt><dd>${key !== "next" ? "" : b.nextOn ? `<span data-schedule-label>الموعد المعلن عند المراجعة: </span><time data-dossier-schedule datetime="${day(b.nextOn)}">${esc(arabicDate(b.nextOn))}</time>. ` : "<strong>لا يوجد موعد معلن.</strong> "}${esc(b[key].text)}${sourceLinks(b[key].sourceRefs, d.sourceMap)}</dd></div>`).join("")}</dl>
   </section>`;
 
   const facts = `<dl class="facts">${d.facts.map((f) => `<div><dt>${esc(f.label)}</dt><dd>${esc(f.value)}${sourceLinks(f.sourceRefs, d.sourceMap)}</dd></div>`).join("")}</dl>`;
@@ -391,7 +393,17 @@ function renderDossier(d, now) {
     ? `<section class="block" id="corrections"><h2>سجل التصحيحات</h2><ol class="updates corrections">${d.corrections.map((c) => `<li><time datetime="${attr(c.at)}">${esc(arabicDate(c.at, true))}</time><p>${esc(c.note)}</p></li>`).join("")}</ol></section>`
     : `<section class="block" id="corrections"><h2>سجل التصحيحات</h2><p class="muted">لا تصحيحات منشورة على هذا الملف حتى الآن. عند ثبوت خطأ نضيف تصحيحاً هنا ونحدّث وقت الملف.</p></section>`;
 
-  const related = `<section class="block related" id="related" data-keywords="${attr(d.keywords.join("|"))}" aria-labelledby="relatedTitle"><div class="related-head"><h2 id="relatedTitle">أخبار مرتبطة بالملف</h2><span class="muted" id="relatedStatus">جارٍ البحث في الأخبار المنشورة…</span></div><div class="related-grid" id="relatedGrid"></div></section>`;
+  const refs = b ? [...new Set([...(b.change.sourceRefs), ...(b.confirmed.sourceRefs)])] : d.whatChanged[0]?.sourceRefs || [];
+  const related = `<section class="block related" id="related" data-dossier-slug="${attr(d.slug)}" aria-labelledby="relatedTitle">
+    <div class="related-head"><h2 id="relatedTitle">تابع تغطية الحدث</h2></div>
+    <p class="muted"><a href="#timeline">الخط الزمني للملف</a> · <a href="#sources">جميع المصادر الموثقة</a></p>
+    <div class="related-grid">${refs.map(ref => {
+      const source = d.sourceMap.get(ref);
+      return `<article class="related-card"><small>${esc(source.publisher)}</small><a href="${attr(source.url)}" rel="noopener noreferrer">${esc(source.title)}</a></article>`;
+    }).join("")}</div>
+    <p class="muted" id="relatedStatus" role="status"></p><div class="related-grid" id="relatedGrid"></div>
+    ${catalogScript(catalog)}
+  </section>`;
 
   const body = `
 <article class="dossier">
@@ -513,6 +525,7 @@ function renderDossier(d, now) {
     body,
     jsonLd,
     bodyClass: "dossier-detail",
+    detail: true,
     extraHead: `<meta property="article:published_time" content="${attr(d.createdAt)}"><meta property="article:modified_time" content="${attr(d.updatedAt)}"><meta property="article:section" content="ملفات الأحداث">${b ? '<link rel="stylesheet" href="/editorial-launch.css?v=20261122-coverage">' : ""}`,
   });
 }
@@ -1016,8 +1029,10 @@ function build({ quiet = false } = {}) {
   const watch = collectWatch(list, now);
   const claims = collectClaims(list);
   const impacts = collectImpact(list);
+  const eventDesk = validateEventDesk(JSON.parse(fs.readFileSync(path.join(ROOT, "content/event-desk.json"), "utf8")), list);
+  writeEdition(ROOT, eventDesk);
   fs.mkdirSync(OUT_DIR, { recursive: true });
-  for (const d of list) fs.writeFileSync(path.join(OUT_DIR, `${d.slug}.html`), renderDossier(d, now), "utf8");
+  for (const d of list) fs.writeFileSync(path.join(OUT_DIR, `${d.slug}.html`), renderDossier(d, now, eventDesk), "utf8");
   fs.writeFileSync(path.join(OUT_DIR, "index.html"), renderIndex(list, now), "utf8");
   fs.writeFileSync(path.join(OUT_DIR, "index.json"), renderIndexJson(list), "utf8");
   fs.writeFileSync(path.join(OUT_DIR, "feed.xml"), renderFeed(list), "utf8");

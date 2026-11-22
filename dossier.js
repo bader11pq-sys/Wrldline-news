@@ -127,12 +127,18 @@
   }
 
   /* Related live articles: conservative keyword match, never invented relevance */
+  const schedule = $("[data-dossier-schedule]");
+  if (schedule && new Intl.DateTimeFormat("sv-SE", { timeZone: "Asia/Riyadh" }).format(new Date()) > schedule.dateTime) {
+    $("[data-schedule-label]").textContent = "مرّ تاريخ الموعد المعلن؛ ليس تأكيداً للنتيجة: ";
+  }
+
   const relatedHost = $("#relatedGrid");
   if (relatedHost) {
-    const keywords = ($("#related")?.dataset.keywords || "").split("|").map((k) => k.trim()).filter(Boolean);
+    const slug = $("#related")?.dataset.dossierSlug;
+    const desk = window.WLEventDesk;
+    const catalog = desk?.fromPage(document) || [];
     const statusEl = $("#relatedStatus");
     const setStatus = (text) => { if (statusEl) statusEl.textContent = text; };
-    const safeURL = (value) => { try { const u = new URL(value, location.origin); return ["http:", "https:"].includes(u.protocol) ? u.href : ""; } catch { return ""; } };
     const when = (value) => {
       const t = Date.parse(value || "");
       if (!Number.isFinite(t)) return "";
@@ -143,38 +149,37 @@
       return new Intl.DateTimeFormat("ar-SA-u-ca-gregory", { dateStyle: "medium" }).format(new Date(t));
     };
     (async () => {
-      if (!keywords.length) { setStatus("لا كلمات ربط محددة لهذا الملف."); return; }
+      if (!catalog.some(d => d.slug === slug)) return;
+      setStatus("جارٍ البحث عن تغطية حديثة لهذا الحدث…");
       try {
-        const res = await fetch(`${API}/rest/v1/rpc/public_home_news_recent_v2`, {
+        const res = await fetch(`${API}/rest/v1/rpc/public_home_news_recent_v3`, {
           method: "POST",
           headers: { apikey: KEY, "Content-Type": "application/json", Accept: "application/json" },
-          body: JSON.stringify({ p_limit: 80, p_before: new Date().toISOString(), p_since: null, p_offset: 0 }),
+          body: JSON.stringify({ p_limit: 48, p_before: new Date().toISOString(), p_since: null, p_offset: 0, p_newsdata_only: false }),
           signal: AbortSignal.timeout(12000),
         });
         if (!res.ok) throw new Error("HTTP " + res.status);
         const rows = await res.json();
-        const list = (Array.isArray(rows) ? rows : []).filter((a) => {
-          if (!a || !a.title) return false;
-          const hay = `${a.title} ${a.summary || ""}`.toLowerCase();
-          return keywords.some((k) => hay.includes(k.toLowerCase()));
+        const titles = new Set();
+        const list = (Array.isArray(rows) ? rows : []).filter(a => {
+          const title = desk.normalize(a?.title);
+          if (!title || titles.has(title) || !/^[0-9a-f-]{36}$/i.test(a?.id) || desk.match(a,catalog)?.slug !== slug) return false;
+          titles.add(title);
+          return true;
         }).slice(0, 6);
         if (!list.length) {
-          setStatus("لا توجد أخبار منشورة تطابق كلمات هذا الملف الآن.");
-          relatedHost.innerHTML = '<p class="related-empty">سيظهر هنا أي خبر منشور يطابق كلمات الملف. لا نعرض خبراً غير مرتبط لمجرد ملء المكان.</p>';
+          setStatus("لا توجد تغطية حديثة مطابقة لهذا الحدث في آخر الأخبار. المصادر الموثقة أعلاه متاحة دائماً.");
           return;
         }
-        setStatus(`${list.length} ${list.length === 1 ? "خبر مرتبط" : "أخبار مرتبطة"} من آخر 80 خبراً منشوراً`);
+        setStatus("أحدث الأخبار المرتبطة بهذا الحدث");
         relatedHost.innerHTML = list.map((a) => {
-          const id = String(a.id || "");
-          const href = /^[0-9a-f-]{36}$/i.test(id) ? `/news/${encodeURIComponent(id)}` : safeURL(a.url || a.source_url || "");
-          if (!href) return "";
+          const href = `/news/${encodeURIComponent(a.id)}`;
           const source = esc(a.source_name || a.source || "المصدر غير متاح");
           const title = esc(a.title);
-          return `<article class="related-card"><small>${source}</small><a href="${esc(href)}"${href.startsWith("/") ? "" : ' target="_blank" rel="noopener noreferrer"'}>${title}</a><time>${esc(when(a.published_at))}</time></article>`;
+          return `<article class="related-card"><small>${esc(desk.label(desk.kind(a),"ar"))} · ${source}</small><a href="${esc(href)}" dir="auto">${title}</a><time>${esc(when(a.published_at))}</time></article>`;
         }).join("") || '<p class="related-empty">لم نجد روابط صالحة.</p>';
       } catch {
         setStatus("تعذر تحميل الأخبار المرتبطة الآن.");
-        relatedHost.innerHTML = '<p class="related-empty">الملف مقروء بالكامل دون هذا القسم. أعد المحاولة عند توفر الاتصال.</p>';
       }
     })();
   }

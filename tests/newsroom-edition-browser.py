@@ -147,9 +147,10 @@ async def main():
             else:
                 await expect(page.locator("#editionReportCount")).to_have_text("0")
             if mode == "empty":
-                await expect(page.locator("#heroLayout")).to_contain_text("We could not load the news")
+                await expect(page.locator("#heroLayout .front-pick-link")).to_have_count(5)
+                await expect(page.locator("#newsGrid")).to_contain_text("We could not load the news")
                 state["home_failure"] = False
-                await page.locator("#heroLayout [data-reader-action=retry]").click()
+                await page.locator("#newsGrid [data-reader-action=retry]").click()
             await expect(page.locator("#newsGrid .reader-story-link")).to_have_count(24)
             await page.get_by_role("button", name="التبديل إلى العربية").click()
             await expect(page.locator("#editionMonitorTitle")).to_have_text("مرصد العالم")

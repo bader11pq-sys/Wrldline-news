@@ -9,7 +9,22 @@
   "location": "قطر والولايات المتحدة وأسواق آسيا وأوروبا",
   "startedAt": "2026-03-01T00:00:00Z",
   "createdAt": "2026-11-18T12:00:00Z",
-  "updatedAt": "2026-11-19T09:00:00Z",
+  "updatedAt": "2026-11-22T20:56:21Z",
+  "readerBrief": {
+    "reviewedOn": "2026-11-22",
+    "change": {
+      "text": "أحدث ما يناقشه الملف تحليل نشرته رويترز في 18 نوفمبر عن حجم المحفظة المتوقعة ومخاطر تركزها. أرقام التحليل تقديرات وليست توجيهاً جديداً من قطر للطاقة.",
+      "sourceRefs": ["reuters"]
+    },
+    "confirmed": {
+      "text": "أعلنت قطر للطاقة توقيع اتفاقيات مع شينير لشراء ما يصل إلى 4 ملايين طن سنوياً من الغاز المسال، وتتوقع التسليم من 2031 إلى 2054. وتوضح شينير أن مليون طن سنوياً من هذا الإجمالي مشروط. هذه ليست كميات مسلّمة الآن.",
+      "sourceRefs": ["qe-cheniere", "cheniere"]
+    },
+    "next": {
+      "text": "نراقب إفصاحات قطر للطاقة وشينير عن الشروط وبدء التوريد، وأي جدول تنفيذ جديد. لا نعامل توقعات المحللين على أنها مواعيد رسمية.",
+      "sourceRefs": ["qe-cheniere", "cheniere"]
+    }
+  },
   "tags": [
     "قطر",
     "الغاز المسال",
@@ -311,6 +326,15 @@
   ],
   "sources": [
     {
+      "id": "cheniere",
+      "url": "https://lngir.cheniere.com/_assets/_ce01cff7721d1599c1832dacee3b6fd9/cheniere/news/2026-10-29_Cheniere_Reports_Third_Quarter_2026_Results_349.pdf",
+      "title": "Cheniere Reports Third Quarter 2026 Results",
+      "publisher": "Cheniere Energy",
+      "publishedAt": "2026-10-29",
+      "accessedAt": "2026-11-22",
+      "kind": "official"
+    },
+    {
       "id": "reuters",
       "publisher": "Reuters",
       "title": "QatarEnergy's LNG expansion may leave it bigger but not less exposed",
@@ -346,6 +370,11 @@
     }
   ],
   "updates": [
+    {
+      "at": "2026-11-22T20:56:21Z",
+      "version": "1.2",
+      "note": "إضافة موجز مع إفصاح شركة شينير لتمييز شروط العقد عن تقديرات حجم السوق."
+    },
     {
       "at": "2026-11-19T09:00:00Z",
       "version": "1.1",

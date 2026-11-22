@@ -1,0 +1,39 @@
+{
+  "editedOn": "2026-11-22",
+  "picks": [
+    {
+      "dossier": "opec-plus-december-2026",
+      "desk": { "ar": "الطاقة والأسواق", "en": "Energy and markets" },
+      "title": { "ar": "أوبك+: ما الذي حُسم لديسمبر، وما الذي ننتظره؟", "en": "OPEC+: What is settled for December, and what comes next?" },
+      "deck": { "ar": "الدول السبع أبقت مستوى الإنتاج المطلوب لديسمبر عند مستوى سبتمبر. نميّز بين الحصص المعلنة والإنتاج الفعلي وما لم يُقرر بعد.", "en": "Seven countries kept December’s required production at September levels. We separate announced targets from actual output and outstanding decisions." }
+    },
+    {
+      "dossier": "hormuz-closure-2026",
+      "desk": { "ar": "الملاحة", "en": "Shipping" },
+      "title": { "ar": "هرمز: ما الذي تعنيه إحاطة مجلس الأمن للملاحة؟", "en": "Hormuz: What the UN briefing tells us about shipping" },
+      "deck": { "ar": "نتابع بيانات العبور والحوادث لفصل التطورات الفعلية عن التصريحات بشأن إعادة فتح الممر.", "en": "Transit and incident reports help distinguish real changes at sea from statements about reopening the strait." }
+    },
+    {
+      "dossier": "bab-al-mandab-2026",
+      "desk": { "ar": "أمن البحر الأحمر", "en": "Red Sea security" },
+      "title": { "ar": "باب المندب بعد انسحاب القوات الحكومية اليمنية", "en": "Bab al-Mandab after the Yemeni government forces’ withdrawal" },
+      "deck": { "ar": "ماذا تغيّر على الساحل، وماذا تقول بيانات العبور عن الملاحة التجارية؟", "en": "What changed on the coast, and what does transit data tell us about commercial shipping?" }
+    },
+    {
+      "url": "/news/7dad6cc7-0433-4f23-b358-314c249f02b9",
+      "type": "analysis",
+      "source": { "ar": "WRLDLINE", "en": "WRLDLINE" },
+      "desk": { "ar": "السودان", "en": "Sudan" },
+      "title": { "ar": "القاعدة التي لم تُبنَ بعد: لماذا تهم بورسودان موسكو؟", "en": "The base that hasn’t been built: Why Port Sudan matters to Moscow" },
+      "deck": { "ar": "تحليل لرهانات السودان وروسيا على ساحل البحر الأحمر، وما يفصل الاتفاق عن التنفيذ.", "en": "An analysis of Sudan’s and Russia’s stakes on the Red Sea and the gap between agreement and implementation." }
+    },
+    {
+      "url": "/news/c9e9967a-9096-49ef-8e5e-074a5ce2d733",
+      "type": "reported",
+      "source": { "ar": "اليوم", "en": "Alyaum" },
+      "desk": { "ar": "الشؤون الإنسانية", "en": "Humanitarian affairs" },
+      "title": { "ar": "مركز الملك سلمان يوزّع مساعدات غذائية على نازحين في اليمن", "en": "King Salman aid centre distributes food to displaced families in Yemen" },
+      "deck": { "ar": "تغطية «اليوم» لتوزيع المساعدات الغذائية على الأسر النازحة.", "en": "Alyaum reports on food assistance for displaced families." }
+    }
+  ]
+}

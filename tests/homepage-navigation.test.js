@@ -20,16 +20,16 @@ test("homepage primary navigation follows the core reader journey", () => {
   const primaryLinks = [...primary.matchAll(/<a\b[^>]*href="([^"]+)"/g)].map(match => match[1]);
   assert.deepEqual(primaryLinks, [
     "index.html",
+    "/dossier/",
     "#newsSection",
     "#newsSection",
     "/news/",
     "#breakingSection",
-    "context.html",
     "map.html"
   ]);
 
   for (const route of [
-    "balance.html", "impact.html", "mirror.html", "history.html",
+    "context.html", "balance.html", "impact.html", "mirror.html", "history.html",
     "map.html", "sources.html", "daily-briefing.html", "shorts.html",
     "topics.html", "tags.html", "promises.html", "explainers.html"
   ]) {
