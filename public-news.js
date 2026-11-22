@@ -26,6 +26,7 @@
     tools.append(size);
     summary.before(tools);
     const text = [...summary.querySelectorAll(":scope > p")].map(p => p.textContent).join("\n\n");
+    const editorial = /^WRLDLINE(?: NEWS)?$/i.test((article.dataset.shareSource || "").trim());
     if (text) {
       Promise.all([
         import("/reader-prose.js?v=20261122-longread1"),
@@ -33,7 +34,11 @@
       ]).then(() => {
         window.WLPublicArticleBody.enhance(summary, {
           id: article.dataset.articleId, excerpt: text, english: en,
-          options: { lang: document.documentElement.lang, editorial: /WRLDLINE/i.test(article.dataset.shareSource || "") }
+          options: { lang: document.documentElement.lang, editorial },
+          onComplete: () => {
+            const note = article.querySelector(":scope > .public-news-disclosure");
+            if (editorial && note) note.textContent = en ? "Full article as published by WRLDLINE." : "النص الكامل كما نشرته هيئة تحرير WRLDLINE.";
+          }
         });
       }).catch(() => { /* The server-rendered text remains readable without enhancement. */ });
     }

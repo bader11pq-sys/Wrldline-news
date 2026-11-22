@@ -20,7 +20,7 @@
     if (!result || result.id !== id || typeof result.body !== "string") throw new Error("Article text unavailable");
     return result;
   }
-  function enhance(host, { id, excerpt, translation, options, english }) {
+  function enhance(host, { id, excerpt, translation, options, english, onComplete }) {
     const prose = globalThis.WLReaderProse;
     if (!prose) return;
     function draw(value, lang) {
@@ -41,8 +41,10 @@
         const data = await load(id, translation);
         if (!host.isConnected) return;
         if (data.body.trim() !== excerpt.trim()) draw(data.body, data.lang);
-        if (data.complete) status.remove();
-        else {
+        if (data.complete) {
+          status.remove();
+          onComplete?.();
+        } else {
           if (!status.isConnected) host.before(status);
           status.textContent = english ? "This article exceeds the current reading limit." : "يتجاوز هذا المقال الحد المتاح للعرض حاليًا.";
         }
