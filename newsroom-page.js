@@ -301,10 +301,10 @@
 
   async function boot() {
     initChrome();
-    try { articles = await window.WLNR.fetchArticles(300); } catch { articles = []; }
-    if (page === "context" || page === "mirror") {
+    const articlesPromise = window.WLNR.fetchArticles(300).catch(() => []);
+    const editorialPromise = (page === "context" || page === "mirror") ? (async () => {
       try {
-        const section = page === "context" ? "context" : "mirror";
+        const section = page;
         const rows = await window.WLNR.fetchEditorialPublications(section, 12);
         rows.slice().reverse().forEach(row => {
           const item = row.content || {};
@@ -325,7 +325,9 @@
           }
         });
       } catch (error) { console.warn("WRLDLINE dynamic editorial feed:", error); }
-    }
+    })() : Promise.resolve();
+    articles = await articlesPromise;
+    await editorialPromise;
     ({ context: renderContext, balance: renderBalance, impact: renderImpact, promises: renderPromises, mirror: renderMirror, explainers: renderExplainers }[page] || renderContext)();
   }
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot);

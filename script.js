@@ -330,11 +330,16 @@ async function fetchNews(manual=false){
    if(linkedId&&!document.querySelector("dialog[open]"))openArticle(linkedId,false);
   }
   if(manual)showToast(ui("تم تحديث الأخبار","News updated"));
-  // Keep supplemental reads sequential: parallel RPCs multiply connection pressure.
-  const missedRows=await optional({p_limit:SUPPLEMENTAL_FEED_LIMIT,p_before:now,p_since:null,p_offset:0,p_newsdata_only:true});
-  const breakingRows=await optional({p_limit:SUPPLEMENTAL_FEED_LIMIT,p_before:now,p_since:since24h,p_offset:0,p_is_breaking:true});
-  const exclusiveRows=await optional({p_limit:SUPPLEMENTAL_FEED_LIMIT,p_before:now,p_since:null,p_offset:0,p_is_exclusive:true});
-  const popularRows=await optional({p_days:7,p_limit:5},WRLDLINE_PUBLIC_NEWS_API+"/rest/v1/rpc/public_top_read_articles");
+  // These sections are independent of the main feed. Run them together after
+  // the first paint so one slow section cannot delay the others or the reader.
+  const [missedRows,breakingRows]=await Promise.all([
+   optional({p_limit:SUPPLEMENTAL_FEED_LIMIT,p_before:now,p_since:null,p_offset:0,p_newsdata_only:true}),
+   optional({p_limit:SUPPLEMENTAL_FEED_LIMIT,p_before:now,p_since:since24h,p_offset:0,p_is_breaking:true})
+  ]);
+  const [exclusiveRows,popularRows]=await Promise.all([
+   optional({p_limit:SUPPLEMENTAL_FEED_LIMIT,p_before:now,p_since:null,p_offset:0,p_is_exclusive:true}),
+   optional({p_days:7,p_limit:5},WRLDLINE_PUBLIC_NEWS_API+"/rest/v1/rpc/public_top_read_articles")
+  ]);
   state.extraRows=[...missedRows,...breakingRows,...exclusiveRows];state.popularRows=popularRows;
   refreshReaderData({updateFeed:false});
   // A deep link can refer to a separate breaking or exclusive batch.

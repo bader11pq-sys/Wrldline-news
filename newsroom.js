@@ -12,6 +12,8 @@
   const PUBLIC_NEWS_API = SUPABASE_URL;
   const CACHE_KEY = "wrldline:newsroom-cache:v1";
   const CACHE_TTL = 4 * 60 * 1000;
+  // Keep the public RPC projection bounded until its database cost is reduced.
+  const NEWSROOM_MAX_ARTICLES = 24;
 
   const AR_STOP = new Set(("من في على إلى عن أن إن ما لا لم لن قد كان كانت يكون تكون هو هي هم هن هذا هذه ذلك تلك التي الذي الذين مع بعد قبل بين حتى أو ثم كل بعض غير حول ضد خلال عبر منذ لدى كما أي الا إلا لكن بل وقد وقال قالت أعلن أعلنت قالت قال مصر السعودية الولايات المتحدة اليوم أمس غدا الأنباء وكالة مصادر مصدر خبر أخبار عاجل تقرير خاص جديد جديدة أول مرة عدة نحو دون سوى بما مما فيما بينما حيث إذ إذا قد لقد وهو وهي وقالت وأضاف وأضافت").split(/\s+/));
   const FRAMING = [
@@ -79,28 +81,22 @@
   }
 
   async function fetchArticles(limit = 24) {
-    if (!window.WRLDLINE_AUTH) {
-      await new Promise(resolve => {
-        let settled = false;
-        const done = () => { if (!settled) { settled = true; resolve(); } };
-        document.addEventListener("wrldline:auth-ready", done, { once: true });
-        document.addEventListener("wrldline:auth-denied", done, { once: true });
-        setTimeout(done, 1800);
-      });
-    }
     const cacheKey = CACHE_KEY + ":" + (window.WRLDLINE_AUTH?.user?.id || "anonymous");
+    // Public newsroom reads do not require auth. Start token discovery in the
+    // background, but never make anonymous readers wait for the auth lifecycle.
+    const tokenPromise = Promise.resolve().then(() => window.WRLDLINE_AUTH?.getAccessToken?.()).catch(() => "");
     try {
       const cached = JSON.parse(sessionStorage.getItem(cacheKey) || "null");
       if (cached && Date.now() - cached.at < CACHE_TTL && Array.isArray(cached.rows)) return cached.rows;
     } catch {}
     const url = PUBLIC_NEWS_API + "/rest/v1/rpc/public_home_news_recent_v3";
     try {
-      const token = await window.WRLDLINE_AUTH?.getAccessToken?.();
+      const token = await tokenPromise;
       const headers = { apikey: SUPABASE_ANON_KEY, ...(token ? { Authorization: "Bearer " + token } : {}), "Content-Type": "application/json", "Accept": "application/json" };
       const res = await fetch(url, {
         method: "POST",
         headers,
-        body: JSON.stringify({ p_limit: Math.max(1, Math.min(24, limit)), p_before: new Date().toISOString(), p_since: null, p_offset: 0 }),
+        body: JSON.stringify({ p_limit: Math.max(1, Math.min(NEWSROOM_MAX_ARTICLES, Number(limit) || 24)), p_before: new Date().toISOString(), p_since: null, p_offset: 0 }),
         signal: AbortSignal.timeout(8000)
       });
       if (!res.ok) throw new Error("HTTP " + res.status);
