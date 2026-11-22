@@ -46,6 +46,7 @@
       for (const element of document.querySelectorAll("[data-contact-en]")) element.textContent = element.dataset.contactEn;
       for (const element of document.querySelectorAll("[data-contact-en-href]")) element.href = element.dataset.contactEnHref;
       if (messageField) messageField.placeholder = "Include a story or page URL if relevant.";
+      document.dispatchEvent(new CustomEvent("wrldline:language", { detail: { lang: "en" } }));
     }
     const subject = (params.get("subject") || "").replace(/[\u0000-\u001f\u007f]/g, " ").trim().slice(0, 120);
     if (subject && topic !== "correction" && messageField && !messageField.value.trim()) {

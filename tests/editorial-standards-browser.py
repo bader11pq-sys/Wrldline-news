@@ -96,10 +96,10 @@ async def test_handoff(browser):
         return await route.fulfill(status=200, json=[])
 
     await ctx.route("**/*", net)
+    await p.goto(f"{SITE}/contact.html?lang=en")
+    await expect(p.get_by_role("dialog", name="Measurement and privacy settings")).to_have_attribute("lang", "en")
+    await p.get_by_role("button", name="Decline or withdraw").click()
     await p.goto(f"{SITE}/?lang=en")
-    deny = p.locator('.wrldline-consent [data-choice="denied"]')
-    if await deny.is_visible():
-        await deny.click()
     await expect(p.locator('a[data-editorial-page="about"]')).to_have_attribute("href", "/about-en.html")
     await expect(p.locator('a[data-editorial-page="about"]')).to_have_text("Editorial standards")
     await p.locator("#newsGrid .reader-story-link").first.click()
@@ -144,6 +144,7 @@ async def test_handoff(browser):
     await p.get_by_role("link", name="Report an error").click()
     await expect(p.locator("#contactTopic")).to_have_value("correction")
     await expect(p.locator("#contactArticleLink")).to_have_attribute("href", "/news/" + ID)
+    assert len(requests) == 2
     assert not errors, errors
     await ctx.close()
 
