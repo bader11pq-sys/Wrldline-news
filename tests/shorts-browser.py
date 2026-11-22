@@ -1,6 +1,8 @@
 """Verify WRLDLINE Shorts against isolated news and native browser audio."""
 import asyncio
 import os
+import re
+from pathlib import Path
 from urllib.parse import urlparse
 
 from playwright.async_api import async_playwright, expect
@@ -8,6 +10,11 @@ from playwright.async_api import async_playwright, expect
 SITE = os.environ.get("WRLDLINE_TEST_SITE", "http://127.0.0.1:4173").rstrip("/")
 ORIGIN = urlparse(SITE).netloc
 TRACKS = ["tension-theme", "briefing-pulse", "analysis-desk", "world-in-focus"]
+MEDIA = {
+    f"/assets/shorts-news-{name}.mp3":
+        (Path(__file__).resolve().parents[1] / "assets" / f"shorts-news-{name}.mp3").read_bytes()
+    for name in TRACKS
+}
 STORIES = [
     {
         "id": f"10000000-0000-4000-9000-{index + 1:012}",
@@ -48,6 +55,21 @@ INIT = """
 """
 
 
+async def actual_mp3(route, data):
+    # The lightweight CI HTTP server doesn't support media ranges. Serve the
+    # committed bytes with the same 206 semantics used for production seeks.
+    headers = {"Accept-Ranges": "bytes", "Content-Type": "audio/mpeg"}
+    match = re.fullmatch(r"bytes=(\d+)-(\d*)", route.request.headers.get("range", ""))
+    if not match:
+        return await route.fulfill(status=200, body=data, headers=headers)
+    start = int(match[1])
+    end = min(int(match[2]) if match[2] else len(data) - 1, len(data) - 1)
+    if start > end:
+        return await route.fulfill(status=416, headers={"Content-Range": f"bytes */{len(data)}"})
+    headers["Content-Range"] = f"bytes {start}-{end}/{len(data)}"
+    return await route.fulfill(status=206, body=data[start:end + 1], headers=headers)
+
+
 def fixture(requests, *, unavailable=None, fail_first=False, fail_more=False):
     async def route_request(route):
         target = urlparse(route.request.url)
@@ -55,6 +77,8 @@ def fixture(requests, *, unavailable=None, fail_first=False, fail_more=False):
         if target.netloc == ORIGIN:
             if unavailable and path.endswith(f"shorts-news-{unavailable}.mp3"):
                 return await route.fulfill(status=404, body="")
+            if path in MEDIA:
+                return await actual_mp3(route, MEDIA[path])
             return await route.continue_()
         if path == "/rest/v1/rpc/public_home_news_recent_v3":
             if route.request.method == "OPTIONS":
