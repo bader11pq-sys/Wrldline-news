@@ -42,6 +42,21 @@
     return order === "oldest" ? first - second : second - first;
   }
 
+  function feedFreshness(articles, checkedAt) {
+    const quietAfter = 6 * 60 * 60 * 1000;
+    let hasVisibleArticles = false, newest = null;
+    for (const article of articles) {
+      if (article.isNewsDataOnly) continue;
+      hasVisibleArticles = true;
+      const publishedAt = Date.parse(article.published_at);
+      if (Number.isFinite(publishedAt) && publishedAt <= checkedAt && (newest === null || publishedAt > newest)) {
+        newest = publishedAt;
+      }
+    }
+    if (newest === null) return { status: hasVisibleArticles ? "undated" : "empty", newest };
+    return { status: checkedAt - newest >= quietAfter ? "quiet" : "recent", newest };
+  }
+
   const formats = Object.freeze(["news","analysis","opinion","sponsored"]);
 
   function filter(articles, { category, country, format = "all", sort, followOnly, follows }) {
@@ -83,5 +98,5 @@
     });
   }
 
-  return { normalize, search, formats, filter, related, isPromotionalHeadline, dedupe };
+  return { normalize, search, formats, filter, related, isPromotionalHeadline, dedupe, feedFreshness };
 });

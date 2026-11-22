@@ -1,7 +1,7 @@
 "use strict";
 const { test } = require("node:test");
 const assert = require("node:assert/strict");
-const { normalize, search, filter, related, dedupe, isPromotionalHeadline } = require("../reader-discovery");
+const { normalize, search, filter, related, dedupe, isPromotionalHeadline, feedFreshness } = require("../reader-discovery");
 const { eventCountryCode } = require("../editorial-display");
 
 const story = (id, fields = {}) => ({
@@ -55,6 +55,19 @@ test("explicit promotional title patterns do not flag ordinary news headlines", 
   assert.equal(isPromotionalHeadline("كود الخصم اليوم"), true);
   assert.equal(isPromotionalHeadline("إعلان عقوبات على منصات المراهنات"), false);
   assert.equal(isPromotionalHeadline("Market regulator announces new code of conduct"), false);
+});
+
+test("feed freshness uses publication time, not ingestion, future dates or secondary batches", () => {
+  const now = Date.parse("2026-11-23T01:00:00Z");
+  const old = story("old", { published_at: "2026-11-22T19:00:00Z", received_at: "2026-11-23T00:59:00Z" });
+  const recent = story("recent", { published_at: "2026-11-22T19:00:01Z" });
+  const future = story("future", { published_at: "2026-11-23T01:00:01Z" });
+  const unknown = story("unknown", { published_at: null });
+  const supplemental = story("supplemental", { published_at: "2026-11-23T00:59:00Z", isNewsDataOnly: true });
+  assert.deepEqual(feedFreshness([old, future, unknown, supplemental], now), { status: "quiet", newest: Date.parse(old.published_at) });
+  assert.deepEqual(feedFreshness([old, recent], now), { status: "recent", newest: Date.parse(recent.published_at) });
+  assert.deepEqual(feedFreshness([unknown, future], now), { status: "undated", newest: null });
+  assert.deepEqual(feedFreshness([supplemental], now), { status: "empty", newest: null });
 });
 
 test("event-country filtering recognizes localized names and never falls back to publisher or an AI mismatch", () => {

@@ -37,7 +37,7 @@ MONITOR = [{**FIRST[0], "ai_event_type": "market", "ai_risk_level": "low", "ai_r
 async def setup(browser, width, *, monitor_mode="ready", home_failure=False):
     context = await browser.new_context(viewport={"width": width, "height": 850},
                                         service_workers="block", reduced_motion="reduce")
-    state = {"monitor_mode": monitor_mode, "home_failure": home_failure, "offsets": []}
+    state = {"monitor_mode": monitor_mode, "home_failure": home_failure, "offsets": [], "first": FIRST}
 
     async def route_request(route):
         url = urlparse(route.request.url)
@@ -53,7 +53,7 @@ async def setup(browser, width, *, monitor_mode="ready", home_failure=False):
             if primary:
                 state["offsets"].append(args["p_offset"])
             await route.fulfill(status=503 if primary and state["home_failure"] else 200,
-                                json=(OLDER if args["p_offset"] else FIRST) if primary else [])
+                                json=(OLDER if args["p_offset"] else state["first"]) if primary else [])
         else:
             await route.fulfill(status=200, body="")
 
@@ -78,6 +78,9 @@ async def main():
         await open_home(page, "?lang=en")
         cards = page.locator("#newsGrid .reader-story-link")
         await expect(cards).to_have_count(24)
+        await expect(page.locator("#connectionLabel")).to_have_text("News feed loaded")
+        await expect(page.locator("#lastUpdated")).to_contain_text("Latest story in the feed:")
+        await expect(page.locator("#lastUpdated")).to_contain_text("Last successful load:")
         await expect(page.locator(".wl-nav-scroll")).to_contain_text("Event files")
         await expect(page.locator(".editorial-focus")).to_contain_text("Coverage priorities")
         await expect(page.locator(".editorial-focus")).to_contain_text("Trade and shipping")
@@ -149,6 +152,7 @@ async def main():
             if mode == "empty":
                 await expect(page.locator("#heroLayout .front-pick-link")).to_have_count(5)
                 await expect(page.locator("#newsGrid")).to_contain_text("We could not load the news")
+                await expect(page.locator("#lastUpdated")).to_have_text("Update unavailable")
                 state["home_failure"] = False
                 await page.locator("#newsGrid [data-reader-action=retry]").click()
             await expect(page.locator("#newsGrid .reader-story-link")).to_have_count(24)
@@ -162,8 +166,45 @@ async def main():
                 await page.screenshot(path="/tmp/wrldline-edition-home-mobile.png")
             assert not errors, errors
             await context.close()
+
+        context, page, state, errors = await setup(browser, 375)
+        state["first"] = [{**FIRST[0], "published_at": (NOW - timedelta(hours=9)).isoformat()}]
+        await open_home(page, "?lang=en")
+        cards = page.locator("#newsGrid .reader-story-link")
+        refresh = page.locator("#feedRefreshButton")
+        meta = page.locator("#lastUpdated")
+        await expect(cards).to_have_count(1)
+        await expect(meta).to_contain_text("No new stories in the past 6 hours.")
+        old_meta = await meta.text_content()
+        await expect(refresh).not_to_have_attribute("aria-busy", "true")
+        state["home_failure"] = True
+        await refresh.click()
+        await expect(meta).to_have_text("Refresh failed; showing last loaded news. " + old_meta)
+        await expect(cards).to_have_count(1)
+        await expect(refresh).not_to_have_attribute("aria-busy", "true")
+
+        state["home_failure"], state["first"] = False, []
+        await refresh.click()
+        await expect(meta).to_contain_text("The feed contains no stories")
+        await expect(cards).to_have_count(0)
+        await expect(refresh).not_to_have_attribute("aria-busy", "true")
+        state["first"] = [{**FIRST[0], "published_at": None}]
+        await refresh.click()
+        await expect(meta).to_contain_text("Latest publication date unavailable")
+        await expect(cards).to_have_count(1)
+        await expect(refresh).not_to_have_attribute("aria-busy", "true")
+        state["first"] = FIRST
+        await refresh.click()
+        await expect(meta).to_contain_text("Latest story in the feed:")
+        await expect(meta).not_to_contain_text("No new stories")
+        await page.get_by_role("button", name="التبديل إلى العربية").click()
+        await expect(meta).to_contain_text("أحدث مادة في الموجز:")
+        await expect(meta).to_contain_text("آخر تحميل ناجح:")
+        assert await page.evaluate("document.documentElement.scrollWidth <= innerWidth")
+        assert not errors, errors
+        await context.close()
         await browser.close()
-    print("Newsroom edition QA passed: filters, reload, pagination, source and sponsor labels, related history, save, search, languages, theme and independent feeds")
+    print("Newsroom edition QA passed: filters, pagination, sources, search, languages, mobile, and recent/quiet/empty/undated/failing feeds with recovery")
 
 
 if __name__ == "__main__":
