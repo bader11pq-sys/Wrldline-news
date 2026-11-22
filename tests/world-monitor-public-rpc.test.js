@@ -8,16 +8,19 @@ const read = file => fs.readFileSync(path.join(__dirname, "..", file), "utf8");
 
 test("world monitor uses a restricted public RPC and keeps boundaries independent from feed availability", () => {
   const map = read("map.js");
+  const model = read("map-model.js");
   const html = read("map.html");
-  assert.match(map, /\/rest\/v1\/rpc\/public_world_monitor_feed/);
-  assert.match(map, /p_hours:24,p_limit:1000/);
-  assert.doesNotMatch(map, /\/rest\/v1\/articles\?/);
-  assert.doesNotMatch(map, /WRLDLINE_AUTH|getAccessToken/);
-  assert.match(map, /credentials:"omit"/);
+  assert.match(model, /\/rest\/v1\/rpc\/public_world_monitor_feed/);
+  assert.match(model, /p_hours:24,p_limit:maxRows/);
+  assert.match(model, /const maxRows = 1000/);
+  assert.doesNotMatch(map+model, /\/rest\/v1\/articles\?|WRLDLINE_AUTH|getAccessToken/);
+  assert.match(model, /credentials:"omit"/);
   assert.match(map, /map boundaries unavailable/i);
-  assert.match(html, /editorial-display\.js\?v=20261122-metadata[\s\S]*map-model\.js[\s\S]*map\.js\?v=20261122-monitor/);
+  assert.match(html, /editorial-display\.js\?v=20261122-edition[\s\S]*map-model\.js[\s\S]*map\.js\?v=20261122-edition/);
   assert.match(map, /loadBoundaries\(\);\s*loadFeed\(\);/);
-  assert.match(read("map-model.js"), /editorial\.codeOf\(row\.ai_country_code\)/);
+  assert.match(model, /editorial\.codeOf\(row\.ai_country_code\)/);
+  assert.match(map, /M\.fetchFeed\(\)/);
+  assert.match(read("newsroom-edition.js"), /monitor\.fetchFeed\(\)/);
   assert.match(map, /E\.eventTypeLabel/);
 });
 

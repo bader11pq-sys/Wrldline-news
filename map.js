@@ -1,6 +1,4 @@
 (() => {
-  const API = "https://vmaxbnogmmfyrcucapnq.supabase.co";
-  const KEY = "sb_publishable_D3c88u75_LcEN460Y3Jcpw__EfqUnBx";
   const $ = id => document.getElementById(id);
   const M = window.WLMonitor, E = window.WLEditorial, L = window.L;
   const messages = {
@@ -18,6 +16,15 @@
     eventTitle:["الأخبار المصنّفة","Classified reports"], count:["عدد الأخبار","Reports"], shown:["المعروض","Showing"], noMatch:["لا توجد أخبار مصنّفة تطابق الفلاتر الحالية.","No classified reports match the current filters."],
     limited:["الأعداد تستند إلى أحدث 1,000 خبر في الخلاصة وقد لا تشمل جميع النتائج.","Counts use the latest 1,000 feed entries and may not include every match."],
     topLevel:["أعلى إشارة مطابقة","Highest matching signal"], source:["المصدر الأصلي","Original source"], more:["عرض المزيد","Show more"],
+    skip:["انتقل إلى المرصد","Skip to the monitor"], back:["غرفة الأخبار","Newsroom"], dark:["المظهر الداكن","Dark appearance"],
+    jumpNav:["أقسام المرصد","Monitor sections"], jumpAnalysis:["التوزيع وتوقيت النشر","Breakdown and timeline"], jumpReports:["التقارير المصنّفة","Classified reports"],
+    sort:["الترتيب","Sort"], highest:["الأعلى خطورة","Highest severity"], latest:["الأحدث نشرًا","Most recently published"],
+    share:["مشاركة العرض","Share view"], shareLabel:["رابط هذا العرض","Link to this view"], close:["إغلاق","Close"],
+    copied:["نُسخ رابط العرض.","View link copied."], copyManual:["يمكنك نسخ الرابط المحدّد.","You can copy the selected link."],
+    countryNews:["تصفّح أخبار هذه الدولة","Browse news for this country"], analysis:["توزيع الخطورة","Severity breakdown"], analysisHint:["عدد الأخبار المطابقة في كل مستوى.","Matching reports at each level."],
+    timeline:["توقيت النشر","Publication timeline"], timelineHint:["عدد الأخبار المطابقة في ست فترات متساوية، بتوقيت جهازك.","Matching reports in six equal intervals, in your device’s time zone."],
+    countriesTitle:["أبرز الإشارات حسب الدولة","Leading signals by country"], countriesHint:["مرتّبة حسب أعلى خطورة، ثم عدد التقارير، عبر جميع الدول المطابقة.","Ranked by highest severity, then report count, across matching countries."],
+    analysisPending:["تظهر الأعداد بعد تحميل الخلاصة.","Counts appear after the feed loads."], analysisEmpty:["لا توجد إشارات مطابقة.","No matching signals."],
     methodTitle:["كيف تقرأ الخريطة؟","How to read the map"],
     method:["لون البلد يمثّل أعلى مستوى خطورة لخبر مطابق في التغطية المصنّفة آلياً، وليس مستوى خطورة البلد نفسه أو تحذيراً للسفر. عدم وجود إشارة لا يعني عدم وقوع أحداث، وقد تصل الأخبار من مصادرها بتأخير.","A country’s color represents the highest severity of a matching, automatically classified report, not the country’s safety or a travel advisory. No signal does not mean no events occurred, and reports can arrive late."]
   };
@@ -25,11 +32,17 @@
   let lastChecked = null, newest = null, capped = false, feedState = "loading", mapState = "loading", busy = false, geometryBusy = false;
   let displayLimit = 20, fittedWorldZoom;
   const mapBounds = [[-57, -180], [82, 180]];
-  const mapColors = Object.fromEntries([...M.levels, "neutral"].map(level => [level, getComputedStyle(document.documentElement).getPropertyValue(`--${level}`).trim()]));
+  let mapColors = {};
   const msg = key => messages[key][lang === "en" ? 1 : 0];
   const locale = () => lang === "ar" ? "ar-SA-u-ca-gregory" : "en";
-  const number = value => new Intl.NumberFormat(locale()).format(value);
-  const date = (value, dateStyle = "short") => new Intl.DateTimeFormat(locale(), {dateStyle, timeStyle:"short"}).format(value);
+  let formats;
+  function setFormats(){
+    formats={number:new Intl.NumberFormat(locale()), date:new Intl.DateTimeFormat(locale(),{dateStyle:"short",timeStyle:"short"}),
+      time:new Intl.DateTimeFormat(locale(),{hour:"2-digit",minute:"2-digit",hourCycle:"h23"})};
+  }
+  setFormats();
+  const number = value => formats.number.format(value);
+  const date = value => formats.date.format(value);
   const countryName = (code, fallback) => E.countryName(code, lang) || fallback || code;
   const safeURL = value => {
     try {
@@ -47,6 +60,18 @@
     document.querySelectorAll("[data-copy]").forEach(node => { node.textContent = msg(node.dataset.copy); });
     document.querySelectorAll("[data-aria-copy]").forEach(node => node.setAttribute("aria-label", msg(node.dataset.ariaCopy)));
     document.title = `${msg("title")} | WRLDLINE NEWS`;
+    setTheme(document.documentElement.dataset.theme);
+  }
+  function setTheme(theme, persist=false) {
+    const dark=theme==="dark";
+    document.documentElement.dataset.theme=dark?"dark":"light";
+    const button=$("monitorTheme");
+    button.textContent=msg("dark");
+    button.setAttribute("aria-pressed",String(dark));
+    const palette=getComputedStyle(document.documentElement);
+    mapColors=Object.fromEntries([...M.levels,"neutral","boundary","focus"].map(key=>[key,palette.getPropertyValue(`--${key}`).trim()]));
+    if(persist)try{localStorage.setItem("wrldline:theme",dark?"dark":"light");}catch{}
+    layer?.setStyle(style);
   }
   function status() {
     const prefix = feedState === "stale" || feedState === "error" ? `${msg(feedState)} ` : "";
@@ -67,7 +92,7 @@
     const matches = view?.byCountry.get(key) || [];
     const included = $("countryFilter").value === "all" || selected;
     return {
-      color: selected ? "#163f58" : "#f3f7fa", weight: selected ? 2.6 : .8,
+      color: selected ? mapColors.focus : mapColors.boundary, weight: selected ? 2.6 : .8,
       fillColor: mapColors[included ? matches[0]?.severity || "neutral" : "neutral"],
       fillOpacity: included ? 1 : .64
     };
@@ -120,7 +145,7 @@
           return content;
         }, {className:"monitor-tooltip", sticky:true});
         polygon.on("click", () => chooseCountry(code));
-        polygon.on("mouseover", () => polygon.setStyle({color:"#163f58", weight:2}));
+        polygon.on("mouseover", () => polygon.setStyle({color:mapColors.focus, weight:2}));
         polygon.on("mouseout", () => layer?.resetStyle(polygon));
       }}).addTo(map);
       fitWorld();
@@ -168,9 +193,69 @@
     }
     return card;
   }
+  function activeFilters() {
+    return {hours:Number($("timeFilter").value), country:$("countryFilter").value, severity:$("riskFilter").value,
+      type:$("eventTypeFilter").value, order:$("eventOrder").value};
+  }
+  function restoreFilters() {
+    const filters=M.filtersFrom(new URLSearchParams(location.search));
+    for(const [id,key] of [["timeFilter","hours"],["countryFilter","country"],["riskFilter","severity"],["eventTypeFilter","type"],["eventOrder","order"]]){
+      const select=$(id),value=String(filters[key]);
+      if(![...select.options].some(option=>option.value===value))select.add(new Option(key==="country"?countryName(value):E.eventTypeLabel(value,lang),value));
+      select.value=value;
+    }
+  }
+  function updateLocation() {
+    const url=M.filtersTo(activeFilters(),location.href);
+    try{history.replaceState(history.state,"",url);}catch{}
+    if(!$("monitorShare").hidden)$("monitorShareURL").value=shareURL();
+  }
+  function shareURL() {
+    const url=M.filtersTo(activeFilters(),location.href);
+    // Drop unrelated query strings and anchor state from the shared link.
+    const safe=new URL(url.pathname,url.origin);
+    for(const key of Object.keys(M.defaults))if(url.searchParams.has(key))safe.searchParams.set(key,url.searchParams.get(key));
+    safe.searchParams.set("lang",lang);
+    return safe.href;
+  }
+  function analysisPanels(filters, now) {
+    const breakdown=$("severityDistribution"), timeline=$("reportTimeline"), leaders=$("countryLeaders");
+    if(lastChecked===null) {
+      for(const node of [breakdown,timeline,leaders]) node.replaceChildren(el("li",msg("analysisPending"),"monitor-analysis-empty"));
+      return;
+    }
+    const total=view.events.length;
+    breakdown.replaceChildren(...[...M.levels].reverse().map(severity=>{
+      const count=view.distribution[severity],row=el("li","",`level-${severity}`);
+      const track=el("span","","monitor-bar-track"), bar=el("i","");
+      track.setAttribute("aria-hidden","true");
+      bar.style.inlineSize=`${total?count/total*100:0}%`;track.append(bar);
+      row.append(el("span",msg(severity)),track,el("strong",number(count)));return row;
+    }));
+    const step=filters.hours*3600000/6, peak=Math.max(...view.buckets,1);
+    timeline.replaceChildren(...view.buckets.map((count,i)=>{
+      const end=now-step*(5-i),from=formats.time.format(end-step),to=formats.time.format(end);
+      const row=el("li",""), track=el("span","","monitor-time-track"),bar=el("i","");
+      row.setAttribute("aria-label",`${from}–${to}: ${number(count)}`);
+      track.setAttribute("aria-hidden","true");
+      bar.style.blockSize=`${count/peak*100}%`;track.append(bar);
+      row.append(el("strong",number(count)),track,el("small",from));return row;
+    }));
+    const previous=leaders.contains(document.activeElement)&&document.activeElement.dataset.country;
+    leaders.replaceChildren(...(view.leaders.length?view.leaders.slice(0,5).map(({code,count,top})=>{
+      const row=el("li",""), button=el("button","");
+      button.type="button";
+      button.dataset.country=code;
+      button.setAttribute("aria-pressed",String(filters.country===code));
+      button.append(el("strong",countryName(code,boundaryNames.get(code))),el("span",msg(top.severity),`monitor-badge level-${top.severity}`),el("span",number(count),"monitor-leader-count"));
+      row.append(button);return row;
+    }):[el("li",msg("analysisEmpty"),"monitor-analysis-empty")]));
+    if(previous)[...leaders.querySelectorAll("button")].find(button=>button.dataset.country===previous)?.focus({preventScroll:true});
+  }
   function render() {
-    const filters = {hours:Number($("timeFilter").value), country:$("countryFilter").value, severity:$("riskFilter").value, type:$("eventTypeFilter").value};
-    const now = Date.now();
+    const filters = activeFilters();
+    // Anchor stale views to the last successful snapshot instead of aging them into a false zero.
+    const now = lastChecked ?? Date.now();
     view = M.select(items, filters, now);
     const order = (a, b) => a[1].localeCompare(b[1], locale());
     const typeEntries = [...view.types].map(type => [type, E.eventTypeLabel(type, lang)]);
@@ -186,9 +271,13 @@
     $("eventCount").textContent = lastChecked === null ? "" : `${msg("count")}: ${number(events.length)}${events.length > displayLimit ? ` · ${msg("shown")}: ${number(displayLimit)}` : ""}`;
     $("countrySummary").hidden = (filters.country === "all" && !capped) || lastChecked === null;
     $("countrySummary").textContent = [
-      filters.country === "all" ? "" : `${msg("topLevel")}: ${msg(events[0]?.severity || "neutral")}`,
+      filters.country === "all" ? "" : `${msg("topLevel")}: ${msg(view.highest?.severity || "neutral")}`,
       capped ? msg("limited") : ""
     ].filter(Boolean).join(" · ");
+    const news=$("countryNewsLink");
+    news.hidden=filters.country==="all";
+    if(!news.hidden)news.href=`index.html?country=${encodeURIComponent(filters.country)}&lang=${lang}#newsSection`;
+    analysisPanels(filters,now);
     const list = $("eventList");
     const previousFocus = list.contains(document.activeElement) && document.activeElement.href;
     list.replaceChildren(...(events.length ? events.slice(0, displayLimit).map(eventCard) :
@@ -202,6 +291,7 @@
   function changeFilter() {
     displayLimit = 20;
     $("eventList").scrollTop = 0;
+    updateLocation();
     render();
   }
   async function loadFeed() {
@@ -209,14 +299,9 @@
     busy = true;
     status();
     try {
-      const reply = await fetch(`${API}/rest/v1/rpc/public_world_monitor_feed`, {
-        method:"POST", headers:{apikey:KEY, "Content-Type":"application/json", Accept:"application/json"},
-        body:JSON.stringify({p_hours:24,p_limit:1000}), credentials:"omit", cache:"no-store", signal:AbortSignal.timeout(12000)
-      });
-      if (!reply.ok) throw new Error("Monitor feed unavailable");
-      const payload = await reply.json(), checked = Date.now();
-      items = M.normalize(payload, checked);
-      capped = payload.length === M.maxRows;
+      const feed=await M.fetchFeed(), checked=feed.checked;
+      items=feed.items;
+      capped=feed.capped;
       newest = items.length ? Math.max(...items.map(event => event.published)) : null;
       lastChecked = checked;
       feedState = "ready";
@@ -227,12 +312,26 @@
       render();
     }
   }
-  for (const id of ["timeFilter", "eventTypeFilter", "riskFilter", "countryFilter"]) $(id).addEventListener("change", changeFilter);
+  for (const id of ["timeFilter", "eventTypeFilter", "riskFilter", "countryFilter", "eventOrder"]) $(id).addEventListener("change", changeFilter);
   $("resetFilters").addEventListener("click", () => {
     $("timeFilter").value = "24";
     for (const id of ["eventTypeFilter", "riskFilter", "countryFilter"]) $(id).value = "all";
+    $("eventOrder").value="severity";
     changeFilter();
   });
+  $("countryLeaders").addEventListener("click",event=>{
+    const code=event.target.closest("button[data-country]")?.dataset.country;
+    if(code)chooseCountry(code);
+  });
+  $("monitorTheme").addEventListener("click",()=>setTheme(document.documentElement.dataset.theme==="dark"?"light":"dark",true));
+  $("shareView").addEventListener("click",async()=>{
+    const panel=$("monitorShare"), input=$("monitorShareURL");
+    input.value=shareURL();panel.hidden=false;input.focus();input.select();
+    let copied=false;
+    try{await navigator.clipboard.writeText(input.value);copied=true;}catch{}
+    $("shareStatus").textContent=msg(copied?"copied":"copyManual");
+  });
+  $("closeMonitorShare").addEventListener("click",()=>{$("monitorShare").hidden=true;$("shareView").focus();});
   $("zoomIn").addEventListener("click", () => map.zoomIn(.5, {animate:false}));
   $("zoomOut").addEventListener("click", () => map.zoomOut(.5, {animate:false}));
   $("resetMap").addEventListener("click", fitWorld);
@@ -247,9 +346,14 @@
   });
   document.addEventListener("wrldline:language", event => {
     lang = event.detail.lang === "en" ? "en" : "ar";
+    setFormats();
     localize();
+    if(!$("monitorShare").hidden)$("monitorShareURL").value=shareURL();
     render();
   });
+  window.addEventListener("popstate",()=>{restoreFilters();displayLimit=20;render();});
+  try{setTheme(localStorage.getItem("wrldline:theme"));}catch{setTheme("light");}
+  restoreFilters();
   localize();
   render();
   loadBoundaries();

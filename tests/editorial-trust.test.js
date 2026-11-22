@@ -138,9 +138,9 @@ test("all current browser article and embedded translation projections fit safe 
   const sourceDirectory=read("intelligence-sources.js");
   assert.match(sourceDirectory,/\/rest\/v1\/rpc\/public_source_directory/);
   assert.doesNotMatch(sourceDirectory,/\/rest\/v1\/articles\?/);
-  const worldMap=read("map.js");
-  assert.match(worldMap,/\/rest\/v1\/rpc\/public_world_monitor_feed/);
-  assert.doesNotMatch(worldMap,/\/rest\/v1\/articles\?/);
+  const worldMonitor=read("map-model.js");
+  assert.match(worldMonitor,/\/rest\/v1\/rpc\/public_world_monitor_feed/);
+  assert.doesNotMatch(worldMonitor+read("map.js")+read("newsroom-edition.js"),/\/rest\/v1\/articles\?/);
  const shorts=read("shorts.js");
  assert.match(shorts,/\/rest\/v1\/rpc\/public_home_news_recent_v3/,"Shorts must use the allowlisted public feed RPC");
  assert.doesNotMatch(shorts,/\/rest\/v1\/articles\?/,"Shorts must not SELECT directly from public.articles");

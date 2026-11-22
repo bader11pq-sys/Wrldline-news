@@ -1,7 +1,7 @@
 "use strict";
 const {test} = require("node:test");
 const assert = require("node:assert/strict");
-const {normalize, select} = require("../map-model.js");
+const {normalize, select, filtersFrom, filtersTo, defaults} = require("../map-model.js");
 const now = Date.parse("2026-11-22T08:45:00Z"), hour = 3600000;
 const report = (id, changes = {}) => ({
   id, title:`Report ${id}`, published_at:new Date(now - 15 * 60000).toISOString(), ai_country_code:"SAU",
@@ -47,4 +47,28 @@ test("the report list, trend counts and map use the same period, event type and 
   assert.equal(view.high, 1);
   assert.equal(select(rows, {...filter, country:"JPN"}, now).events.length, 0);
   assert.equal(select(rows, filter, now + hour).events.length, 0);
+});
+
+test("latest sorting cannot influence the map, severity breakdown or country rankings", () => {
+  const items=normalize([
+    report("old-critical",{ai_risk_level:"critical",published_at:new Date(now-19*hour).toISOString()}),
+    report("new-low",{ai_risk_level:"low",published_at:new Date(now).toISOString()}),
+    report("other-country",{ai_country_code:"JPN",ai_risk_level:"high"}),
+  ],now);
+  const view=select(items,{...defaults,country:"SAU",order:"latest"},now);
+  assert.deepEqual(view.events.map(row=>row.id),["new-low","old-critical"]);
+  assert.equal(view.highest.id,"old-critical");
+  assert.equal(view.byCountry.get("SAU")[0].id,"old-critical");
+  assert.deepEqual(view.leaders.map(country=>[country.code,country.count]),[["SAU",2],["JPN",1]]);
+  assert.deepEqual(view.distribution,{low:1,guarded:0,elevated:0,high:0,critical:1});
+  assert.deepEqual(view.buckets,[0,1,0,0,0,1]);
+});
+
+test("shared views round-trip only valid filters and keep unrelated page state untouched", () => {
+  const input=new URL("https://example.test/map.html?hours=6&country=SA&severity=critical&type=diplomacy&order=latest&lang=en");
+  const filters=filtersFrom(input.searchParams);
+  assert.deepEqual(filters,{hours:6,country:"SAU",severity:"critical",type:"diplomacy",order:"latest"});
+  assert.deepEqual(filtersFrom(filtersTo(filters,input).searchParams),filters);
+  assert.equal(filtersTo(defaults,input).search,"?lang=en");
+  assert.deepEqual(filtersFrom(new URLSearchParams("hours=30&country=ZZZ&severity=2&type=oops&order=recent")),defaults);
 });

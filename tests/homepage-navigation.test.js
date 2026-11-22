@@ -25,7 +25,7 @@ test("homepage primary navigation follows the core reader journey", () => {
     "/news/",
     "#breakingSection",
     "context.html",
-    "markets.html"
+    "map.html"
   ]);
 
   for (const route of [

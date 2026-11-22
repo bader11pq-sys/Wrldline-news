@@ -616,7 +616,13 @@ Object.assign(AR_EN,{
  "أهم ما يحدث الآن":"Top stories","نسخة اليوم":"Today’s edition","ابحث في الأخبار":"Search the news","البحث في الأخبار":"Search news",
  "الأرشيف":"Archive","تصفّح الأرشيف":"Browse the archive","العاجل":"Breaking news","الأخبار العاجلة":"Breaking news",
  "تصفية حسب القسم":"Filter by section","تصفية حسب الدولة":"Filter by country","ترتيب الأخبار":"Sort stories",
- "فتح أول نتيجة":"Open first result","المزيد":"More","أهم الأخبار":"Top stories","تجاوز إلى المحتوى":"Skip to content"
+ "فتح أول نتيجة":"Open first result","المزيد":"More","أهم الأخبار":"Top stories","تجاوز إلى المحتوى":"Skip to content",
+ "ملفات الأحداث":"Event files","علوم":"Science","بيئة":"Environment","مجتمع":"Society","غير مصنف":"Uncategorized",
+ "منتجات WRLDLINE":"WRLDLINE tools","اختر طريقة القراءة":"Explore the news","ملف الحدث":"Event dossier",
+ "ما حدث وما تغيّر":"What happened and what changed","غرفة السياق":"Background","الخلفية وما نعرفه":"Context and what we know",
+ "ميزان الروايات":"Compare coverage","من قال ماذا ومتى":"Who said what and when","أطلس التأثير":"Impact atlas","من الخبر إلى الأثر":"What the news means",
+ "الأسواق":"Markets","السعر مع مصدره":"Prices and their sources","موجز سريع":"Quick recap",
+ "عرض المحفوظات":"View saved stories","روابط الموقع":"Site links"
 });
 const original=new WeakMap();
 function translateValue(value,lang){const trimmed=String(value??"").trim();if(!trimmed)return value;if(lang==="en"){if(AR_EN[trimmed])return String(value).replace(trimmed,AR_EN[trimmed]);const keys=Object.keys(AR_EN).filter(k=>trimmed.startsWith(k)&&k.length>2&&(k.endsWith(":")||k.endsWith("،")||k==="عضوية Plus فعالة حتى")).sort((a,b)=>b.length-a.length);if(keys.length){const k=keys[0];return String(value).replace(trimmed,AR_EN[k]+trimmed.slice(k.length));}return value;}if(/[\u0600-\u06FF]/.test(trimmed))return value;if(reverseMap[trimmed])return String(value).replace(trimmed,reverseMap[trimmed]);const keys=Object.keys(reverseMap).filter(k=>trimmed.startsWith(k)&&k.length>2&&(k.endsWith(":")||k.endsWith(","))).sort((a,b)=>b.length-a.length);if(keys.length){const k=keys[0];return String(value).replace(trimmed,reverseMap[k]+trimmed.slice(k.length));}return value;}

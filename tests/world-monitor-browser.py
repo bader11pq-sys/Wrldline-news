@@ -21,7 +21,7 @@ def report(name, code="SAU", level="high", score=70, kind="diplomacy", age=15):
 ROWS = [
     {**report("Critical report", level="critical", score=4),
      "article_translations": [{"lang": "ar", "title": "خبر حرج مترجم"}], "url": "https://source.example/verified"},
-    report("Low report", level="low", score=99),
+    report("Low report", level="low", score=99, age=5),
     report("Report in Japan", "JPN", kind="conflict", age=125),
     report("Publisher-only row", None), report("Unknown row", level="unknown"),
     *[report(f"Additional report {n:02d}", "GBR", level="guarded") for n in range(21)],
@@ -68,8 +68,32 @@ async def main():
         await expect(page.locator("#eventList h3").first).to_have_text("خبر حرج مترجم")
         await expect(page.locator("#worldMap path[fill='#7f2753']")).to_have_count(1)
         await expect(page.get_by_text("Publisher Geography Fixture")).to_have_count(0)
+        await expect(page.locator("#severityDistribution .level-critical strong")).to_have_text("١")
+        await expect(page.locator("#reportTimeline li")).to_have_count(6)
+        await page.locator("#eventOrder").select_option("latest")
+        await expect(page.locator("#eventList h3").first).to_have_text("Low report")
+        await expect(page.locator("#worldMap path[fill='#7f2753']")).to_have_count(1)
+        await page.locator("#eventOrder").select_option("severity")
+        await page.locator("#countryLeaders [data-country='SAU']").click()
+        await expect(page.locator("#countryLeaders [data-country='SAU']")).to_have_attribute("aria-pressed","true")
+        await expect(page.locator("#countryNewsLink")).to_have_attribute("href","index.html?country=SAU&lang=ar#newsSection")
+        await page.locator("#shareView").click()
+        await expect(page.locator("#monitorShareURL")).to_have_value(f"{SITE}/map.html?country=SAU&lang=ar")
+        await page.locator("#closeMonitorShare").click()
+        await expect(page.locator("#shareView")).to_be_focused()
+        await page.reload()
+        await expect(page.locator("#countryFilter")).to_have_value("SAU")
+        await expect(page.locator("#statEvents")).to_have_text("٢")
+        await page.locator("#resetFilters").click()
+        await page.locator("#monitorTheme").click()
+        await expect(page.locator("#monitorTheme")).to_have_attribute("aria-pressed","true")
+        await expect(page.locator("#worldMap path[fill='#cf6599']")).to_have_count(1)
+        await page.locator("#monitorTheme").click()
+        await expect(page.locator("#analysisTitle").locator("xpath=ancestor::section[1]")).to_have_css("opacity", "1")
         if os.environ.get("WRLDLINE_SCREENSHOTS"):
-            await page.screenshot(path="/tmp/wrldline-monitor-desktop.png")
+            await page.screenshot(path="/tmp/wrldline-edition-monitor-desktop.png")
+            await page.evaluate("document.querySelector('.monitor-analysis').scrollIntoView({behavior:'instant',block:'center'})")
+            await page.screenshot(path="/tmp/wrldline-edition-monitor-analysis.png")
         async with page.expect_popup() as popup:
             await page.locator("#eventList a").first.click()
         original = await popup.value
@@ -107,14 +131,14 @@ async def main():
         await page.get_by_role("button", name="Switch to English").click()
         await expect(page.get_by_role("heading", name="World Monitor")).to_be_visible()
         await expect(page.locator("#eventList h3").first).to_have_text("Critical report")
-        assert state["requests"] == 1, "A language change should not refetch data"
+        assert state["requests"] == 2, "A language change should not refetch data"
         await page.get_by_role("button", name="التبديل إلى العربية").click()
         await expect(page.get_by_role("heading", name="مرصد العالم")).to_be_visible()
         await page.set_viewport_size({"width": 375, "height": 812})
         assert await page.evaluate("document.documentElement.scrollWidth <= innerWidth")
         await expect(page.locator("#zoomIn")).to_be_in_viewport()
         if os.environ.get("WRLDLINE_SCREENSHOTS"):
-            await page.screenshot(path="/tmp/wrldline-monitor-mobile.png")
+            await page.screenshot(path="/tmp/wrldline-edition-monitor-mobile.png")
         await page.set_viewport_size({"width": 1440, "height": 870})
         state["feed"] = 503
         await page.clock.fast_forward(61000)

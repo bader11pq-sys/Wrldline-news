@@ -9,14 +9,14 @@
   const copy = {
     ar: {
       brandHome: "WRLDLINE — الرئيسية", menu: "فتح القائمة", home: "الرئيسية", encyclopedia: "الموسوعة", theme: "تبديل المظهر", account: "حسابي",
-      navHome: "الرئيسية", dossiers: "ملفات الأحداث", watchlist: "ما نراقبه", shorts: "▶ Shorts", context: "غرفة السياق", balance: "ميزان الروايات", impact: "أطلس التأثير", history: "الموسوعة التاريخية", mirror: "مرآة التاريخ", explainers: "افهمها في دقيقة", promises: "ذاكرة الوعود", library: "المكتبة",
+      navHome: "الرئيسية", dossiers: "ملفات الأحداث", watchlist: "ما نراقبه", shorts: "▶ Shorts", context: "غرفة السياق", balance: "ميزان الروايات", impact: "أطلس التأثير", history: "الموسوعة التاريخية", mirror: "مرآة التاريخ", explainers: "افهمها في دقيقة", promises: "ذاكرة الوعود", library: "المكتبة", monitor: "مرصد العالم",
       about: "منصة عربية تشرح أخبار السياسة والاقتصاد والعالم: الخبر، سياقه، أثره المحتمل على القارئ، وما تؤيده الأدلة المتاحة.",
       newsrooms: "غرف الأخبار", knowledge: "المعرفة", encyclopediaCol: "الموسوعة", atlas: "الأطلس", compare: "المقارنة", aboutLink: "عن الموقع", topics: "الموضوعات", tags: "الوسوم", advertise: "للإعلان والرعاية",
       copyright: "© <span data-year>2026</span> WRLDLINE NEWS — المحتوى الإخباري يُنسب إلى مصادره الأصلية.", editorial: "التحليلات والسياق من تحرير WRLDLINE."
     },
     en: {
       brandHome: "WRLDLINE — Home", menu: "Open menu", home: "Home", encyclopedia: "Encyclopedia", theme: "Toggle appearance", account: "My account",
-      navHome: "Home", dossiers: "Event Dossiers", watchlist: "Watchlist", shorts: "▶ Shorts", context: "Context Room", balance: "Narrative Balance", impact: "Impact Atlas", history: "History Encyclopedia", mirror: "History Mirror", explainers: "Explained in a minute", promises: "Promise Ledger", library: "Library",
+      navHome: "Home", dossiers: "Event Dossiers", watchlist: "Watchlist", shorts: "▶ Shorts", context: "Context Room", balance: "Narrative Balance", impact: "Impact Atlas", history: "History Encyclopedia", mirror: "History Mirror", explainers: "Explained in a minute", promises: "Promise Ledger", library: "Library", monitor: "World Monitor",
       about: "An Arabic-first newsroom explaining politics, economics and global events: what happened, why it matters, and what the available evidence supports.",
       newsrooms: "Newsrooms", knowledge: "Knowledge", encyclopediaCol: "Encyclopedia", atlas: "Atlas", compare: "Compare", aboutLink: "About", topics: "Topics", tags: "Tags", advertise: "Advertising & sponsorship",
       copyright: "© <span data-year>2026</span> WRLDLINE NEWS — News content is attributed to its original sources.", editorial: "Analysis and context by WRLDLINE editorial."
@@ -60,6 +60,7 @@
     </div>
     <div class="wl-nav-wrap" id="mainNav"><nav class="wl-nav" aria-label="${t("navHome")}"><div class="wl-nav-scroll">
       <a class="wl-nav-link" href="index.html">${t("navHome")}</a>
+      <a class="wl-nav-link" href="/map.html">${t("monitor")}</a>
       <a class="wl-nav-link" href="dossier/">${t("dossiers")}</a>
       <a class="wl-nav-link" href="dossier/watchlist.html">${t("watchlist")}</a>
       <a class="wl-nav-link" href="/news/">${lang === "ar" ? "الأرشيف" : "Archive"}</a>
