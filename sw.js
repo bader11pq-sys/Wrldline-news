@@ -1,4 +1,4 @@
-const CACHE_NAME = "wrldline-shell-v79-coverage";
+const CACHE_NAME = "wrldline-shell-v80-shorts-soundtrack";
 const NEWS_CACHE = "wrldline-public-news-v1";
 const BRIEFING_CACHE = "wrldline-daily-briefing-v1";
 const SHELL_URLS = ["/", "/index.html", "/wrld.css", "/site-enhancements.css", "/site-enhancements.js", "/intelligence.css", "/intelligence.js", "/coverage-gap.js", "/sources.html", "/intelligence-sources.js", "/manus-routes.json", "/history.css", "/newsroom.css", "/editorial-rank.js", "/script.js", "/taxonomy.js", "/home.js", "/site-shell.js", "/newsroom.js", "/newsroom-data.js", "/newsroom-data-extra.js", "/newsroom-data-impact.js", "/newsroom-page.js", "/history-app.js", "/history-data.js", "/history-entities-a.js", "/history-entities-b.js", "/history-entities-c.js", "/history-events.js", "/history-learning.js", "/history-portraits.js", "/language.js", "/share.js", "/manifest.json", "/favicon.svg", "/analytics-config.js", "/analytics.js", "/forms.js", "/policy.css", "/about.html", "/contact.html", "/privacy.html", "/terms.html", "/corrections.html", "/newsletter.html", "/history.html", "/history-explore.html", "/history-dossier.html", "/history-compare.html", "/history-library.html", "/context.html", "/balance.html", "/impact.html", "/promises.html", "/mirror.html", "/explainers.html", "/markets.html", "/markets.css", "/markets.js", "/map.html", "/map.js", "/shorts.html", "/shorts.css", "/shorts.js", "/assets/shorts-news-tension-theme.mp3", "/daily-briefing.html", "/daily-briefing.css", "/daily-briefing.js", "/dossier/", "/dossier.css", "/dossier.js", "/dossier/index.json", "/dossier/watchlist.html", "/dossier/claims.html", "/dossier/impact.html", "/dossier/digest.html", "/dossier/watchlist.json", "/dossier/watchlist.ics", "/watch-strip.js"];
@@ -15,7 +15,9 @@ self.addEventListener("install", event => {
     articleShell.push("/newsroom.css?v=20261122-reading2", "/public-news.css?v=20261115-1", "/public-news.js?v=20261115-1");
     articleShell.push(...["article-editions.js","script.js","language.js","homepage-polish.css"].map(file=>"/"+file+"?v=20261122-bilingual"));
     const coverageShell = ["/editorial-launch.css?v=20261122-coverage", "/language.js?v=20261122-coverage", "/dossier.css?v=20261122-coverage"];
-    const publicShell = [...SHELL_URLS.filter(url => url !== "/newsletter.html"), ...readerShell, ...metadataShell, ...editionShell, ...monitorShell, ...readingShell, ...articleShell, ...coverageShell, "/notification-config.js", "/notification-client.js"];
+    const shortsShell = ["/shorts.css", "/shorts.js", "/shorts-soundtrack.js"].map(file => file + "?v=20261122-soundtrack");
+    // Music stays on demand rather than downloading with the site shell.
+    const publicShell = [...SHELL_URLS.filter(url => url !== "/newsletter.html" && !url.endsWith(".mp3")), ...readerShell, ...metadataShell, ...editionShell, ...monitorShell, ...readingShell, ...articleShell, ...coverageShell, ...shortsShell, "/notification-config.js", "/notification-client.js"];
     await Promise.allSettled(publicShell.map(async url => {
       try { const response = await fetch(new Request(url, { cache: "reload" })); if (response.ok) await cache.put(url, response); } catch {}
     }));
@@ -54,6 +56,8 @@ self.addEventListener("fetch", event => {
     return;
   }
   if (url.origin !== self.location.origin) return;
+  // Leave byte-range media requests to the browser's network stack.
+  if (request.headers.has("Range") || (url.pathname.startsWith("/assets/shorts-news-") && url.pathname.endsWith(".mp3"))) return;
   // Account shell and email-management pages are network-only; never replay account state or token intents.
   if (url.pathname === "/account.html" || url.pathname === "/newsletter.html" || url.searchParams.has("token")) return;
   const isPage = request.mode === "navigate";
