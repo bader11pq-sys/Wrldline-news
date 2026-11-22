@@ -1,7 +1,6 @@
 <!doctype html>
-<html lang="ar" dir="rtl" data-theme="light">
+<html class="wl-reader-root" lang="ar" dir="rtl" data-theme="light">
 <head>
-<script src="/vendor/supabase-2.119.0.js"></script>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#0d1a2b">
@@ -20,13 +19,14 @@
   <title>WRLDLINE | أخبار السياسة والاقتصاد وسياقها</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://vmaxbnogmmfyrcucapnq.supabase.co" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=Noto+Kufi+Arabic:wght@400;500;600;700;800&family=Amiri:wght@400;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="wrld.css?v=20261121-breaking4">
   <link rel="manifest" href="manifest.json">
   <link rel="stylesheet" href="site-enhancements.css?v=20261121-editorial1">
   <link rel="stylesheet" href="intelligence.css?v=20261114-1">
-  <link rel="stylesheet" href="homepage-polish.css?v=20261121-editorial4">
-  <link rel="stylesheet" href="wl-modern.css?v=20261121-1">
+  <link rel="stylesheet" href="homepage-polish.css?v=20261122-reader">
+  <link rel="stylesheet" href="wl-modern.css?v=20261122-reader">
 </head>
 <body class="wl-home">
   <a class="skip-link" href="#mainContent">تجاوز إلى المحتوى</a>
@@ -69,7 +69,7 @@
     <div class="wl-container wl-utility-in">
       <span class="wl-utility-date"><svg aria-hidden="true"><use href="#i-clock"/></svg><time id="todayLabel" aria-label="تاريخ اليوم">تغطية عالمية على مدار الساعة</time></span>
       <span class="wl-utility-side">
-        <span class="wl-live" id="newsStatus"><i class="wl-live-dot" aria-hidden="true"></i><span id="connectionLabel" aria-live="polite">متصل بغرفة الأخبار</span></span>
+        <span class="wl-live is-updating" id="newsStatus"><i class="wl-live-dot" aria-hidden="true"></i><span id="connectionLabel" role="status">بانتظار الأخبار</span></span>
         <span class="wl-utility-divider" aria-hidden="true"></span>
         <button id="languageButton" type="button" aria-label="التبديل إلى الإنجليزية">English ↗</button>
       </span>
@@ -84,8 +84,8 @@
         <span class="wl-brand-copy"><strong>WRLDLINE</strong><small>GLOBAL NEWS NETWORK</small></span>
       </a>
       <div class="wl-head-actions">
-        <button class="wl-search-trigger" id="searchButton" type="button" aria-label="البحث في الأخبار">
-          <svg aria-hidden="true"><use href="#i-search"/></svg><span>ابحث في الأخبار</span><kbd class="wl-kbd">⌘K</kbd>
+        <button class="wl-search-trigger" id="searchButton" type="button" aria-label="البحث في الأخبار" aria-haspopup="dialog">
+          <svg aria-hidden="true"><use href="#i-search"/></svg><span>ابحث في الأخبار</span><kbd class="wl-kbd" dir="ltr">Ctrl / ⌘ K</kbd>
         </button>
         <button class="wl-icon-btn" id="savedButton" type="button" aria-label="المحفوظات"><svg aria-hidden="true"><use href="#i-star"/></svg></button>
         <button class="wl-icon-btn" id="themeButton" type="button" aria-label="تغيير المظهر"><svg aria-hidden="true"><use href="#i-moon"/></svg></button>
@@ -139,14 +139,19 @@
     </div>
   </div>
 
-  <main id="mainContent">
+  <main id="mainContent" tabindex="-1">
     <section class="wl-hero">
       <div class="wl-container">
         <div class="wl-hero-top">
           <div class="wl-hero-title">
-            <span class="wl-kicker">THE NEWS. ITS CONTEXT. ITS IMPACT.</span>
+            <span class="wl-kicker">غرفة الأخبار</span>
             <h1>الخبر. <em>سياقه. أثره عليك.</em></h1>
             <p>نشرح السياسة والاقتصاد والأحداث العالمية من زاوية تهم القارئ العربي: ماذا حدث؟ لماذا يهم؟ وما الذي لا نعرفه بعد؟</p>
+            <div class="wl-reader-links">
+              <a href="#newsSection">أحدث الأخبار <span aria-hidden="true">↓</span></a>
+              <a href="#breakingSection">العاجل <span aria-hidden="true">↓</span></a>
+              <a href="/news/">الأرشيف <span aria-hidden="true">↗</span></a>
+            </div>
           </div>
           <div class="wl-hero-side">
             <div class="wl-edition">
@@ -157,7 +162,7 @@
         </div>
 
         <div class="wl-hero-grid">
-          <section id="heroLayout" class="hero-layout" aria-live="polite" aria-label="أهم الأخبار">
+          <section id="heroLayout" class="hero-layout" aria-label="أهم الأخبار" aria-busy="true">
             <div class="lead-story skeleton" aria-hidden="true"></div>
             <div class="lead-rail"><div class="lead-rail-head"><span>TOP STORIES</span><strong>أهم ما يحدث الآن</strong></div><div class="loading-state" style="padding:20px;color:var(--muted);font-size:12px">جارٍ تحميل الأخبار…</div></div>
           </section>
@@ -186,6 +191,96 @@
         </nav>
       </div>
     </section>
+
+    <div class="wl-container wl-main">
+      <div class="wl-main-grid">
+        <section class="wl-feed" id="newsSection" aria-labelledby="feedTitle" tabindex="-1">
+          <div class="wl-feed-head">
+            <div><span class="wl-kicker">CONTINUOUS COVERAGE</span><h2 id="feedTitle">أحدث الأخبار</h2></div>
+            <div class="wl-feed-controls">
+              <select id="countryFilter" class="wl-select" aria-label="تصفية حسب الدولة"><option value="all">كل الدول</option></select>
+              <select id="sortFilter" class="wl-select" aria-label="ترتيب الأخبار"><option value="newest">الأحدث أولاً</option><option value="oldest">الأقدم أولاً</option></select>
+              <button class="wl-chip follow-feed-toggle" id="followFeedButton" type="button" aria-pressed="false">موجز متابعاتي</button>
+              <button class="wl-chip reader-refresh" id="feedRefreshButton" type="button">تحديث الأخبار</button>
+            </div>
+          </div>
+          <div class="wl-sticky-filters">
+            <div class="category-chips" id="categoryChips" role="group" aria-label="تصفية حسب القسم">
+              <button class="chip active" data-category="all">الكل</button>
+              <button class="chip" data-category="politics">سياسة</button>
+              <button class="chip" data-category="economy">اقتصاد</button>
+              <button class="chip" data-category="security">أمن ودفاع</button>
+              <button class="chip" data-category="tech">تقنية</button>
+              <button class="chip" data-category="sports">رياضة</button>
+              <button class="chip" data-category="culture">ثقافة</button>
+              <button class="chip" data-category="health">صحة</button>
+              <button class="chip" data-category="science">علوم</button>
+              <button class="chip" data-category="environment">بيئة</button>
+              <button class="chip" data-category="society">مجتمع</button>
+              <button class="chip" data-category="world">عالم</button>
+              <button class="chip" data-category="uncategorized">غير مصنف</button>
+            </div>
+          </div>
+          <div class="reader-feed-meta">
+            <p id="feedResultCount" role="status"></p>
+            <p id="lastUpdated">بانتظار التحديث</p>
+          </div>
+          <div id="newsGrid" class="news-grid" aria-busy="true"><div class="wl-empty">جارٍ تحميل أحدث الأخبار…</div></div>
+          <div class="reader-feed-footer">
+            <p id="feedPageStatus" role="status"></p>
+            <button class="wl-btn wl-btn--primary" id="loadMoreButton" type="button" hidden>تحميل أخبار أقدم</button>
+            <a href="/news/" class="wl-section-link">تصفّح الأرشيف <span aria-hidden="true">↗</span></a>
+          </div>
+        </section>
+
+        <aside class="sidebar" aria-label="أدوات المتابعة">
+          <section class="sidebar-panel">
+            <div class="panel-heading"><span class="wl-kicker">YOUR DESK</span><h3>غرفة المتابعة</h3></div>
+            <p class="panel-copy">احفظ القصص التي تهمك وارجع إليها في أي وقت من هذا الجهاز.</p>
+            <button class="outline-button" id="openSaved" type="button">عرض المحفوظات <span aria-hidden="true">←</span></button>
+          </section>
+
+          <section class="sidebar-panel" id="followPanel">
+            <div class="panel-heading"><span class="wl-kicker">PERSONALISE</span><h3>الأقسام والدول التي تتابعها</h3></div>
+            <p class="panel-copy" id="followHint">سجّل الدخول لمزامنة اختياراتك بين أجهزتك.</p>
+            <div id="followOptions" class="follow-options"><a class="outline-button" href="account.html">تسجيل الدخول أو إنشاء حساب</a></div>
+          </section>
+
+          <section class="sidebar-panel" aria-labelledby="clockTitle">
+            <div class="panel-heading"><span class="wl-kicker">WORLD CLOCK</span><h3 id="clockTitle">ساعة العالم</h3></div>
+            <div class="wl-clock-list" id="worldClock"><div class="wl-clock-row"><span class="wl-clock-city"><i></i>الرياض</span><span class="wl-clock-time">—</span></div></div>
+          </section>
+
+          <section class="sidebar-panel" aria-labelledby="riskTitle">
+            <div class="panel-heading"><span class="wl-kicker">SIGNAL</span><h3 id="riskTitle">مؤشر توتر التغطية</h3></div>
+            <div class="wl-risk">
+              <div class="wl-risk-head"><b id="riskValue">—</b><span id="riskLabel">يُحسب من الأخبار</span></div>
+              <div class="wl-risk-track"><span class="wl-risk-needle" id="riskNeedle" style="inset-inline-start:0%"></span></div>
+              <div class="wl-risk-legend"><span>هادئ</span><span>مرتفع</span><span>حرج</span></div>
+            </div>
+          </section>
+
+          <section class="sidebar-panel">
+            <div class="panel-heading"><span class="wl-kicker">EXPLORE</span><h3>استكشف التغطية</h3></div>
+            <div class="topic-list">
+              <button data-category="politics">السياسة والدبلوماسية <span>↗</span></button>
+              <button data-category="economy">الاقتصاد والأعمال <span>↗</span></button>
+              <button data-category="security">الأمن والدفاع <span>↗</span></button>
+              <button data-category="tech">العلوم والتكنولوجيا <span>↗</span></button>
+              <button data-category="sports">الرياضة <span>↗</span></button>
+              <button data-category="culture">الثقافة والمجتمع <span>↗</span></button>
+            </div>
+          </section>
+
+          <section class="sidebar-note">
+            <span class="note-icon" aria-hidden="true">◎</span>
+            <h3>اقرأ الخبر من مصدره</h3>
+            <p>نعرض بيانات الخبر ونوفر رابط المصدر الأصلي للتحقق وقراءة التفاصيل الكاملة. لا نستبدل المصدر، بل نضيف إليه سياقاً.</p>
+          </section>
+        </aside>
+      </div>
+
+    </div>
 
     <section class="wl-dossier-strip" id="dossierStrip" aria-labelledby="dossierStripTitle">
       <div class="wl-container">
@@ -325,86 +420,7 @@
       </section>
     </div>
 
-    <div class="wl-container wl-main">
-      <div class="wl-main-grid">
-        <div class="wl-feed" id="newsSection">
-          <div class="wl-feed-head">
-            <div><span class="wl-kicker">CONTINUOUS COVERAGE</span><h2 id="feedTitle">أحدث الأخبار</h2></div>
-            <div class="wl-feed-controls">
-              <select id="countryFilter" class="wl-select" aria-label="تصفية حسب الدولة"><option value="all">كل الدول</option></select>
-              <select id="sortFilter" class="wl-select" aria-label="ترتيب الأخبار"><option value="newest">الأحدث أولاً</option><option value="oldest">الأقدم أولاً</option></select>
-              <button class="wl-chip follow-feed-toggle" id="followFeedButton" type="button" aria-pressed="false">موجز متابعاتي</button>
-            </div>
-          </div>
-          <div class="wl-sticky-filters">
-            <div class="category-chips" id="categoryChips" role="tablist" aria-label="تصفية حسب القسم">
-              <button class="chip active" data-category="all">الكل</button>
-              <button class="chip" data-category="politics">سياسة</button>
-              <button class="chip" data-category="economy">اقتصاد</button>
-              <button class="chip" data-category="security">أمن ودفاع</button>
-              <button class="chip" data-category="tech">تقنية</button>
-              <button class="chip" data-category="sports">رياضة</button>
-              <button class="chip" data-category="culture">ثقافة</button>
-              <button class="chip" data-category="health">صحة</button>
-              <button class="chip" data-category="science">علوم</button>
-              <button class="chip" data-category="environment">بيئة</button>
-              <button class="chip" data-category="society">مجتمع</button>
-              <button class="chip" data-category="world">عالم</button>
-              <button class="chip" data-category="uncategorized">غير مصنف</button>
-            </div>
-          </div>
-          <div id="newsGrid" class="news-grid" aria-live="polite"></div>
-          <div class="load-more-wrap"><button class="wl-btn wl-btn--primary" id="loadMoreButton" type="button">عرض المزيد من الأخبار</button></div>
-          <p class="wl-sr" id="lastUpdated" aria-live="polite">بانتظار التحديث</p>
-        </div>
-
-        <aside class="sidebar" aria-label="أدوات المتابعة">
-          <section class="sidebar-panel">
-            <div class="panel-heading"><span class="wl-kicker">YOUR DESK</span><h3>غرفة المتابعة</h3></div>
-            <p class="panel-copy">احفظ القصص التي تهمك وارجع إليها في أي وقت من هذا الجهاز.</p>
-            <button class="outline-button" id="openSaved" type="button">عرض المحفوظات <span aria-hidden="true">←</span></button>
-          </section>
-
-          <section class="sidebar-panel" id="followPanel">
-            <div class="panel-heading"><span class="wl-kicker">PERSONALISE</span><h3>الأقسام والدول التي تتابعها</h3></div>
-            <p class="panel-copy" id="followHint">سجّل الدخول لمزامنة اختياراتك بين أجهزتك.</p>
-            <div id="followOptions" class="follow-options"><a class="outline-button" href="account.html">تسجيل الدخول أو إنشاء حساب</a></div>
-          </section>
-
-          <section class="sidebar-panel" aria-labelledby="clockTitle">
-            <div class="panel-heading"><span class="wl-kicker">WORLD CLOCK</span><h3 id="clockTitle">ساعة العالم</h3></div>
-            <div class="wl-clock-list" id="worldClock"><div class="wl-clock-row"><span class="wl-clock-city"><i></i>الرياض</span><span class="wl-clock-time">—</span></div></div>
-          </section>
-
-          <section class="sidebar-panel" aria-labelledby="riskTitle">
-            <div class="panel-heading"><span class="wl-kicker">SIGNAL</span><h3 id="riskTitle">مؤشر توتر التغطية</h3></div>
-            <div class="wl-risk">
-              <div class="wl-risk-head"><b id="riskValue">—</b><span id="riskLabel">يُحسب من الأخبار</span></div>
-              <div class="wl-risk-track"><span class="wl-risk-needle" id="riskNeedle" style="inset-inline-start:0%"></span></div>
-              <div class="wl-risk-legend"><span>هادئ</span><span>مرتفع</span><span>حرج</span></div>
-            </div>
-          </section>
-
-          <section class="sidebar-panel">
-            <div class="panel-heading"><span class="wl-kicker">EXPLORE</span><h3>استكشف التغطية</h3></div>
-            <div class="topic-list">
-              <button data-category="politics">السياسة والدبلوماسية <span>↗</span></button>
-              <button data-category="economy">الاقتصاد والأعمال <span>↗</span></button>
-              <button data-category="security">الأمن والدفاع <span>↗</span></button>
-              <button data-category="tech">العلوم والتكنولوجيا <span>↗</span></button>
-              <button data-category="sports">الرياضة <span>↗</span></button>
-              <button data-category="culture">الثقافة والمجتمع <span>↗</span></button>
-            </div>
-          </section>
-
-          <section class="sidebar-note">
-            <span class="note-icon" aria-hidden="true">◎</span>
-            <h3>اقرأ الخبر من مصدره</h3>
-            <p>نعرض بيانات الخبر ونوفر رابط المصدر الأصلي للتحقق وقراءة التفاصيل الكاملة. لا نستبدل المصدر، بل نضيف إليه سياقاً.</p>
-          </section>
-        </aside>
-      </div>
-
+    <div class="wl-container">
       <section class="coverage-pulse" id="coveragePulse" aria-labelledby="coveragePulseHeading">
         <div class="coverage-pulse-head">
           <div><span class="wl-kicker">WRLDLINE SIGNAL</span><h2 id="coveragePulseHeading">نبض التغطية</h2><p>ما الملفات الأكثر حضوراً في غرفة الأخبار خلال آخر 24 ساعة؟</p></div>
@@ -492,15 +508,17 @@
     </div>
   </footer>
 
-  <div class="search-overlay" id="searchOverlay" aria-hidden="true">
-    <div class="search-dialog" role="dialog" aria-modal="true" aria-label="البحث في الأخبار">
+  <dialog class="search-overlay" id="searchOverlay" aria-label="البحث في الأخبار">
+    <div class="search-dialog">
       <div class="search-top"><label for="searchInput">ابحث في التغطية</label><button class="icon-button" id="closeSearch" aria-label="إغلاق البحث">×</button></div>
-      <input id="searchInput" type="search" placeholder="عنوان، موضوع، دولة أو مصدر…" autocomplete="off">
+      <input id="searchInput" type="search" placeholder="عنوان، موضوع، دولة أو مصدر…" autocomplete="off" aria-describedby="searchScope" maxlength="160" dir="auto" autofocus>
+      <div class="reader-search-scope"><p id="searchScope">البحث ضمن الأخبار المحمّلة في هذه الصفحة.</p><a href="/news/">تصفّح الأرشيف</a></div>
+      <p id="searchStatus" class="wl-sr" role="status"></p>
       <div id="searchResults" class="search-results"><p class="search-empty">اكتب كلمة للبدء.</p></div>
-      <div class="search-hint"><span><kbd>↵</kbd> فتح أول نتيجة</span><span><kbd>Esc</kbd> إغلاق</span><span><kbd>⌘K</kbd> بحث سريع</span></div>
+      <div class="search-hint"><span><kbd>↵</kbd> فتح أول نتيجة</span><span><kbd>Esc</kbd> إغلاق</span></div>
     </div>
-  </div>
-  <div class="modal-overlay" id="articleModal" aria-hidden="true"><article class="article-dialog" id="modalContent"></article></div>
+  </dialog>
+  <dialog class="modal-overlay" id="articleModal" aria-labelledby="readerModalTitle"><article class="article-dialog" id="modalContent"></article></dialog>
 
   <nav class="mobile-dock" aria-label="التنقل السريع">
     <a href="index.html" class="dock-item is-active"><span aria-hidden="true">⌂</span><small>الرئيسية</small></a>
@@ -516,20 +534,21 @@
 
 
   <script src="taxonomy.js?v=20261114-contract1" defer></script>
-  <script src="language.js?v=20261121-arfirst1" defer></script>
+  <script src="language.js?v=20261122-reader" defer></script>
   <script src="editorial-rank.js?v=20261119-2" defer></script>
-  <script src="script.js?v=20261121-retry1" defer></script>
+  <script src="reader-discovery.js?v=20261122-reader" defer></script>
+  <script src="script.js?v=20261122-reader" defer></script>
   <script src="newsroom-data.js?v=20261114-1" defer></script>
   <script src="newsroom.js?v=20261120-feedfast1" defer></script>
-  <script src="home.js?v=20261114-1" defer></script>
+  <script src="home.js?v=20261122-reader" defer></script>
   <script src="intelligence.js?v=20261114-1" defer></script>
   <script src="coverage-gap.js?v=20261114-1" defer></script>
   <script src="share.js?v=20261113-4" defer></script>
-  <script src="analytics-config.js?v=20261114-1"></script>
+  <script src="analytics-config.js?v=20261114-1" defer></script>
   <script src="analytics.js?v=20261114-1" defer></script>
   <script src="watch-strip.js?v=20261119-2" defer></script>
   <script src="editorial-publications.js?v=20261119-2" defer></script>
-  <script src="site-enhancements.js?v=20261121-modern1" defer></script>
-  <script src="homepage-interactions.js?v=20261121-1" defer></script>
+  <script src="wl-modern.js?v=20261122-reader" defer></script>
+  <script src="homepage-interactions.js?v=20261122-reader" defer></script>
 </body>
 </html>
