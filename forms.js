@@ -4,31 +4,77 @@
   const SUPABASE_URL = "https://vmaxbnogmmfyrcucapnq.supabase.co";
   const SUPABASE_KEY = "sb_publishable_D3c88u75_LcEN460Y3Jcpw__EfqUnBx";
   const contact = document.getElementById("contactForm");
+  let appendContactReference = message => message;
+  let syncContactContext = () => {};
+  const contactEnglish = !!contact && new URLSearchParams(location.search).get("lang") === "en";
+  const contactText = (ar, en) => contactEnglish ? en : ar;
   if (contact) {
     // Prefill only from a small allow-list; never inject arbitrary text into the message.
     const params = new URLSearchParams(location.search);
-    const topic = params.get("topic");
+    const topics = params.getAll("topic");
+    const topic = topics.length === 1 ? topics[0] : null;
     const topicField = contact.elements.namedItem("topic");
     if (topic && topicField && [...topicField.options].some(o => o.value === topic)) topicField.value = topic;
-    const subject = (params.get("subject") || "").replace(/[\u0000-\u001f\u007f]/g, " ").trim().slice(0, 120);
     const messageField = contact.elements.namedItem("message");
-    if (subject && messageField && !messageField.value.trim()) {
+    const rawId = params.getAll("article");
+    const articleId = topic === "correction" && rawId.length === 1 && /^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/i.test(rawId[0]) ? rawId[0].toLowerCase() : "";
+    const articlePath = articleId ? "/news/" + articleId : "";
+    const articlePrefix = articlePath ? "https://al-ghaib.us.ci" + articlePath + "\n\n" : "";
+    const articleNote = document.getElementById("contactArticle");
+    const articleLink = document.getElementById("contactArticleLink");
+    const correctionHelp = document.getElementById("correctionHelp");
+    if (articleLink && articlePath) articleLink.href = articlePath;
+    syncContactContext = () => {
+      const correction = topicField?.value === "correction";
+      if (correctionHelp) correctionHelp.hidden = !correction;
+      if (articleNote) articleNote.hidden = !correction || !articlePath;
+      if (messageField) {
+        messageField.maxLength = 5000 - (correction ? articlePrefix.length : 0);
+        messageField.setAttribute("aria-describedby", correction
+          ? (articlePath ? "correctionHelp contactArticle" : "correctionHelp")
+          : "");
+      }
+    };
+    appendContactReference = message => topicField?.value === "correction" ? articlePrefix + message : message;
+    topicField?.addEventListener("change", syncContactContext);
+    syncContactContext();
+    if (contactEnglish) {
+      document.documentElement.lang = "en";
+      document.documentElement.dir = "ltr";
+      document.title = "Contact WRLDLINE | WRLDLINE NEWS";
+      document.querySelector(".policy-nav")?.setAttribute("aria-label", "Site navigation");
+      for (const element of document.querySelectorAll("[data-contact-en]")) element.textContent = element.dataset.contactEn;
+      for (const element of document.querySelectorAll("[data-contact-en-href]")) element.href = element.dataset.contactEnHref;
+      if (messageField) messageField.placeholder = "Include a story or page URL if relevant.";
+      document.dispatchEvent(new CustomEvent("wrldline:language", { detail: { lang: "en" } }));
+    }
+    const subject = (params.get("subject") || "").replace(/[\u0000-\u001f\u007f]/g, " ").trim().slice(0, 120);
+    if (subject && topic !== "correction" && messageField && !messageField.value.trim()) {
       messageField.value = `[${subject}]\n`;
       messageField.focus();
       messageField.setSelectionRange(messageField.value.length, messageField.value.length);
     }
+    const sendButton = contact.querySelector("button[type=submit]");
+    if (sendButton) sendButton.disabled = false;
   }
   if (contact) contact.addEventListener("submit", async event => {
     event.preventDefault();
     const status = document.getElementById("contactStatus"), button = contact.querySelector("button[type=submit]");
     if (!contact.reportValidity()) return;
-    button.disabled = true; status.textContent = "جارٍ إرسال الرسالة..."; status.className = "form-status";
+    const comment = contact.elements.namedItem("message").value.trim();
+    const message = appendContactReference(comment);
+    if (comment.length < 10 || message.length > 5000) {
+      status.textContent = contactText("اكتب رسالة من 10 أحرف على الأقل ضمن الحد المسموح.", "Write at least 10 characters within the allowed length.");
+      status.className = "form-status error";
+      return;
+    }
+    button.disabled = true; status.textContent = contactText("جارٍ إرسال الرسالة...", "Sending your message…"); status.className = "form-status";
     try {
-      const response = await fetch(SUPABASE_URL + "/functions/v1/contact-submit", { method: "POST", headers: { apikey: SUPABASE_KEY, "Content-Type": "application/json" }, referrerPolicy: "no-referrer", signal: AbortSignal.timeout(15000), body: JSON.stringify({ name: contact.elements.namedItem("name").value.trim(), email: contact.elements.namedItem("email").value.trim(), topic: contact.elements.namedItem("topic").value, message: contact.elements.namedItem("message").value.trim(), page_path: location.pathname, website: contact.elements.namedItem("website")?.value || "", consent: contact.querySelector('input[type="checkbox"][required]')?.checked === true }) });
+      const response = await fetch(SUPABASE_URL + "/functions/v1/contact-submit", { method: "POST", headers: { apikey: SUPABASE_KEY, "Content-Type": "application/json" }, referrerPolicy: "no-referrer", signal: AbortSignal.timeout(15000), body: JSON.stringify({ name: contact.elements.namedItem("name").value.trim(), email: contact.elements.namedItem("email").value.trim(), topic: contact.elements.namedItem("topic").value, message, page_path: location.pathname, website: contact.elements.namedItem("website")?.value || "", consent: contact.querySelector('input[type="checkbox"][required]')?.checked === true }) });
       if (!response.ok) throw new Error("contact_unavailable");
       if (contact.elements.namedItem("topic").value === "sponsorship") window.WRLDLINE_ANALYTICS?.track("sponsor_contact", { plan: "sponsorship" });
-      contact.reset(); status.textContent = "وصلت رسالتك. سنراجعها وفق أولوية الموضوع؛ لا ترسل معلومات سرية أو بطاقات دفع."; status.className = "form-status ok";
-    } catch { status.textContent = "تعذر إرسال الرسالة الآن. حاول لاحقًا أو استخدم البريد المنشور في صفحة التواصل."; status.className = "form-status error"; }
+      contact.reset(); syncContactContext(); status.textContent = contactText("وصلت رسالتك. سنراجعها وفق أولوية الموضوع.", "Message received. We will review it based on its priority."); status.className = "form-status ok";
+    } catch { status.textContent = contactText("تعذر إرسال الرسالة الآن. بقيت مسودتك هنا؛ حاول مرة أخرى.", "We could not send your message. Your draft is still here; please try again."); status.className = "form-status error"; }
     finally { button.disabled = false; }
   });
   const newsletter = document.getElementById("newsletterForm");

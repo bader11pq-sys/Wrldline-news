@@ -22,6 +22,8 @@ const AR_EN={
 "موسوعة التاريخ":"History Encyclopedia","التاريخ ليس صفحة واحدة.":"History is not a single page.","إنه حكاية حضارات.":"It is the story of civilizations.","اختر دولة، ثم تنقّل بين العصور والفصول كأنك تقرأ كتاباً منظماً، لا كتلة نصية طويلة.":"Choose a country, then explore eras and chapters like a well-organized book—not a wall of text.","كل المناطق":"All regions","آسيا":"Asia","أفريقيا":"Africa","اكتشف التاريخ ←":"Explore history ←","رحلة عبر العصور":"Journey through the ages","الثقافة والحياة":"Culture & daily life","مصادر للقراءة والتوسع":"Further reading & sources","الخط الزمني الكبير":"The grand timeline","محطات سريعة قبل الدخول في التفاصيل":"Key milestones before the deep dive","افتح أي عصر لتقرأ فصوله وموضوعاته":"Open any era to explore its chapters and themes"
 };
 AR_EN["WRLDLINE / NEWS"]="WRLDLINE / NEWS";
+AR_EN["المعايير التحريرية"]="Editorial standards";
+AR_EN["التصحيحات"]="Corrections";
 AR_EN["WRLDLINE NEWS | ورلدلاين نيوز"]="WRLDLINE NEWS";
 AR_EN["عرض الخبر"]="View story";
 AR_EN["حسابك واشتراكك | WRLDLINE NEWS"]="Your account & subscription | WRLDLINE NEWS";
@@ -666,6 +668,10 @@ function setLanguage(lang,options={}){
  document.querySelectorAll('a[href="/news/"],a[data-edition-archive]').forEach(link=>{
   link.dataset.editionArchive="";
   link.href="/news/?lang="+next;
+ });
+ document.querySelectorAll("a[data-editorial-page]").forEach(link=>{
+  const section=link.dataset.editorialPage;
+  if(section==="about"||section==="corrections")link.href="/"+section+(next==="en"?"-en":"")+".html";
  });
  document.querySelectorAll("[data-article-edition-link]").forEach(link=>{
   const url=new URL(link.href);

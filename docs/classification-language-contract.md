@@ -57,7 +57,7 @@ The single production scheduled path is Cloudflare Worker `wrldline-jobs`: its `
 
 Queue states are `pending`, `processing`, `failed`, `classified`, `needs_review`, `expired`, and `skipped`. Stories older than one hour become `expired`; Telegram ticker rows become `skipped`; failed rows use bounded exponential backoff and stop at five attempts.
 
-GitHub Actions `bot.yml` and `ai-backlog.yml` are now manual `workflow_dispatch` fallbacks only. They no longer run on a schedule, so they cannot race the Supabase cron.
+`ai-backlog.yml` is a manual classification fallback. `bot.yml` is a credential-free, manual status diagnostic for retired RSS, not an ingestion fallback. It must not be scheduled or used to restore news collection.
 
 ## Backfill and audit
 

@@ -1,6 +1,5 @@
-name: WRLDLINE Multi-source News Ingestion (manual fallback)
-# Supabase cron `wrldline-general-ingestion` and `wrldline-breaking-ingestion`
-# are the scheduled ingestion path. This workflow is a manual fallback only.
+name: WRLDLINE retired RSS status (manual)
+# Diagnostic only. This is neither an ingestion job nor a fallback.
 on:
   workflow_dispatch:
 permissions:
@@ -14,13 +13,12 @@ jobs:
     timeout-minutes: 8
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@49933ae5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: '20'
-      - name: Fetch Arabic and international news sources in parallel
-        env:
-          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      - name: Report that legacy RSS collection is disabled
         run: node bot-ingest.js
