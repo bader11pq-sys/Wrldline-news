@@ -159,20 +159,35 @@
     const input = $("#historySearch"), results = $("#historySearchResults");
     if (!input || !results) return;
     const pool = [
+      ...$$("a[data-history-reading]").map(link => ({
+        label: $("strong", link)?.textContent || link.textContent,
+        sub: "مسار قراءة", href: link.getAttribute("href"), text: link.dataset.historyReading
+      })),
       ...entities.map(e => ({ type: "dossier", label: e.name, sub: periodOf(e), href: dossierHref(e), flag: e.flag, text: e.name + " " + (e.en || "") + " " + (e.summary || "") })),
       ...events.slice(0, 400).map(ev => ({ type: "event", label: ev.title, sub: ev.label || yearLabel(ev.year), href: "history-explore.html?tab=timeline&q=" + encodeURIComponent(ev.title), flag: "🕰️", text: ev.title + " " + (ev.body || "") })),
       ...figures.map(f => ({ type: "figure", label: f.name, sub: f.role || "", href: "history-library.html?tab=figures&q=" + encodeURIComponent(f.name), flag: "👤", text: f.name + " " + (f.note || "") }))
     ];
+    const searchKey = value => value.toLowerCase().normalize("NFKD")
+      .replace(/\p{M}|ـ/gu, "").replace(/ى/g, "ي").replace(/ة/g, "ه")
+      .replace(/[٠-٩]/g, d => String(d.charCodeAt(0) - 0x660))
+      .replace(/[۰-۹]/g, d => String(d.charCodeAt(0) - 0x6f0));
+    const index = pool.map(x => ({ ...x, key: searchKey((x.text || "") + " " + (x.label || "")) }));
     function run() {
-      const q = input.value.trim();
+      const q = searchKey(input.value).trim();
       if (q.length < 2) { results.hidden = true; results.innerHTML = ""; return; }
       const words = q.split(/\s+/);
-      const hits = pool.filter(x => words.every(w => x.text.includes(w))).slice(0, 8);
-      results.innerHTML = hits.length ? hits.map(x => '<a href="' + x.href + '"><span class="hx-sr-flag">' + (x.flag || "•") + "</span><span>" + esc(x.label) + "</span><small>" + esc(x.sub) + "</small></a>").join("") : '<div class="hx-search-empty">لا نتائج مطابقة. جرّب اسماً أو سنة أو حدثاً.</div>';
+      const hits = index.filter(x => words.every(w => x.key.includes(w))).slice(0, 8);
+      results.innerHTML = hits.length ? hits.map(x => '<a href="' + esc(x.href) + '"><span class="hx-sr-flag">' + (x.flag || "•") + "</span><span>" + esc(x.label) + "</span><small>" + esc(x.sub) + "</small></a>").join("") : '<div class="hx-search-empty">لا نتائج مطابقة. جرّب اسماً أو سنة أو حدثاً.</div>';
       results.hidden = false;
     }
     input.addEventListener("input", run);
     input.addEventListener("focus", run);
+    input.closest(".hx-search")?.addEventListener("keydown", e => {
+      if (e.key === "Escape" && !results.hidden) {
+        if (e.target !== input) input.focus();
+        results.hidden = true;
+      }
+    });
     document.addEventListener("click", e => { if (!e.target.closest(".hx-search")) results.hidden = true; });
   }
 
@@ -526,7 +541,7 @@
     else if (page === "dossier") renderDossier();
     else if (page === "compare") renderCompare();
     else if (page === "library") renderLibrary();
-    else { renderHub(); }
+    else if (page !== "reading") renderHub();
   }
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot);
   else boot();

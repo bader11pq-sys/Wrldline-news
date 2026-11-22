@@ -11,6 +11,7 @@
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=Noto+Kufi+Arabic:wght@400;500;600;700;800&family=Amiri:wght@400;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="wrld.css?v=20261119-brand1">
 <link rel="stylesheet" href="history.css?v=20261114-1">
+<link rel="stylesheet" href="reading.css?v=20261122-paths">
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="site-enhancements.css">
 </head>
@@ -45,6 +46,20 @@
           </div>
           <p class="hx-hero-note">كل ملف يحمل تاريخ آخر مراجعة، ومصادره، وحدود معرفتنا. المحتوى مرجعي تعليمي، لا دعاية وطنية.</p>
         </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="reading-guides" class="rp-promo" aria-labelledby="historyPathsTitle" lang="ar" dir="rtl" data-no-reveal>
+    <div class="rp-wrap">
+      <p class="rp-kicker">التاريخ من نقطة بداية واضحة</p>
+      <h2 id="historyPathsTitle">اختر مسار قراءتك</h2>
+      <p class="rp-promo-intro">أربع قراءات قصيرة تجمع القصة والخط الزمني والمصادر، وتوصلك إلى ملفات أوسع حين تريد التعمّق.</p>
+      <div class="rp-grid">
+        <a class="rp-card" href="reading.html#diriyah" data-history-reading="الطريف الدرعية السعودية نجد العمارة اليونسكو تراث Diriyah Turaif"><strong>حي الطريف وعمارة الدرعية</strong><span>ما الذي تكشفه الواحة والتحصينات والقصور؟</span></a>
+        <a class="rp-card" href="reading.html#suez" data-history-reading="قناة السويس مصر 1869 1956 1975 الشحن التجارة الملاحة Suez"><strong>قناة السويس وتجارة العالم</strong><span>من افتتاح القناة إلى أثر مسارات الشحن البديلة.</span></a>
+        <a class="rp-card" href="reading.html#web" data-history-reading="نشأة الويب الانترنت الإنترنت سيرن تيم بيرنرز لي 1989 1990 1993 CERN Web"><strong>كيف بدأ الويب؟</strong><span>من مشكلة تبادل الوثائق إلى شبكة من الروابط.</span></a>
+        <a class="rp-card" href="reading.html#rosetta" data-history-reading="حجر رشيد مصر الهيروغليفية الديموطيقية شامبليون بطليموس 196 1799 1822 Rosetta"><strong>حجر رشيد وقراءة الهيروغليفية</strong><span>كيف يساعد نصّ معروف على تفسير نقش مجهول؟</span></a>
       </div>
     </div>
   </section>
@@ -107,7 +122,7 @@
 <script src="history-events.js"></script>
 <script src="history-learning.js"></script>
 <script src="history-portraits.js"></script>
-<script src="history-app.js"></script>
+<script src="history-app.js?v=20261122-paths"></script>
 <script>
 if (location.hash.length > 2 && window.WLH && window.WLH.byId[location.hash.slice(1)]) {
   location.replace("history-dossier.html?id=" + encodeURIComponent(location.hash.slice(1)));
