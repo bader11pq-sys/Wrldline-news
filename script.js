@@ -16,7 +16,13 @@ const CATEGORY_NAMES = WRLDLINE_TAXONOMY?.CATEGORY_NAMES || { ar:{politics:"سي
 function normalizeCategory(value){if(WRLDLINE_TAXONOMY?.normalizeCategory)return WRLDLINE_TAXONOMY.normalizeCategory(value);const key=String(value||"").trim().toLowerCase();return CATEGORY_NAMES.ar[key]?key:"uncategorized";}
 function categoryName(value){if(WRLDLINE_TAXONOMY?.categoryName)return WRLDLINE_TAXONOMY.categoryName(value,state.lang);return CATEGORY_NAMES[state.lang]?.[normalizeCategory(value)]||(state.lang==="ar"?"غير مصنف":"Uncategorized");}
 function ui(ar,en){return state.lang==="ar"?ar:en;}
-function countryName(value,code){const iso3={SAU:"SA",EGY:"EG",CHN:"CN",ARE:"AE",QAT:"QA",KWT:"KW",BHR:"BH",OMN:"OM",YEM:"YE",JOR:"JO",LBN:"LB",PSE:"PS",SYR:"SY",IRQ:"IQ",MAR:"MA",DZA:"DZ",TUN:"TN",LBY:"LY",SDN:"SD",USA:"US",GBR:"GB",FRA:"FR",DEU:"DE",RUS:"RU",UKR:"UA",IRN:"IR",TUR:"TR",IND:"IN",JPN:"JP",KOR:"KR",PRK:"KP",PAK:"PK",AFG:"AF",ISR:"IL",ETH:"ET",SOM:"SO",KEN:"KE",NGA:"NG",ZAF:"ZA",CAN:"CA",MEX:"MX",BRA:"BR",ARG:"AR",AUS:"AU",NZL:"NZ",ESP:"ES",ITA:"IT",POL:"PL",NLD:"NL",SWE:"SE",NOR:"NO",FIN:"FI",GRC:"GR",CHE:"CH",AUT:"AT",BEL:"BE",CZE:"CZ",HUN:"HU",ROU:"RO",BGR:"BG",SRB:"RS",HRV:"HR",THA:"TH",VNM:"VN",IDN:"ID",MYS:"MY",SGP:"SG",PHL:"PH",TWN:"TW",HKG:"HK",MNG:"MN",KAZ:"KZ",UZB:"UZ",KHM:"KH",LAO:"LA",MMR:"MM",BGD:"BD",NPL:"NP",LKA:"LK",COL:"CO",CHL:"CL",PER:"PE",VEN:"VE",CUB:"CU",DOM:"DO",HTI:"HT",PAN:"PA",CRI:"CR",IRL:"IE",PRT:"PT",DNK:"DK",ISL:"IS",CYP:"CY"};if(!value)return state.lang==="ar"?"غير محدد":"Unknown";if(value==="دولي")return state.lang==="ar"?"غير محدد":"Unknown";if(state.lang!=="en")return value;if(code&&iso3[String(code).toUpperCase()]){try{return new Intl.DisplayNames(["en"],{type:"region"}).of(iso3[String(code).toUpperCase()]);}catch{}}const map={"دولي":"International","السعودية":"Saudi Arabia","المملكة العربية السعودية":"Saudi Arabia","الإمارات":"United Arab Emirates","الإمارات العربية المتحدة":"United Arab Emirates","قطر":"Qatar","الكويت":"Kuwait","البحرين":"Bahrain","عمان":"Oman","اليمن":"Yemen","مصر":"Egypt","الأردن":"Jordan","لبنان":"Lebanon","فلسطين":"Palestine","سوريا":"Syria","العراق":"Iraq","المغرب":"Morocco","الجزائر":"Algeria","تونس":"Tunisia","ليبيا":"Libya","السودان":"Sudan","الصين":"China","الولايات المتحدة":"United States","بريطانيا":"United Kingdom","فرنسا":"France","روسيا":"Russia","أوكرانيا":"Ukraine","إيران":"Iran","تركيا":"Türkiye","الهند":"India","اليابان":"Japan"};return map[value]||value;}
+function countryName(value,code){
+ if(!value||value==="دولي")return ui("غير محدد","Unknown");
+ const localized=window.WLEditorial.countryName(code,state.lang);
+ if(localized)return localized;
+ if(state.lang!=="en")return value;
+ const map={"دولي":"International","السعودية":"Saudi Arabia","المملكة العربية السعودية":"Saudi Arabia","الإمارات":"United Arab Emirates","الإمارات العربية المتحدة":"United Arab Emirates","قطر":"Qatar","الكويت":"Kuwait","البحرين":"Bahrain","عمان":"Oman","اليمن":"Yemen","مصر":"Egypt","الأردن":"Jordan","لبنان":"Lebanon","فلسطين":"Palestine","سوريا":"Syria","العراق":"Iraq","المغرب":"Morocco","الجزائر":"Algeria","تونس":"Tunisia","ليبيا":"Libya","السودان":"Sudan","الصين":"China","الولايات المتحدة":"United States","بريطانيا":"United Kingdom","فرنسا":"France","روسيا":"Russia","أوكرانيا":"Ukraine","إيران":"Iran","تركيا":"Türkiye","الهند":"India","اليابان":"Japan"};return map[value]||value;
+}
 function riskLabel(value){const labels={ar:{critical:"حرج",high:"مرتفع",elevated:"متصاعد",guarded:"مراقبة",low:"منخفض",unknown:"غير محدد"},en:{critical:"Critical",high:"High",elevated:"Elevated",guarded:"Guarded",low:"Low",unknown:"Unknown"}};return labels[state.lang]?.[value]||labels[state.lang].unknown;}
 function sourceLanguageLabel(lang){return lang==="ar"?ui("النص الأصلي — العربية","Original text — Arabic"):ui("النص الأصلي — الإنجليزية","Original text — English");}
 function translationBadge(a){
@@ -410,7 +416,7 @@ function normalizeArticle(a){
  const translationReview=!!translation&&translationNeedsReview((translation.title||"")+" "+(translation.summary||""));
  const sameLanguage=sourceLang===state.lang;
  const sourceScope=String(a.source_scope||"").toLowerCase();
- const eventCountry=a.event_country||a.country||null;
+ const eventCountry=window.WLEditorial.eventCountry(a);
  const rawTitle=translation?.title||sourceTitle;
  const title=window.WLRank&&typeof window.WLRank.cleanHeadline==="function"?window.WLRank.cleanHeadline(rawTitle,displaySourceName(a)):rawTitle;
  const summary=translation?.summary||a.summary||ui("الملخص غير متوفر. افتح المصدر لقراءة الخبر كاملًا.","Summary unavailable. Open the source to read the full story.");

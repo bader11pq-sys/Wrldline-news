@@ -29,9 +29,9 @@ async function loadData(){
   });
   if(!res.ok)throw new Error(t("تعذر تحميل التحليلات (","Could not load analysis (")+res.status+")");
   const data=await res.json(),since=Date.now()-24*3600000;
-  articles=(Array.isArray(data)?data:[]).filter(a=>a.ai_country_code&&a.ai_risk_level!=="unknown"&&new Date(a.published_at||0).getTime()>=since).map(a=>{
+  articles=(Array.isArray(data)?data:[]).filter(a=>window.WLEditorial.codeOf(a.ai_country_code)&&Object.hasOwn(colors,a.ai_risk_level)&&a.ai_risk_level!=="unknown"&&new Date(a.published_at||0).getTime()>=since).map(a=>{
    const tr=(a.article_translations||[]).find(x=>x.lang===lang);
-   return {...a,title:tr?.title||a.title,summary:tr?.summary||a.summary,ai_summary:tr?.ai_summary||a.ai_summary};
+   return {...a,ai_country_code:a.ai_country_code.trim().toUpperCase(),ai_event_type:window.WLEditorial.eventType(a.ai_event_type),title:tr?.title||a.title,summary:tr?.summary||a.summary,ai_summary:tr?.ai_summary||a.ai_summary};
   });
   countryEvents=new Map();for(const a of articles){const code=a.ai_country_code.toUpperCase();if(!countryEvents.has(code))countryEvents.set(code,[]);countryEvents.get(code).push(a);}
   $("statEvents").textContent=articles.length;$("statCountries").textContent=countryEvents.size;
@@ -39,7 +39,10 @@ async function loadData(){
   $("statLocations").textContent=articles.filter(a=>Number.isFinite(a.ai_latitude)&&Number.isFinite(a.ai_longitude)).length;
   $("updatedAt").textContent=t("آخر تحديث: ","Last updated: ")+new Date().toLocaleTimeString(lang==="ar"?"ar-SA":"en-US");
   const types=[...new Set(articles.map(a=>a.ai_event_type).filter(Boolean))].sort();
-  $("eventTypeFilter").innerHTML='<option value="all">'+t("كل أنواع الأحداث","All event types")+"</option>"+types.map(x=>'<option value="'+esc(x)+'">'+esc(x)+"</option>").join("");
+  const eventFilter=$("eventTypeFilter"), previousType=eventFilter.value;
+  eventFilter.replaceChildren(new Option(t("كل أنواع الأحداث","All event types"),"all"),
+    ...types.map(key=>new Option(window.WLEditorial.eventTypeLabel(key,lang),key)));
+  eventFilter.value=types.includes(previousType)?previousType:"all";
   renderEvents(filteredItems(articles),t("أبرز الأحداث","Top events"));
   try{
    if(!geoCache){
@@ -60,7 +63,7 @@ async function loadData(){
 }
 function countryCode(feature){const p=feature.properties||{};const raw=[p.ISO_A3,p.ADM0_A3,p.iso_a3,feature.id].find(x=>x&&String(x)!=="-99");return String(raw||"").toUpperCase();}
 function countryName(feature){const p=feature.properties||{};const code=String(p.ISO_A2||p.iso_a2||"").toUpperCase();try{if(code&&code!=="-")return new Intl.DisplayNames([lang==="ar"?"ar":"en"],{type:"region"}).of(code);}catch{}return p.ADMIN||p.name||p.NAME||t("دولة","Country");}
-function articleCountry(a){if(lang==="ar")return a.country||"دولي";const codes={SAU:"SA",EGY:"EG",CHN:"CN",ARE:"AE",QAT:"QA",KWT:"KW",BHR:"BH",OMN:"OM",YEM:"YE","JOR":"JO","LBN":"LB","PSE":"PS","SYR":"SY","IRQ":"IQ","MAR":"MA","DZA":"DZ","TUN":"TN","LBY":"LY","SDN":"SD","USA":"US","GBR":"GB","FRA":"FR","RUS":"RU","UKR":"UA","IRN":"IR","TUR":"TR","IND":"IN","JPN":"JP"};const alpha2=codes[a.ai_country_code];try{if(alpha2)return new Intl.DisplayNames(["en"],{type:"region"}).of(alpha2);}catch{}return a.country||"International";}
+function articleCountry(a){return window.WLEditorial.countryName(a.ai_country_code,lang)||t("دولة الحدث غير محددة","Event country unspecified");}
 function drawCountries(data){
  if(geoLayer)map.removeLayer(geoLayer);
  geoLayer=L.geoJSON(data,{style:feature=>{
@@ -77,7 +80,7 @@ function renderEvents(items,title){
  const host=$("eventList");if(!items.length){host.innerHTML='<div class="empty">'+t("لا توجد أحداث مطابقة في البيانات المصنّفة خلال الفترة المحددة.","No matching classified events in the selected period.")+'</div>';return;}
  host.innerHTML=items.slice(0,40).map(a=>{
   const url=safeArticleUrl(a.url);
-  return '<article class="event"><div class="event-top"><span class="risk '+riskClass(a.ai_risk_level)+'">'+esc(label(a.ai_risk_level))+' · '+(a.ai_risk_score||0)+'/100</span><small>'+esc(articleCountry(a))+'</small></div><h3>'+esc(a.title)+'</h3><p>'+esc(a.ai_summary||a.summary||"")+'</p><p>'+esc(a.ai_event_type||t("حدث عام","General event"))+' · '+esc(fmtDate(a.published_at))+'</p>'+(url?'<a href="'+esc(url)+'" target="_blank" rel="noopener noreferrer">المصدر الأصلي ↗</a>':"")+'</article>';
+  return '<article class="event"><div class="event-top"><span class="risk '+riskClass(a.ai_risk_level)+'">'+esc(label(a.ai_risk_level))+' · '+(a.ai_risk_score||0)+'/100</span><small>'+esc(articleCountry(a))+'</small></div><h3>'+esc(a.title)+'</h3><p>'+esc(a.ai_summary||a.summary||"")+'</p><p>'+esc(window.WLEditorial.eventTypeLabel(a.ai_event_type,lang))+' · '+esc(fmtDate(a.published_at))+'</p>'+(url?'<a href="'+esc(url)+'" target="_blank" rel="noopener noreferrer">'+t("المصدر الأصلي","Original source")+' ↗</a>':"")+'</article>';
  }).join("");
 }
 function showCountry(code,name){
