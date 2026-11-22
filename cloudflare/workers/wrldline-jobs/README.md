@@ -21,7 +21,7 @@ Set these in Cloudflare Dashboard → Workers & Pages → `wrldline-jobs` → Se
 
 The publishable API key is already configured as a non-secret Worker binding because it is a public client key. Never use a Supabase service-role or secret key in this Worker. Do not put the cron secret in this repository or in frontend code.
 
-## Production cutover status — verified 15 November 2026
+## Production cutover record
 
 The production system was updated on 21 November 2026 to permanently stop legacy RSS ingestion. Do not re-enable the general or breaking queues.
 
@@ -29,7 +29,7 @@ The production system was updated on 21 November 2026 to permanently stop legacy
 - The classification and translation queues remain enabled. Delivery for `wrldline-news-general` and `wrldline-news-breaking` is paused, and their queue mappings were removed from the Worker so legacy messages cannot invoke the RSS ingestion function.
 - The `WRLDLINE_CRON_SECRET` secret binding and `SUPABASE_PUBLISHABLE_KEY` binding are present on the Worker. The secret value must never be put in this repository or exposed to a browser.
 - Cloudflare-to-Supabase requests continue only for supported classification and translation work. General and breaking ingestion are rejected by the Edge Function with HTTP 410 and are no longer scheduled or consumed.
-- The duplicate Supabase Cron classifier job was removed after Cloudflare classification calls were confirmed. The remaining Supabase Cron jobs are support tasks only: audience retention, daily global briefing, NewsData sync, notification dispatch, security counter retention, and source freshness. Do not remove these without a separate review.
+- The duplicate Supabase Cron classifier job was removed after Cloudflare classification calls were confirmed. Other jobs, including NewsData sync, are outside this Worker. Check the actual scheduler inventory before declaring them active or adding another instance.
 
 To audit the live schedule, inspect the Worker Cron Triggers and queue delivery settings, then compare with `cron.job`. Never re-enable the general or breaking queues while RSS ingestion remains disabled.
 

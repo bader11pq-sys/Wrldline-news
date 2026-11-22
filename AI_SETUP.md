@@ -2,7 +2,7 @@
 
 ## Automatic background classification
 
-The production scheduler is the deployed Cloudflare Worker `wrldline-jobs`. Its `* * * * *` Cron Trigger enqueues one classification message; the `wrldline-news-classification` Queue has one serialized consumer that calls Supabase `classify-news-worker`. The duplicate Supabase classifier Cron was explicitly removed after the Cloudflare route and consumer were verified. GitHub Actions `ai-backlog.yml` and `bot.yml` are manual operator fallbacks only. Classification is strictly limited to stories published within the previous 60 minutes (with a five-minute future-clock tolerance); older stories are marked `expired` and must never be sent to an LLM.
+The production scheduler is the deployed Cloudflare Worker `wrldline-jobs`. Its `* * * * *` Cron Trigger enqueues one classification message; the `wrldline-news-classification` Queue has one serialized consumer that calls Supabase `classify-news-worker`. The duplicate Supabase classifier Cron was explicitly removed after the Cloudflare route and consumer were verified. `ai-backlog.yml` is a manual classification fallback. `bot.yml` is a status diagnostic only: legacy RSS collection stays disabled. Classification is strictly limited to stories published within the previous 60 minutes (with a five-minute future-clock tolerance); older stories are marked `expired` and must never be sent to an LLM.
 
 ### Required secrets — never commit or paste keys into chat
 
@@ -32,13 +32,13 @@ Gonka uses `https://proxy.gonkabroker.com/v1` for model discovery and JSON-only 
 
 **Observed production provider issues at the 15 November 2026 review:** Groq returned a daily token quota 429; NVIDIA returned a response without valid JSON content; BazaarLink returned a 429 concurrency/rate-limit response; Gonka returned 401; OpenRouter's free-model daily quota was exhausted; Gemini entered quota cooldown; and Firecrawl returned 402 (zero credits) and 429 (per-minute rate limit). DeepL's quota was exhausted. These are observed errors, not proof that every credential is invalid. The classifier continued to defer work rather than publish incomplete AI output. Re-run health tests after provider quotas recover or credentials/plans are corrected. The current health-check endpoint's cron-style request still returned 401 in the deployment test; fix its authorization path without weakening the internal role/secret checks.
 
-Firecrawl is not an LLM: it is an optional server-side article-text extractor and cache. When it is unavailable or out of credits, classification falls back to the available RSS summary. `NEWSDATA_API_KEY` is a news-data ingestion key rather than an AI key.
+Firecrawl is not an LLM: it is an optional server-side article-text extractor and cache. When it is unavailable or out of credits, classification can use the summary already stored with the article. `NEWSDATA_API_KEY` is a news-data ingestion key rather than an AI key.
 
 ## Risk map
 
 The map at `/map.html` uses published, AI-classified, non-Telegram stories with confidence >= 0.68 from the last seven days. Country shading reflects the highest event-level risk signal in recent coverage; it is not a country-wide safety rating or official travel advisory.
 
-Each story uses the configured classifier route described above; failed or incomplete provider output is deferred and retried only while the story remains inside the one-hour window. Monitor each provider's quota and usage limits. Cloudflare Queues provide the scheduled triggers and serialized consumers; GitHub ingestion workflows are manual fallbacks, not a second production schedule.
+Each story uses the configured classifier route described above; failed or incomplete provider output is deferred and retried only while the story remains inside the one-hour window. Monitor each provider's quota and usage limits. Cloudflare Queues provide the scheduled classifier triggers and serialized consumers; the legacy GitHub RSS workflow does not ingest or schedule news.
 
 ## Arabic/English translation and editorial control
 
