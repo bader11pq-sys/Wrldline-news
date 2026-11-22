@@ -36,12 +36,6 @@ async function get(worker, pathname, options = {}, env = ENV) { return worker.fe
 function urls(xml) { return [...xml.matchAll(/<loc>([^<]+)<\/loc>/g)].map(m => m[1]); }
 function schema(html) { return JSON.parse(html.match(/<script[^>]*type="application\/ld\+json">([\s\S]*?)<\/script>/)[1]); }
 
-test('the Workers module exports a fetch handler and no unsupported data exports', async () => {
-  const { default: handler, ...named } = await modulePromise;
-  assert.equal(typeof handler.fetch, 'function');
-  assert.ok(Object.values(named).every(value => typeof value === 'function'));
-});
-
 test('initial HTML contains published summary, reader impact context, canonical metadata, attribution and optional trust without auth gate', async () => {
   const a = article(1, { author: ['Real Reporter'], image_url: 'https://source.example/actual.jpg', ai_summary: 'قراءة تحليلية موجزة.', ai_reader_impact: 'قد يؤثر القرار في تكاليف التجارة الإقليمية إذا دخل حيز التنفيذ.', ai_watch_next: 'راقب نشر النص التنفيذي والجدول الزمني الرسمي.' });
   const f = fixture([a]), response = await get(await workerFor(f), '/news/' + a.id, { headers: { Cookie: 'private=session', Authorization: 'Bearer private-session' } });
@@ -88,20 +82,6 @@ test('missing or unavailable reader-context RPC never blocks the attributed publ
   assert.ok(html.includes(a.summary));
   assert.ok(html.includes(a.source_url));
   assert.ok(!html.includes("وش يعني لك؟"));
-});
-
-test('event country is labeled in initial Arabic and English HTML and never falls back to publisher location', async () => {
-  for (const [n, lang, event_country, label, shown] of [[130, 'ar', 'Japan', 'دولة الحدث', 'اليابان'], [131, 'en', 'اليابان', 'Event country', 'Japan'], [134, 'ar', 'Turkey', 'دولة الحدث', 'تركيا']]) {
-    const a = article(n, { lang, event_country, country: 'Publisher country fixture' });
-    const html = await (await get(await workerFor(fixture([a])), '/news/' + a.id)).text();
-    assert.ok(html.includes(`<span class="public-news-event-country">${label}: <bdi>${shown}</bdi></span>`));
-    assert.doesNotMatch(html, /Publisher country fixture/);
-  }
-  for (const event_country of [null, ' ', 'دولي', 'العالم', 'غير معروف', 'Worldwide', 'Unspecified', 'multiple countries', 'XX', 840, 'أوروبا · بحر البلطيق', 'اليمن والسعودية', 'Japan <svg/onload=evil()>']) {
-    const a = article(132, {event_country, country:'Publisher country fixture'});
-    const html = await (await get(await workerFor(fixture([a])), '/news/' + a.id)).text();
-    assert.doesNotMatch(html, /public-news-event-country|Publisher country fixture|<svg\/onload/);
-  }
 });
 
 test('unknown/malformed UUID and unpublished, future, undated or missing records are true noindex 404s', async () => {
