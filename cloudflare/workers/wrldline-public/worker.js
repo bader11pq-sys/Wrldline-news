@@ -174,13 +174,15 @@ export function renderArticle(article, now, trust = null) {
   if (original.url) schema.isBasedOn = original.url;
   if (text(article.category, 120)) schema.articleSection = text(article.category, 120);
   const correction = text(article.correction_note, 4000);
+  const reportedCountry = text(article.event_country, 120);
+  const eventCountry = /^(?:دولي|غير محدد|unknown|international|world)$/iu.test(reportedCountry) ? "" : reportedCountry;
   const shareUrl = encodeURIComponent(canonical);
   const shareTitle = encodeURIComponent(title);
   const shareCaption = encodeURIComponent(`${title} — ${description}`);
   const socialShare = `<div class="public-news-social" aria-label="${l.en ? "Share on social networks" : "مشاركة عبر الشبكات"}"><a href="https://wa.me/?text=${shareCaption}%20${shareUrl}" target="_blank" rel="noopener noreferrer">WhatsApp</a><a href="https://twitter.com/intent/tweet?text=${shareTitle}&url=${shareUrl}" target="_blank" rel="noopener noreferrer">X</a><a href="https://t.me/share/url?url=${shareUrl}&text=${shareTitle}" target="_blank" rel="noopener noreferrer">Telegram</a></div>`;
   const body = `<nav class="public-news-breadcrumb" aria-label="${l.en ? "Breadcrumb" : "مسار الصفحة"}"><a href="/news/">${l.news}</a> / ${escapeHTML(text(article.category, 120))}</nav>
 <article data-public-article data-audience-article data-article-id="${article.id}" data-category="${escapeHTML(text(article.category, 120))}" data-share-title="${escapeHTML(title)}" data-share-text="${escapeHTML(description)}" data-share-source="${escapeHTML(original.name)}" data-share-image="${escapeHTML(image)}" data-share-url="${canonical}">
-<p class="public-news-kicker">${escapeHTML([text(article.category, 120), text(article.event_country || article.country, 120)].filter(Boolean).join(" · "))}</p>
+<p class="public-news-kicker">${escapeHTML([text(article.category, 120), eventCountry].filter(Boolean).join(" · "))}</p>
 <h1>${escapeHTML(title)}</h1><div class="public-news-meta"><span>${l.published}: <time datetime="${article.published_at}">${escapeHTML(dateLabel(article.published_at, lang))}</time></span>${by.length ? `<span>${l.author}: ${escapeHTML(by.join(" · "))}</span>` : ""}${original.name ? `<span>${l.source}: ${escapeHTML(original.name)}</span>` : ""}</div>
 ${image ? `<figure class="public-news-image"><img src="${escapeHTML(image)}" alt="${escapeHTML(title)}" fetchpriority="high" decoding="async" referrerpolicy="no-referrer"></figure>` : ""}
 <div class="public-news-summary">${summary ? summary.split(/\n\s*\n/).filter(Boolean).map(p => `<p>${escapeHTML(p)}</p>`).join("") : `<p>${l.en ? "A published summary is not available. Consult the original source for the story." : "الملخص المنشور غير متوفر. يُرجى الرجوع إلى المصدر الأصلي للخبر."}</p>`}</div>

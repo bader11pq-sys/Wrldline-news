@@ -15,7 +15,9 @@ test("world monitor uses a restricted public RPC and keeps boundaries independen
   assert.doesNotMatch(map, /WRLDLINE_AUTH|getAccessToken/);
   assert.match(map, /credentials:"omit"/);
   assert.match(map, /map boundaries unavailable/);
-  assert.match(html, /map\.js\?v=20261121-public-rpc1/);
+  assert.match(html, /editorial-display\.js\?v=20261122-metadata[\s\S]*map\.js\?v=20261122-metadata/);
+  assert.match(map, /WLEditorial\.codeOf\(a\.ai_country_code\)/);
+  assert.match(map, /WLEditorial\.eventTypeLabel/);
 });
 
 test("source directory uses database-side aggregation and safe external links", () => {

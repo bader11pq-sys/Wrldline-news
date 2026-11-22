@@ -86,9 +86,9 @@ test("admin canonical links and no snapshots/new SQL mass-demotion regressions",
 function adminListHarness(metadataError=false){
  const {doc}=dom(),elements=new Map(),selects=[],rpcCalls=[];
  doc.getElementById=id=>{if(!elements.has(id))elements.set(id,new Element("div",doc));return elements.get(id);};
- const story={id:ID,title:"Fixture story",editorial_status:"published"};
+ const story={id:ID,title:"Fixture story",editorial_status:"published",country:"yemen",event_country:"بولندا"};
  const db={from(table){assert.equal(table,"articles");return {select(columns){selects.push(columns);return {order(){return this;},limit(n){assert.equal(n,200);return Promise.resolve({data:[story],error:null});}};}};},async rpc(name,args){rpcCalls.push({name,args});return metadataError?{error:{message:"Editor/admin required"}}:{data:[{id:ID,trust_review_note:"PRIVATE_NOTE",human_translation_note:"PRIVATE_TRANSLATION_NOTE"}],error:null};}};
- const context={db,$:doc.getElementById,t:(ar,en)=>en,cachedArticles:[],trustSchemaAvailable:false,editorialExtrasAvailable:false,renderArticleList:()=>{},Map};
+ const context={db,$:doc.getElementById,t:(ar,en)=>en,cachedArticles:[],trustSchemaAvailable:false,editorialExtrasAvailable:false,renderArticleList:()=>{},Map,window:{WLEditorial:require("../editorial-display.js")}};
  vm.createContext(context);
  const admin=fs.readFileSync(require.resolve("../admin.js"),"utf8");
  vm.runInContext(admin.slice(admin.indexOf("async function loadArticles(){"),admin.indexOf("async function classifyPending(){")),context);
@@ -98,6 +98,7 @@ test("admin list uses safe table projection and bounded editor metadata RPC",asy
  const {context,selects,rpcCalls}=adminListHarness();
  await context.loadArticles();
  assert.equal(context.trustSchemaAvailable,true);
+ assert.equal(context.cachedArticles[0].country,"بولندا");
  assert.equal(context.cachedArticles[0].trust_review_note,"PRIVATE_NOTE");
  assert.equal(context.cachedArticles[0].human_translation_note,"PRIVATE_TRANSLATION_NOTE");
  assert.equal(rpcCalls.length,1);assert.equal(rpcCalls[0].name,"get_editor_article_trust");

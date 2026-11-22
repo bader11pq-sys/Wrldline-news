@@ -1,12 +1,13 @@
-const CACHE_NAME = "wrldline-shell-v71-reader";
+const CACHE_NAME = "wrldline-shell-v72-editorial";
 const NEWS_CACHE = "wrldline-public-news-v1";
 const BRIEFING_CACHE = "wrldline-daily-briefing-v1";
 const SHELL_URLS = ["/", "/index.html", "/wrld.css", "/site-enhancements.css", "/site-enhancements.js", "/intelligence.css", "/intelligence.js", "/coverage-gap.js", "/sources.html", "/intelligence-sources.js", "/manus-routes.json", "/history.css", "/newsroom.css", "/editorial-rank.js", "/script.js", "/taxonomy.js", "/home.js", "/site-shell.js", "/newsroom.js", "/newsroom-data.js", "/newsroom-data-extra.js", "/newsroom-data-impact.js", "/newsroom-page.js", "/history-app.js", "/history-data.js", "/history-entities-a.js", "/history-entities-b.js", "/history-entities-c.js", "/history-events.js", "/history-learning.js", "/history-portraits.js", "/language.js", "/share.js", "/manifest.json", "/favicon.svg", "/analytics-config.js", "/analytics.js", "/forms.js", "/policy.css", "/about.html", "/contact.html", "/privacy.html", "/terms.html", "/corrections.html", "/newsletter.html", "/history.html", "/history-explore.html", "/history-dossier.html", "/history-compare.html", "/history-library.html", "/context.html", "/balance.html", "/impact.html", "/promises.html", "/mirror.html", "/explainers.html", "/markets.html", "/markets.css", "/markets.js", "/map.html", "/map.js", "/shorts.html", "/shorts.css", "/shorts.js", "/assets/shorts-news-tension-theme.mp3", "/daily-briefing.html", "/daily-briefing.css", "/daily-briefing.js", "/dossier/", "/dossier.css", "/dossier.js", "/dossier/index.json", "/dossier/watchlist.html", "/dossier/claims.html", "/dossier/impact.html", "/dossier/digest.html", "/dossier/watchlist.json", "/dossier/watchlist.ics", "/watch-strip.js"];
 self.addEventListener("install", event => {
   event.waitUntil((async () => {
     const cache = await caches.open(CACHE_NAME);
-    const readerShell = ["language.js", "reader-discovery.js", "script.js", "home.js", "wl-modern.js", "wl-modern.css", "homepage-interactions.js", "homepage-polish.css"].map(file => "/"+file+"?v=20261122-reader");
-    const publicShell = [...SHELL_URLS.filter(url => url !== "/newsletter.html"), ...readerShell, "/notification-config.js", "/notification-client.js"];
+    const readerShell = ["language.js", "reader-discovery.js", "home.js", "wl-modern.js", "wl-modern.css", "homepage-interactions.js", "homepage-polish.css"].map(file => "/"+file+"?v=20261122-reader");
+    const metadataShell = ["editorial-display.js","script.js","map.js"].map(file=>"/"+file+"?v=20261122-metadata");
+    const publicShell = [...SHELL_URLS.filter(url => url !== "/newsletter.html"), ...readerShell, ...metadataShell, "/notification-config.js", "/notification-client.js"];
     await Promise.allSettled(publicShell.map(async url => {
       try { const response = await fetch(new Request(url, { cache: "reload" })); if (response.ok) await cache.put(url, response); } catch {}
     }));
