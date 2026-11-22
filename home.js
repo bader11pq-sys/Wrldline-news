@@ -221,20 +221,6 @@
         '<span class="shorts-preview-copy"><small>' + esc(labels[a.cat] || a.categoryName || "حول العالم") + '</small><strong>' + esc(a.title) + '</strong><em>افتح الخبر العمودي ↗</em></span></a>';
     }).join("") : '<div class="shorts-preview-empty">سيظهر موجز Shorts هنا مع أول تحديث للأخبار.</div>';
   }
-  function renderRisk(articles) {
-    const score = NR.riskScore(articles.map(a => ({ ai_risk_level: a.aiRiskLevel })));
-    const value = $("#riskValue"), label = $("#riskLabel"), needle = $("#riskNeedle");
-    if (!value) return;
-    if (score === null) {
-      value.textContent = "—";
-      label.textContent = "لا توجد إشارات مصنفة كافية";
-      return;
-    }
-    value.textContent = score;
-    label.textContent = score >= 75 ? "مرتفع" : score >= 50 ? "متصاعد" : score >= 30 ? "مراقبة" : "هادئ";
-    if (needle) needle.style.insetInlineStart = Math.min(97, score) + "%";
-  }
-
   async function renderDossiers() {
     const host = document.getElementById("dossierStripGrid");
     if (!host) return;
@@ -267,7 +253,6 @@
     renderContext([]);
     renderBalance([]);
     renderMirror([]);
-    renderRisk([]);
     renderShortsPreview([]);
     renderPromises();
     renderExplainers();
@@ -282,6 +267,5 @@
     renderContext(articles);
     renderBalance(articles);
     renderMirror(articles);
-    renderRisk(articles);
   });
 })();

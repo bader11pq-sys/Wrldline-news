@@ -27,6 +27,7 @@
   <link rel="stylesheet" href="intelligence.css?v=20261114-1">
   <link rel="stylesheet" href="homepage-polish.css?v=20261122-reader">
   <link rel="stylesheet" href="wl-modern.css?v=20261122-reader">
+  <link rel="stylesheet" href="newsroom-edition.css?v=20261122-edition">
 </head>
 <body class="wl-home">
   <a class="skip-link" href="#mainContent">تجاوز إلى المحتوى</a>
@@ -102,7 +103,7 @@
           <a class="wl-nav-link" href="/news/">الأرشيف</a>
           <a class="wl-nav-link nav-link wl-nav-link--live" href="#breakingSection"><i class="wl-live-dot" aria-hidden="true"></i> عاجل</a>
           <a class="wl-nav-link nav-link" href="context.html">ملفات الأحداث</a>
-          <a class="wl-nav-link nav-link" href="markets.html">الأسواق</a>
+          <a class="wl-nav-link wl-nav-monitor" href="map.html">مرصد العالم</a>
         </div>
         <div class="wl-nav-more">
           <button class="wl-more-btn" id="moreButton" type="button" aria-expanded="false" aria-controls="moreMenu">المزيد <svg aria-hidden="true"><use href="#i-chevron"/></svg></button>
@@ -150,7 +151,7 @@
             <div class="wl-reader-links">
               <a href="#newsSection">أحدث الأخبار <span aria-hidden="true">↓</span></a>
               <a href="#breakingSection">العاجل <span aria-hidden="true">↓</span></a>
-              <a href="/news/">الأرشيف <span aria-hidden="true">↗</span></a>
+              <a href="map.html">مرصد العالم <span aria-hidden="true">↗</span></a>
             </div>
           </div>
           <div class="wl-hero-side">
@@ -164,7 +165,7 @@
         <div class="wl-hero-grid">
           <section id="heroLayout" class="hero-layout" aria-label="أهم الأخبار" aria-busy="true">
             <div class="lead-story skeleton" aria-hidden="true"></div>
-            <div class="lead-rail"><div class="lead-rail-head"><span>TOP STORIES</span><strong>أهم ما يحدث الآن</strong></div><div class="loading-state" style="padding:20px;color:var(--muted);font-size:12px">جارٍ تحميل الأخبار…</div></div>
+            <div class="lead-rail"><div class="lead-rail-head"><span lang="en">FRONT PAGE</span><strong>أهم ما يحدث الآن</strong></div><div class="loading-state" style="padding:20px;color:var(--muted);font-size:12px">جارٍ تحميل الأخبار…</div></div>
           </section>
         </div>
 
@@ -198,8 +199,9 @@
           <div class="wl-feed-head">
             <div><span class="wl-kicker">CONTINUOUS COVERAGE</span><h2 id="feedTitle">أحدث الأخبار</h2></div>
             <div class="wl-feed-controls">
-              <select id="countryFilter" class="wl-select" aria-label="تصفية حسب الدولة"><option value="all">كل الدول</option></select>
-              <select id="sortFilter" class="wl-select" aria-label="ترتيب الأخبار"><option value="newest">الأحدث أولاً</option><option value="oldest">الأقدم أولاً</option></select>
+              <select id="countryFilter" class="wl-select" aria-label="دولة الحدث" data-language-managed><option value="all">كل الدول</option></select>
+              <select id="formatFilter" class="wl-select" aria-label="صيغة المحتوى" data-language-managed><option value="all">كل الصيغ</option></select>
+              <select id="sortFilter" class="wl-select" aria-label="ترتيب الأخبار" data-language-managed><option value="newest">الأحدث أولاً</option><option value="oldest">الأقدم أولاً</option></select>
               <button class="wl-chip follow-feed-toggle" id="followFeedButton" type="button" aria-pressed="false">موجز متابعاتي</button>
               <button class="wl-chip reader-refresh" id="feedRefreshButton" type="button">تحديث الأخبار</button>
             </div>
@@ -223,6 +225,7 @@
           </div>
           <div class="reader-feed-meta">
             <p id="feedResultCount" role="status"></p>
+            <button id="clearEditionFilters" type="button" hidden>مسح التصفية</button>
             <p id="lastUpdated">بانتظار التحديث</p>
           </div>
           <div id="newsGrid" class="news-grid" aria-busy="true"><div class="wl-empty">جارٍ تحميل أحدث الأخبار…</div></div>
@@ -234,6 +237,20 @@
         </section>
 
         <aside class="sidebar" aria-label="أدوات المتابعة">
+          <section class="sidebar-panel edition-monitor" aria-labelledby="editionMonitorTitle" data-language-managed>
+            <div class="panel-heading">
+              <span class="wl-kicker" lang="en">WORLD MONITOR</span>
+              <h3 id="editionMonitorTitle">مرصد العالم</h3>
+            </div>
+            <p class="panel-copy" id="editionMonitorDeck">إشارات التغطية المصنّفة بحسب موقع الحدث خلال آخر 24 ساعة.</p>
+            <p class="edition-monitor-status" id="editionMonitorStatus" role="status">تُحمَّل الإشارات عند الوصول إلى هذا القسم.</p>
+            <dl class="edition-monitor-metrics" id="editionMonitorMetrics" hidden>
+              <div><dt id="editionReportLabel">تقارير مصنّفة</dt><dd id="editionReportCount">—</dd></div>
+              <div><dt id="editionCountryLabel">دول بها إشارات</dt><dd id="editionCountryCount">—</dd></div>
+              <div><dt id="editionHighLabel">مرتفعة أو حرجة</dt><dd id="editionHighCount">—</dd></div>
+            </dl>
+            <a class="edition-monitor-link" href="map.html" id="editionMonitorLink">افتح الخريطة</a>
+          </section>
           <section class="sidebar-panel">
             <div class="panel-heading"><span class="wl-kicker">YOUR DESK</span><h3>غرفة المتابعة</h3></div>
             <p class="panel-copy">احفظ القصص التي تهمك وارجع إليها في أي وقت من هذا الجهاز.</p>
@@ -249,15 +266,6 @@
           <section class="sidebar-panel" aria-labelledby="clockTitle">
             <div class="panel-heading"><span class="wl-kicker">WORLD CLOCK</span><h3 id="clockTitle">ساعة العالم</h3></div>
             <div class="wl-clock-list" id="worldClock"><div class="wl-clock-row"><span class="wl-clock-city"><i></i>الرياض</span><span class="wl-clock-time">—</span></div></div>
-          </section>
-
-          <section class="sidebar-panel" aria-labelledby="riskTitle">
-            <div class="panel-heading"><span class="wl-kicker">SIGNAL</span><h3 id="riskTitle">مؤشر توتر التغطية</h3></div>
-            <div class="wl-risk">
-              <div class="wl-risk-head"><b id="riskValue">—</b><span id="riskLabel">يُحسب من الأخبار</span></div>
-              <div class="wl-risk-track"><span class="wl-risk-needle" id="riskNeedle" style="inset-inline-start:0%"></span></div>
-              <div class="wl-risk-legend"><span>هادئ</span><span>مرتفع</span><span>حرج</span></div>
-            </div>
           </section>
 
           <section class="sidebar-panel">
@@ -534,14 +542,16 @@
 
 
   <script src="taxonomy.js?v=20261114-contract1" defer></script>
-  <script src="language.js?v=20261122-reader" defer></script>
+  <script src="language.js?v=20261122-edition" defer></script>
   <script src="editorial-rank.js?v=20261119-2" defer></script>
-  <script src="reader-discovery.js?v=20261122-reader" defer></script>
-  <script src="editorial-display.js?v=20261122-metadata" defer></script>
-  <script src="script.js?v=20261122-metadata" defer></script>
+  <script src="reader-discovery.js?v=20261122-edition" defer></script>
+  <script src="editorial-display.js?v=20261122-edition" defer></script>
+  <script src="map-model.js?v=20261122-edition" defer></script>
+  <script src="script.js?v=20261122-edition" defer></script>
   <script src="newsroom-data.js?v=20261114-1" defer></script>
   <script src="newsroom.js?v=20261120-feedfast1" defer></script>
-  <script src="home.js?v=20261122-reader" defer></script>
+  <script src="home.js?v=20261122-edition" defer></script>
+  <script src="newsroom-edition.js?v=20261122-edition" defer></script>
   <script src="intelligence.js?v=20261114-1" defer></script>
   <script src="coverage-gap.js?v=20261114-1" defer></script>
   <script src="share.js?v=20261113-4" defer></script>

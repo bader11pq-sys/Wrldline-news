@@ -42,12 +42,27 @@
     return order === "oldest" ? first - second : second - first;
   }
 
-  function filter(articles, { category, country, sort, followOnly, follows }) {
+  const formats = Object.freeze(["news","analysis","opinion","sponsored"]);
+
+  function filter(articles, { category, country, format = "all", sort, followOnly, follows }) {
     return articles.filter(a => !a.isNewsDataOnly
       && (category === "all" || a.cat === category)
-      && (country === "all" || a.country === country)
+      && (country === "all" || a.eventCountryCode === country)
+      && (format === "all" || a.contentType === format)
       && (!followOnly || follows.category.includes(a.cat) || follows.country.includes(a.country)))
       .sort((a, b) => compareDates(a, b, sort));
+  }
+
+  function related(articles, current, limit = 3) {
+    if (current.cat === "uncategorized" && !current.eventCountryCode) return [];
+    return dedupe(articles.filter(a => a.id !== current.id && !a.isNewsDataOnly && a.contentType !== "sponsored"
+      && (!a.sourceURL || a.sourceURL !== current.sourceURL)
+      && normalize(a.title) !== normalize(current.title)
+      && ((current.cat !== "uncategorized" && a.cat === current.cat)
+        || (current.eventCountryCode && a.eventCountryCode === current.eventCountryCode))))
+      .sort((a,b) => Number(b.cat === current.cat) + Number(!!current.eventCountryCode && b.eventCountryCode === current.eventCountryCode)
+        - Number(a.cat === current.cat) - Number(!!current.eventCountryCode && a.eventCountryCode === current.eventCountryCode)
+        || compareDates(a,b,"newest")).slice(0,limit);
   }
 
   function isPromotionalHeadline(value) {
@@ -68,5 +83,5 @@
     });
   }
 
-  return { normalize, search, filter, isPromotionalHeadline, dedupe };
+  return { normalize, search, formats, filter, related, isPromotionalHeadline, dedupe };
 });

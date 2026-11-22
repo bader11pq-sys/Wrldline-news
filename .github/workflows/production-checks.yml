@@ -36,6 +36,8 @@ jobs:
           trap 'kill "$server" || true' EXIT
           for i in {1..30}; do curl --fail --silent http://127.0.0.1:4173/ >/dev/null && break; sleep 1; done
           python tests/reliability-browser.py
+          python tests/newsroom-edition-browser.py
+          python tests/world-monitor-browser.py
   source-freshness:
     # Opt-in prevents missing secrets and duplicate pg_cron scheduling from being
     # silently treated as working monitors. Only protected trusted branches get secrets.

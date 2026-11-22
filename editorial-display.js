@@ -25,9 +25,15 @@
     "ZWEZW",
   ].join(" ").split(" ");
   const alpha2 = new Map(pairs.map(pair=>[pair.slice(0,3),pair.slice(3)]));
+  const alpha3 = new Map([...alpha2].map(([three,two])=>[two,three]));
   const language = code=>code==="en"?"en":"ar";
   const names = {};
   function codeOf(iso3) { return alpha2.get(String(iso3||"").trim().toUpperCase()) || null; }
+  function iso3Of(value) {
+    if(typeof value!=="string")return null;
+    const key=value.trim().toUpperCase();
+    return alpha2.has(key)?key:alpha3.get(key)||null;
+  }
   function countryName(iso3, locale) {
     const code=codeOf(iso3), lang=language(locale);
     if(!code)return "";
@@ -37,6 +43,35 @@
   function eventCountry(article) {
     const value=typeof article.event_country==="string"?article.event_country.trim():"";
     return /^(?:دولي|غير محدد|unknown|international|world|)$/iu.test(value)?null:value;
+  }
+  const countryAliases = {
+    ARE:["الإمارات","الإمارات العربية المتحدة","UAE","U.A.E."],
+    GBR:["بريطانيا","المملكة المتحدة","UK","U.K.","Britain"],
+    SAU:["السعودية","المملكة العربية السعودية"],
+    USA:["الولايات المتحدة الأمريكية","أمريكا","United States of America","USA","U.S.","U.S.A."],
+    TUR:["Turkey"], PSE:["فلسطين","Palestine","State of Palestine"], RUS:["Russian Federation"],
+    SYR:["سورية","Syrian Arab Republic"], CZE:["Czech Republic"], CIV:["Ivory Coast"], VNM:["Viet Nam"]
+  };
+  const countryKey = value => value.normalize("NFKD").toLowerCase()
+    .replace(/[\p{M}\p{Cf}\u0640]/gu,"").replace(/ى/g,"ي").replace(/[.’']/g,"").replace(/\s+/g," ").trim();
+  let countryIndex;
+  function eventCountryCode(article) {
+    const value=eventCountry(article);
+    if(!value)return null;
+    // The editorial field is authoritative; never substitute the publisher or an unrelated AI code.
+    // Names such as Chad/Oman are not treated as ISO tokens unless the input is already uppercase.
+    if(/^[A-Z]{2,3}$/.test(value)&&iso3Of(value))return iso3Of(value);
+    if(!countryIndex){
+      countryIndex=new Map();
+      for(const iso3 of alpha2.keys()){
+        for(const name of [countryName(iso3,"ar"),countryName(iso3,"en"),...(countryAliases[iso3]||[])]){
+          if(!name)continue;
+          const key=countryKey(name), previous=countryIndex.get(key);
+          countryIndex.set(key,previous===undefined||previous===iso3?iso3:null);
+        }
+      }
+    }
+    return countryIndex.get(countryKey(value))||null;
   }
   const types={
     announcement:["إعلان","Announcement"],diplomacy:["دبلوماسية","Diplomacy"],election:["انتخابات","Election"],
@@ -50,7 +85,7 @@
     const key=eventType(value), english=language(locale)==="en";
     return key?types[key][english?1:0]:(english?"Unspecified event type":"نوع الحدث غير محدد");
   }
-  const api=Object.freeze({codeOf,countryName,eventCountry,eventType,eventTypeLabel});
+  const api=Object.freeze({codeOf,iso3Of,countryName,eventCountry,eventCountryCode,eventType,eventTypeLabel});
   if(typeof module==="object"&&module.exports)module.exports=api;
   else root.WLEditorial=api;
 })(typeof window==="undefined"?globalThis:window);
