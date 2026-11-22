@@ -32,12 +32,29 @@ FIRST = [
 ]
 OLDER = [story(25, "Earlier railway analysis", "SA", "analysis")]
 MONITOR = [{**FIRST[0], "ai_event_type": "market", "ai_risk_level": "low", "ai_risk_score": 18}]
+CURRENT_EXCLUSIVE = story(31, "Transit engineers release original survey", "GBR",
+                          is_exclusive=True)
+OLDER_EXCLUSIVE = {**story(32, "Earlier report from the transport desk", "GBR", is_exclusive=True),
+                   "published_at": (NOW - timedelta(days=3)).isoformat()}
+CURRENT_BREAKING = {**story(33, "أعلن مجلس المدينة إغلاق الطريق", "GBR",
+                            source_name="Breaking Desk", source_language="ar", is_breaking=True,
+                            lang="ar"),
+                    "published_at": (NOW - timedelta(minutes=2)).isoformat()}
 
 
 async def setup(browser, width, *, monitor_mode="ready", home_failure=False):
     context = await browser.new_context(viewport={"width": width, "height": 850},
                                         service_workers="block", reduced_motion="reduce")
-    state = {"monitor_mode": monitor_mode, "home_failure": home_failure, "offsets": [], "first": FIRST}
+    state = {"monitor_mode": monitor_mode, "home_failure": home_failure, "offsets": [], "first": FIRST,
+             "sections": {}, "section_requests": [], "section_gates": {}}
+
+    async def section_response(route, name):
+        state["section_requests"].append(name)
+        status, body = state["sections"].get(name, (200, []))
+        gate = state["section_gates"].get(name)
+        if gate:
+            await gate.wait()
+        await route.fulfill(status=status, json=body)
 
     async def route_request(route):
         url = urlparse(route.request.url)
@@ -49,11 +66,17 @@ async def setup(browser, width, *, monitor_mode="ready", home_failure=False):
                                 json=MONITOR if state["monitor_mode"] == "ready" else [])
         elif url.path.endswith("/rpc/public_home_news_recent_v3"):
             args = route.request.post_data_json
-            primary = not any(args.get(name) for name in ("p_newsdata_only", "p_is_breaking", "p_is_exclusive"))
-            if primary:
+            name = next((label for key, label in (("p_newsdata_only", "dedicated"),
+                                                 ("p_is_breaking", "breaking"),
+                                                 ("p_is_exclusive", "exclusive")) if args.get(key)), None)
+            if name:
+                await section_response(route, name)
+            else:
                 state["offsets"].append(args["p_offset"])
-            await route.fulfill(status=503 if primary and state["home_failure"] else 200,
-                                json=(OLDER if args["p_offset"] else state["first"]) if primary else [])
+                await route.fulfill(status=503 if state["home_failure"] else 200,
+                                    json=OLDER if args["p_offset"] else state["first"])
+        elif url.path.endswith("/rpc/public_top_read_articles"):
+            await section_response(route, "popular")
         else:
             await route.fulfill(status=200, body="")
 
@@ -71,9 +94,69 @@ async def open_home(page, query=""):
         await deny.click()
 
 
+async def check_supplemental_sections(browser):
+    context, page, state, errors = await setup(browser, 390)
+    try:
+        state["sections"].update(breaking=(503, []),
+                                 exclusive=(200, [CURRENT_EXCLUSIVE, OLDER_EXCLUSIVE,
+                                                  {**FIRST[0], "is_exclusive": True},
+                                                  {**story(34, "Alternate title for first-batch coverage", "GBR", is_exclusive=True),
+                                                   "published_at": NOW.isoformat(), "url": FIRST[1]["url"] + "#details"}]),
+                                 popular=(200, [FIRST[1]]))
+        state["section_gates"]["exclusive"] = asyncio.Event()
+        await open_home(page, "?lang=en")
+        await expect(page.locator("#newsGrid .reader-story-link")).to_have_count(24)
+        await expect(page.locator("#popularStoriesGrid")).to_contain_text("Saudi trade report", timeout=2000)
+        await expect(page.locator("#exclusiveNewsGrid")).to_have_text("Loading exclusive stories…")
+        await expect(page.locator("#breakingFeedNotice")).to_contain_text("This section could not load.")
+        state["section_gates"].pop("exclusive").set()
+        await expect(page.locator("#exclusiveNewsGrid")).to_contain_text(CURRENT_EXCLUSIVE["title"])
+        missed = page.locator("#missedNewsGrid")
+        await expect(missed).to_contain_text("This list may be incomplete.")
+        await expect(missed.locator("h3")).to_have_text([CURRENT_EXCLUSIVE["title"]])
+        assert "dedicated" not in state["section_requests"], state["section_requests"]
+
+        state["sections"]["breaking"] = (200, [CURRENT_BREAKING])
+        retry = page.locator("#breakingFeedNotice button")
+        state["section_gates"]["breaking"] = asyncio.Event()
+        await retry.focus()
+        await retry.press("Enter")
+        await expect(retry).to_have_attribute("aria-disabled", "true")
+        await retry.press("Enter")
+        state["section_gates"].pop("breaking").set()
+        await expect(page.locator("#breakingNewsGrid")).to_contain_text(CURRENT_BREAKING["title"])
+        await expect(page.locator("#breakingFeedNotice")).to_be_hidden()
+        await expect(page.locator("#breakingHeading")).to_be_focused()
+        await expect(missed).not_to_contain_text("This list may be incomplete.")
+        assert state["offsets"] == [0], state["offsets"]
+        assert state["section_requests"].count("breaking") == 2, state["section_requests"]
+
+        state["sections"]["popular"] = (200, {"unexpected": "not an array"})
+        await page.locator("#feedRefreshButton").click()
+        await expect(page.locator("#popularFeedNotice")).to_contain_text("Showing available stories.")
+        await expect(page.locator("#popularStoriesGrid")).to_contain_text("Saudi trade report")
+        await expect(page.locator("#connectionLabel")).to_have_text("News feed loaded")
+        state["sections"]["popular"] = (200, [])
+        await page.locator("#popularFeedNotice button").click()
+        await expect(page.locator("#popularStoriesGrid")).to_have_text("Not enough reading data yet.")
+        await expect(page.locator("#popularFeedNotice")).to_be_hidden()
+
+        state["sections"]["exclusive"] = (503, [])
+        await open_home(page, "?lang=ar")
+        await expect(page.locator("#exclusiveFeedNotice button")).to_have_text("إعادة محاولة تحميل القسم")
+        await expect(page.locator("#exclusiveFeedNotice")).to_contain_text("تعذّر تحميل هذا القسم.")
+        await expect(page.locator("#exclusiveNewsGrid")).to_be_empty()
+        assert not errors, errors
+    finally:
+        for gate in state["section_gates"].values():
+            gate.set()
+        await context.close()
+
+
 async def main():
     async with async_playwright() as p:
         browser = await p.chromium.launch(headless=True, executable_path=os.environ.get("WRLDLINE_CHROMIUM_PATH") or None)
+        await check_supplemental_sections(browser)
         context, page, state, errors = await setup(browser, 1440)
         await open_home(page, "?lang=en")
         cards = page.locator("#newsGrid .reader-story-link")
