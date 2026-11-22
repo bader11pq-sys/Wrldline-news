@@ -4,6 +4,20 @@
   const article = document.querySelector("[data-public-article]");
   if (!article) return;
   const en = document.documentElement.lang.startsWith("en");
+  const summary = article.querySelector(".public-news-summary");
+  if (summary) {
+    const text = [...summary.querySelectorAll(":scope > p")].map(p => p.textContent).join("\n\n");
+    if (text) {
+      import("/reader-prose.js?v=20261122-reading2").then(() => {
+        if (!window.WLReaderProse) return;
+        window.WLReaderProse.renderInto(summary, text, {
+          lang: document.documentElement.lang,
+          editorial: /WRLDLINE/i.test(article.dataset.shareSource || "")
+        });
+        summary.classList.add("is-formatted");
+      }).catch(() => { /* The server-rendered text remains readable without enhancement. */ });
+    }
+  }
   const status = document.getElementById("publicNewsStatus");
   const canonical = document.querySelector('link[rel="canonical"]')?.href;
   if (!canonical || new URL(canonical).origin !== "https://al-ghaib.us.ci") return;

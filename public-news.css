@@ -39,3 +39,30 @@
 
 /* Direct social links remain available when native sharing is unavailable. */
 .public-news-social{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0 24px}.public-news-social a{display:inline-flex;align-items:center;justify-content:center;min-height:38px;padding:7px 13px;border:1px solid var(--line);border-radius:9px;text-decoration:none;color:var(--ink);font-size:12px;font-weight:650}.public-news-social a:hover{border-color:var(--gold);background:var(--surface-2)}
+
+/* Standalone articles follow the same reading rhythm as the homepage reader. */
+.public-news-main:has([data-public-article]){width:min(44rem,calc(100% - 40px))}
+.public-news-main [data-public-article]>h1{max-inline-size:none;line-height:1.46;text-wrap:balance}
+[data-public-article] .public-news-meta{border-block-end:1px solid var(--line);padding-block-end:16px;margin-block:14px 20px}
+[data-public-article] .public-news-summary{
+ color:var(--ink);font-size:clamp(1.075rem,2.2vw,1.25rem);line-height:2.05;
+ margin-block:25px 32px;white-space:pre-line;text-align:start;
+}
+html:lang(en) [data-public-article] .public-news-summary{line-height:1.78}
+[data-public-article] .public-news-summary.is-formatted{white-space:normal}
+.public-news-summary > *{margin:0}
+.public-news-summary > * + *{margin-block-start:1.13em}
+.public-news-summary > p+p{margin-block-start:1.13em}
+.public-news-summary > p:first-child{font-weight:550}
+.public-news-summary > h2{font-size:1.16em;line-height:1.55;border-block-start:1px solid var(--line);padding-block-start:.65em;margin-block-start:1.85em}
+.public-news-summary > h2+*{margin-block-start:.5em}
+.public-news-summary ul{padding-inline-start:1.4em;list-style:disc}
+.public-news-summary li+li{margin-block-start:.4em}
+.public-news-summary li::marker{color:var(--gold-strong)}
+.public-news-image img{display:block}
+.public-news-actions :is(button,a),.public-news-paging a,.public-news-social a{min-block-size:44px;align-items:center}
+.public-news-list li{padding-block:clamp(20px,3vw,32px)}
+.public-news-list h2{line-height:1.52}
+.public-news-list p{max-inline-size:44rem;font-size:1rem;line-height:1.8}
+.public-news-list small{font-size:.82rem;line-height:1.6}
+.public-news-paging a{display:inline-flex;text-decoration:underline;text-underline-offset:.25em}

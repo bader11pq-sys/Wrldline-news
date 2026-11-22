@@ -851,11 +851,20 @@ function openArticle(id,updateUrl=true,returnFocus){
  if(updateUrl){const url=new URL(location.href);url.searchParams.set("article",id);try{history.pushState({article:id},"",url);}catch{}}
  track("view_article",{article_id:a.id,content_type:a.contentType,category:a.cat,source_domain:sourceDomain(a.sourceURL),has_source_link:!!a.sourceURL});
  const host=document.getElementById("modalContent");
- host.innerHTML='<button class="modal-close" id="modalClose" aria-label="'+ui("إغلاق","Close")+'">×</button>'+articleMediaMarkup(a)+
-  '<div class="modal-article-body"><div class="story-meta"><span class="category-label">'+escapeHTML(categoryName(a.cat))+'</span>'+
-  typeBadgesMarkup(a)+articleCountryMarkup(a)+'</div><h1 dir="auto">'+escapeHTML(a.title)+'</h1>'+
-  '<p class="modal-publication-date">'+ui("تاريخ النشر: ","Published: ")+escapeHTML(formatDate(a.published_at))+'</p>'+
-  correctionMarkup(a)+'<p class="modal-summary" dir="auto">'+escapeHTML(a.summary)+'</p>'+newsDataMetaMarkup(a)+
+ const published=publicationISO(a), media=articleMediaMarkup(a);
+ let largeText=false;
+ try{largeText=localStorage.getItem("wrldline:article-large-text")==="1";}catch{}
+ host.classList.add("reader-article");
+ host.classList.toggle("reader-text-large",largeText);
+ host.closest("dialog").classList.add("article-reading-mode");
+ host.innerHTML='<div class="reader-topbar"><span class="reader-wordmark" lang="en">WRLDLINE</span><div class="reader-top-actions">'+
+  '<button class="reader-tool" id="readerTextSize" type="button" aria-label="'+ui("تكبير نص الخبر","Enlarge article text")+'" aria-pressed="'+largeText+'"><span aria-hidden="true">'+ui("أ+","A+")+'</span></button>'+
+  '<button class="reader-tool reader-close" id="modalClose" type="button"><span aria-hidden="true">×</span><span>'+ui("إغلاق","Close")+'</span></button></div></div>'+
+  '<div class="modal-article-body"><header class="reader-article-header"><div class="story-meta"><span class="category-label">'+escapeHTML(categoryName(a.cat))+'</span>'+
+  typeBadgesMarkup(a)+articleCountryMarkup(a)+'</div><h1 dir="auto">'+escapeHTML(a.title)+'</h1><div class="reader-byline">'+
+  '<span dir="auto">'+escapeHTML(a.src)+'</span>'+(published?'<time datetime="'+escapeHTML(published)+'" aria-label="'+ui("تاريخ النشر: ","Published: ")+escapeHTML(formatDate(published))+'">'+escapeHTML(formatDate(published))+'</time>':'')+
+  '</div></header>'+(media?'<figure class="reader-article-media">'+media+'</figure>':'')+
+  correctionMarkup(a)+'<div class="modal-summary reader-prose"></div>'+newsDataMetaMarkup(a)+
   (a.newsdataAiSummary?'<section class="ai-insight"><strong>NewsData.io AI</strong><p>'+escapeHTML(a.newsdataAiSummary)+'</p></section>':'')+
   (a.aiSummary?'<section class="ai-insight"><strong>'+ui("تحليل WRLDLINE AI","WRLDLINE AI analysis")+'</strong><p>'+escapeHTML(a.aiSummary)+'</p><small>'+ui("مؤشر الحدث: ","Event risk: ")+escapeHTML(riskLabel(a.aiRiskLevel))+' · '+escapeHTML(a.aiRiskScore)+'/100</small></section>':'')+
   (state.lang==="ar"&&a.aiReaderImpact?'<section class="ai-impact"><h3>وش يعني لك؟</h3><p>'+escapeHTML(a.aiReaderImpact)+'</p><small>قراءة آلية مساعدة مبنية على نص الخبر، وليست تحققاً بشرياً أو نصيحة مالية.</small></section>':'')+
@@ -865,7 +874,17 @@ function openArticle(id,updateUrl=true,returnFocus){
   '<button class="outline-button" id="modalShare" type="button">↗ '+ui("مشاركة الخبر","Share story")+'</button>'+
   '<button class="outline-button" id="modalSave">'+(state.saved.has(a.id)?ui("★ إزالة من المحفوظات","★ Remove saved"):ui("☆ حفظ الخبر","☆ Save story"))+'</button>'+
   socialMarkup+'</div></div>';
+ const prose=host.querySelector(".reader-prose");
+ const options={lang:a.hasTranslation?state.lang:a.sourceLanguage,editorial:/WRLDLINE/i.test(a.src||"")};
+ if(options.lang)prose.lang=options.lang;
+ if(window.WLReaderProse)window.WLReaderProse.renderInto(prose,a.summary,options);
+ else{prose.classList.add("is-plain");prose.dir="auto";prose.textContent=a.summary;}
  document.getElementById("modalClose").addEventListener("click",closeArticle);
+ document.getElementById("readerTextSize").addEventListener("click",event=>{
+  const selected=host.classList.toggle("reader-text-large");
+  event.currentTarget.setAttribute("aria-pressed",String(selected));
+  try{localStorage.setItem("wrldline:article-large-text",selected?"1":"0");}catch{}
+ });
  document.getElementById("modalSave").addEventListener("click",()=>{toggleSaved(a.id);document.getElementById("modalSave").textContent=state.saved.has(a.id)?ui("★ إزالة من المحفوظات","★ Remove saved"):ui("☆ حفظ الخبر","☆ Save story");});
  document.getElementById("modalShare").addEventListener("click",()=>shareArticle(a));
  document.getElementById("modalListen").addEventListener("click",()=>playArticleAudio(a));
@@ -921,6 +940,8 @@ async function showSaved(){
   else showToast("تعذر تحميل المكتبة المتزامنة حالياً");
  }
  const host=document.getElementById("modalContent");
+ host.classList.remove("reader-article","reader-text-large");
+ host.closest("dialog").classList.remove("article-reading-mode");
  host.innerHTML='<button class="modal-close" id="modalClose" aria-label="إغلاق">×</button><div class="modal-article-body saved-view"><span class="section-kicker">مكتبتك الشخصية</span><h2>الأخبار المحفوظة</h2><p class="muted">'+(state.user?"مزامنة مع حسابك على جميع أجهزتك":"محفوظات هذا الجهاز فقط — سجّل الدخول للمزامنة")+'</p>'+(list.length?list.map(a=>'<div class="saved-row-wrap"><button class="saved-row" data-open="'+escapeHTML(a.id)+'"><strong>'+escapeHTML(a.title)+'</strong><small>'+escapeHTML(a.src)+' · '+escapeHTML(formatDate(a.published_at))+'</small></button>'+(a.sourceURL?'<a class="saved-source source-link" href="'+escapeHTML(a.sourceURL)+'" target="_blank" rel="noopener noreferrer" data-source-link data-article-id="'+escapeHTML(a.id)+'">'+ui("المصدر ↗","Source ↗")+'</a>':'<span class="source-missing">'+ui("المصدر غير متوفر","Source unavailable")+'</span>')+'<button class="saved-remove" type="button" data-remove-saved="'+escapeHTML(a.id)+'">'+ui("إزالة","Remove")+'</button></div>').join(""):'<p class="muted">لم تحفظ أي خبر بعد.</p>')+'</div>';
  document.getElementById("modalClose").addEventListener("click",closeArticle);
  host.querySelectorAll("[data-open]").forEach(el=>el.addEventListener("click",()=>openArticle(el.dataset.open)));
