@@ -33,7 +33,7 @@ values
  ('00000000-0000-0000-0000-000000000008','egypt',null,'Ambiguous','politics','g',now(),'{politics,crime}','news',now()-interval '12 hours',null);
 insert into public.article_change_log values ('00000000-0000-0000-0000-000000000006','articles','updated');
 
-\ir ../supabase/migrations/20261122100000_editorial_metadata_integrity.sql
+\ir ../supabase/migrations/20261122082259_editorial_metadata_integrity.sql
 
 do $$ begin
   if (select count(*) from private.newsdata_metadata_corrections_20261122) <> 4 then raise exception 'wrong cohort'; end if;
