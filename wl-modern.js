@@ -2,8 +2,7 @@
 (function(){
  'use strict';
  if(window.__wlModern)return;window.__wlModern=true;
- const en=document.documentElement.lang==='en';
- const t=(ar,e)=>en?e:ar;
+ const t=(ar,e)=>document.documentElement.lang==='en'?e:ar;
  const path=location.pathname.replace(/\/index\.html$/,'/');
  const isHome=path==='/'||path==='';
  const ico={
@@ -14,7 +13,7 @@
   user:'<circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/>'
  };
  const svg=k=>'<svg viewBox="0 0 24 24" aria-hidden="true">'+ico[k]+'</svg>';
- const sections=[
+ const sections=()=>[
   [t('الأخبار','News'),[
    ['index.html',t('الرئيسية','Home'),t('أهم ما يحدث الآن','Top stories now')],
    ['/news/',t('الأرشيف','Archive'),t('كل الأخبار المنشورة','All published news')],
@@ -54,41 +53,72 @@
    const c=document.createElement('a');c.className='wlm-chip';c.href=a.getAttribute('href');
    if(a.classList.contains('wl-nav-link--live')){c.classList.add('wlm-chip--live');c.innerHTML='<i aria-hidden="true"></i>';c.append(a.textContent.trim());}
    else c.textContent=a.textContent.trim();
-   if(a.classList.contains('is-active'))c.classList.add('is-active');
-   if(a.dataset.category||a.getAttribute('href').startsWith('#')){
-    c.addEventListener('click',e=>{e.preventDefault();a.click();inner.querySelectorAll('.wlm-chip').forEach(x=>x.classList.remove('is-active'));c.classList.add('is-active');});
+   if(a.dataset.category){
+    c.dataset.readerCategory=a.dataset.category;
+    c.addEventListener('click',e=>{
+     if(e.metaKey||e.ctrlKey||e.altKey||e.shiftKey||!document.body.classList.contains('wl-home'))return;
+     e.preventDefault();a.click();
+    });
    }
    inner.appendChild(c);
   });
-  const all=document.createElement('button');all.type='button';all.className='wlm-chip';all.textContent=t('كل الأقسام ←','All sections →');all.addEventListener('click',()=>openSheet());inner.appendChild(all);
+  const all=document.createElement('button');all.type='button';all.className='wlm-chip';all.textContent=t('كل الأقسام','All sections');all.setAttribute('aria-haspopup','dialog');all.addEventListener('click',openSheet);inner.appendChild(all);
   bar.appendChild(inner);header.after(bar);
+  const syncChips=()=>{
+   bar.setAttribute('aria-label',t('تنقل سريع بين الأقسام','Quick sections'));
+   primary.forEach((a,i)=>{
+    const chip=inner.children[i];const label=a.textContent.trim();
+    if(chip.lastChild?.nodeType===Node.TEXT_NODE)chip.lastChild.nodeValue=label;
+    const current=a.getAttribute('aria-current');
+    chip.classList.toggle('is-active',!!current);
+    if(current)chip.setAttribute('aria-current',current);else chip.removeAttribute('aria-current');
+   });
+   all.textContent=t('كل الأقسام','All sections');
+  };
+  syncChips();document.addEventListener('wrldline:category',syncChips);document.addEventListener('wrldline:language',syncChips);
  }
 
  // 2) All-sections sheet
- const sheet=document.createElement('div');sheet.className='wlm-sheet';sheet.setAttribute('role','dialog');sheet.setAttribute('aria-modal','true');sheet.setAttribute('aria-label',t('كل الأقسام','All sections'));
- sheet.innerHTML='<div class="wlm-sheet-backdrop" data-close></div><div class="wlm-sheet-panel"><div class="wlm-sheet-grip"></div><div class="wlm-sheet-head"><h2>'+t('كل الأقسام','All sections')+'</h2><button class="wlm-close" type="button" data-close aria-label="'+t('إغلاق','Close')+'">×</button></div>'+
-  sections.map(([g,items])=>'<div class="wlm-group">'+g+'</div><div class="wlm-grid">'+items.map(([h,n,d])=>'<a class="wlm-item" href="'+href(h)+'"><strong>'+n+'</strong><small>'+d+'</small></a>').join('')+'</div>').join('')+'</div>';
+ const sheet=document.createElement('dialog');sheet.className='wlm-sheet';sheet.id='wlmSections';sheet.setAttribute('aria-labelledby','wlmSectionsTitle');
+ function renderSections(){
+  sheet.innerHTML='<div class="wlm-sheet-panel"><div class="wlm-sheet-head"><h2 id="wlmSectionsTitle">'+t('كل الأقسام','All sections')+'</h2><button class="wlm-close" type="button" data-close autofocus aria-label="'+t('إغلاق','Close')+'">×</button></div>'+
+   sections().map(([g,items])=>'<section><h3 class="wlm-group">'+g+'</h3><ul class="wlm-grid">'+items.map(([h,n,d])=>'<li><a class="wlm-item" href="'+href(h)+'"><strong>'+n+'</strong><small>'+d+'</small></a></li>').join('')+'</ul></section>').join('')+'</div>';
+ }
+ renderSections();
  document.body.appendChild(sheet);
  let lastFocus=null;
- function openSheet(){lastFocus=document.activeElement;sheet.classList.add('is-open');document.body.style.overflow='hidden';sheet.querySelector('.wlm-close').focus();}
- function closeSheet(){sheet.classList.remove('is-open');document.body.style.overflow='';lastFocus?.focus?.();}
- sheet.addEventListener('click',e=>{if(e.target.closest('[data-close]'))closeSheet();});
- document.addEventListener('keydown',e=>{if(e.key==='Escape'&&sheet.classList.contains('is-open'))closeSheet();});
+ function openSheet(){if(sheet.open)return;lastFocus=document.activeElement;sheet.showModal();document.body.classList.add('wlm-sheet-open');}
+ function closeSheet(){if(sheet.open)sheet.close();}
+ sheet.addEventListener('click',e=>{if(e.target===sheet||e.target.closest('[data-close]'))closeSheet();});
+ sheet.addEventListener('close',()=>{
+  document.body.classList.remove('wlm-sheet-open');
+  if(lastFocus?.isConnected&&lastFocus.getClientRects().length)lastFocus.focus({preventScroll:true});
+  else document.querySelector('#searchButton, .wl-brand')?.focus({preventScroll:true});
+ });
+ matchMedia('(max-width: 900px)').addEventListener('change',event=>{if(!event.matches)closeSheet();});
 
  // 3) Mobile bottom tab bar
- const tab=document.createElement('nav');tab.className='wlm-tabbar';tab.setAttribute('aria-label',t('التنقل الرئيسي','Main navigation'));
+ const tab=document.createElement('nav');tab.className='wlm-tabbar';
  const items=[
-  {k:'home',l:t('الرئيسية','Home'),h:'/',active:isHome},
-  {k:'live',l:t('عاجل','Breaking'),h:isHome?'#breakingSection':'/#breakingSection',cls:'wlm-tab--live'},
-  {k:'grid',l:t('الأقسام','Sections'),btn:openSheet},
-  {k:'search',l:t('بحث','Search'),btn:()=>{const s=document.getElementById('searchButton');if(s)s.click();else location.href='/news/';}},
-  {k:'user',l:t('حسابي','Account'),h:'/account.html',active:/account\.html$/.test(path)}
+  {k:'home',l:['الرئيسية','Home'],h:'/',active:isHome},
+  {k:'live',l:['عاجل','Breaking'],h:isHome?'#breakingSection':'/#breakingSection',cls:'wlm-tab--live'},
+  {k:'grid',l:['الأقسام','Sections'],btn:openSheet,dialog:'wlmSections'},
+  {k:'search',l:['بحث','Search'],btn:()=>{const s=document.getElementById('searchButton');if(s)s.click();else location.href='/news/';},dialog:document.getElementById('searchOverlay')?.id},
+  {k:'user',l:['حسابي','Account'],h:'/account.html',active:/account\.html$/.test(path)}
  ];
  items.forEach(i=>{
   const el=document.createElement(i.btn?'button':'a');el.className='wlm-tab'+(i.cls?' '+i.cls:'')+(i.active?' is-active':'');
   if(i.btn){el.type='button';el.addEventListener('click',i.btn);}else el.href=i.h;
+  if(i.dialog){el.setAttribute('aria-haspopup','dialog');el.setAttribute('aria-controls',i.dialog);}
   if(i.active)el.setAttribute('aria-current','page');
-  el.innerHTML=svg(i.k)+'<span>'+i.l+'</span>';tab.appendChild(el);
+  el.innerHTML=svg(i.k)+'<span>'+t(...i.l)+'</span>';tab.appendChild(el);
  });
  document.body.appendChild(tab);document.body.classList.add('wlm-has-tabbar');
+ const syncTab=()=>{
+  tab.setAttribute('aria-label',t('التنقل الرئيسي','Main navigation'));
+  items.forEach((item,i)=>{tab.children[i].querySelector('span').textContent=t(...item.l);});
+  renderSections();
+ };
+ tab.setAttribute('aria-label',t('التنقل الرئيسي','Main navigation'));
+ document.addEventListener('wrldline:language',syncTab);
 })();

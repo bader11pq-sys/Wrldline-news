@@ -12,6 +12,12 @@
   const moreMenu = $("#moreMenu");
   const navWrap = $("#mainNav");
   const menuButton = $("#menuButton");
+  const mobileNav = matchMedia("(max-width: 760px)");
+
+  function closeNav() {
+    navWrap?.classList.remove("is-open", "mobile-open");
+    menuButton?.setAttribute("aria-expanded", "false");
+  }
 
   function closeMore() {
     if (!moreMenu) return;
@@ -24,12 +30,14 @@
     moreButton.setAttribute("aria-expanded", String(open));
   });
   document.addEventListener("click", e => {
-    if (moreMenu && !moreMenu.contains(e.target) && !moreButton.contains(e.target)) closeMore();
+    if (moreMenu && !moreMenu.contains(e.target) && !moreButton?.contains(e.target)) closeMore();
+    if (navWrap?.classList.contains("mobile-open") && !navWrap.contains(e.target) && !menuButton?.contains(e.target)) closeNav();
   });
   menuButton?.addEventListener("click", () => {
     const open = navWrap.classList.toggle("is-open");
     navWrap.classList.toggle("mobile-open", open);
     menuButton.setAttribute("aria-expanded", String(open));
+    if (open) navWrap.querySelector("a")?.focus();
   });
   navWrap?.addEventListener("click", e => {
     if (e.target.closest("a")) {
@@ -39,38 +47,26 @@
     }
   });
   document.addEventListener("keydown", e => {
-    if (e.key === "Escape") closeMore();
+    if (e.key !== "Escape" || document.querySelector("dialog[open]")) return;
+    if (moreMenu?.classList.contains("is-open")) { closeMore(); moreButton?.focus(); }
+    else if (navWrap?.classList.contains("mobile-open")) { closeNav(); menuButton?.focus(); }
   });
+  mobileNav.addEventListener("change", () => { closeMore(); closeNav(); });
 
   /* ---------- Reading progress & header state ---------- */
   const progress = $("#readProgress");
   const header = $("#siteHeader");
+  let scrollFrame = 0;
   function onScroll() {
+    scrollFrame = 0;
     const h = document.documentElement;
     const max = h.scrollHeight - h.clientHeight;
     const pct = max > 0 ? Math.min(100, (h.scrollTop / max) * 100) : 0;
     if (progress) progress.style.width = pct + "%";
     header?.classList.toggle("is-stuck", h.scrollTop > 8);
   }
-  window.addEventListener("scroll", onScroll, { passive: true });
+  window.addEventListener("scroll", () => { if (!scrollFrame) scrollFrame = requestAnimationFrame(onScroll); }, { passive: true });
   onScroll();
-
-  /* ---------- Reveal on scroll ---------- */
-  if ("IntersectionObserver" in window) {
-    const io = new IntersectionObserver(entries => {
-      entries.forEach(en => {
-        if (en.isIntersecting) { en.target.classList.add("is-in"); io.unobserve(en.target); }
-      });
-    }, { threshold: 0.08, rootMargin: "0px 0px -40px" });
-    $$(".wl-context-grid, .wl-desk-grid, .wl-promises, .wl-rooms, .news-grid").forEach(el => {
-      el.classList.add("wl-stagger");
-      io.observe(el);
-    });
-    $$(".wl-section, .wl-band .wl-container").forEach(el => {
-      el.classList.add("wl-reveal");
-      io.observe(el);
-    });
-  }
 
   /* ---------- World clock ---------- */
   const clocks = [
@@ -177,7 +173,7 @@
     if (!best) best = data.mirror[0];
     host.innerHTML = '<div class="wl-mirror-shell">' +
       '<div class="wl-mirror-side"><span class="wl-mirror-label">الآن</span><h3>' + NR.escapeHTML(live ? live.title : best.nowTitle) + "</h3><p>" + NR.escapeHTML(best.nowSummary) + "</p>" +
-        (live ? '<a href="' + NR.escapeHTML(NR.safeURL(NR.articleURL(live)) || "#") + '" target="_blank" rel="noopener noreferrer">اقرأ التغطية <svg width="12" height="12" aria-hidden="true"><use href="#i-arrow"/></svg></a>' : '<a href="context.html">افتح غرفة السياق <svg width="12" height="12" aria-hidden="true"><use href="#i-arrow"/></svg></a>') + "</div>" +
+        (live?.sourceURL ? '<a href="' + NR.escapeHTML(NR.safeURL(live.sourceURL)) + '" target="_blank" rel="noopener noreferrer">اقرأ التغطية <svg width="12" height="12" aria-hidden="true"><use href="#i-arrow"/></svg></a>' : '<a href="context.html">افتح غرفة السياق <svg width="12" height="12" aria-hidden="true"><use href="#i-arrow"/></svg></a>') + "</div>" +
       '<div class="wl-mirror-mid"><span><svg aria-hidden="true"><use href="#i-mirror"/></svg></span><small>MIRROR</small></div>' +
       '<div class="wl-mirror-side wl-mirror-side--past"><span class="wl-mirror-label">في التاريخ · ' + NR.escapeHTML(best.pastEra) + "</span><h3>" + NR.escapeHTML(best.pastTitle) + "</h3><p>" + NR.escapeHTML(best.lesson) + '</p><a href="history-dossier.html?id=' + encodeURIComponent(best.pastDossier) + '">اقرأ الملف التاريخي <svg width="12" height="12" aria-hidden="true"><use href="#i-arrow"/></svg></a></div>' +
     "</div>";
@@ -226,7 +222,7 @@
     }).join("") : '<div class="shorts-preview-empty">سيظهر موجز Shorts هنا مع أول تحديث للأخبار.</div>';
   }
   function renderRisk(articles) {
-    const score = NR.riskScore(articles);
+    const score = NR.riskScore(articles.map(a => ({ ai_risk_level: a.aiRiskLevel })));
     const value = $("#riskValue"), label = $("#riskLabel"), needle = $("#riskNeedle");
     if (!value) return;
     if (score === null) {
@@ -266,22 +262,13 @@
       host.innerHTML = '<div class="dossier-strip-loading">تعذر تحميل الملفات الآن. <a href="dossier/">افتح صفحة الملفات</a>.</div>';
     }
   }
-  async function boot() {
+  function boot() {
     void renderDossiers();
-    const articles = await NR.fetchArticles(400);
-    if (articles.length) {
-      renderRooms(articles);
-      renderShortsPreview(articles);
-      renderContext(articles);
-      renderBalance(articles);
-      renderMirror(articles);
-      renderRisk(articles);
-    } else {
-      renderContext([]);
-      renderBalance([]);
-      renderMirror([]);
-      renderRisk([]);
-    }
+    renderContext([]);
+    renderBalance([]);
+    renderMirror([]);
+    renderRisk([]);
+    renderShortsPreview([]);
     renderPromises();
     renderExplainers();
   }
@@ -290,10 +277,11 @@
 
   document.addEventListener("wrldline:news", e => {
     const articles = e.detail?.articles || [];
-    if (articles.length) {
-      renderRooms(articles);
-      renderShortsPreview(articles);
-      renderRisk(articles);
-    }
+    renderRooms(articles);
+    renderShortsPreview(articles);
+    renderContext(articles);
+    renderBalance(articles);
+    renderMirror(articles);
+    renderRisk(articles);
   });
 })();

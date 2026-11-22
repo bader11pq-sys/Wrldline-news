@@ -15,9 +15,10 @@ test("homepage and newsroom use the restricted public feed RPC", () => {
   assert.ok(fetchStart >= 0 && fetchEnd > fetchStart, "homepage fetchNews function exists");
   const fetchNews = homepage.slice(fetchStart, fetchEnd);
 
-  assert.match(fetchNews, /\/rest\/v1\/rpc\/public_home_news_recent/);
-  assert.match(fetchNews, /method:"POST"/);
-  assert.doesNotMatch(fetchNews, /\/rest\/v1\/articles/);
+  assert.match(homepage, /const PUBLIC_NEWS_RPC = [^\n]+\/rest\/v1\/rpc\/public_home_news_recent_v3/);
+  assert.match(homepage, /async function getPublicNewsRows\(params, \{ url=PUBLIC_NEWS_RPC[^]*?fetch\(url,\{method:"POST"/);
+  assert.match(fetchNews, /mainRows=await getPublicNewsRows\(params\)/);
+  assert.doesNotMatch(homepage, /\/rest\/v1\/articles/);
   assert.match(newsroom, /\/rest\/v1\/rpc\/public_home_news_recent/);
   assert.doesNotMatch(newsroom, /\/rest\/v1\/articles/);
 });
@@ -53,7 +54,7 @@ test("most-read module is backed by published article views and a minimum distin
   assert.ok(homepage.includes("الأكثر قراءة"));
   assert.ok(script.includes("/rest/v1/rpc/public_top_read_articles"));
   assert.ok(script.includes("p_days:7,p_limit:5"));
-  assert.ok(script.includes("renderPopularStories(popularRows)"));
+  assert.ok(script.includes("renderPopularStories(state.popularRows)"));
   assert.ok(migration.includes("create or replace function public.public_top_read_articles"));
   assert.ok(migration.includes("e.event_name = 'view_article'"));
   assert.ok(migration.includes("having count(distinct e.session_id) >= 3"));
