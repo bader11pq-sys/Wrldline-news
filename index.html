@@ -29,6 +29,7 @@
   <link rel="stylesheet" href="wl-modern.css?v=20261122-reader">
   <link rel="stylesheet" href="newsroom-edition.css?v=20261122-edition">
   <link rel="stylesheet" href="editorial-launch.css?v=20261122-coverage">
+  <link rel="stylesheet" href="/front-page.css?v=20261122-event">
 </head>
 <body class="wl-home">
   <a class="skip-link" href="#mainContent">تجاوز إلى المحتوى</a>
@@ -99,17 +100,18 @@
       <nav class="wl-container wl-nav" aria-label="الأقسام الرئيسية">
         <div class="wl-nav-scroll">
           <a class="wl-nav-link nav-link is-active" href="index.html" data-category="all">الرئيسية</a>
+          <a class="wl-nav-link nav-link wl-nav-dossiers" href="/dossier/">ملفات الأحداث</a>
           <a class="wl-nav-link nav-link" href="#newsSection" data-category="politics">سياسة</a>
           <a class="wl-nav-link nav-link" href="#newsSection" data-category="economy">اقتصاد</a>
           <a class="wl-nav-link" href="/news/">الأرشيف</a>
           <a class="wl-nav-link nav-link wl-nav-link--live" href="#breakingSection"><i class="wl-live-dot" aria-hidden="true"></i> عاجل</a>
-          <a class="wl-nav-link nav-link" href="context.html">ملفات الأحداث</a>
           <a class="wl-nav-link wl-nav-monitor" href="map.html">مرصد العالم</a>
         </div>
         <div class="wl-nav-more">
           <button class="wl-more-btn" id="moreButton" type="button" aria-expanded="false" aria-controls="moreMenu">المزيد <svg aria-hidden="true"><use href="#i-chevron"/></svg></button>
           <div class="wl-more-menu" id="moreMenu">
             <div class="wl-more-group-label">الفهم والتحليل</div>
+            <a href="context.html"><span class="wl-more-icon"><svg aria-hidden="true"><use href="#i-layers"/></svg></span><span>غرفة السياق<small>ما الذي سبق الخبر، وما الذي قد يتبعه؟</small></span></a>
             <a href="balance.html"><span class="wl-more-icon"><svg aria-hidden="true"><use href="#i-scale"/></svg></span><span>ميزان الروايات<small>قارن التغطيات وحدود ما نعرفه</small></span></a>
             <a href="impact.html"><span class="wl-more-icon"><svg aria-hidden="true"><use href="#i-chart"/></svg></span><span>أطلس التأثير<small>افهم انعكاس التطورات على المنطقة</small></span></a>
             <a href="mirror.html"><span class="wl-more-icon"><svg aria-hidden="true"><use href="#i-mirror"/></svg></span><span>مرآة التاريخ<small>اربط الحدث بسياقه التاريخي</small></span></a>
@@ -150,6 +152,7 @@
             <h1>الخبر. <em>سياقه. أثره عليك.</em></h1>
             <p>نشرح السياسة والاقتصاد والأحداث العالمية من زاوية تهم القارئ العربي: ماذا حدث؟ لماذا يهم؟ وما الذي لا نعرفه بعد؟</p>
             <div class="wl-reader-links">
+              <a href="/dossier/">ملفات الأحداث <span aria-hidden="true">↗</span></a>
               <a href="#newsSection">أحدث الأخبار <span aria-hidden="true">↓</span></a>
               <a href="#breakingSection">العاجل <span aria-hidden="true">↓</span></a>
               <a href="map.html">مرصد العالم <span aria-hidden="true">↗</span></a>
@@ -163,12 +166,64 @@
           </div>
         </div>
 
-        <div class="wl-hero-grid">
-          <section id="heroLayout" class="hero-layout" aria-label="أهم الأخبار" aria-busy="true">
-            <div class="lead-story skeleton" aria-hidden="true"></div>
-            <div class="lead-rail"><div class="lead-rail-head"><span lang="en">FRONT PAGE</span><strong>أهم ما يحدث الآن</strong></div><div class="loading-state" style="padding:20px;color:var(--muted);font-size:12px">جارٍ تحميل الأخبار…</div></div>
-          </section>
-        </div>
+        <!-- FRONT_PAGE_START -->
+        <section id="heroLayout" class="front-edition" aria-labelledby="frontEditionTitle" data-language-managed>
+  <div class="front-edition-masthead">
+    <div><h2 id="frontEditionTitle"><span lang="ar">اختيار المحرر</span><span lang="en">Editor’s picks</span></h2>
+      <p><span lang="ar">خمس قصص رتّبتها غرفة الأخبار حسب الأهمية.</span><span lang="en">Five stories selected and ordered by the newsroom.</span></p></div>
+    <div class="front-edition-index"><a href="/dossier/"><span lang="ar">كل ملفات الأحداث</span><span lang="en">All event dossiers</span> <span aria-hidden="true">↗</span></a>
+    <span><span lang="ar">تاريخ الاختيار</span><span lang="en">Edition date</span> <time datetime="2026-11-22" dir="ltr">2026-11-22</time></span></div>
+  </div>
+  <ol class="front-edition-grid">
+    <li class="front-pick front-pick--dossier front-pick--lead">
+      <span class="front-pick-num" aria-hidden="true">01</span>
+      <a class="front-pick-link" href="/dossier/opec-plus-december-2026.html" hreflang="ar">
+        <span class="front-pick-meta"><span class="front-pick-type"><span lang="ar">ملف الحدث</span><span lang="en">Event dossier</span></span><span><span lang="ar">الطاقة والأسواق</span><span lang="en">Energy and markets</span></span></span>
+        <h3><span lang="ar">أوبك+: ما الذي حُسم لديسمبر، وما الذي ننتظره؟</span><span lang="en">OPEC+: What is settled for December, and what comes next?</span></h3>
+        <p><span lang="ar">الدول السبع أبقت مستوى الإنتاج المطلوب لديسمبر عند مستوى سبتمبر. نميّز بين الحصص المعلنة والإنتاج الفعلي وما لم يُقرر بعد.</span><span lang="en">Seven countries kept December’s required production at September levels. We separate announced targets from actual output and outstanding decisions.</span></p>
+        <span class="front-pick-foot"><span class="front-pick-cta"><span lang="ar">افتح ملف الحدث</span><span lang="en">Open the dossier</span> <span aria-hidden="true">↗</span><span class="front-pick-original-lang"><span lang="en"> · Arabic</span></span></span></span>
+      </a>
+    </li>
+    <li class="front-pick front-pick--dossier">
+      <span class="front-pick-num" aria-hidden="true">02</span>
+      <a class="front-pick-link" href="/dossier/hormuz-closure-2026.html" hreflang="ar">
+        <span class="front-pick-meta"><span class="front-pick-type"><span lang="ar">ملف الحدث</span><span lang="en">Event dossier</span></span><span><span lang="ar">الملاحة</span><span lang="en">Shipping</span></span></span>
+        <h3><span lang="ar">هرمز: ما الذي تعنيه إحاطة مجلس الأمن للملاحة؟</span><span lang="en">Hormuz: What the UN briefing tells us about shipping</span></h3>
+        <p><span lang="ar">نتابع بيانات العبور والحوادث لفصل التطورات الفعلية عن التصريحات بشأن إعادة فتح الممر.</span><span lang="en">Transit and incident reports help distinguish real changes at sea from statements about reopening the strait.</span></p>
+        <span class="front-pick-foot"><span class="front-pick-cta"><span lang="ar">افتح ملف الحدث</span><span lang="en">Open the dossier</span> <span aria-hidden="true">↗</span><span class="front-pick-original-lang"><span lang="en"> · Arabic</span></span></span></span>
+      </a>
+    </li>
+    <li class="front-pick front-pick--dossier">
+      <span class="front-pick-num" aria-hidden="true">03</span>
+      <a class="front-pick-link" href="/dossier/bab-al-mandab-2026.html" hreflang="ar">
+        <span class="front-pick-meta"><span class="front-pick-type"><span lang="ar">ملف الحدث</span><span lang="en">Event dossier</span></span><span><span lang="ar">أمن البحر الأحمر</span><span lang="en">Red Sea security</span></span></span>
+        <h3><span lang="ar">باب المندب بعد انسحاب القوات الحكومية اليمنية</span><span lang="en">Bab al-Mandab after the Yemeni government forces’ withdrawal</span></h3>
+        <p><span lang="ar">ماذا تغيّر على الساحل، وماذا تقول بيانات العبور عن الملاحة التجارية؟</span><span lang="en">What changed on the coast, and what does transit data tell us about commercial shipping?</span></p>
+        <span class="front-pick-foot"><span class="front-pick-cta"><span lang="ar">افتح ملف الحدث</span><span lang="en">Open the dossier</span> <span aria-hidden="true">↗</span><span class="front-pick-original-lang"><span lang="en"> · Arabic</span></span></span></span>
+      </a>
+    </li>
+    <li class="front-pick front-pick--analysis">
+      <span class="front-pick-num" aria-hidden="true">04</span>
+      <a class="front-pick-link" href="/news/7dad6cc7-0433-4f23-b358-314c249f02b9" data-article-edition-link>
+        <span class="front-pick-meta"><span class="front-pick-type"><span lang="ar">تحليل</span><span lang="en">Analysis</span></span><span><span lang="ar">السودان</span><span lang="en">Sudan</span></span></span>
+        <h3><span lang="ar">القاعدة التي لم تُبنَ بعد: لماذا تهم بورسودان موسكو؟</span><span lang="en">The base that hasn’t been built: Why Port Sudan matters to Moscow</span></h3>
+        <p><span lang="ar">تحليل لرهانات السودان وروسيا على ساحل البحر الأحمر، وما يفصل الاتفاق عن التنفيذ.</span><span lang="en">An analysis of Sudan’s and Russia’s stakes on the Red Sea and the gap between agreement and implementation.</span></p>
+        <span class="front-pick-foot"><span><span lang="ar">WRLDLINE</span><span lang="en">WRLDLINE</span></span><span class="front-pick-cta"><span lang="ar">اقرأ القصة</span><span lang="en">Read the story</span> <span aria-hidden="true">↗</span><span class="front-pick-original-lang"></span></span></span>
+      </a>
+    </li>
+    <li class="front-pick front-pick--reported">
+      <span class="front-pick-num" aria-hidden="true">05</span>
+      <a class="front-pick-link" href="/news/c9e9967a-9096-49ef-8e5e-074a5ce2d733" data-article-edition-link>
+        <span class="front-pick-meta"><span class="front-pick-type"><span lang="ar">خبر منقول</span><span lang="en">Reported news</span></span><span><span lang="ar">الشؤون الإنسانية</span><span lang="en">Humanitarian affairs</span></span></span>
+        <h3><span lang="ar">مركز الملك سلمان يوزّع مساعدات غذائية على نازحين في اليمن</span><span lang="en">King Salman aid centre distributes food to displaced families in Yemen</span></h3>
+        <p><span lang="ar">تغطية «اليوم» لتوزيع المساعدات الغذائية على الأسر النازحة.</span><span lang="en">Alyaum reports on food assistance for displaced families.</span></p>
+        <span class="front-pick-foot"><span><span lang="ar">اليوم</span><span lang="en">Alyaum</span></span><span class="front-pick-cta"><span lang="ar">اقرأ القصة</span><span lang="en">Read the story</span> <span aria-hidden="true">↗</span><span class="front-pick-original-lang"></span></span></span>
+      </a>
+    </li>
+  </ol>
+  <script type="application/json" id="eventDeskCatalog">[{"slug":"hormuz-closure-2026","url":"/dossier/hormuz-closure-2026.html","title":{"ar":"أزمة الملاحة في مضيق هرمز","en":"The Strait of Hormuz shipping crisis"},"from":"2026-02-28","groups":[["strait of hormuz","closure"],["strait of hormuz","closed"],["strait of hormuz","reopening"],["strait of hormuz","transits"],["strait of hormuz","blockade"],["hormuz","shipping restrictions"],["مضيق هرمز","إغلاق"],["مضيق هرمز","إعادة فتح"],["مضيق هرمز","حركة العبور"],["مضيق هرمز","الملاحة التجارية"],["مضيق هرمز","رسوم العبور"]],"articleIds":[]},{"slug":"bab-al-mandab-2026","url":"/dossier/bab-al-mandab-2026.html","title":{"ar":"الملاحة والسيطرة الساحلية في باب المندب","en":"Shipping and coastal control at Bab al-Mandab"},"from":"2026-07-01","groups":[["bab al mandab","houthi"],["bab al mandab","houthis"],["bab al mandab","transits"],["bab al mandab","commercial shipping"],["bab el mandeb","houthis"],["bab el mandeb","withdraw"],["bab el mandeb","ship transits"],["bab el mandeb","shipping attacks"],["باب المندب","الحوثيون"],["باب المندب","الحوثيين"],["باب المندب","القوات الحكومية"],["باب المندب","حركة العبور"],["باب المندب","الملاحة التجارية"]],"articleIds":[]},{"slug":"opec-plus-december-2026","url":"/dossier/opec-plus-december-2026.html","title":{"ar":"قرارات أوبك+ بشأن إنتاج ديسمبر 2026","en":"OPEC+ and December 2026 oil production"},"from":"2026-10-01","until":"2027-02-01","groups":[["opec","december","output"],["opec","december","production"],["opec","november 29","meeting"],["opec","29 november","ministerial"],["أوبك","ديسمبر","الإنتاج"],["أوبك","ديسمبر","إنتاج"],["أوبك","ديسمبر","إنتاجها"],["أوبك","ديسمبر","حصص"],["أوبك","29 نوفمبر","الاجتماع"],["أوبك","29 نوفمبر","اجتماع"]],"articleIds":[]},{"slug":"qatarenergy-lng-2026","url":"/dossier/qatarenergy-lng-2026.html","title":{"ar":"توسّع قطر للطاقة في الغاز المسال","en":"QatarEnergy’s LNG expansion"},"from":"2026-10-01","groups":[["qatarenergy","lng expansion"],["qatarenergy","cheniere","lng"],["qatarenergy","woodside","lng"],["qatarenergy","golden pass","lng"],["qatarenergy","north field","expansion"],["قطر للطاقة","الغاز المسال","توسع"],["قطر للطاقة","الغاز المسال","شينير"],["قطر للطاقة","الغاز المسال","وودسايد"],["قطر للطاقة","حقل الشمال","توسعة"],["قطر للطاقة","الغاز المسال","غولدن باس"]],"articleIds":[]}]</script>
+</section>
+        <!-- FRONT_PAGE_END -->
 
         <section class="editorial-focus" aria-labelledby="editorialFocusTitle">
           <div class="editorial-focus-head">
@@ -555,7 +610,7 @@
 
 
   <script src="taxonomy.js?v=20261114-contract1" defer></script>
-  <script src="language.js?v=20261122-coverage" defer></script>
+  <script src="language.js?v=20261122-event" defer></script>
   <script src="editorial-rank.js?v=20261119-2" defer></script>
   <script src="reader-discovery.js?v=20261122-edition" defer></script>
   <script src="editorial-display.js?v=20261122-edition" defer></script>
@@ -563,7 +618,8 @@
   <script src="reader-prose.js?v=20261122-longread1" defer></script>
   <script src="public-article-body.js?v=20261122-longread2" defer></script>
   <script src="article-editions.js?v=20261122-bilingual" defer></script>
-  <script src="script.js?v=20261122-bilingual" defer></script>
+  <script src="/event-desk.js?v=20261122-event" defer></script>
+  <script src="script.js?v=20261122-event" defer></script>
   <script src="newsroom-data.js?v=20261114-1" defer></script>
   <script src="newsroom.js?v=20261120-feedfast1" defer></script>
   <script src="home.js?v=20261122-edition" defer></script>

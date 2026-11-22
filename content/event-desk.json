@@ -1,0 +1,49 @@
+{
+  "hormuz-closure-2026": {
+    "title": { "ar": "أزمة الملاحة في مضيق هرمز", "en": "The Strait of Hormuz shipping crisis" },
+    "from": "2026-02-28",
+    "groups": [
+      ["strait of hormuz", "closure"], ["strait of hormuz", "closed"], ["strait of hormuz", "reopening"],
+      ["strait of hormuz", "transits"], ["strait of hormuz", "blockade"], ["hormuz", "shipping restrictions"],
+      ["مضيق هرمز", "إغلاق"], ["مضيق هرمز", "إعادة فتح"], ["مضيق هرمز", "حركة العبور"],
+      ["مضيق هرمز", "الملاحة التجارية"], ["مضيق هرمز", "رسوم العبور"]
+    ],
+    "articleIds": []
+  },
+  "bab-al-mandab-2026": {
+    "title": { "ar": "الملاحة والسيطرة الساحلية في باب المندب", "en": "Shipping and coastal control at Bab al-Mandab" },
+    "from": "2026-07-01",
+    "groups": [
+      ["bab al mandab", "houthi"], ["bab al mandab", "houthis"], ["bab al mandab", "transits"],
+      ["bab al mandab", "commercial shipping"], ["bab el mandeb", "houthis"], ["bab el mandeb", "withdraw"],
+      ["bab el mandeb", "ship transits"], ["bab el mandeb", "shipping attacks"],
+      ["باب المندب", "الحوثيون"], ["باب المندب", "الحوثيين"], ["باب المندب", "القوات الحكومية"],
+      ["باب المندب", "حركة العبور"], ["باب المندب", "الملاحة التجارية"]
+    ],
+    "articleIds": []
+  },
+  "opec-plus-december-2026": {
+    "title": { "ar": "قرارات أوبك+ بشأن إنتاج ديسمبر 2026", "en": "OPEC+ and December 2026 oil production" },
+    "from": "2026-10-01",
+    "until": "2027-02-01",
+    "groups": [
+      ["opec", "december", "output"], ["opec", "december", "production"],
+      ["opec", "november 29", "meeting"], ["opec", "29 november", "ministerial"],
+      ["أوبك", "ديسمبر", "الإنتاج"], ["أوبك", "ديسمبر", "إنتاج"], ["أوبك", "ديسمبر", "إنتاجها"],
+      ["أوبك", "ديسمبر", "حصص"], ["أوبك", "29 نوفمبر", "الاجتماع"], ["أوبك", "29 نوفمبر", "اجتماع"]
+    ],
+    "articleIds": []
+  },
+  "qatarenergy-lng-2026": {
+    "title": { "ar": "توسّع قطر للطاقة في الغاز المسال", "en": "QatarEnergy’s LNG expansion" },
+    "from": "2026-10-01",
+    "groups": [
+      ["qatarenergy", "lng expansion"], ["qatarenergy", "cheniere", "lng"],
+      ["qatarenergy", "woodside", "lng"], ["qatarenergy", "golden pass", "lng"],
+      ["qatarenergy", "north field", "expansion"], ["قطر للطاقة", "الغاز المسال", "توسع"],
+      ["قطر للطاقة", "الغاز المسال", "شينير"], ["قطر للطاقة", "الغاز المسال", "وودسايد"],
+      ["قطر للطاقة", "حقل الشمال", "توسعة"], ["قطر للطاقة", "الغاز المسال", "غولدن باس"]
+    ],
+    "articleIds": []
+  }
+}

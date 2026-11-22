@@ -617,7 +617,7 @@ Object.assign(AR_EN,{
  "الأرشيف":"Archive","تصفّح الأرشيف":"Browse the archive","العاجل":"Breaking news","الأخبار العاجلة":"Breaking news",
  "تصفية حسب القسم":"Filter by section","تصفية حسب الدولة":"Filter by country","ترتيب الأخبار":"Sort stories",
  "فتح أول نتيجة":"Open first result","المزيد":"More","أهم الأخبار":"Top stories","تجاوز إلى المحتوى":"Skip to content",
- "ملفات الأحداث":"Event files","علوم":"Science","بيئة":"Environment","مجتمع":"Society","غير مصنف":"Uncategorized",
+ "ملفات الأحداث":"Event files","ما الذي سبق الخبر، وما الذي قد يتبعه؟":"What led to the news, and what might follow?","علوم":"Science","بيئة":"Environment","مجتمع":"Society","غير مصنف":"Uncategorized",
  "منتجات WRLDLINE":"WRLDLINE tools","اختر طريقة القراءة":"Explore the news","ملف الحدث":"Event dossier",
  "ما حدث وما تغيّر":"What happened and what changed","غرفة السياق":"Background","الخلفية وما نعرفه":"Context and what we know",
  "ميزان الروايات":"Compare coverage","من قال ماذا ومتى":"Who said what and when","أطلس التأثير":"Impact atlas","من الخبر إلى الأثر":"What the news means",
@@ -666,6 +666,11 @@ function setLanguage(lang,options={}){
  document.querySelectorAll('a[href="/news/"],a[data-edition-archive]').forEach(link=>{
   link.dataset.editionArchive="";
   link.href="/news/?lang="+next;
+ });
+ document.querySelectorAll("[data-article-edition-link]").forEach(link=>{
+  const url=new URL(link.href);
+  url.searchParams.set("lang",next);
+  link.href=url.pathname+url.search+url.hash;
  });
  const languageField=document.getElementById("language");if(languageField)languageField.value=next==="ar"?"العربية":"English";
  document.dispatchEvent(new CustomEvent("wrldline:language",{detail:{lang:next}}));
