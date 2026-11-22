@@ -655,6 +655,7 @@ function setLanguage(lang,options={}){
  visit();
  button.lang=next==="ar"?"en":"ar";
  button.textContent=next==="ar"?"English":"العربية";
+ button.setAttribute("aria-label",next==="ar"?"Switch to English":"التبديل إلى العربية");
  document.querySelectorAll('a[href="/news/"],a[data-edition-archive]').forEach(link=>{
   link.dataset.editionArchive="";
   link.href="/news/?lang="+next;
