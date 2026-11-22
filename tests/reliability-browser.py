@@ -71,7 +71,7 @@ def verify(name, data):
         for key, result in data.items():
             if key.startswith('mobile_'): assert result['sw'] <= result['iw'] + 1, f'{key}: horizontal overflow'
         assert data['failure']['retry'] > 0, 'Mock outage did not render retry control'
-        assert data['failure']['hero'].strip(), 'Mock outage rendered a blank hero'
+        assert data['failure']['picks'] == 5, 'Mock outage hid the editor’s five picks'
         titles = data.get('briefing',{}).get('all',[]); assert len(titles) == len(set(titles)), 'Briefing duplicates'
         assert data.get('generic_public',[]) == [], 'Publisher-only placeholder headlines'
 

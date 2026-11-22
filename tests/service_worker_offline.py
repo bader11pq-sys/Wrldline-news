@@ -7,6 +7,6 @@ async def main():
   await c.route('**/rest/v1/rpc/public_home_news_recent**',lambda r: r.abort())
   pg=await c.new_page();await pg.goto('http://127.0.0.1:4173/',wait_until='domcontentloaded');await pg.wait_for_timeout(6000)
   await pg.reload(wait_until='domcontentloaded');await pg.wait_for_timeout(14000)
-  print(json.dumps({'hero':await pg.locator('#heroLayout').inner_text(),'retry':await pg.locator('#heroLayout button').count(),'controller':await pg.evaluate('!!navigator.serviceWorker.controller')},ensure_ascii=False,indent=2))
+  print(json.dumps({'picks':await pg.locator('#heroLayout .front-pick-link').count(),'retry':await pg.locator('#newsGrid [data-reader-action=retry]').count(),'controller':await pg.evaluate('!!navigator.serviceWorker.controller')},ensure_ascii=False,indent=2))
   await b.close()
 asyncio.run(main())
