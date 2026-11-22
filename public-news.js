@@ -6,15 +6,40 @@
   const en = document.documentElement.lang.startsWith("en");
   const summary = article.querySelector(".public-news-summary");
   if (summary) {
+    const tools = document.createElement("div");
+    tools.className = "public-reading-tools";
+    const size = document.createElement("button");
+    size.type = "button";
+    size.textContent = en ? "Larger text" : "تكبير النص";
+    function showSize(large) {
+      article.classList.toggle("public-text-large", large);
+      size.setAttribute("aria-pressed", String(large));
+    }
+    let large = false;
+    try { large = localStorage.getItem("wrldline:article-large-text") === "1"; } catch {}
+    showSize(large);
+    size.addEventListener("click", () => {
+      large = !large;
+      showSize(large);
+      try { localStorage.setItem("wrldline:article-large-text", large ? "1" : "0"); } catch {}
+    });
+    tools.append(size);
+    summary.before(tools);
     const text = [...summary.querySelectorAll(":scope > p")].map(p => p.textContent).join("\n\n");
+    const editorial = /^WRLDLINE(?: NEWS)?$/i.test((article.dataset.shareSource || "").trim());
     if (text) {
-      import("/reader-prose.js?v=20261122-reading2").then(() => {
-        if (!window.WLReaderProse) return;
-        window.WLReaderProse.renderInto(summary, text, {
-          lang: document.documentElement.lang,
-          editorial: /WRLDLINE/i.test(article.dataset.shareSource || "")
+      Promise.all([
+        import("/reader-prose.js?v=20261122-longread1"),
+        import("/public-article-body.js?v=20261122-longread2")
+      ]).then(() => {
+        window.WLPublicArticleBody.enhance(summary, {
+          id: article.dataset.articleId, excerpt: text, english: en,
+          options: { lang: document.documentElement.lang, editorial },
+          onComplete: () => {
+            const note = article.querySelector(":scope > .public-news-disclosure");
+            if (editorial && note) note.textContent = en ? "Full article as published by WRLDLINE." : "النص الكامل كما نشرته هيئة تحرير WRLDLINE.";
+          }
         });
-        summary.classList.add("is-formatted");
       }).catch(() => { /* The server-rendered text remains readable without enhancement. */ });
     }
   }

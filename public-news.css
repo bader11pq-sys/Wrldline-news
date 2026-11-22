@@ -48,7 +48,11 @@
  color:var(--ink);font-size:clamp(1.075rem,2.2vw,1.25rem);line-height:2.05;
  margin-block:25px 32px;white-space:pre-line;text-align:start;
 }
-html:lang(en) [data-public-article] .public-news-summary{line-height:1.78}
+[data-public-article] .public-news-summary:lang(en){line-height:1.78}
+[data-public-article].public-text-large .public-news-summary{font-size:clamp(1.28rem,2.5vw,1.53rem)}
+.public-reading-tools{display:flex;flex-wrap:wrap;gap:8px}
+.public-reading-tools button{min-block-size:44px;padding:7px 14px;border:1px solid var(--line-strong);border-radius:var(--radius-xs);color:var(--gold-strong);font:inherit}
+.public-reading-tools button:hover,.public-reading-tools button[aria-pressed=true]{background:var(--surface-2);border-color:var(--gold)}
 [data-public-article] .public-news-summary.is-formatted{white-space:normal}
 .public-news-summary > *{margin:0}
 .public-news-summary > * + *{margin-block-start:1.13em}
@@ -66,3 +70,12 @@ html:lang(en) [data-public-article] .public-news-summary{line-height:1.78}
 .public-news-list p{max-inline-size:44rem;font-size:1rem;line-height:1.8}
 .public-news-list small{font-size:.82rem;line-height:1.6}
 .public-news-paging a{display:inline-flex;text-decoration:underline;text-underline-offset:.25em}
+.public-news-summary .reader-contents{border:1px solid var(--line);border-radius:10px;background:var(--surface-2);padding:0 14px;color:var(--ink);font-size:.9em}
+.reader-contents > summary{min-block-size:44px;padding-block:7px;cursor:pointer;font-weight:700}
+.reader-contents ol{margin:0 0 .75em;padding-inline-start:1.3em}
+.reader-contents a,.long-article-status button{color:var(--gold-strong);text-decoration:underline;text-underline-offset:.24em}
+.public-news-summary h2[id]{scroll-margin-block-start:24px}
+.long-article-status{color:var(--muted);font-size:.89rem}
+.long-article-status button{min-block-size:44px;font:inherit}
+.public-news-summary.is-formatted .reader-dense-lines{white-space:pre-line}
+.public-news-summary > p:nth-of-type(n+7){content-visibility:auto;contain-intrinsic-size:auto 6em}
