@@ -207,8 +207,9 @@ function bindEvents(){
 
  document.addEventListener("wrldline:language",event=>{
   state.lang=event.detail.lang;updateClock();updateCategoryControls();updateReaderLabels();
-  if(state.before){refreshReaderData();setFeedConnection(state.feedStatus);}
-  else {populateCountries();if(state.feedStatus==="error")renderFetchFailure();}
+  if(state.before)refreshReaderData();
+  else {populateCountries();if(state.feedStatus==="error")renderFetchFailure();renderFeedMeta();}
+  setFeedConnection(state.feedConnection||state.feedStatus);
   if(document.getElementById("searchOverlay").open)renderSearch();
  });
 document.addEventListener("click",e=>{const link=e.target.closest?.("[data-source-link]");if(!link)return;e.stopPropagation();track("outbound_source_click",{article_id:link.dataset.articleId||"",destination_domain:sourceDomain(link.href),content_type:link.closest("[data-content-type]")?.dataset.contentType||"unknown"});},true);
@@ -279,6 +280,7 @@ function refreshReaderData({updateFeed=true,updateSections=true}={}){
   const previous=new Map(state.feedDataLanguage===state.lang?state.feedArticles.map(a=>[a.raw,a]):[]);
   state.feedArticles=dedupeArticles(normalizeHomeRows(state.feedRows)).map(a=>previous.get(a.raw)||a);
   state.feedDataLanguage=state.lang;
+  state.feedFreshness=window.WLDiscovery.feedFreshness(state.feedArticles,state.loadedAt);
  }
  const byId=new Map();
  for(const row of [...state.extraRows,...state.popularRows,...state.feedRows])if(row?.id)byId.set(String(row.id),row);
@@ -295,9 +297,16 @@ function refreshReaderData({updateFeed=true,updateSections=true}={}){
  if(document.getElementById("searchOverlay").open&&!document.activeElement.closest("#searchResults"))renderSearch();
 }
 function setFeedConnection(status){
+ state.feedConnection=status;
+ const loadedMessages={
+  recent:ui("تم تحميل موجز الأخبار","News feed loaded"),
+  quiet:ui("لا أخبار حديثة في الموجز","No recent stories in the feed"),
+  undated:ui("تم تحميل الموجز دون تاريخ نشر صالح","Feed loaded; no valid publication dates"),
+  empty:ui("لا مواد متاحة في الموجز","No stories in the feed")
+ };
  const messages={
   loading:ui("جارٍ تحديث الأخبار","Updating news"),
-  ready:ui("الأخبار محدثة","News updated"),
+  ready:loadedMessages[state.feedFreshness?.status]||loadedMessages.empty,
   stale:ui("تعذر التحديث؛ نعرض آخر نسخة","Refresh failed; showing last loaded news"),
   error:ui("تعذر الاتصال بمصدر الأخبار","News connection unavailable")
  };
@@ -328,7 +337,7 @@ async function fetchNews(manual=false){
   }
   const firstLoad=!state.before;
   state.feedRows=mainRows;state.before=now;state.offset=mainRows.length;state.more=mainRows.length===MAIN_FEED_LIMIT;
-  state.limit=PAGE_SIZE;state.pageStatus="";state.feedStatus="ready";state.lastFetchAt=Date.now();
+  state.limit=PAGE_SIZE;state.pageStatus="";state.feedStatus="ready";state.loadedAt=state.lastFetchAt=Date.now();
   // Paint the main feed before issuing optional requests, and don't rebuild it
   // when those requests finish.
  refreshReaderData();setFeedConnection("ready");renderFeedMeta();
@@ -336,7 +345,7 @@ async function fetchNews(manual=false){
    const linkedId=new URLSearchParams(location.search).get("article");
    if(linkedId&&!document.querySelector("dialog[open]"))openArticle(linkedId,false);
   }
-  if(manual)showToast(ui("تم تحديث الأخبار","News updated"));
+  if(manual)showToast(ui("تم تحميل الموجز","Feed loaded"));
   // These sections are independent of the main feed. Run them together after
   // the first paint so one slow section cannot delay the others or the reader.
   const [missedRows,breakingRows]=await Promise.all([
@@ -382,6 +391,7 @@ async function loadOlderNews(){
    const rows=await getPublicNewsRows({p_limit:MAIN_FEED_LIMIT,p_before:state.before,p_since:null,p_offset:state.offset,p_newsdata_only:false});
    state.offset+=rows.length;state.more=rows.length===MAIN_FEED_LIMIT&&state.offset<MAX_FEED_OFFSET;
    state.feedRows.push(...rows);state.limit+=PAGE_SIZE;refreshReaderData({updateSections:false});
+   setFeedConnection(state.feedStatus);
    if(state.user)void syncLocalSavedToCloud().catch(console.warn);
   }catch(error){
    console.warn("WRLDLINE pagination unavailable:",error);state.pageStatus="error";
@@ -607,8 +617,17 @@ function renderFeedMeta(){
  count.textContent=state.before?ui(
   "المعروض: "+fmt.format(Math.min(state.limit,state.filtered.length))+" من "+fmt.format(state.filtered.length)+" نتيجة محمّلة",
   "Showing "+fmt.format(Math.min(state.limit,state.filtered.length))+" of "+fmt.format(state.filtered.length)+" loaded matches"):"";
- updated.textContent=state.feedStatus==="error"?ui("تعذر التحديث","Update unavailable"):
-  state.before?(state.feedStatus==="stale"?ui("نعرض آخر نسخة: ","Last loaded: "):ui("آخر تحديث: ","Updated: "))+formatDate(state.before):ui("بانتظار التحديث","Waiting for news");
+ if(!state.before){
+  updated.textContent=state.feedStatus==="error"?ui("تعذر التحديث","Update unavailable"):ui("بانتظار التحديث","Waiting for news");
+  return;
+ }
+ const freshness=state.feedFreshness;
+ const latest=freshness.newest===null
+  ? (freshness.status==="empty"?ui("الموجز لا يحتوي على مواد","The feed contains no stories"):ui("تاريخ أحدث نشر غير متاح","Latest publication date unavailable"))
+  : ui("أحدث مادة في الموجز: ","Latest story in the feed: ")+formatDate(freshness.newest);
+ const stale=state.feedStatus==="stale"?ui("تعذر التحديث؛ نعرض آخر نسخة. ","Refresh failed; showing last loaded news. "):"";
+ const quiet=freshness.status==="quiet"?ui("لا مواد جديدة في آخر ٦ ساعات. ","No new stories in the past 6 hours. "):"";
+ updated.textContent=stale+quiet+latest+" · "+ui("آخر تحميل ناجح: ","Last successful load: ")+formatDate(state.loadedAt);
 }
 function renderCoveragePulse(){
  const host=document.getElementById("coveragePulseGrid");if(!host)return;
