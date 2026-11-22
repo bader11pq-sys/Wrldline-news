@@ -49,3 +49,24 @@ jobs:
           jq -e '.success == true and (.result.deployments[0].versions | length == 1) and .result.deployments[0].versions[0].percentage == 100' "$temp/response.json" >/dev/null \
             || { echo 'A single active Worker version at 100% was not confirmed.'; exit 1; }
           echo 'Confirmed active article Worker and route. No production changes made.'
+          active="$(jq -er '.result.deployments[0].versions[0].version_id | select(test("^[0-9a-f-]{36}$"))' "$temp/response.json")"
+          result="$(request "accounts/$account/workers/workers/wrldline-public/versions/$active?include=modules")"
+          if [[ "$result" != '200' ]]; then
+            printf 'Cloudflare did not grant the active module lookup (HTTP %s).\n' "$result"
+            exit 1
+          fi
+          jq -e '.success == true and (.result.modules | length == 1) and (.result.modules[0].content_type == "application/javascript+module")' "$temp/response.json" >/dev/null \
+            || { echo 'The active Worker does not have the expected single JavaScript module.'; exit 1; }
+          jq -r '.result.modules[0].content_base64' "$temp/response.json" | base64 --decode > "$temp/active.mjs"
+          curl --fail --silent --show-error --proto '=https' --max-time 15 \
+            'https://raw.githubusercontent.com/bader11pq-sys/Wrldline-news/9f1e6bc7cc74ce40e3f3f2ecdafb3e792f713f71/cloudflare/workers/wrldline-public/worker.js' --output "$temp/main.mjs"
+          if cmp -s "$temp/active.mjs" "$temp/main.mjs"; then
+            echo 'Active source matches the protected repository baseline byte for byte.'
+          else
+            echo 'Active source differs from the raw repository baseline.'
+            if grep -Fq 'text(article.event_country || article.country, 120)' "$temp/active.mjs"; then echo 'The narrow country fallback patch anchor is present.'; fi
+            if grep -Fq 'function renderArticle(article, now, trust' "$temp/active.mjs"; then echo 'The expected article renderer anchor is present.'; fi
+          fi
+          jq -e '.result.bindings | (map(.name) | sort) == ["PUBLIC_TRUST_ENABLED","SUPABASE_ANON_KEY","SUPABASE_URL"] and all(.[]; .type == "plain_text")' "$temp/response.json" >/dev/null \
+            || { echo 'The active bindings differ from the repository contract.'; exit 1; }
+          echo 'The active Worker has exactly the three expected environment bindings.'
