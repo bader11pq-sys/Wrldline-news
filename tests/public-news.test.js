@@ -36,6 +36,12 @@ async function get(worker, pathname, options = {}, env = ENV) { return worker.fe
 function urls(xml) { return [...xml.matchAll(/<loc>([^<]+)<\/loc>/g)].map(m => m[1]); }
 function schema(html) { return JSON.parse(html.match(/<script[^>]*type="application\/ld\+json">([\s\S]*?)<\/script>/)[1]); }
 
+test('the Workers module exports a fetch handler and no unsupported data exports', async () => {
+  const { default: handler, ...named } = await modulePromise;
+  assert.equal(typeof handler.fetch, 'function');
+  assert.ok(Object.values(named).every(value => typeof value === 'function'));
+});
+
 test('initial HTML contains published summary, reader impact context, canonical metadata, attribution and optional trust without auth gate', async () => {
   const a = article(1, { author: ['Real Reporter'], image_url: 'https://source.example/actual.jpg', ai_summary: 'قراءة تحليلية موجزة.', ai_reader_impact: 'قد يؤثر القرار في تكاليف التجارة الإقليمية إذا دخل حيز التنفيذ.', ai_watch_next: 'راقب نشر النص التنفيذي والجدول الزمني الرسمي.' });
   const f = fixture([a]), response = await get(await workerFor(f), '/news/' + a.id, { headers: { Cookie: 'private=session', Authorization: 'Bearer private-session' } });

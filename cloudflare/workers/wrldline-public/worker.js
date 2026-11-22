@@ -2,7 +2,7 @@
 /** @typedef {Record<string, unknown> & {id: string, published_at: string}} PublicArticle */
 /** @typedef {{title: string, description: string, body: string, canonical?: string, lang?: string, image?: string, schema?: Record<string, unknown> | null, noindex?: boolean, enhance?: boolean}} PageOptions */
 /** @typedef {{SUPABASE_URL?: string, SUPABASE_ANON_KEY?: string, PUBLIC_TRUST_ENABLED?: string}} WorkerEnv */
-export const PUBLIC_ORIGIN = "https://al-ghaib.us.ci";
+const PUBLIC_ORIGIN = "https://al-ghaib.us.ci";
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const XML_HEAD = '<?xml version="1.0" encoding="UTF-8"?>';
 const SITEMAP_NS = 'xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"';
