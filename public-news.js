@@ -6,11 +6,30 @@
   const en = document.documentElement.lang.startsWith("en");
   const summary = article.querySelector(".public-news-summary");
   if (summary) {
+    const tools = document.createElement("div");
+    tools.className = "public-reading-tools";
+    const size = document.createElement("button");
+    size.type = "button";
+    size.textContent = en ? "Larger text" : "تكبير النص";
+    function showSize(large) {
+      article.classList.toggle("public-text-large", large);
+      size.setAttribute("aria-pressed", String(large));
+    }
+    let large = false;
+    try { large = localStorage.getItem("wrldline:article-large-text") === "1"; } catch {}
+    showSize(large);
+    size.addEventListener("click", () => {
+      large = !large;
+      showSize(large);
+      try { localStorage.setItem("wrldline:article-large-text", large ? "1" : "0"); } catch {}
+    });
+    tools.append(size);
+    summary.before(tools);
     const text = [...summary.querySelectorAll(":scope > p")].map(p => p.textContent).join("\n\n");
     if (text) {
       Promise.all([
         import("/reader-prose.js?v=20261122-longread1"),
-        import("/public-article-body.js?v=20261122-longread1")
+        import("/public-article-body.js?v=20261122-longread2")
       ]).then(() => {
         window.WLPublicArticleBody.enhance(summary, {
           id: article.dataset.articleId, excerpt: text, english: en,

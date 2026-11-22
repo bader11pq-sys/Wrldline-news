@@ -8,13 +8,17 @@
 .editor-tools,.compose-meta{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center}
 .editor-tools{margin-block:8px}
 .editor-tools .btn,.editor-publish-actions .btn{min-height:44px;margin:0;padding:8px 12px}
+#composePartSelect{width:auto;max-width:100%;min-height:44px;padding:6px 10px}
+.editor-publish-jump{min-height:44px;display:inline-flex;align-items:center;color:var(--gold);text-underline-offset:.25em}
 .compose-meta{justify-content:space-between;color:var(--muted);font-size:.84rem;margin-block:5px}
 .compose-part-help{font-size:.84rem;margin-block:5px 12px}
+.compose-file-status{color:var(--gold);font-size:.875rem;margin-block:6px}
 .editor-preview{border:1px solid var(--line);border-radius:10px;padding:clamp(12px,4vw,32px);margin-block:14px;background:var(--bg);max-height:65vh;overflow:auto;overflow-wrap:anywhere}
 .editor-preview h3{font-size:1.45rem}
 .editor-preview :is(p,li){line-height:1.95}
 .editor-preview .reader-dense-lines{white-space:pre-line}
-.editor-publish-actions{padding-block:15px 5px;gap:8px}
+.editor-publish-actions{padding-block:15px 5px;gap:8px;scroll-margin-block-start:14px}
+.editor-publish-actions .btn:disabled{opacity:.62;cursor:wait}
 .publish-feedback{display:flex;align-items:center;flex-wrap:wrap;gap:6px 14px;margin-block:6px 0;color:var(--muted)}
 .publish-feedback a[hidden],.editor-composer [hidden]{display:none!important}
 .editor-composer.is-focused{position:fixed;inset:0;z-index:9999;overflow:auto;margin:0;padding:16px max(16px,calc((100vw - 960px)/2));border:0;border-radius:0}

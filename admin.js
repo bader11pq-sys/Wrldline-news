@@ -240,13 +240,19 @@ async function setArticleStatus(id,status){
  message(t("تم تحديث حالة الخبر إلى ","Story status updated to ")+editorialLabel(status)+".");void loadArticles();
 }
 async function editArticle(ref,restoring=false){
- if($("saveButton").disabled||(!restoring&&workspace?.isDirty()&&!confirm("هل تريد إغلاق النص الحالي وفتح مقال آخر؟")))return false;
+ const form=$("articleForm");
+ if(form.inert||(!restoring&&workspace?.isDirty()&&!confirm("هل تريد إغلاق النص الحالي وفتح مقال آخر؟")))return false;
  workspace?.persist();
  const version=++editorLoadVersion;
  workspace?.saved("جارٍ تحميل النص الكامل…");
  $("articleComposer").scrollIntoView({block:"start"});
  const fields=listCore+",summary"+(editorialExtrasAvailable?","+editorExtra:"");
- const result=await db.from("articles").select(fields).eq("id",ref.id).single();
+ form.inert=true;
+ $("restoreWorkingDraft").disabled=true;
+ let result;
+ try{result=await db.from("articles").select(fields).eq("id",ref.id).single();}
+ catch(error){result={error};}
+ finally{form.inert=false;$("restoreWorkingDraft").disabled=false;}
  if(version!==editorLoadVersion)return false;
  if(result.error){workspace?.saved("تعذّر فتح المقال: "+result.error.message);return false;}
  const a=result.data;
@@ -281,7 +287,7 @@ $("articleForm").addEventListener("submit",async e=>{
   if(!title||!summary.trim()||summary.length>1000000||!["published","draft","review","rejected"].includes(status)){
    workspace?.saved("تحقّق من العنوان والنص وحالة النشر. الحد الأقصى مليون حرف.");return;
   }
-  button.disabled=true;draftButton.disabled=true;$("articleForm").inert=true;
+  button.disabled=true;draftButton.disabled=true;$("articleForm").inert=true;$("restoreWorkingDraft").disabled=true;
   button.textContent=t("جارٍ الحفظ…","Saving…");
   workspace?.saved(t("جارٍ الحفظ…","Saving…"));
   message(t("جارٍ حفظ الخبر في قاعدة البيانات...","Saving story to the database..."));
@@ -305,14 +311,14 @@ $("articleForm").addEventListener("submit",async e=>{
    if(status==="published")announcePublication(result.data.id);
    else workspace?.saved(status==="draft"?"حُفظت المسودة. يمكنك فتحها من غرفة المراجعة.":"تم الحفظ دون نشر.");
    // A list/dashboard refresh failure must never hide a successful database save.
-   loadArticles().catch(refreshError=>{console.error("Article saved, but list refresh failed",refreshError);message(t("تم نشر الخبر، لكن تعذّر تحديث القائمة. اضغط تحديث الأخبار لرؤية الخبر.","Story published, but the list could not refresh. Use Refresh stories to see it."));});
+   loadArticles().catch(refreshError=>{console.error("Article saved, but list refresh failed",refreshError);});
   }catch(error){
    console.error("WRLDLINE article save failed",error);
    message((saveCompleted?"تم الحفظ لكن حدث خطأ لاحق: ":"تعذّر نشر الخبر: ")+(error?.message||String(error)));
    if(!saveCompleted)workspace?.saved("تعذّر الحفظ. نصّك ما زال في المحرّر. "+(error?.message||""));
    if(uploaded&&!saveCompleted){try{await db.storage.from(MEDIA_BUCKET).remove([uploaded.path]);}catch(cleanupError){console.warn("Media cleanup failed",cleanupError);}}
   }finally{
-   button.disabled=false;draftButton.disabled=false;$("articleForm").inert=false;syncPublishButtons();
+   button.disabled=false;draftButton.disabled=false;$("articleForm").inert=false;$("restoreWorkingDraft").disabled=false;syncPublishButtons();
   }
  });
 async function deleteArticle(id){if(!confirm("هل تريد حذف هذا الخبر نهائياً؟"))return;const {error}=await db.from("articles").delete().eq("id",id);if(error){message("فشل الحذف: "+error.message);return;}message("تم حذف الخبر.");await loadArticles();}

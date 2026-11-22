@@ -36,7 +36,12 @@
   function syncParts() {
     const other = parts.reduce((sum, part, i) => sum + (i === current ? 0 : part.length), 0);
     body.maxLength = Math.max(0, Math.min(FIELD, MAX - other));
-    $("composePartLabel").textContent = `الجزء ${numeric(current + 1)} من ${numeric(parts.length)}`;
+    const picker = $("composePartSelect");
+    if (picker.options.length !== parts.length) {
+      const options = parts.map((_, i) => new Option(`الجزء ${numeric(i + 1)} من ${numeric(parts.length)}`, i));
+      picker.replaceChildren(...options);
+    }
+    picker.value = String(current);
     $("previousPart").disabled = current === 0;
     $("nextPart").disabled = current + 1 >= parts.length;
     $("appendPart").disabled = other + body.value.length >= MAX;
@@ -88,6 +93,7 @@
   function markClean() {
     clearTimeout(timer);
     dirty = false;
+    fileStatus("");
     updateCount();
     if (!$("composePreview").hidden) preview(false);
   }
@@ -96,6 +102,11 @@
     const anchor = $("openPublishedStory");
     anchor.hidden = !link;
     if (link) anchor.href = link;
+  }
+  function fileStatus(message) {
+    const status = $("composeFileStatus");
+    status.hidden = !message;
+    status.textContent = message;
   }
   function preview(show, scroll = true) {
     const panel = $("composePreview");
@@ -132,6 +143,7 @@
   }
   title.addEventListener("input", changed);
   body.addEventListener("input", changed);
+  $("composePartSelect").addEventListener("change", event => selectPart(Number(event.target.value)));
   $("previousPart").addEventListener("click", () => selectPart(current - 1));
   $("nextPart").addEventListener("click", () => selectPart(current + 1));
   $("appendPart").addEventListener("click", () => {
@@ -156,6 +168,35 @@
       const offset = parts.slice(0, current).reduce((sum, part) => sum + part.length, 0);
       setBody(full.slice(0, offset + start) + pasted + full.slice(offset + end), offset + start + pasted.length);
       changed();
+    }
+  });
+  $("composeImport").addEventListener("click", () => $("composeFile").click());
+  $("composeFile").addEventListener("change", async event => {
+    const input = event.currentTarget;
+    const [file] = input.files;
+    input.value = "";
+    if (!file) return;
+    fileStatus("");
+    if (!file.name.toLowerCase().endsWith(".txt") || file.size > 4 * MAX) {
+      fileStatus("اختر ملفًا نصيًا بامتداد .txt لا يتجاوز ٤ ميغابايت.");
+      return;
+    }
+    const initial = getBody(), owner = key, articleId = $("articleId").value;
+    try {
+      const text = new TextDecoder("utf-8", { fatal: true }).decode(await file.arrayBuffer()).replace(/\r\n?/g, "\n");
+      if (owner !== key || articleId !== $("articleId").value || initial !== getBody() || form.inert) return;
+      if (!text.trim() || text.length > MAX) {
+        fileStatus("الملف فارغ أو يتجاوز حد المليون حرف. لم يتغير نصك.");
+        return;
+      }
+      if (initial.trim() && !confirm("سيستبدل الملف نص المقال الحالي. هل تريد المتابعة؟")) return;
+      setBody(text);
+      changed();
+      updateCount();
+      fileStatus("استُورد النص. راجعه قبل النشر.");
+      body.focus();
+    } catch {
+      fileStatus("تعذّر استيراد الملف. احفظه بترميز UTF-8 ثم أعد المحاولة.");
     }
   });
   $("composeHeadingButton").addEventListener("click", () => format("## ", "عنوان القسم"));

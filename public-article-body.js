@@ -24,7 +24,9 @@
     const prose = globalThis.WLReaderProse;
     if (!prose) return;
     function draw(value, lang) {
-      prose.renderInto(host, value, { ...options, lang: lang || options.lang, contents: true, english });
+      const language = lang || options.lang;
+      if (language) host.lang = language;
+      prose.renderInto(host, value, { ...options, lang: language, contents: true, english });
       host.classList.add("is-formatted");
     }
     draw(excerpt);

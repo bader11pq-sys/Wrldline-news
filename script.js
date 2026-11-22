@@ -632,6 +632,13 @@ function articleMediaMarkup(article){
  if(article.mediaType==="video")return '<video class="modal-image" src="'+escapeHTML(article.img)+'" controls playsinline preload="metadata"></video>';
  return imageMarkup(article,"modal-image");
 }
+function cardExcerpt(value,max=420){
+ const text=String(value||"");
+ if(text.length<=max)return text;
+ const prefix=text.slice(0,max).replace(/[\uD800-\uDBFF]$/u,"");
+ const boundary=prefix.lastIndexOf(" ");
+ return (boundary>max*.8?prefix.slice(0,boundary):prefix).trimEnd()+"…";
+}
 function wlReadingTime(a){
  const text=String((a.title||'')+' '+(a.summary||'')+' '+(a.aiSummary||'')).trim();
  const words=text.split(/\s+/).filter(Boolean).length;
@@ -663,7 +670,7 @@ function renderHero(recentPool){
  const pool=[...eligible,...ranked.filter(a=>!eligible.includes(a))];
  const lead=pool[0];
  const others=pool.filter(a=>a.id!==lead.id).slice(0,3);
- host.innerHTML='<article class="lead-story'+(!lead.img?' lead-story--text':'')+'" role="button" tabindex="0" data-open="'+escapeHTML(lead.id)+'">'+imageMarkup(lead,"lead-image")+'<div class="lead-overlay"><div class="story-meta"><span class="category-label">'+escapeHTML(categoryName(lead.cat))+'</span>'+typeBadgesMarkup(lead)+articleCountryMarkup(lead)+'<span class="read-time" style="color:#ffffffb0">'+wlReadingTime(lead)+'</span></div><h2 dir="auto">'+escapeHTML(lead.title)+'</h2><p dir="auto">'+escapeHTML(lead.summary)+'</p>'+sourceLineMarkup(lead,"lead-source")+'</div></article>'+
+ host.innerHTML='<article class="lead-story'+(!lead.img?' lead-story--text':'')+'" role="button" tabindex="0" data-open="'+escapeHTML(lead.id)+'">'+imageMarkup(lead,"lead-image")+'<div class="lead-overlay"><div class="story-meta"><span class="category-label">'+escapeHTML(categoryName(lead.cat))+'</span>'+typeBadgesMarkup(lead)+articleCountryMarkup(lead)+'<span class="read-time" style="color:#ffffffb0">'+wlReadingTime(lead)+'</span></div><h2 dir="auto">'+escapeHTML(lead.title)+'</h2><p dir="auto">'+escapeHTML(cardExcerpt(lead.summary))+'</p>'+sourceLineMarkup(lead,"lead-source")+'</div></article>'+
  '<div class="lead-rail"><div class="lead-rail-head"><span lang="en">FRONT PAGE</span><strong>'+ui("أهم ما يحدث الآن","Top stories")+'</strong></div>'+
  others.map((a,idx)=>'<article class="rail-story" role="button" tabindex="0" data-open="'+escapeHTML(a.id)+'"><div><div class="story-meta"><span class="rail-number">0'+(idx+1)+'</span><span class="category-label">'+escapeHTML(categoryName(a.cat))+'</span></div><h3>'+escapeHTML(a.title)+'</h3><div class="rail-source">'+escapeHTML(a.src||"WRLDLINE")+' · '+timeAgo(a.published_at)+'</div></div>'+imageMarkup(a,"rail-image")+'</article>').join("")+
  '</div>';
@@ -684,7 +691,7 @@ function renderFeed(){
    const prior=existing.get(a.id);
    if(prior&&prior.readerArticle===a)return prior;
    const template=document.createElement("template");
-   template.innerHTML='<article class="news-card reader-card content-card-'+a.contentType+'" data-content-type="'+a.contentType+'">'+imageMarkup(a,"card-image")+'<div class="card-content">'+wlCardMeta(a)+'<h3><button class="reader-story-link" type="button" data-open="'+escapeHTML(a.id)+'" dir="auto">'+escapeHTML(a.title)+'</button></h3><p dir="auto">'+escapeHTML(a.summary)+'</p>'+newsDataMetaMarkup(a)+sourceLineMarkup(a)+(a.correctionNote?'<span class="correction-chip">'+ui("تم التصحيح","Corrected")+'</span>':'')+'<div class="card-actions"><button class="translation-button" type="button" data-translate="'+escapeHTML(a.id)+'" aria-expanded="false">'+ui("الترجمة","Translation")+'</button></div>'+translationPanelMarkup(a)+'</div></article>';
+   template.innerHTML='<article class="news-card reader-card content-card-'+a.contentType+'" data-content-type="'+a.contentType+'">'+imageMarkup(a,"card-image")+'<div class="card-content">'+wlCardMeta(a)+'<h3><button class="reader-story-link" type="button" data-open="'+escapeHTML(a.id)+'" dir="auto">'+escapeHTML(a.title)+'</button></h3><p dir="auto">'+escapeHTML(cardExcerpt(a.summary))+'</p>'+newsDataMetaMarkup(a)+sourceLineMarkup(a)+(a.correctionNote?'<span class="correction-chip">'+ui("تم التصحيح","Corrected")+'</span>':'')+'<div class="card-actions"><button class="translation-button" type="button" data-translate="'+escapeHTML(a.id)+'" aria-expanded="false">'+ui("الترجمة","Translation")+'</button></div>'+translationPanelMarkup(a)+'</div></article>';
    const card=template.content.firstElementChild;
    card.dataset.storyId=a.id;card.readerArticle=a;
    return card;
@@ -855,7 +862,7 @@ function openArticle(id,updateUrl=true,returnFocus){
  const a=state.articleById?.get(id)||state.articles.find(x=>x.id===id);if(!a)return;
  const socialURL=encodeURIComponent(publicArticleURL(a)||("https://al-ghaib.us.ci/news/"+a.id));
  const socialTitle=encodeURIComponent(a.title||"WRLDLINE");
- const socialCaption=encodeURIComponent((a.title||"WRLDLINE")+" — "+(a.summary||"").slice(0,320));
+ const socialCaption=encodeURIComponent((a.title||"WRLDLINE")+" — "+cardExcerpt(a.summary,320));
  const socialMarkup='<a class="outline-button" target="_blank" rel="noopener noreferrer" href="https://wa.me/?text='+socialCaption+'%20'+socialURL+'">WhatsApp</a><a class="outline-button" target="_blank" rel="noopener noreferrer" href="https://twitter.com/intent/tweet?text='+socialTitle+'&url='+socialURL+'">X</a><a class="outline-button" target="_blank" rel="noopener noreferrer" href="https://t.me/share/url?url='+socialURL+'&text='+socialTitle+'">Telegram</a>';
  if(updateUrl){const url=new URL(location.href);url.searchParams.set("article",id);try{history.pushState({article:id},"",url);}catch{}}
  track("view_article",{article_id:a.id,content_type:a.contentType,category:a.cat,source_domain:sourceDomain(a.sourceURL),has_source_link:!!a.sourceURL});
