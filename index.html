@@ -465,7 +465,7 @@
       </section>
       <section class="wl-section" id="missedNewsSection" aria-labelledby="missedNewsHeading">
         <div class="wl-section-head">
-          <div><span class="wl-kicker">MISSED STORIES</span><h2 id="missedNewsHeading">أخبار فاتتك</h2><p>قصص مهمة ربما مرّت بين موجات العاجل.</p></div>
+          <div><span class="wl-kicker">MISSED STORIES</span><h2 id="missedNewsHeading">أخبار فاتتك</h2><p id="missedNewsDescription">أخبار عاجلة أو حصرية من آخر 24 ساعة لم تظهر في الدفعة الأولى من الموجز.</p></div>
           <span class="wl-badge wl-badge--outline" id="missedNewsCount">—</span>
         </div>
         <div id="missedNewsGrid" class="missed-news-grid"><div class="skeleton-card"><div class="sk-img skeleton"></div><div class="sk-body"><div class="sk-line sk-line--sm skeleton"></div><div class="sk-line sk-line--lg skeleton"></div><div class="sk-line sk-line--md skeleton"></div></div></div></div>
@@ -474,24 +474,27 @@
 
       <section class="breaking-news-section" id="breakingSection" aria-labelledby="breakingHeading">
         <div class="wl-section-head">
-          <div><span class="wl-kicker" style="color:var(--red)">LIVE DESK</span><h2 id="breakingHeading">الأخبار العاجلة</h2></div>
-          <span class="wl-badge wl-badge--live" id="breakingCount">آخر 5 ساعات</span>
+          <div><span class="wl-kicker" style="color:var(--red)">LIVE DESK</span><h2 id="breakingHeading" tabindex="-1">الأخبار العاجلة</h2></div>
+          <span class="wl-badge wl-badge--live" id="breakingCount">—</span>
         </div>
+        <div class="wl-empty reader-failure" id="breakingFeedNotice" hidden><p role="status"></p><button class="outline-button" type="button" data-reader-action="retry-section" data-section="breaking">إعادة محاولة تحميل القسم</button></div>
         <div id="breakingNewsGrid" class="breaking-news-grid"><div class="breaking-empty">جارٍ تحميل غرفة العاجل…</div></div>
       </section>
 
       <section class="exclusive-section" id="exclusiveSection" aria-labelledby="exclusiveHeading">
         <div class="wl-section-head">
-          <div><span class="wl-kicker" style="color:var(--gold-strong)">ORIGINAL REPORTING</span><h2 id="exclusiveHeading">الأخبار الحصرية</h2><p>ما يضعه الناشرون بوسم الحصرية صراحة، بعد التحقق التحريري.</p></div>
+          <div><span class="wl-kicker" style="color:var(--gold-strong)">ORIGINAL REPORTING</span><h2 id="exclusiveHeading" tabindex="-1">الأخبار الحصرية</h2><p id="exclusiveDescription">ما يضعه الناشرون بوسم الحصرية صراحة، بعد التحقق التحريري.</p></div>
           <span class="wl-badge wl-badge--gold" id="exclusiveCount">—</span>
         </div>
+        <div class="wl-empty reader-failure" id="exclusiveFeedNotice" hidden><p role="status"></p><button class="outline-button" type="button" data-reader-action="retry-section" data-section="exclusive">إعادة محاولة تحميل القسم</button></div>
         <div id="exclusiveNewsGrid" class="exclusive-news-grid"><div class="exclusive-empty">جارٍ التحقق من الأخبار الحصرية…</div></div>
       </section>
       <section class="wl-section wl-popular-section" id="popularStoriesSection" aria-labelledby="popularStoriesHeading">
         <div class="wl-section-head">
-          <div><span class="wl-kicker">READER SIGNAL</span><h2 id="popularStoriesHeading">الأكثر قراءة</h2><p>قصص قرأها ثلاثة قراء مميزين على الأقل خلال آخر 7 أيام. لا نرتب الأخبار بمشاهدات تجريبية أو بيانات فردية.</p></div>
-          <span class="wl-badge wl-badge--outline">آخر 7 أيام</span>
+          <div><span class="wl-kicker">READER SIGNAL</span><h2 id="popularStoriesHeading" tabindex="-1">الأكثر قراءة</h2><p id="popularStoriesDescription">قصص قرأها ثلاثة قراء مختلفين على الأقل خلال آخر 7 أيام. لا نستخدم المشاهدات التجريبية أو بيانات الأفراد في الترتيب.</p></div>
+          <span class="wl-badge wl-badge--outline" id="popularStoriesWindow">آخر 7 أيام</span>
         </div>
+        <div class="wl-empty reader-failure" id="popularFeedNotice" hidden><p role="status"></p><button class="outline-button" type="button" data-reader-action="retry-section" data-section="popular">إعادة محاولة تحميل القسم</button></div>
         <div id="popularStoriesGrid" class="wl-popular-grid" aria-live="polite"><p class="wl-popular-empty">ستظهر هنا القصص الأكثر قراءة عند توفر بيانات قراءة كافية.</p></div>
       </section>
     </div>
@@ -612,14 +615,14 @@
   <script src="taxonomy.js?v=20261114-contract1" defer></script>
   <script src="language.js?v=20261123-standards" defer></script>
   <script src="editorial-rank.js?v=20261119-2" defer></script>
-  <script src="reader-discovery.js?v=20261123-feed-status" defer></script>
+  <script src="reader-discovery.js?v=20261123-feed-sections" defer></script>
   <script src="editorial-display.js?v=20261122-edition" defer></script>
   <script src="map-model.js?v=20261122-edition" defer></script>
   <script src="reader-prose.js?v=20261122-longread1" defer></script>
   <script src="public-article-body.js?v=20261122-longread2" defer></script>
   <script src="article-editions.js?v=20261122-bilingual" defer></script>
   <script src="/event-desk.js?v=20261122-event" defer></script>
-  <script src="script.js?v=20261123-standards" defer></script>
+  <script src="script.js?v=20261123-feed-sections" defer></script>
   <script src="newsroom-data.js?v=20261114-1" defer></script>
   <script src="newsroom.js?v=20261120-feedfast1" defer></script>
   <script src="home.js?v=20261122-edition" defer></script>
