@@ -1,4 +1,4 @@
-const CACHE_NAME = "wrldline-shell-v73-edition";
+const CACHE_NAME = "wrldline-shell-v74-paths";
 const NEWS_CACHE = "wrldline-public-news-v1";
 const BRIEFING_CACHE = "wrldline-daily-briefing-v1";
 const SHELL_URLS = ["/", "/index.html", "/wrld.css", "/site-enhancements.css", "/site-enhancements.js", "/intelligence.css", "/intelligence.js", "/coverage-gap.js", "/sources.html", "/intelligence-sources.js", "/manus-routes.json", "/history.css", "/newsroom.css", "/editorial-rank.js", "/script.js", "/taxonomy.js", "/home.js", "/site-shell.js", "/newsroom.js", "/newsroom-data.js", "/newsroom-data-extra.js", "/newsroom-data-impact.js", "/newsroom-page.js", "/history-app.js", "/history-data.js", "/history-entities-a.js", "/history-entities-b.js", "/history-entities-c.js", "/history-events.js", "/history-learning.js", "/history-portraits.js", "/language.js", "/share.js", "/manifest.json", "/favicon.svg", "/analytics-config.js", "/analytics.js", "/forms.js", "/policy.css", "/about.html", "/contact.html", "/privacy.html", "/terms.html", "/corrections.html", "/newsletter.html", "/history.html", "/history-explore.html", "/history-dossier.html", "/history-compare.html", "/history-library.html", "/context.html", "/balance.html", "/impact.html", "/promises.html", "/mirror.html", "/explainers.html", "/markets.html", "/markets.css", "/markets.js", "/map.html", "/map.js", "/shorts.html", "/shorts.css", "/shorts.js", "/assets/shorts-news-tension-theme.mp3", "/daily-briefing.html", "/daily-briefing.css", "/daily-briefing.js", "/dossier/", "/dossier.css", "/dossier.js", "/dossier/index.json", "/dossier/watchlist.html", "/dossier/claims.html", "/dossier/impact.html", "/dossier/digest.html", "/dossier/watchlist.json", "/dossier/watchlist.ics", "/watch-strip.js"];
@@ -9,7 +9,8 @@ self.addEventListener("install", event => {
     const metadataShell = ["editorial-display.js","script.js","map.js"].map(file=>"/"+file+"?v=20261122-metadata");
     const editionShell = ["language.js","reader-discovery.js","editorial-display.js","map-model.js","script.js","home.js","newsroom-edition.js","newsroom-edition.css","map.js","map.css"].map(file=>"/"+file+"?v=20261122-edition");
     const monitorShell = ["/vendor/leaflet-1.9.4.js","/vendor/leaflet-1.9.4.css","/vendor/natural-earth-countries-110m-v5.1.2.geojson"];
-    const publicShell = [...SHELL_URLS.filter(url => url !== "/newsletter.html"), ...readerShell, ...metadataShell, ...editionShell, ...monitorShell, "/notification-config.js", "/notification-client.js"];
+    const readingShell = ["/reading.html", "/reading.css?v=20261122-paths", "/history-app.js?v=20261122-paths"];
+    const publicShell = [...SHELL_URLS.filter(url => url !== "/newsletter.html"), ...readerShell, ...metadataShell, ...editionShell, ...monitorShell, ...readingShell, "/notification-config.js", "/notification-client.js"];
     await Promise.allSettled(publicShell.map(async url => {
       try { const response = await fetch(new Request(url, { cache: "reload" })); if (response.ok) await cache.put(url, response); } catch {}
     }));

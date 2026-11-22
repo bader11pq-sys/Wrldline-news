@@ -38,6 +38,7 @@ jobs:
           python tests/reliability-browser.py
           python tests/newsroom-edition-browser.py
           python tests/world-monitor-browser.py
+          python tests/reading-paths-browser.py
   source-freshness:
     # Opt-in prevents missing secrets and duplicate pg_cron scheduling from being
     # silently treated as working monitors. Only protected trusted branches get secrets.
