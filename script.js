@@ -911,7 +911,7 @@ function openArticle(id,updateUrl=true,returnFocus){
   (a.aiSummary?'<section class="ai-insight"><strong>'+ui("تحليل WRLDLINE AI","WRLDLINE AI analysis")+'</strong><p>'+escapeHTML(a.aiSummary)+'</p><small>'+ui("مؤشر الحدث: ","Event risk: ")+escapeHTML(riskLabel(a.aiRiskLevel))+' · '+escapeHTML(a.aiRiskScore)+'/100</small></section>':'')+
   (state.lang==="ar"&&a.aiReaderImpact?'<section class="ai-impact"><h3>وش يعني لك؟</h3><p>'+escapeHTML(a.aiReaderImpact)+'</p><small>قراءة آلية مساعدة مبنية على نص الخبر، وليست تحققاً بشرياً أو نصيحة مالية.</small></section>':'')+
   (state.lang==="ar"&&a.aiWatchNext?'<section class="ai-impact ai-impact--watch"><h3>ما الذي نراقبه تالياً؟</h3><p>'+escapeHTML(a.aiWatchNext)+'</p></section>':'')+
-  sourceBoxMarkup(a)+'<p class="disclaimer"><span data-edition-disclosure>'+escapeHTML(provenanceNote(a))+'</span> <a href="corrections.html">'+ui("سياسة التصحيح","Corrections policy")+'</a>.</p>'+
+  sourceBoxMarkup(a)+'<p class="disclaimer"><span data-edition-disclosure>'+escapeHTML(provenanceNote(a))+'</span> <a href="'+ui("corrections.html","corrections-en.html")+'">'+ui("سياسة التصحيح","Corrections policy")+'</a>.</p>'+
   '<div class="article-actions"><button class="outline-button" id="modalListen" type="button">♫ '+ui("استمع للخبر","Listen to story")+'</button>'+
   '<button class="outline-button" id="modalShare" type="button">↗ '+ui("مشاركة الخبر","Share story")+'</button>'+
   '<button class="outline-button" id="modalSave">'+(state.saved.has(a.id)?ui("★ إزالة من المحفوظات","★ Remove saved"):ui("☆ حفظ الخبر","☆ Save story"))+'</button>'+
@@ -920,7 +920,12 @@ function openArticle(id,updateUrl=true,returnFocus){
  const options={lang:a.sourceLanguage,editorial:/WRLDLINE/i.test(a.src||"")};
  let viewed=a;
  const publicURL=publicArticleURL(a), editions=window.WLArticleEditions;
- if(publicURL)host.querySelector(".article-actions")?.insertAdjacentHTML("beforeend",'<a class="outline-button" data-edition-permalink href="'+escapeHTML(publicURL)+'">↗ '+ui("فتح صفحة الخبر المستقلة","Open article page")+'</a>');
+ if(publicURL){
+  const correction=new URLSearchParams({topic:"correction",article:String(a.id).toLowerCase(),lang:state.lang==="en"?"en":"ar"});
+  host.querySelector(".article-actions")?.insertAdjacentHTML("beforeend",
+   '<a class="outline-button" data-edition-permalink href="'+escapeHTML(publicURL)+'">↗ '+ui("فتح صفحة الخبر المستقلة","Open article page")+'</a>'+
+   '<a class="outline-button" data-article-correction href="/contact.html?'+escapeHTML(correction.toString())+'#form">'+ui("أبلغ عن خطأ","Report an error")+'</a>');
+ }
  if(options.lang)prose.lang=options.lang;
  if(editions)host.articleEditions=editions.mount({
   host:prose,tools:host.querySelector(".reader-article-editions"),heading:host.querySelector("h1"),

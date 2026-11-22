@@ -33,6 +33,13 @@
   const shareButton = document.getElementById("publicNewsShare"), copyButton = document.getElementById("publicNewsCopy");
   const newsStatus = document.getElementById("publicNewsStatus");
   const permalink = article.querySelector(".public-news-actions a");
+  const actions = permalink?.parentElement;
+  const id = new URL(canonical).pathname.match(/^\/news\/([0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12})$/i)?.[1];
+  const report = id && actions ? document.createElement("a") : null;
+  if (report) {
+    report.dataset.articleCorrection = "";
+    actions.append(report);
+  }
   const trail = document.querySelector(".public-news-breadcrumb"), kicker = article.querySelector(".public-news-kicker");
   const country = kicker?.textContent?.split(" · ")[1]?.trim() || "";
   const chrome = [
@@ -41,15 +48,11 @@
     [".public-news-nav a[href='/']", "غرفة الأخبار", "Newsroom"],
     [".public-news-nav a[href^='/news/'], .public-news-breadcrumb a", "الأخبار المنشورة", "Published news"],
     [".public-news-nav a[href='/sources.html']", "المصادر", "Sources"],
-    [".public-news-nav a[href='/about.html']", "عن ورلدلاين", "About"],
-    [".public-news-footer a[href='/about.html']", "السياسة التحريرية", "Editorial policy"],
-    [".public-news-footer a[href='/corrections.html']", "التصحيحات", "Corrections"],
     [".public-news-correction h2", "تصحيح منشور", "Published correction"],
     ["article > .public-news-source h2", "المصدر الأصلي", "Original source"],
     ["article > .public-news-source a", "قراءة الخبر لدى المصدر الأصلي ↗", "Read at the original source ↗"],
     ["#publicNewsShare", "مشاركة الخبر", "Share story"],
     ["#publicNewsCopy", "نسخ رابط الخبر", "Copy article link"],
-    [".public-news-actions a", "الرابط الدائم للخبر", "Permanent article link"]
   ];
   const prefixes = [
     ["تاريخ النشر: ", "Published: "], ["الكاتب: ", "By: "], ["المصدر الأصلي: ", "Original source: "]
@@ -65,6 +68,19 @@
     size.textContent = text("تكبير النص", "Larger text");
     for (const [selector, ar, en] of chrome) {
       document.querySelectorAll(selector).forEach(el => { el.textContent = text(ar, en); });
+    }
+    if (permalink) permalink.textContent = text("الرابط الدائم للخبر", "Permanent article link");
+    if (report) {
+      report.textContent = text("أبلغ عن خطأ", "Report an error");
+      report.href = "/contact.html?" + new URLSearchParams({ topic: "correction", article: id.toLowerCase(), lang }) + "#form";
+    }
+    for (const [selector, stem, ar, en] of [
+      [".public-news-nav", "about", "عن ورلدلاين", "About"],
+      [".public-news-footer", "about", "السياسة التحريرية", "Editorial policy"],
+      [".public-news-footer", "corrections", "التصحيحات", "Corrections"]
+    ]) {
+      const link = document.querySelector(selector + ' a[href^="/' + stem + '"]');
+      if (link) { link.textContent = text(ar, en); link.href = "/" + stem + text("", "-en") + ".html"; }
     }
     for (const el of document.querySelectorAll(".public-news-nav a[href^='/news/'], .public-news-breadcrumb a")) el.href = "/news/?lang=" + lang;
     const category = window.WRLDLINE_TAXONOMY?.categoryName(article.dataset.category, lang);
