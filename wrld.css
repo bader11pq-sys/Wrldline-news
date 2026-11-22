@@ -840,3 +840,4 @@ body.modal-open{overflow:hidden}
   .wl-nav-wrap.is-open .wl-more-btn,.wl-nav-wrap.mobile-open .wl-more-btn{display:flex;width:100%;justify-content:space-between;padding:11px 12px;font-size:13px}
   .wl-nav-wrap.is-open .wl-more-menu,.wl-nav-wrap.mobile-open .wl-more-menu{position:static;width:100%;max-height:42vh;margin-top:6px;box-shadow:none;transform:none}
 }
+.wl-head-actions .wl-edition-link{width:auto;min-width:0;min-height:36px;padding-inline:9px;font-size:12px;white-space:nowrap}

@@ -195,14 +195,30 @@ ${correction ? `<section class="public-news-correction" role="note"><h2>${l.corr
 <noscript><p class="public-news-disclosure">${l.en ? "This published summary and source link are available without JavaScript." : "الملخص المنشور ورابط المصدر متاحان دون جافاسكريبت."}</p></noscript></article>`;
   return htmlResponse({ title: `${title} | WRLDLINE NEWS`, description, canonical, lang, image, body, schema, enhance: true });
 }
-/** @param {PublicArticle[]} articles @param {number} page */
-function renderIndex(articles, page) {
+/** @param {PublicArticle[]} articles @param {number} page @param {string} lang */
+function renderIndex(articles, page, lang) {
   const shown = articles.slice(0, 50), canonical = `${PUBLIC_ORIGIN}/news/${page > 1 ? `?page=${page}` : ""}`;
-  const body = `<p class="public-news-kicker">WRLDLINE · PUBLIC NEWS</p><h1>الأخبار المنشورة</h1><p class="public-news-disclosure">ملخصات الأخبار المنشورة مع روابط المصادر وتواريخ النشر الأصلية.</p>
-<ul class="public-news-list">${shown.map(a => { const s = source(a); return `<li><article><h2><a href="${articleURL(a.id)}" dir="auto">${escapeHTML(text(a.title, 1000) || "خبر منشور")}</a></h2><p dir="auto">${escapeHTML(text(a.summary, 260))}</p><small>${escapeHTML(s.name)} · <time datetime="${a.published_at}">${escapeHTML(dateLabel(a.published_at, "ar"))}</time></small></article></li>`; }).join("")}</ul>
-${!shown.length ? '<p class="public-news-summary">لا توجد أخبار منشورة في هذه الصفحة.</p>' : ""}
-<nav class="public-news-paging" aria-label="صفحات الأخبار">${page > 1 ? `<a href="/news/${page === 2 ? "" : `?page=${page - 1}`}">الصفحة السابقة</a>` : "<span></span>"}${articles.length > 50 ? `<a href="/news/?page=${page + 1}">الصفحة التالية</a>` : ""}</nav>`;
-  return htmlResponse({ title: `الأخبار المنشورة${page > 1 ? ` — ${page}` : ""} | WRLDLINE NEWS`, description: "ملخصات الأخبار المنشورة من WRLDLINE مع روابط المصادر وتواريخ النشر الأصلية. تصفح الأخبار دون تسجيل الدخول.", canonical, body });
+  const l = labels(lang), target = l.en ? "ar" : "en";
+  /** @param {number} p @param {string} edition */
+  function pageURL(p, edition) {
+    const query = new URLSearchParams();
+    if (p > 1) query.set("page", String(p));
+    if (edition !== "ar") query.set("lang", edition);
+    return "/news/" + (query.size ? `?${query}` : "");
+  }
+  const description = l.en
+    ? "Browse published news in its original language. Open a story to see whether a reviewed editorial edition is available."
+    : "تصفّح الأخبار المنشورة بلغتها الأصلية. افتح الخبر لمعرفة ما إذا كانت له نسخة تحريرية بلغة أخرى.";
+  const body = `<p class="public-news-kicker">WRLDLINE · PUBLIC NEWS</p><h1>${l.news}</h1>
+<a class="public-news-edition-link" href="${escapeHTML(pageURL(page, target))}" lang="${target}">${l.en ? "العربية" : "English"}</a><p class="public-news-disclosure">${description}</p>
+<ul class="public-news-list">${shown.map(a => {
+    const s = source(a), originalLang = language(a.source_language || a.lang);
+    const link = articleURL(a.id) + (l.en ? "#lang=en" : "");
+    return `<li><article><h2><a href="${link}" lang="${originalLang}" dir="auto">${escapeHTML(text(a.title, 1000) || l.news)}</a></h2><p lang="${originalLang}" dir="auto">${escapeHTML(text(a.summary, 260))}</p><small>${escapeHTML(s.name)} · <time datetime="${a.published_at}">${escapeHTML(dateLabel(a.published_at, lang))}</time></small></article></li>`;
+  }).join("")}</ul>
+${!shown.length ? `<p class="public-news-summary">${l.en ? "No published news on this page." : "لا توجد أخبار منشورة في هذه الصفحة."}</p>` : ""}
+<nav class="public-news-paging" aria-label="${l.en ? "News pages" : "صفحات الأخبار"}">${page > 1 ? `<a href="${escapeHTML(pageURL(page - 1, lang))}">${l.en ? "Previous page" : "الصفحة السابقة"}</a>` : "<span></span>"}${articles.length > 50 ? `<a href="${escapeHTML(pageURL(page + 1, lang))}">${l.en ? "Next page" : "الصفحة التالية"}</a>` : ""}</nav>`;
+  return htmlResponse({ title: `${l.news}${page > 1 ? ` · ${page}` : ""} | WRLDLINE NEWS`, description, canonical, body, lang });
 }
 /** @param {PublicArticle[]} articles @param {Date} now */
 function newsSitemap(articles, now) {
@@ -273,7 +289,7 @@ export function createWorker({ fetchImpl = globalThis.fetch.bind(globalThis), no
         if (!/^[1-9]\d{0,5}$/.test(value) || Number(value) > 50000) return finish(errorPage(404));
         const page = Number(value), articles = await recent(51, null, (page - 1) * 50);
         if (page > 1 && !articles.length) return finish(errorPage(404));
-        return finish(renderIndex(articles, page));
+        return finish(renderIndex(articles, page, url.searchParams.get("lang") === "en" ? "en" : "ar"));
       }
       if (path.startsWith("/news/")) {
         const match = path.match(/^\/news\/([^/]+)(\/?)$/);

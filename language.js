@@ -622,21 +622,53 @@ Object.assign(AR_EN,{
  "ما حدث وما تغيّر":"What happened and what changed","غرفة السياق":"Background","الخلفية وما نعرفه":"Context and what we know",
  "ميزان الروايات":"Compare coverage","من قال ماذا ومتى":"Who said what and when","أطلس التأثير":"Impact atlas","من الخبر إلى الأثر":"What the news means",
  "الأسواق":"Markets","السعر مع مصدره":"Prices and their sources","موجز سريع":"Quick recap",
- "عرض المحفوظات":"View saved stories","روابط الموقع":"Site links"
+ "عرض المحفوظات":"View saved stories","روابط الموقع":"Site links",
+ "WRLDLINE | أخبار السياسة والاقتصاد وسياقها":"WRLDLINE | Politics, business and world news in context",
+ "ورلدلاين نيوز — الصفحة الرئيسية":"WRLDLINE News home","تاريخ اليوم":"Today's date",
+ "بانتظار الأخبار":"Waiting for news","تسجيل دخول":"Sign in","العربية / English":"Arabic / English"
 });
 const original=new WeakMap();
 function translateValue(value,lang){const trimmed=String(value??"").trim();if(!trimmed)return value;if(lang==="en"){if(AR_EN[trimmed])return String(value).replace(trimmed,AR_EN[trimmed]);const keys=Object.keys(AR_EN).filter(k=>trimmed.startsWith(k)&&k.length>2&&(k.endsWith(":")||k.endsWith("،")||k==="عضوية Plus فعالة حتى")).sort((a,b)=>b.length-a.length);if(keys.length){const k=keys[0];return String(value).replace(trimmed,AR_EN[k]+trimmed.slice(k.length));}return value;}if(/[\u0600-\u06FF]/.test(trimmed))return value;if(reverseMap[trimmed])return String(value).replace(trimmed,reverseMap[trimmed]);const keys=Object.keys(reverseMap).filter(k=>trimmed.startsWith(k)&&k.length>2&&(k.endsWith(":")||k.endsWith(","))).sort((a,b)=>b.length-a.length);if(keys.length){const k=keys[0];return String(value).replace(trimmed,reverseMap[k]+trimmed.slice(k.length));}return value;}
 const reverseMap=Object.fromEntries(Object.entries(AR_EN).map(([a,e])=>[e,a]));
-const managesLanguage = node => Boolean((node.nodeType===Node.ELEMENT_NODE?node:node.parentElement)?.closest("[data-language-managed]"));
+const managesLanguage = node => Boolean((node.nodeType===Node.ELEMENT_NODE?node:node.parentElement)?.closest("[data-language-managed], .news-card h3, .news-card .card-content > p, .reader-article h1"));
 function visit(root=document){if(managesLanguage(root))return;const walker=document.createTreeWalker(root,NodeFilter.SHOW_TEXT);let node;while((node=walker.nextNode())){if(!node.parentElement||managesLanguage(node)||/^(SCRIPT|STYLE|NOSCRIPT|TEXTAREA)$/i.test(node.parentElement.tagName))continue;let base=original.get(node);if(base===undefined){base=node.nodeValue;original.set(node,base)}const next=translateValue(base,window.wrldlineLang);if(node.nodeValue!==next)node.nodeValue=next;}
  const elements=root.querySelectorAll?root.querySelectorAll("[placeholder],[aria-label],[title]"):[];elements.forEach(el=>{if(managesLanguage(el))return;for(const attr of ["placeholder","aria-label","title","alt","value"]){if(!el.hasAttribute(attr))continue;let map=el.__wrldlineAttrs||(el.__wrldlineAttrs={});if(map[attr]===undefined)map[attr]=el.getAttribute(attr);el.setAttribute(attr,translateValue(map[attr],window.wrldlineLang));}});}
-function setLanguage(lang,options={}){const persist=options.persist!==false;window.wrldlineLang=lang==="en"?"en":"ar";if(persist)localStorage.setItem("wrldline:language",window.wrldlineLang);document.documentElement.lang=window.wrldlineLang;document.documentElement.dir=window.wrldlineLang==="ar"?"rtl":"ltr";document.documentElement.dataset.lang=window.wrldlineLang;let button=document.getElementById("languageButton");if(!button){button=document.createElement("button");button.id="languageButton";button.type="button";button.className="language-switch";button.setAttribute("data-language-managed","");const host=document.querySelector("header .topin,header .top,header .masthead,header");(host||document.body).appendChild(button);}visit();button.textContent=window.wrldlineLang==="ar"?"English":"العربية";button.setAttribute("aria-label",window.wrldlineLang==="ar"?"Switch to English":"التبديل إلى العربية");const languageField=document.getElementById("language");if(languageField)languageField.value=window.wrldlineLang==="ar"?"العربية":"English";document.dispatchEvent(new CustomEvent("wrldline:language",{detail:{lang:window.wrldlineLang}}));}
+function setLanguage(lang,options={}){
+ const next=lang==="en"?"en":"ar";
+ window.wrldlineLang=next;
+ if(options.persist!==false){try{localStorage.setItem("wrldline:language",next);}catch{}}
+ if(options.updateURL){
+  const url=new URL(location.href);
+  url.searchParams.set("lang",next);
+  try{history.replaceState(history.state,"",url);}catch{}
+ }
+ document.documentElement.lang=next;
+ document.documentElement.dir=next==="ar"?"rtl":"ltr";
+ document.documentElement.dataset.lang=next;
+ let button=document.getElementById("languageButton");
+ if(!button){
+  button=document.createElement("button");button.id="languageButton";button.type="button";button.className="language-switch";
+  const host=document.querySelector("header .topin,header .top,header .masthead,header");
+  (host||document.body).appendChild(button);
+ }
+ button.dataset.languageManaged="";
+ visit();
+ button.lang=next==="ar"?"en":"ar";
+ button.textContent=next==="ar"?"English":"العربية";
+ document.querySelectorAll('a[href="/news/"],a[data-edition-archive]').forEach(link=>{
+  link.dataset.editionArchive="";
+  link.href="/news/?lang="+next;
+ });
+ const languageField=document.getElementById("language");if(languageField)languageField.value=next==="ar"?"العربية":"English";
+ document.dispatchEvent(new CustomEvent("wrldline:language",{detail:{lang:next}}));
+}
 function resolveLocale(){
  const urlLang=new URLSearchParams(location.search).get("lang");
  if(urlLang==="ar"||urlLang==="en")return {lang:urlLang,source:"url"};
- const stored=localStorage.getItem("wrldline:language");
+ const read=key=>{try{return localStorage.getItem(key);}catch{return null;}};
+ const stored=read("wrldline:language");
  if(stored==="ar"||stored==="en")return {lang:stored,source:"stored"};
- const account=localStorage.getItem("wrldline:account-language");
+ const account=read("wrldline:account-language");
  if(account==="ar"||account==="en")return {lang:account,source:"account"};
  const candidates=Array.isArray(navigator.languages)&&navigator.languages.length?navigator.languages:[navigator.language||""];
  // Arabic-first newsroom: content is Arabic, so an English browser locale alone must not flip the layout to LTR.
@@ -650,6 +682,6 @@ document.documentElement.lang=window.wrldlineLang;
 document.documentElement.dir=window.wrldlineLang==="ar"?"rtl":"ltr";
 document.documentElement.dataset.lang=window.wrldlineLang;
 document.documentElement.dataset.langSource=initialLocale.source;
-document.addEventListener("DOMContentLoaded",()=>{setLanguage(window.wrldlineLang,{persist:initialLocale.source==="url"});document.getElementById("languageButton")?.addEventListener("click",()=>setLanguage(window.wrldlineLang==="ar"?"en":"ar"));const observer=new MutationObserver(records=>{for(const record of records){if(managesLanguage(record.target))continue;if(record.type==="childList")record.addedNodes.forEach(n=>{if(n.nodeType===Node.TEXT_NODE){if(!original.has(n))original.set(n,n.nodeValue);const v=translateValue(original.get(n),window.wrldlineLang);if(n.nodeValue!==v)n.nodeValue=v;}else if(n.nodeType===Node.ELEMENT_NODE)visit(n);});else if(record.type==="characterData"){if(!original.has(record.target))original.set(record.target,record.target.nodeValue);const v=translateValue(original.get(record.target),window.wrldlineLang);if(record.target.nodeValue!==v)record.target.nodeValue=v;}}});observer.observe(document.body,{subtree:true,childList:true,characterData:true});});
+document.addEventListener("DOMContentLoaded",()=>{setLanguage(window.wrldlineLang,{persist:false});document.getElementById("languageButton")?.addEventListener("click",()=>setLanguage(window.wrldlineLang==="ar"?"en":"ar",{updateURL:true}));const observer=new MutationObserver(records=>{for(const record of records){if(managesLanguage(record.target))continue;if(record.type==="childList")record.addedNodes.forEach(n=>{if(n.nodeType===Node.TEXT_NODE){if(!original.has(n))original.set(n,n.nodeValue);const v=translateValue(original.get(n),window.wrldlineLang);if(n.nodeValue!==v)n.nodeValue=v;}else if(n.nodeType===Node.ELEMENT_NODE)visit(n);});else if(record.type==="characterData"){if(!original.has(record.target))original.set(record.target,record.target.nodeValue);const v=translateValue(original.get(record.target),window.wrldlineLang);if(record.target.nodeValue!==v)record.target.nodeValue=v;}}});observer.observe(document.body,{subtree:true,childList:true,characterData:true});});
 window.wrldlineSetLanguage=setLanguage;
 })();

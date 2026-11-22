@@ -200,11 +200,34 @@
     save(localStorage, CONSENT, choice); dialog?.remove(); dialog = null;
     if (state === "granted") start();
   }
+  function localizeConsent() {
+    const en = document.documentElement.lang === "en";
+    const copy = (ar, english) => en ? english : ar;
+    const settings = document.querySelector(".wrldline-privacy-settings");
+    if (settings) settings.textContent = copy("إعدادات قياس الجمهور والخصوصية", "Audience measurement and privacy settings");
+    if (!dialog) return;
+    dialog.lang = en ? "en" : "ar";
+    dialog.dir = en ? "ltr" : "rtl";
+    dialog.setAttribute("aria-label", copy("إعداد القياس والخصوصية", "Measurement and privacy settings"));
+    const labels = {
+      "strong": copy("الخصوصية أولًا.", "Privacy first."),
+      "[data-consent-intro]": copy("القياس اختياري للقرّاء الموافقين فقط: الزيارات ووقت القراءة النشط والتفاعل. لا نحفظ نص البحث أو عنوان الخبر أو البريد أو الهاتف أو الروابط الكاملة أو عنوان IP.", "Optional measurement covers visits, active reading time and interaction only with your consent. We do not store search text, article titles, email addresses, phone numbers, full URLs or IP addresses."),
+      "[data-consent-returning]": copy("السماح بقياس عودة هذا المتصفح بمعرّف عشوائي يتغير خلال ٧ أيام (اختياري منفصل)", "Allow this browser's return visits to be measured with a random identifier that changes within 7 days (separate and optional)"),
+      "[data-consent-policy]": copy("يمكنك سحب الموافقة في أي وقت. السحب يوقف القياس الجديد ولا يحذف تلقائياً أحداثاً سابقة تُمحى بعد ٣٠ يوماً.", "You can withdraw your consent at any time. Withdrawal stops new measurement but does not automatically delete past events, which are deleted after 30 days."),
+      "[data-choice=granted]": copy("قبول القياس", "Allow measurement"),
+      "[data-choice=denied]": copy("رفض / سحب الموافقة", "Decline or withdraw"),
+      "[data-close]": copy("إغلاق", "Close"),
+      "a": copy("الخصوصية", "Privacy policy")
+    };
+    for (const [selector, value] of Object.entries(labels)) dialog.querySelector(selector).textContent = value;
+  }
   function openSettings() {
     if (dialog) return;
     dialog = document.createElement("aside"); dialog.className = "wrldline-consent";
-    dialog.setAttribute("role", "dialog"); dialog.setAttribute("aria-label", "إعداد القياس والخصوصية"); dialog.setAttribute("dir", "rtl");
-    dialog.innerHTML = '<p><strong>الخصوصية أولًا.</strong> القياس اختياري للقرّاء الموافقين فقط: الزيارات ووقت القراءة النشط والتفاعل. لا نحفظ نص البحث أو عنوان الخبر أو البريد أو الهاتف أو الروابط الكاملة أو عنوان IP.</p><label><input type="checkbox" data-returning> السماح بقياس عودة هذا المتصفح بمعرّف عشوائي يتغير خلال ٧ أيام (اختياري منفصل)</label><p>يمكنك سحب الموافقة في أي وقت. السحب يوقف القياس الجديد ولا يحذف تلقائياً أحداثاً سابقة تُمحى بعد ٣٠ يوماً.</p><div class="actions"><button type="button" data-choice="granted" data-consent="granted">قبول القياس</button><button type="button" data-choice="denied" data-consent="denied">رفض / سحب الموافقة</button><button type="button" data-close>إغلاق</button><a href="/privacy.html">الخصوصية</a></div>';
+    dialog.setAttribute("role", "dialog");
+    dialog.dataset.languageManaged = "";
+    dialog.innerHTML = '<p><strong></strong> <span data-consent-intro></span></p><label><input type="checkbox" data-returning> <span data-consent-returning></span></label><p data-consent-policy></p><div class="actions"><button type="button" data-choice="granted" data-consent="granted"></button><button type="button" data-choice="denied" data-consent="denied"></button><button type="button" data-close></button><a href="/privacy.html"></a></div>';
+    localizeConsent();
     dialog.querySelector("[data-returning]").checked = choice?.returning === true;
     dialog.addEventListener("click", e => {
       const button = e.target.closest("[data-choice]");
@@ -226,7 +249,9 @@
     const style = document.createElement("style");
     style.textContent = '.wrldline-consent{position:fixed;inset-inline:12px;bottom:12px;z-index:5000;max-width:620px;max-height:85vh;overflow:auto;margin:auto;padding:18px;border:1px solid #3b506a;border-radius:14px;background:#101b2d;color:#f3f6fb;font:13px/1.85 "IBM Plex Sans Arabic",sans-serif;box-shadow:0 16px 50px #0006}.wrldline-consent p{margin:0 0 10px}.wrldline-consent label{display:block;margin:8px 0}.wrldline-consent a{color:#e0b96f}.wrldline-consent .actions{display:flex;gap:8px;flex-wrap:wrap}.wrldline-consent button,.wrldline-privacy-settings{cursor:pointer;font:inherit;padding:8px 12px;border:1px solid #58708b;border-radius:8px;background:#172941;color:#fff}.wrldline-consent button:first-child{background:#e0b96f;color:#172234}.wrldline-consent :focus-visible,.wrldline-privacy-settings:focus-visible{outline:3px solid #e0b96f;outline-offset:3px}.wrldline-privacy-settings{display:block;margin:16px auto;font-size:12px}';
     document.head.appendChild(style);
-    const button = document.createElement("button"); button.type = "button"; button.className = "wrldline-privacy-settings"; button.textContent = "إعدادات قياس الجمهور والخصوصية"; button.addEventListener("click", openSettings); document.body.appendChild(button);
+    const button = document.createElement("button"); button.type = "button"; button.className = "wrldline-privacy-settings"; button.dataset.languageManaged = ""; button.addEventListener("click", openSettings); document.body.appendChild(button);
+    localizeConsent();
+    document.addEventListener("wrldline:language", localizeConsent);
     document.addEventListener("click", e => { if (e.target.closest?.("[data-analytics-settings]")) { e.preventDefault(); openSettings(); } });
     if (!choice) { clearIdentifiers(); openSettings(); } else if (choice.state === "granted") start(); else clearIdentifiers();
     window.addEventListener("storage", e => {

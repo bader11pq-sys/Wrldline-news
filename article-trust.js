@@ -36,7 +36,7 @@
       const response = await request(PROJECT_URL + "/rest/v1/rpc/get_public_article_trust", {
         method: "POST", mode: "cors", credentials: "omit", cache: "no-store", signal: controller.signal,
         headers: {"Content-Type": "application/json", apikey: PUBLIC_KEY},
-        body: JSON.stringify({p_article_id: validId, p_lang: lang})
+        body: JSON.stringify({p_article_id: validId, p_lang: options.includeTranslation === false ? null : lang})
       });
       if (!response.ok) throw new Error("Editorial context unavailable (" + response.status + ")");
       const record = await response.json();
@@ -129,7 +129,7 @@
     const marker = {}; mounts.set(root, marker);
     root.setAttribute("aria-busy", "true");
     try {
-      const record = await fetchTrust(id, {...options, lang});
+      const record = await fetchTrust(id, {...options, lang, includeTranslation: root.dataset.editionView === undefined});
       if (mounts.get(root) === marker) render(root, record, lang);
       return record;
     } catch (_) {

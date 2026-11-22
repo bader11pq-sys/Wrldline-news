@@ -4,6 +4,7 @@
   const form = $("articleForm");
   const body = $("summary");
   const title = $("title");
+  const originalLanguage = $("originalArticleLanguage");
   const composer = $("articleComposer");
   const MAX = 1000000, SECTION = 24000, FIELD = 36000;
   let timer, key, restore, dirty = false;
@@ -75,7 +76,7 @@
     const text = getBody();
     if (!title.value.trim() && !text.trim()) return;
     try {
-      localStorage.setItem(key, JSON.stringify({ id: $("articleId").value, title: title.value, body: text }));
+      localStorage.setItem(key, JSON.stringify({ id: $("articleId").value, title: title.value, body: text, language: originalLanguage?.value }));
       $("workingDraftStatus").textContent = "حُفظ العنوان والنص على هذا الجهاز.";
     } catch {
       $("workingDraftStatus").textContent = "لم تُحفظ النسخة المحلية. احفظ مسودة خاصة من زر الحفظ.";
@@ -142,6 +143,7 @@
     updateCount();
   }
   title.addEventListener("input", changed);
+  originalLanguage?.addEventListener("change", changed);
   body.addEventListener("input", changed);
   $("composePartSelect").addEventListener("change", event => selectPart(Number(event.target.value)));
   $("previousPart").addEventListener("click", () => selectPart(current - 1));
@@ -217,6 +219,7 @@
       const draft = JSON.parse(localStorage.getItem(key) || "null");
       if (draft && await restore(draft)) {
         title.value = draft.title; setBody(draft.body);
+        if (originalLanguage && !originalLanguage.disabled && ["ar","en"].includes(draft.language)) originalLanguage.value = draft.language;
         markClean(); button.hidden = true;
         $("workingDraftStatus").textContent = "استُعيد العنوان والنص من هذا الجهاز.";
         body.focus();
