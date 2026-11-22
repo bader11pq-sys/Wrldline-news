@@ -1,7 +1,6 @@
 <!doctype html>
 <html lang="ar" dir="rtl">
 <head>
-<script src="/vendor/supabase-2.119.0.js"></script>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#101b2d">
@@ -14,29 +13,48 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css?v=20261114-editorial5">
-  <link rel="stylesheet" href="shorts.css?v=20261121-1">
-  <link rel="stylesheet" href="site-enhancements.css">
+  <link rel="stylesheet" href="shorts.css?v=20261122-soundtrack">
+  <noscript><style>.shorts-loading{display:none}</style></noscript>
 </head>
 <body class="shorts-body">
+  <a class="shorts-skip" id="shortsSkip" href="#shortsFeed">انتقل إلى الأخبار</a>
   <header class="shorts-topbar">
-    <a class="shorts-back" href="index.html" aria-label="العودة إلى الرئيسية">←</a>
-    <a class="shorts-brand" href="index.html"><span class="brand-mark">W</span><span><strong>WRLDLINE</strong><small>SHORTS</small></span></a>
+    <a class="shorts-back" id="shortsBack" href="index.html" aria-label="العودة إلى الرئيسية"><span aria-hidden="true">↩</span></a>
+    <details class="shorts-menu" id="shortsMenu">
+      <summary class="shorts-brand" id="shortsMenuToggle" aria-label="روابط ورلدلاين"><span class="brand-mark" aria-hidden="true">W</span><span lang="en"><strong>WRLDLINE</strong><small>SHORTS</small></span></summary>
+      <nav class="shorts-menu-panel" id="shortsMenuLinks" aria-label="روابط ورلدلاين">
+        <a href="about.html" data-en="About" data-ar="عن الموقع">عن الموقع</a>
+        <a href="contact.html" data-en="Contact" data-ar="التواصل">التواصل</a>
+        <a href="privacy.html" data-en="Privacy" data-ar="الخصوصية">الخصوصية</a>
+        <a href="terms.html" data-en="Terms" data-ar="الشروط">الشروط</a>
+        <a href="corrections.html" data-en="Corrections" data-ar="التصحيح">التصحيح</a>
+        <a href="newsletter.html" data-en="Newsletter" data-ar="النشرة">النشرة</a>
+        <button type="button" data-analytics-settings data-en="Privacy settings" data-ar="إعدادات الخصوصية">إعدادات الخصوصية</button>
+      </nav>
+    </details>
     <div class="shorts-tools">
       <button id="shortsLanguage" type="button" class="shorts-tool">English</button>
-      <button id="shortsMusic" type="button" class="shorts-tool shorts-music" aria-pressed="false" aria-label="تشغيل موسيقى التوتر">♫ موسيقى</button>
+      <button id="shortsMusic" type="button" class="shorts-tool shorts-music" aria-pressed="false" aria-label="تشغيل موسيقى الخلفية"><span aria-hidden="true">♫</span> <span id="shortsMusicLabel">الموسيقى</span></button>
       <button id="shortsTheme" type="button" class="shorts-icon" aria-label="تغيير المظهر">☾</button>
     </div>
   </header>
-  <main id="shortsFeed" class="shorts-feed" aria-label="موجز الأخبار العمودي"><h1 style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0">WRLDLINE Shorts — أحدث الأخبار العالمية</h1>
-    <div class="shorts-state"><strong>جارٍ تحميل الأخبار...</strong><span>نجهز لك أحدث التغطيات</span></div>
+  <h1 class="shorts-sr" id="shortsHeading">شورت الأخبار</h1>
+  <main id="shortsFeed" class="shorts-feed" aria-labelledby="shortsHeading" aria-describedby="shortsHint" tabindex="0">
+    <div class="shorts-state shorts-loading"><strong>جارٍ تحميل الأخبار...</strong><span>نجهز لك أحدث التغطيات</span></div>
+    <noscript><div class="shorts-state"><strong>يتطلب تصفح الشورت تفعيل جافاسكربت</strong><a href="/news/">تصفح الأخبار المنشورة</a></div></noscript>
   </main>
-  <div class="shorts-counter" id="shortsCounter" aria-live="polite">— / —</div>
-  <div class="shorts-hint" id="shortsHint">اسحب للأعلى للخبر التالي ↑</div>
-  <script src="shorts.js?v=20261122-bilingual" defer></script>
-<script src="share.js?v=20261113-4" defer></script>
-<footer class="site-policy-footer"><div class="container"><span>© 2026 WRLDLINE NEWS</span><span><a href="about.html">عن الموقع</a><a href="contact.html">التواصل</a><a href="privacy.html">الخصوصية</a><a href="terms.html">الشروط</a><a href="corrections.html">التصحيح</a><a href="newsletter.html">النشرة</a></span></div></footer>
+  <nav class="shorts-dock" id="shortsNavigation" aria-label="التنقل بين الأخبار">
+    <div class="shorts-dock-inner">
+      <button id="shortsPrevious" type="button" aria-disabled="true"><span aria-hidden="true">↑</span> <span id="shortsPreviousLabel">السابق</span></button>
+      <div class="shorts-position"><span id="shortsHint">اسحب للتنقّل</span><span class="shorts-counter" id="shortsCounter" role="status" dir="ltr">— / —</span></div>
+      <button id="shortsNext" type="button" aria-disabled="true"><span id="shortsNextLabel">التالي</span> <span aria-hidden="true">↓</span></button>
+    </div>
+  </nav>
+  <p class="shorts-music-status" id="shortsMusicStatus" role="status" hidden></p>
+  <script src="share.js?v=20261113-4" defer></script>
+  <script src="shorts-soundtrack.js?v=20261122-soundtrack" defer></script>
+  <script src="shorts.js?v=20261122-soundtrack" defer></script>
 <script src="analytics-config.js?v=20261114-1"></script>
 <script src="analytics.js?v=20261114-1" defer></script>
-  <script src="site-enhancements.js?v=20261122-reader" defer></script>
 </body>
 </html>
