@@ -1,6 +1,7 @@
 /* WRLDLINE HISTORY — shared header, footer, icon sprite */
 (() => {
-  const stored = localStorage.getItem("wrldline:language");
+  let stored;
+  try { stored = localStorage.getItem("wrldline:language"); } catch {}
   const urlLang = new URLSearchParams(location.search).get("lang");
   const lang = (urlLang === "ar" || urlLang === "en") ? urlLang : ((stored === "ar" || stored === "en") ? stored : "ar");
   document.documentElement.lang = lang;
@@ -23,6 +24,9 @@
     }
   };
   const t = (key) => copy[lang][key] || copy.ar[key];
+  const other = lang === "ar" ? "en" : "ar";
+  const nextURL = new URL(location.href);
+  nextURL.searchParams.set("lang", other);
   const sprite = `<svg class="wl-sr" aria-hidden="true"><defs>
 <symbol id="i-menu" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M3 6h18M3 12h18M3 18h18"/></symbol>
 <symbol id="i-home" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5V21H3z"/><path d="M9 21v-6h6v6"/></symbol>
@@ -63,7 +67,7 @@
       <a class="wl-nav-link" href="/map.html">${t("monitor")}</a>
       <a class="wl-nav-link" href="dossier/">${t("dossiers")}</a>
       <a class="wl-nav-link" href="dossier/watchlist.html">${t("watchlist")}</a>
-      <a class="wl-nav-link" href="/news/">${lang === "ar" ? "الأرشيف" : "Archive"}</a>
+      <a class="wl-nav-link" href="/news/?lang=${lang}">${lang === "ar" ? "الأرشيف" : "Archive"}</a>
       <a class="wl-nav-link" href="topics.html">${t("topics")}</a>
       <a class="wl-nav-link wl-nav-link--shorts" href="shorts.html">${t("shorts")}</a>
       <a class="wl-nav-link" href="context.html">${t("context")}</a>
@@ -102,6 +106,16 @@
   document.querySelectorAll(".wl-nav-link").forEach(a => {
     if (a.getAttribute("href") === active) { a.classList.add("is-active"); a.setAttribute("aria-current", "page"); }
   });
+  const bar = document.querySelector(".wl-head-actions");
+  if (bar && !document.querySelector('script[src*="language.js"]')) {
+    const link = document.createElement("a");
+    link.className = "wl-account wl-edition-link";
+    link.href = nextURL.href;
+    link.lang = other;
+    link.textContent = other === "en" ? "English" : "العربية";
+    link.addEventListener("click", () => { try { localStorage.setItem("wrldline:language", other); } catch {} });
+    bar.prepend(link);
+  }
   document.addEventListener("wrldline:language", (event) => {
     const next = event && event.detail && event.detail.lang;
     if ((next === "ar" || next === "en") && next !== lang) location.reload();

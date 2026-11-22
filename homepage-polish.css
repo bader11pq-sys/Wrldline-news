@@ -444,3 +444,11 @@ html[data-theme="dark"] .wl-product-link:hover{background:var(--surface-2)}
 .long-article-status button{min-block-size:44px;font:inherit}
 .reader-prose .reader-dense-lines{white-space:pre-line}
 .reader-prose > p:nth-of-type(n+7){content-visibility:auto;contain-intrinsic-size:auto 6em}
+.wl-home #languageButton,.article-editions button{min-height:36px;padding:4px 12px;border:1px solid var(--line-strong);border-radius:7px;color:var(--gold-strong);font-weight:700;white-space:nowrap}
+.wl-home #languageButton{color:#f6dfa9;border-color:#9c8356}
+.wl-home #languageButton:focus-visible,.article-editions button:focus-visible{outline:2px solid var(--gold-strong);outline-offset:3px}
+.article-editions{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.article-editions button[aria-pressed="true"]{border-color:var(--gold-strong);background:var(--surface-2);color:var(--ink)}
+.article-edition-status{margin:8px 0 0;font-size:.84rem;line-height:1.7;color:var(--muted)}
+.article-edition-status:empty{display:none}
+.reader-article-editions{margin-block:16px}

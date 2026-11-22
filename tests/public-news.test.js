@@ -241,7 +241,20 @@ test('modal changes retain legacy access/save/audio/history behavior and only ge
   assert.equal(context.publicArticleURL({ id: id(1), editorialStatus: 'review' }), '');
   assert.equal(context.publicArticleURL({ id: 'bad', editorialStatus: 'published' }), '');
   assert.match(code, /url\.searchParams\.set\("article",id\)/); assert.match(code, /session\?\.access_token/); assert.match(code, /from\("user_saved_articles"\)/);
-  assert.match(code, /Open article page/); assert.match(code, /url:publicArticleURL\(article\)/);
+  assert.match(code, /Open article page/); assert.match(code, /url:url\|\|publicArticleURL\(article\)/);
+});
+
+test('English archive keeps original titles and passes language to article links and pagination', async () => {
+  const rows = Array.from({ length: 55 }, (_, i) => article(i + 1)), worker = await workerFor(fixture(rows));
+  const html = await (await get(worker, '/news/?lang=en')).text();
+  assert.match(html, /<html lang="en" dir="ltr"/);
+  assert.match(html, /<h1>Published news<\/h1>/);
+  assert.match(html, /href="\/news\/" lang="ar">العربية<\/a>/);
+  assert.ok(html.includes(`${ORIGIN}/news/${id(1)}#lang=en" lang="ar"`));
+  assert.match(html, /href="\/news\/\?page=2&amp;lang=en">Next page/);
+  const arabic = await (await get(worker, '/news/?lang=ar')).text();
+  assert.match(arabic, /<html lang="ar" dir="rtl"/);
+  assert.match(arabic, /href="\/news\/\?lang=en" lang="en">English<\/a>/);
 });
 
 test('analytics hooks and server-visible uncertainty exist without trusting legacy confirmed/AI fields', async () => {

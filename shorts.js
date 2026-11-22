@@ -73,7 +73,8 @@
     }
     const rows=await response.json();
     if(!Array.isArray(rows))throw new Error("Invalid public news response");
-    return rows;
+    return rows.map(article => ({ ...article, article_translations: (article.article_translations || []).filter(version =>
+      version.translation_status === "published" && version.translation_source === "editorial") }));
   }
   function mergeRows(rows){
     const known=new Map(stories.map(a=>[String(a.id),a]));let changed=false;
