@@ -8,6 +8,48 @@ const XML_HEAD = '<?xml version="1.0" encoding="UTF-8"?>';
 const SITEMAP_NS = 'xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"';
 const MAX_INDEX_PAGES = 50000;
 const PUBLIC_FIELDS = ["id", "title", "summary", "image_url", "author", "lang", "category", "country", "event_country", "source_language", "source_name", "source_url", "url", "published_at", "is_breaking", "verification", "correction_note", "corrected_at"];
+// ISO 3166-1 alpha-2 values, matching editorial-display.js. Never pass regional
+// pseudo-codes such as 001 or EU to Intl as if they were an event country.
+const EVENT_REGIONS = `
+AD AE AF AG AI AL AM AO AQ AR AS AT AU AW AX AZ BA BB BD BE BF BG BH BI BJ BL BM BN BO BQ
+BR BS BT BV BW BY BZ CA CC CD CF CG CH CI CK CL CM CN CO CR CU CV CW CX CY CZ DE DJ DK DM
+DO DZ EC EE EG EH ER ES ET FI FJ FK FM FO FR GA GB GD GE GF GG GH GI GL GM GN GP GQ GR GS
+GT GU GW GY HK HM HN HR HT HU ID IE IL IM IN IO IQ IR IS IT JE JM JO JP KE KG KH KI KM KN
+KP KR KW KY KZ LA LB LC LI LK LR LS LT LU LV LY MA MC MD ME MF MG MH MK ML MM MN MO MP MQ
+MR MS MT MU MV MW MX MY MZ NA NC NE NF NG NI NL NO NP NR NU NZ OM PA PE PF PG PH PK PL PM
+PN PR PS PT PW PY QA RE RO RS RU RW SA SB SC SD SE SG SH SI SJ SK SL SM SN SO SR SS ST SV
+SX SY SZ TC TD TF TG TH TJ TK TL TM TN TO TR TT TV TW TZ UA UG UM US UY UZ VA VC VE VG VI
+VN VU WF WS YE YT ZA ZM ZW`.trim().split(/\s+/);
+/** @type {Record<string, string[]>} */
+const EVENT_REGION_ALIASES = {
+  AE:["UAE", "U.A.E.", "الإمارات"], CI:["Ivory Coast"], CZ:["Czech Republic"], GB:["UK", "U.K.", "Britain", "بريطانيا"],
+  PS:["Palestine", "State of Palestine", "فلسطين"], RU:["Russian Federation", "روسيا الاتحادية"], SA:["السعودية"],
+  SY:["Syrian Arab Republic", "سورية"], TR:["Turkey"], US:["USA", "U.S.", "U.S.A.", "United States of America", "الولايات المتحدة الأمريكية", "أمريكا"],
+  VN:["Viet Nam"]
+};
+const EVENT_REGION_NAMES = {
+  ar: new Intl.DisplayNames(["ar"], {type:"region", fallback:"none"}),
+  en: new Intl.DisplayNames(["en"], {type:"region", fallback:"none"})
+};
+
+/** @param {unknown} value */
+function countryKey(value) {
+  return text(value, 120).normalize("NFKD").toLowerCase().replace(/[\p{M}\u0640]/gu, "")
+    .replace(/ى/g, "ي").replace(/[.’']/g, "").replace(/\s+/g, " ");
+}
+const EVENT_REGION_LOOKUP = new Map();
+for (const code of EVENT_REGIONS) {
+  for (const name of [EVENT_REGION_NAMES.ar.of(code), EVENT_REGION_NAMES.en.of(code), ...(EVENT_REGION_ALIASES[code] || [])]) {
+    const key = countryKey(name), previous = EVENT_REGION_LOOKUP.get(key);
+    if (key) EVENT_REGION_LOOKUP.set(key, previous === undefined || previous === code ? code : null);
+  }
+}
+/** @param {unknown} value @param {boolean} english */
+function renderEventCountry(value, english) {
+  if (typeof value !== "string") return "";
+  const code = EVENT_REGION_LOOKUP.get(countryKey(value));
+  return code ? EVENT_REGION_NAMES[english ? "en" : "ar"].of(code) || "" : "";
+}
 
 /** @param {unknown} value @param {number} [max] */
 export function text(value, max = 12000) {
@@ -174,16 +216,15 @@ export function renderArticle(article, now, trust = null) {
   if (original.url) schema.isBasedOn = original.url;
   if (text(article.category, 120)) schema.articleSection = text(article.category, 120);
   const correction = text(article.correction_note, 4000);
-  const reportedCountry = text(article.event_country, 120);
-  const eventCountry = /^(?:دولي|غير محدد|unknown|international|world)$/iu.test(reportedCountry) ? "" : reportedCountry;
+  const eventCountry = renderEventCountry(article.event_country, l.en);
   const shareUrl = encodeURIComponent(canonical);
   const shareTitle = encodeURIComponent(title);
   const shareCaption = encodeURIComponent(`${title} — ${description}`);
   const socialShare = `<div class="public-news-social" aria-label="${l.en ? "Share on social networks" : "مشاركة عبر الشبكات"}"><a href="https://wa.me/?text=${shareCaption}%20${shareUrl}" target="_blank" rel="noopener noreferrer">WhatsApp</a><a href="https://twitter.com/intent/tweet?text=${shareTitle}&url=${shareUrl}" target="_blank" rel="noopener noreferrer">X</a><a href="https://t.me/share/url?url=${shareUrl}&text=${shareTitle}" target="_blank" rel="noopener noreferrer">Telegram</a></div>`;
   const body = `<nav class="public-news-breadcrumb" aria-label="${l.en ? "Breadcrumb" : "مسار الصفحة"}"><a href="/news/">${l.news}</a> / ${escapeHTML(text(article.category, 120))}</nav>
 <article data-public-article data-audience-article data-article-id="${article.id}" data-category="${escapeHTML(text(article.category, 120))}" data-share-title="${escapeHTML(title)}" data-share-text="${escapeHTML(description)}" data-share-source="${escapeHTML(original.name)}" data-share-image="${escapeHTML(image)}" data-share-url="${canonical}">
-<p class="public-news-kicker">${escapeHTML([text(article.category, 120), eventCountry].filter(Boolean).join(" · "))}</p>
-<h1>${escapeHTML(title)}</h1><div class="public-news-meta"><span>${l.published}: <time datetime="${article.published_at}">${escapeHTML(dateLabel(article.published_at, lang))}</time></span>${by.length ? `<span>${l.author}: ${escapeHTML(by.join(" · "))}</span>` : ""}${original.name ? `<span>${l.source}: ${escapeHTML(original.name)}</span>` : ""}</div>
+${text(article.category, 120) ? `<p class="public-news-kicker">${escapeHTML(text(article.category, 120))}</p>` : ""}
+<h1>${escapeHTML(title)}</h1><div class="public-news-meta"><span>${l.published}: <time datetime="${article.published_at}">${escapeHTML(dateLabel(article.published_at, lang))}</time></span>${eventCountry ? `<span class="public-news-event-country">${l.en ? "Event country" : "دولة الحدث"}: <bdi>${escapeHTML(eventCountry)}</bdi></span>` : ""}${by.length ? `<span>${l.author}: ${escapeHTML(by.join(" · "))}</span>` : ""}${original.name ? `<span>${l.source}: ${escapeHTML(original.name)}</span>` : ""}</div>
 ${image ? `<figure class="public-news-image"><img src="${escapeHTML(image)}" alt="${escapeHTML(title)}" fetchpriority="high" decoding="async" referrerpolicy="no-referrer"></figure>` : ""}
 <div class="public-news-summary">${summary ? summary.split(/\n\s*\n/).filter(Boolean).map(p => `<p>${escapeHTML(p)}</p>`).join("") : `<p>${l.en ? "A published summary is not available. Consult the original source for the story." : "الملخص المنشور غير متوفر. يُرجى الرجوع إلى المصدر الأصلي للخبر."}</p>`}</div>
 ${(text(article.ai_summary, 1200) || text(article.ai_reader_impact, 900) || text(article.ai_watch_next, 900)) ? `<section class="public-news-intelligence"><h2>${l.reading}</h2>${text(article.ai_summary, 1200) ? `<div><h3>${l.en ? "Analysis" : "القراءة التحليلية"}</h3><p>${escapeHTML(text(article.ai_summary, 1200))}</p></div>` : ""}${text(article.ai_reader_impact, 900) ? `<div><h3>${l.impact}</h3><p>${escapeHTML(text(article.ai_reader_impact, 900))}</p></div>` : ""}${text(article.ai_watch_next, 900) ? `<div><h3>${l.watch}</h3><p>${escapeHTML(text(article.ai_watch_next, 900))}</p></div>` : ""}<small>${l.aiNotice}</small></section>` : ""}

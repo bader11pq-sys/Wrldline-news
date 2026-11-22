@@ -84,6 +84,20 @@ test('missing or unavailable reader-context RPC never blocks the attributed publ
   assert.ok(!html.includes("وش يعني لك؟"));
 });
 
+test('event country is labeled in initial Arabic and English HTML and never falls back to publisher location', async () => {
+  for (const [n, lang, event_country, label, shown] of [[130, 'ar', 'Japan', 'دولة الحدث', 'اليابان'], [131, 'en', 'اليابان', 'Event country', 'Japan'], [134, 'ar', 'Turkey', 'دولة الحدث', 'تركيا']]) {
+    const a = article(n, { lang, event_country, country: 'Publisher country fixture' });
+    const html = await (await get(await workerFor(fixture([a])), '/news/' + a.id)).text();
+    assert.ok(html.includes(`<span class="public-news-event-country">${label}: <bdi>${shown}</bdi></span>`));
+    assert.doesNotMatch(html, /Publisher country fixture/);
+  }
+  for (const event_country of [null, ' ', 'دولي', 'العالم', 'غير معروف', 'Worldwide', 'Unspecified', 'multiple countries', 'XX', 840, 'أوروبا · بحر البلطيق', 'اليمن والسعودية', 'Japan <svg/onload=evil()>']) {
+    const a = article(132, {event_country, country:'Publisher country fixture'});
+    const html = await (await get(await workerFor(fixture([a])), '/news/' + a.id)).text();
+    assert.doesNotMatch(html, /public-news-event-country|Publisher country fixture|<svg\/onload/);
+  }
+});
+
 test('unknown/malformed UUID and unpublished, future, undated or missing records are true noindex 404s', async () => {
   const f = fixture([article(2, { editorial_status: 'review' }), article(3, { editorial_status: 'rejected' }), article(4, { published_at: null }), article(5, { published_at: '2026-11-16T00:00:00Z' })]);
   const worker = await workerFor(f);
