@@ -201,6 +201,17 @@ function validate(raw, file) {
       version: requireString(u, "version", `${where} updates[${i}]`, { max: 20 }),
       note: requireString(u, "note", `${where} updates[${i}]`, { max: 400 }),
     })),
+    readerBrief: raw.readerBrief == null ? null : {
+      reviewedOn: requireISO(raw.readerBrief, "reviewedOn", `${where} readerBrief`),
+      nextOn: requireISO(raw.readerBrief, "nextOn", `${where} readerBrief`),
+      ...Object.fromEntries(["change", "confirmed", "next"].map((key) => {
+        const entry = raw.readerBrief[key];
+        return [key, {
+          text: requireString(entry, "text", `${where} readerBrief.${key}`, { max: 360 }),
+          sourceRefs: requireArray(entry, "sourceRefs", `${where} readerBrief.${key}`).map(String),
+        }];
+      })),
+    },
     corrections: Array.isArray(raw.corrections)
       ? raw.corrections.map((c, i) => ({
           at: requireISO(c, "at", `${where} corrections[${i}]`),
@@ -225,6 +236,13 @@ function validate(raw, file) {
   dossier.narratives.unverified.forEach((n) => checkRefs(n.sourceRefs, "unverified"));
   dossier.context.forEach((c) => checkRefs(c.sourceRefs, "context"));
   dossier.impact.actual.forEach((n) => checkRefs(n.sourceRefs, "impact.actual"));
+  if (dossier.readerBrief) {
+    const b = dossier.readerBrief;
+    if (day(b.reviewedOn) > day(dossier.updatedAt) || day(b.nextOn) < day(b.reviewedOn)) {
+      throw new DossierError(`${where}: تواريخ موجز القارئ لا تتوافق مع تاريخ التحديث أو الموعد المقبل.`);
+    }
+    for (const key of ["change", "confirmed", "next"]) checkRefs(b[key].sourceRefs, `readerBrief.${key}`);
+  }
 
   dossier.timeline.sort((a, b) => Date.parse(a.at) - Date.parse(b.at));
   dossier.updates.sort((a, b) => Date.parse(b.at) - Date.parse(a.at));
@@ -306,7 +324,7 @@ function pageShell({ title, description, canonical, body, jsonLd, extraHead = ""
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Noto+Kufi+Arabic:wght@400;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/dossier.css?v=20261119-1">
+<link rel="stylesheet" href="/dossier.css?v=20261122-coverage">
 <link rel="alternate" type="application/rss+xml" title="ملفات WRLDLINE" href="/dossier/feed.xml">
 ${extraHead}
 <script type="application/ld+json">${jsonLd}</script>
@@ -325,6 +343,16 @@ function renderDossier(d, now) {
   const status = STATUS[d.status];
   const canonical = `${ORIGIN}/dossier/${d.slug}.html`;
   const latest = d.timeline[d.timeline.length - 1];
+  const b = d.readerBrief;
+  const readerBrief = !b ? "" : `<section class="wrap reader-brief" id="reader-brief" aria-labelledby="readerBriefTitle">
+    <div class="reader-brief-head"><h2 id="readerBriefTitle">الملف في ثلاث إجابات</h2>
+    <p>آخر مراجعة للموجز: <time datetime="${day(b.reviewedOn)}">${esc(arabicDate(b.reviewedOn))}</time></p></div>
+    <dl>${[
+      ["change", "ما الذي تغيّر؟", "changed"],
+      ["confirmed", "ما الذي تأكّد؟", "facts"],
+      ["next", "ما الموعد التالي؟", "watch"],
+    ].map(([key, label, target]) => `<div><dt><a href="#${target}">${label}</a></dt><dd>${key === "next" ? `<time datetime="${day(b.nextOn)}">${esc(arabicDate(b.nextOn))}</time> · ` : ""}${esc(b[key].text)}${sourceLinks(b[key].sourceRefs, d.sourceMap)}</dd></div>`).join("")}</dl>
+  </section>`;
 
   const facts = `<dl class="facts">${d.facts.map((f) => `<div><dt>${esc(f.label)}</dt><dd>${esc(f.value)}${sourceLinks(f.sourceRefs, d.sourceMap)}</dd></div>`).join("")}</dl>`;
 
@@ -387,7 +415,7 @@ function renderDossier(d, now) {
       </div>
       <p class="status-note">${esc(d.statusNote)}</p>
     </div>
-  </header>
+  </header>${readerBrief ? `\n\n  ${readerBrief}` : ""}
 
   <div class="wrap dossier-layout">
     <div class="dossier-main">
@@ -485,7 +513,7 @@ function renderDossier(d, now) {
     body,
     jsonLd,
     bodyClass: "dossier-detail",
-    extraHead: `<meta property="article:published_time" content="${attr(d.createdAt)}"><meta property="article:modified_time" content="${attr(d.updatedAt)}"><meta property="article:section" content="ملفات الأحداث">`,
+    extraHead: `<meta property="article:published_time" content="${attr(d.createdAt)}"><meta property="article:modified_time" content="${attr(d.updatedAt)}"><meta property="article:section" content="ملفات الأحداث">${b ? '<link rel="stylesheet" href="/editorial-launch.css?v=20261122-coverage">' : ""}`,
   });
 }
 
@@ -534,6 +562,7 @@ function renderIndex(list, now) {
     <h2>كيف نبني الملف؟</h2>
     <p>نبدأ من مصادر عامة مؤرخة، نفصل وقت الحدث عن وقت نشر المعلومة، ونصنّف كل عبارة: واقعة، تصريح، تقدير، أو ادعاء غير متحقق. لا نملأ الفراغات بالتخمين، ونحفظ سجل التحديثات والتصحيحات في أسفل كل ملف.</p>
     <a href="/about.html">اقرأ المنهجية الكاملة</a>
+    <p><a href="/originals/">من تحرير WRLDLINE: قصص مبنية على وثائق وبيانات</a></p>
     <p class="muted">للمحررين: <a href="/dossier/review.html">طابور مراجعة التحديثات</a> — أداة داخلية غير مفهرسة.</p>
   </section>
 </section>`;

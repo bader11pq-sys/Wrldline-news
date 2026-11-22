@@ -79,6 +79,8 @@ async def main():
         cards = page.locator("#newsGrid .reader-story-link")
         await expect(cards).to_have_count(24)
         await expect(page.locator(".wl-nav-scroll")).to_contain_text("Event files")
+        await expect(page.locator(".editorial-focus")).to_contain_text("Coverage priorities")
+        await expect(page.locator(".editorial-focus")).to_contain_text("Trade and shipping")
         await expect(page.get_by_role("button", name="Load older news")).to_be_enabled()
         if os.environ.get("WRLDLINE_SCREENSHOTS"):
             await page.evaluate("window.scrollTo({top:0,behavior:'instant'})")
