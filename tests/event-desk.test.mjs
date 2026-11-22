@@ -59,6 +59,7 @@ test("a reviewed article ID wins; duplicate IDs fail validation", () => {
   assert.equal(match("Two straits face disruption", {id}, desk.prepare(validated)), "bab-al-mandab-2026");
   custom["hormuz-closure-2026"].articleIds.push(id);
   assert.throws(() => validateEventDesk(custom, dossiers), /duplicate reviewed article ID/);
+  assert.deepEqual(desk.prepare([{...catalog[0], slug:"../another-path"}]), []);
 });
 
 test("the introduction point follows chronology; every individual item and honest provenance remain", () => {

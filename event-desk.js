@@ -31,7 +31,8 @@
       .replace(/[^\p{L}\p{N}]+/gu, " ").trim();
   }
   function prepare(entries) {
-    return (Array.isArray(entries) ? entries : []).filter(d => d && Array.isArray(d.groups)).map(d => ({
+    return (Array.isArray(entries) ? entries : []).filter(d => d && typeof d.slug === "string" &&
+      /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(d.slug) && Array.isArray(d.groups)).map(d => ({
       ...d,
       start: d.from ? Date.parse(d.from) : -Infinity,
       end: d.until ? Date.parse(d.until) : Infinity,

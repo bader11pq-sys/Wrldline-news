@@ -670,8 +670,9 @@ function renderEventStack(prior,dossier,items,cardFor){
   el.dataset.eventSlug=dossier.slug;
   el.dataset.languageManaged="";
   el.setAttribute("aria-labelledby","event-title-"+dossier.slug);
-  el.innerHTML='<div class="event-stack-head"><div><span class="content-badge"></span><h3 id="event-title-'+escapeHTML(dossier.slug)+'"></h3></div><a class="event-stack-link" hreflang="ar"></a></div><details><summary></summary><div class="event-stack-items"></div></details>';
-  el.querySelector(".event-stack-link").href=dossier.url;
+  el.innerHTML='<div class="event-stack-head"><div><span class="content-badge"></span><h3></h3></div><a class="event-stack-link" hreflang="ar"></a></div><details><summary></summary><div class="event-stack-items"></div></details>';
+  el.querySelector("h3").id="event-title-"+dossier.slug;
+  el.querySelector(".event-stack-link").href="/dossier/"+encodeURIComponent(dossier.slug)+".html";
  }
  el.querySelector("h3").textContent=dossier.title[state.lang];
  el.querySelector(".content-badge").textContent=eventDesk.label("dossier",state.lang);
@@ -838,7 +839,7 @@ function renderRelatedCoverage(host, current){
  section.append(title);
  if(dossier){
   const link=document.createElement("a");
-  link.href=dossier.url;link.hreflang="ar";
+  link.href="/dossier/"+encodeURIComponent(dossier.slug)+".html";link.hreflang="ar";
   link.textContent=ui("افتح ملف الحدث: ","Open the event dossier (Arabic): ")+dossier.title[state.lang];
   section.append(link);
  }
