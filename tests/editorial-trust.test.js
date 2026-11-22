@@ -87,20 +87,26 @@ function adminListHarness(metadataError=false){
  const {doc}=dom(),elements=new Map(),selects=[],rpcCalls=[];
  doc.getElementById=id=>{if(!elements.has(id))elements.set(id,new Element("div",doc));return elements.get(id);};
  const story={id:ID,title:"Fixture story",editorial_status:"published",country:"yemen",event_country:"بولندا"};
- const db={from(table){assert.equal(table,"articles");return {select(columns){selects.push(columns);return {order(){return this;},limit(n){assert.equal(n,200);return Promise.resolve({data:[story],error:null});}};}};},async rpc(name,args){rpcCalls.push({name,args});return metadataError?{error:{message:"Editor/admin required"}}:{data:[{id:ID,trust_review_note:"PRIVATE_NOTE",human_translation_note:"PRIVATE_TRANSLATION_NOTE"}],error:null};}};
- const context={db,$:doc.getElementById,t:(ar,en)=>en,cachedArticles:[],trustSchemaAvailable:false,editorialExtrasAvailable:false,renderArticleList:()=>{},Map,window:{WLEditorial:require("../editorial-display.js")}};
+ const db={from(table){assert.equal(table,"articles");return {select(columns){selects.push(columns);return {order(){return this;},eq(column,id){assert.equal(column,"id");assert.equal(id,ID);return this;},single(){return Promise.resolve({data:{agency_name:"Agency"},error:null});},limit(n){assert.equal(n,200);return Promise.resolve({data:[story],error:null});}};}};},async rpc(name,args){rpcCalls.push({name,args});return metadataError?{error:{message:"Editor/admin required"}}:{data:[{id:ID,trust_review_note:"PRIVATE_NOTE",human_translation_note:"PRIVATE_TRANSLATION_NOTE"}],error:null};}};
+ const context={db,$:doc.getElementById,t:(ar,en)=>en,cachedArticles:[],trustSchemaAvailable:false,editorialExtrasAvailable:false,renderArticleList:()=>{},activeArticle:{...story},editorLoadVersion:1,loadTrustEditor:()=>{},Map,window:{WLEditorial:require("../editorial-display.js")}};
  vm.createContext(context);
  const admin=fs.readFileSync(require.resolve("../admin.js"),"utf8");
+ vm.runInContext(admin.match(/^const (?:listCore|editorExtra)="[^"]+";/gm).join("\n"),context);
  vm.runInContext(admin.slice(admin.indexOf("async function loadArticles(){"),admin.indexOf("async function classifyPending(){")),context);
+ vm.runInContext(admin.slice(admin.indexOf("async function loadTrustContext("),admin.indexOf('$("articleForm").addEventListener("submit"')),context);
  return {context,selects,rpcCalls};
 }
-test("admin list uses safe table projection and bounded editor metadata RPC",async()=>{
+test("admin list skips bodies and private notes; opening a single story requests bounded editor notes",async()=>{
  const {context,selects,rpcCalls}=adminListHarness();
  await context.loadArticles();
- assert.equal(context.trustSchemaAvailable,true);
+ assert.equal(rpcCalls.length,0);
+ assert.equal(selects.length,1);assert.doesNotMatch(selects[0],/\bsummary\b/);
  assert.equal(context.cachedArticles[0].country,"بولندا");
- assert.equal(context.cachedArticles[0].trust_review_note,"PRIVATE_NOTE");
- assert.equal(context.cachedArticles[0].human_translation_note,"PRIVATE_TRANSLATION_NOTE");
+ assert.equal(context.cachedArticles[0].trust_review_note,undefined);
+ await context.loadTrustContext(ID,1);
+ assert.equal(context.trustSchemaAvailable,true);
+ assert.equal(context.activeArticle.trust_review_note,"PRIVATE_NOTE");
+ assert.equal(context.activeArticle.human_translation_note,"PRIVATE_TRANSLATION_NOTE");
  assert.equal(rpcCalls.length,1);assert.equal(rpcCalls[0].name,"get_editor_article_trust");
  assert.deepEqual(Array.from(rpcCalls[0].args.p_article_ids),[ID]);
  for(const columns of selects)assert.doesNotMatch(columns,/trust_review_note|trust_reviewed_by|human_translation_note|human_translation_reviewed_by|\*/);
@@ -108,9 +114,10 @@ test("admin list uses safe table projection and bounded editor metadata RPC",asy
 test("admin metadata rejection disables trust editing and preserves core list",async()=>{
  const {context,selects,rpcCalls}=adminListHarness(true);
  await context.loadArticles();
+ await context.loadTrustContext(ID,1);
  assert.equal(context.trustSchemaAvailable,false);assert.equal(context.cachedArticles[0].title,"Fixture story");
- assert.equal(context.cachedArticles[0].trust_review_note,undefined);assert.equal(rpcCalls.length,1);
- assert.equal(selects.length,3);assert.doesNotMatch(selects[1],/trust_|human_translation/);
+ assert.equal(context.activeArticle.trust_review_note,undefined);assert.equal(rpcCalls.length,1);
+ assert.equal(selects.length,2);assert.doesNotMatch(selects[0],/trust_|human_translation|\bsummary\b/);
  for(const columns of selects)assert.doesNotMatch(columns,/trust_review_note|trust_reviewed_by|human_translation_note|human_translation_reviewed_by|\*/);
 });
 test("all current browser article and embedded translation projections fit safe grants",()=>{
@@ -145,12 +152,14 @@ test("all current browser article and embedded translation projections fit safe 
  assert.match(shorts,/\/rest\/v1\/rpc\/public_home_news_recent_v3/,"Shorts must use the allowlisted public feed RPC");
  assert.doesNotMatch(shorts,/\/rest\/v1\/articles\?/,"Shorts must not SELECT directly from public.articles");
  const admin=read("admin.js");
- check(admin.match(/const core="([^"]+)"/)[1],"admin.js core");
- check(admin.match(/const trust="([^"]+)"/)[1],"admin.js safe trust");
- check(admin.match(/const extra=await db\.from\("articles"\)\.select\("([^"]+)"/)[1],"admin.js optional extras");
- const review=admin.match(/db\.from\("article_translations"\)\.select\("([^"]+)"/)[1];
- const embedded=review.match(/article:articles\(([^)]+)\)/)[1];check(embedded,"admin.js review parent");
- for(const column of review.replace(/,article:articles\([^)]+\)/,"").split(","))assert.ok(translations.has(column),"admin.js review "+column);
+ check(admin.match(/const listCore="([^"]+)"/)[1],"admin.js core");
+ check(admin.match(/const columns="([^"]+)"/)[1],"admin.js safe trust");
+ check(admin.match(/const editorExtra="([^"]+)"/)[1],"admin.js optional extras");
+ check("summary","admin.js single story");
+ for(const match of admin.matchAll(/db\.from\("article_translations"\)\.select\("([^"]+)"/g)){
+  const review=match[1],embedded=review.match(/article:articles\(([^)]+)\)/)[1];check(embedded,"admin.js review parent");
+  for(const column of review.replace(/,article:articles\([^)]+\)/,"").split(","))assert.ok(translations.has(column),"admin.js review "+column);
+ }
  for(const privateColumn of ["trust_review_note","trust_reviewed_by","human_translation_note","human_translation_reviewed_by"])assert.equal(articles.has(privateColumn),false);
  for(const privateColumn of ["human_review_note","reviewed_by"])assert.equal(translations.has(privateColumn),false);
 });

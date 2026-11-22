@@ -435,3 +435,12 @@ html[data-theme="dark"] .wl-product-link:hover{background:var(--surface-2)}
  .reader-article .article-actions .outline-button{flex:1 1 8.4rem}
 }
 @media(prefers-reduced-motion:reduce){.wl-home #articleModal.article-reading-mode{scroll-behavior:auto}}
+.reader-prose .reader-contents{border:1px solid var(--line);border-radius:10px;background:var(--surface-2);padding:0 14px;color:var(--ink);font-size:.9em}
+.reader-contents > summary{min-block-size:44px;padding-block:7px;cursor:pointer;font-weight:700}
+.reader-contents ol{margin:0 0 .75em;padding-inline-start:1.3em}
+.reader-contents a,.long-article-status button{color:var(--gold-strong);text-decoration:underline;text-underline-offset:.24em}
+.reader-prose h2[id]{scroll-margin-block-start:65px}
+.long-article-status{margin-block:14px 0;color:var(--muted);font-size:.85rem;line-height:1.8}
+.long-article-status button{min-block-size:44px;font:inherit}
+.reader-prose .reader-dense-lines{white-space:pre-line}
+.reader-prose > p:nth-of-type(n+7){content-visibility:auto;contain-intrinsic-size:auto 6em}

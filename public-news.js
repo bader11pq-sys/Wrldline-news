@@ -8,13 +8,14 @@
   if (summary) {
     const text = [...summary.querySelectorAll(":scope > p")].map(p => p.textContent).join("\n\n");
     if (text) {
-      import("/reader-prose.js?v=20261122-reading2").then(() => {
-        if (!window.WLReaderProse) return;
-        window.WLReaderProse.renderInto(summary, text, {
-          lang: document.documentElement.lang,
-          editorial: /WRLDLINE/i.test(article.dataset.shareSource || "")
+      Promise.all([
+        import("/reader-prose.js?v=20261122-longread1"),
+        import("/public-article-body.js?v=20261122-longread1")
+      ]).then(() => {
+        window.WLPublicArticleBody.enhance(summary, {
+          id: article.dataset.articleId, excerpt: text, english: en,
+          options: { lang: document.documentElement.lang, editorial: /WRLDLINE/i.test(article.dataset.shareSource || "") }
         });
-        summary.classList.add("is-formatted");
       }).catch(() => { /* The server-rendered text remains readable without enhancement. */ });
     }
   }

@@ -14,6 +14,8 @@
     if (line.length <= longParagraph) return [line];
     let boundaries;
     try {
+      // Avoid very large segmentation inputs in a pasted wall of text.
+      if (line.length > 8000) throw new Error("Use linear sentence scan");
       const splitter = new Intl.Segmenter(lang, { granularity: "sentence" });
       boundaries = Array.from(splitter.segment(line), part => part.index)
         .filter(index => index > 0 && /\s/u.test(line[index - 1]));
@@ -62,9 +64,16 @@
   function renderInto(target, value, options) {
     const doc = target.ownerDocument;
     const fragment = doc.createDocumentFragment();
-    for (const block of blocks(value, options)) {
+    const text = String(value ?? "");
+    // Extremely short, numerous lines should not create hundreds of thousands of DOM nodes.
+    const dense = text.length > 14000 && (text.match(/\n/g)?.length ?? 0) > 6000;
+    const rows = dense ? denseBlocks(text) : blocks(text, options);
+    const headings = [];
+    const prefix = target.closest?.("dialog") ? "wl-reader-section-" : "wl-story-section-";
+    for (const block of rows) {
       const el = doc.createElement(block.type === "heading" ? "h2" : block.type === "list" ? "ul" : "p");
       el.dir = "auto";
+      if (dense && block.type === "paragraph") el.className = "reader-dense-lines";
       if (block.type === "list") {
         for (const text of block.items) {
           const li = doc.createElement("li");
@@ -75,9 +84,58 @@
       } else {
         el.textContent = block.text;
       }
+      if (options?.contents && block.type === "heading" && headings.length < 100) {
+        el.id = prefix + (headings.length + 1);
+        headings.push(el);
+      }
       fragment.append(el);
     }
+    if (headings.length >= 3 && String(value).length >= 3500) {
+      const menu = doc.createElement("details");
+      menu.className = "reader-contents";
+      const label = doc.createElement("summary");
+      label.textContent = options.english ? "In this article" : "في هذا المقال";
+      const list = doc.createElement("ol");
+      for (const heading of headings) {
+        const li = doc.createElement("li");
+        const a = doc.createElement("a");
+        a.href = "#" + heading.id;
+        a.dir = "auto";
+        a.textContent = heading.textContent;
+        a.addEventListener("click", event => {
+          event.preventDefault();
+          heading.tabIndex = -1;
+          heading.focus({ preventScroll: true });
+          heading.scrollIntoView({ block: "start" });
+        });
+        li.append(a);
+        list.append(li);
+      }
+      menu.append(label, list);
+      fragment.prepend(menu);
+    }
     target.replaceChildren(fragment);
+  }
+
+  function denseBlocks(text) {
+    const result = [];
+    let lines = [];
+    function flush() {
+      if (lines.length) result.push({ type: "paragraph", text: lines.join("\n") });
+      lines = [];
+    }
+    for (const line of text.split(/\r\n?|\n/)) {
+      const marked = line.trim().match(heading);
+      if (marked) {
+        flush();
+        result.push({ type: "heading", text: marked[1] });
+      } else {
+        lines.push(line);
+        if (lines.length === 120) flush();
+      }
+    }
+    flush();
+    return result;
   }
 
   return { blocks, renderInto };

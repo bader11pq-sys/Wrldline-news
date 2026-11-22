@@ -38,6 +38,14 @@ test("preserves mixed-direction text, punctuation and nonbreaking characters", (
   assert.deepEqual(blocks(text), [{ type: "paragraph", text }]);
 });
 
+test("a million-character editorial body retains its last sentence", () => {
+  const piece = "سطر في المقال الطويل يجمع معلومات إضافية مع تفاصيل أخرى. ";
+  const text = piece.repeat(Math.floor(999950 / piece.length)) + "نهاية النص لا تختفي.";
+  const result = blocks(text);
+  assert.ok(result.length > 100);
+  assert.equal(result.map(b => b.text).join(" "), text);
+});
+
 test("builds only allowed DOM nodes and writes all author strings as text", () => {
   function node(tag) {
     return { tag, children: [], append(child) { this.children.push(child); } };
@@ -51,4 +59,17 @@ test("builds only allowed DOM nodes and writes all author strings as text", () =
   assert.equal(target.children[1].textContent, "<img src=x onerror=alert(1)>");
   assert.equal(target.children[2].children[0].textContent, "<script>text</script>");
   assert.ok(target.children.every(n => n.dir === "auto"));
+});
+
+test("dense text keeps authored headings and contents without one DOM node per line", () => {
+  const { JSDOM } = require("jsdom");
+  const dom = new JSDOM("<article></article>");
+  try {
+    const host = dom.window.document.querySelector("article");
+    const lineGroup = "سطر قصير\n".repeat(3100);
+    renderInto(host, `## البداية\n${lineGroup}## الوسط\n${lineGroup}## الخاتمة\nآخر سطر`, { contents: true });
+    assert.deepEqual([...host.querySelectorAll(".reader-contents a")].map(a => a.textContent), ["البداية","الوسط","الخاتمة"]);
+    assert.ok(host.childElementCount < 70);
+    assert.ok(host.textContent.endsWith("آخر سطر"));
+  } finally { dom.window.close(); }
 });

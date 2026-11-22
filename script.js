@@ -126,6 +126,14 @@ document.addEventListener("DOMContentLoaded", () => {
   loadPersonalizationSDK();
   setInterval(()=>{if(!document.hidden&&Date.now()-state.lastFetchAt>=90000)fetchNews();},30000);
   setInterval(()=>{if(!document.hidden)updateBreaking();},15000);
+  if(typeof BroadcastChannel==="function"){
+   const channel=new BroadcastChannel("wrldline:publication");
+   channel.addEventListener("message",event=>{
+    if(event.data?.type!=="published")return;
+    state.lastFetchAt=0;
+    if(!document.hidden)void fetchNews();
+   });
+  }
   if(document.readyState==="complete")void registerServiceWorker();
   else window.addEventListener("load",registerServiceWorker,{once:true});
   setupAppInstall();
@@ -629,7 +637,8 @@ function wlReadingTime(a){
  const words=text.split(/\s+/).filter(Boolean).length;
  const mins=Math.max(1,Math.round(words/180));
  const number=new Intl.NumberFormat(state.lang==="ar"?"ar-SA":"en").format(mins);
- return number+ui(" د"," min");
+ const isExcerpt=window.WLPublicArticleBody?.mayBeClipped(a.summary);
+ return number+(isExcerpt?"+":"")+ui(" د"," min");
 }
 function wlSaveMarkup(a){
  const saved=state.saved.has(a.id);
@@ -846,7 +855,7 @@ function openArticle(id,updateUrl=true,returnFocus){
  const a=state.articleById?.get(id)||state.articles.find(x=>x.id===id);if(!a)return;
  const socialURL=encodeURIComponent(publicArticleURL(a)||("https://al-ghaib.us.ci/news/"+a.id));
  const socialTitle=encodeURIComponent(a.title||"WRLDLINE");
- const socialCaption=encodeURIComponent((a.title||"WRLDLINE")+" — "+(a.summary||""));
+ const socialCaption=encodeURIComponent((a.title||"WRLDLINE")+" — "+(a.summary||"").slice(0,320));
  const socialMarkup='<a class="outline-button" target="_blank" rel="noopener noreferrer" href="https://wa.me/?text='+socialCaption+'%20'+socialURL+'">WhatsApp</a><a class="outline-button" target="_blank" rel="noopener noreferrer" href="https://twitter.com/intent/tweet?text='+socialTitle+'&url='+socialURL+'">X</a><a class="outline-button" target="_blank" rel="noopener noreferrer" href="https://t.me/share/url?url='+socialURL+'&text='+socialTitle+'">Telegram</a>';
  if(updateUrl){const url=new URL(location.href);url.searchParams.set("article",id);try{history.pushState({article:id},"",url);}catch{}}
  track("view_article",{article_id:a.id,content_type:a.contentType,category:a.cat,source_domain:sourceDomain(a.sourceURL),has_source_link:!!a.sourceURL});
@@ -877,7 +886,10 @@ function openArticle(id,updateUrl=true,returnFocus){
  const prose=host.querySelector(".reader-prose");
  const options={lang:a.hasTranslation?state.lang:a.sourceLanguage,editorial:/WRLDLINE/i.test(a.src||"")};
  if(options.lang)prose.lang=options.lang;
- if(window.WLReaderProse)window.WLReaderProse.renderInto(prose,a.summary,options);
+ if(window.WLPublicArticleBody&&window.WLReaderProse)window.WLPublicArticleBody.enhance(prose,{
+  id:a.id,excerpt:a.summary,translation:a.hasTranslation?state.lang:null,options,english:state.lang==="en"
+ });
+ else if(window.WLReaderProse)window.WLReaderProse.renderInto(prose,a.summary,options);
  else{prose.classList.add("is-plain");prose.dir="auto";prose.textContent=a.summary;}
  document.getElementById("modalClose").addEventListener("click",closeArticle);
  document.getElementById("readerTextSize").addEventListener("click",event=>{
