@@ -51,3 +51,6 @@ do $$ begin
 end $$;
 SQL
 echo "editorial-trust: isolated database checks, migration reapplication and absent optional tables passed"
+"${PSQL[@]}" -c "create database editorial_metadata;" >/dev/null
+"${PSQL[@]}" -d editorial_metadata -f "$ROOT/tests/editorial-metadata.sql"
+echo "editorial-metadata: publisher country, category, format, audit scope and editor precedence passed"

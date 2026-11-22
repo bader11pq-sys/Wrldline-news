@@ -1,35 +1,25 @@
+import { isPromotion, providerContentType, providerSourceCountry, providerTopic } from "../_shared/editorial-metadata.ts";
+import { resolveSourceLanguage, TAXONOMY_VERSION } from "../_shared/taxonomy.ts";
+import { resolveSupabaseServiceKey, serviceApiHeaders } from "../_shared/service-key.mjs";
+
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL") || "https://vmaxbnogmmfyrcucapnq.supabase.co";
-const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || Deno.env.get("SUPABASE_SECRET_KEY") || "";
+const SERVICE_KEY = resolveSupabaseServiceKey({
+  SUPABASE_SECRET_KEY:Deno.env.get("SUPABASE_SECRET_KEY"),
+  SUPABASE_SECRET_KEYS:Deno.env.get("SUPABASE_SECRET_KEYS"),
+  SUPABASE_SERVICE_ROLE_KEY:Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")
+}) || "";
 const NEWSDATA_KEY = Deno.env.get("NEWSDATA_API_KEY") || "";
-const DB_HEADERS = { apikey: SERVICE_KEY, Authorization: "Bearer " + SERVICE_KEY, "Content-Type": "application/json" };
+const DB_HEADERS = serviceApiHeaders(SERVICE_KEY);
 const CATEGORY_BATCHES = [
   ["politics","sports","business","technology","health"],
   ["world","entertainment","crime","science","environment"],
   ["domestic","education","lifestyle","food","tourism"],
   ["top","other","politics","sports","business"]
 ];
-function mapCategory(categories: unknown): string {
-  const values = Array.isArray(categories) ? categories : (typeof categories === "string" ? [categories] : []);
-  const set = new Set(values.map((x:any)=>String(x).toLowerCase()));
-  if (set.has("sports")) return "sports";
-  if (set.has("politics")) return "politics";
-  if (set.has("business")) return "economy";
-  if (set.has("technology")) return "tech";
-  if (set.has("health")) return "health";
-  if (set.has("entertainment")) return "culture";
-  if (set.has("crime")) return "security";
-  if (set.has("world") || set.has("domestic") || set.has("top")) return "world";
-  if (set.has("science")) return "tech";
-  return "world";
-}
-function normalizeLang(value: unknown): string {
-  const s=String(value||"").toLowerCase();
-  if(s==="arabic"||s.startsWith("ar")) return "ar";
-  if(s==="english"||s.startsWith("en")) return "en";
-  return s.slice(0,2)||"en";
-}
 function validRecentDate(value: unknown): string|null {
-  const d=new Date(String(value||""));
+  const raw=String(value||"").trim();
+  // NewsData can supply a UTC SQL-style timestamp without a suffix.
+  const d=new Date(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/.test(raw)?raw.replace(" ","T")+"Z":raw);
   if(Number.isNaN(d.getTime())) return null;
   const age=Date.now()-d.getTime();
   if(age < -300000 || age > 48*3600000) return null;
@@ -77,18 +67,24 @@ async function syncNews() {
     language:"ar,en",removeduplicate:"1"
   });
   const raw=Array.isArray(body.results)?body.results:[];
-  const parsedRows=raw.filter((item:any)=>item && item.duplicate!==true && item.link && item.title && validRecentDate(item.pubDate)).map((item:any)=>{
+  const parsedRows=raw.filter((item:any)=>item && item.duplicate!==true && item.article_id && /^https?:\/\/[^/@\s]+(?:[/?#][^\s]*)?$/i.test(String(item.link||"")) && item.title && validRecentDate(item.pubDate)).map((item:any)=>{
     const cats=Array.isArray(item.category)?item.category:(item.category?[item.category]:[]);
+    const title=String(item.title).slice(0,500);
+    const summary=String(item.description||item.content||"").slice(0,5000);
+    const language=resolveSourceLanguage(item.language,title+" "+summary);
+    const category=providerTopic(cats);
+    const promotion=isPromotion(title);
+    const contentType=providerContentType(item.datatype,title);
     let publisherUrl=String(item.source_url||"");
     if(!publisherUrl) { try { publisherUrl=new URL(item.link).origin; } catch {} }
     return {
       url:String(item.link).slice(0,2000),guid:item.article_id||null,
       newsdata_article_id:item.article_id||null,
-      title:String(item.title).slice(0,500),
-      summary:String(item.description||item.content||"").slice(0,5000),
+      title,summary,
       image_url:item.image_url||null,author:item.creator||null,
-      lang:normalizeLang(item.language),
-      category:mapCategory(cats),newsdata_categories:cats,
+      lang:language.language,source_language:language.language,language_detection:language.detection,
+      category,newsdata_categories:cats,content_type:contentType,
+      taxonomy_version:TAXONOMY_VERSION,classification_reason:category==="uncategorized"?"newsdata_topic_unspecified":"newsdata_provider_topic",
       newsdata_ai_tags:Array.isArray(item.ai_tag)?item.ai_tag:(item.ai_tag?[item.ai_tag]:[]),
       newsdata_keywords:Array.isArray(item.keywords)?item.keywords:[],
       newsdata_ai_summary:item.ai_summary||null,
@@ -100,21 +96,21 @@ async function syncNews() {
       newsdata_sentiment:item.sentiment||null,
       newsdata_datatype:item.datatype||null,
       newsdata_fetched_at:item.fetched_at||new Date().toISOString(),
-      country:Array.isArray(item.country)?String(item.country[0]||"غير محدد"):String(item.country||"غير محدد"),
+      source_country:providerSourceCountry(item.country),country:null,event_country:null,
       source_name:String(item.source_name||"NewsData.io").slice(0,180),
       source_url:publisherUrl||"https://newsdata.io",
       verification:"unconfirmed",published_at:validRecentDate(item.pubDate),
-      editorial_status:"published",
-      // Leave ai_classification_status to the database default (pending). This is an ingest,
-      // not an AI classification; omission also preserves existing classifications on upsert.
-      is_breaking:/^(\s|[\[({])*(breaking|just in|عاجل|نبأ عاجل)/i.test(String(item.title))
+      editorial_status:promotion?"review":"published",
+      // A provider headline alone is not enough for an urgent alert, especially
+      // when the timestamp shows that the story arrived after the news window.
+      is_breaking:false
     };
   });
   const rows=[...new Map(parsedRows.map((item:any)=>[item.url,item])).values()];
   let saved=0;
   if(rows.length) {
-    const response=await dbRequest("articles?on_conflict=url",{method:"POST",headers:{"Prefer":"resolution=merge-duplicates,return=representation"},body:JSON.stringify(rows)});
-    if(!response.ok) throw new Error("Database upsert HTTP "+response.status+": "+(await response.text()).slice(0,300));
+    const response=await dbRequest("articles?on_conflict=url",{method:"POST",headers:{"Prefer":"resolution=ignore-duplicates,return=representation"},body:JSON.stringify(rows)});
+    if(!response.ok) throw new Error("Database insert HTTP "+response.status+": "+(await response.text()).slice(0,300));
     const returned=await response.json().catch(()=>[]);
     saved=Array.isArray(returned)?returned.length:rows.length;
   }
@@ -129,7 +125,7 @@ async function discoverSources() {
     return {
       source_id:String(id),source_name:String(x.source_name||x.name||x.domain||id),
       source_url:x.source_url||x.url||(String(id).includes(".")?"https://"+id:null),
-      country:Array.isArray(x.country)?x.country[0]:(x.country||null),
+      country:providerSourceCountry(x.country),
       language:Array.isArray(x.language)?x.language[0]:(x.language||null),
       categories:Array.isArray(x.category)?x.category:(Array.isArray(x.categories)?x.categories:(x.category?[x.category]:[])),
       updated_at:new Date().toISOString()
