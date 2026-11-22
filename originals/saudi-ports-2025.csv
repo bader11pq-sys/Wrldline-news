@@ -1,0 +1,5 @@
+year,source_table,metric,port,volume,published_total
+2025,4-1,inbound_containers,King Abdulaziz Port in Dammam,1137280,1953780
+2025,4-1,inbound_containers,Jeddah Islamic Port,719243,1953780
+2025,3-1,handled_teu,King Abdulaziz Port in Dammam,2581213,9080153
+2025,3-1,handled_teu,Jeddah Islamic Port,4297926,9080153

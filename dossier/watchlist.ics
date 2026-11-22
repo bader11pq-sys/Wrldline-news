@@ -8,7 +8,7 @@ X-WR-CALDESC:مواعيد ومؤشرات من ملفات الأحداث الحي
 X-WR-TIMEZONE:Asia/Riyadh
 BEGIN:VEVENT
 UID:bab-al-mandab-2026-watch-2@wrldline
-DTSTAMP:20261119T100000Z
+DTSTAMP:20261122T194800Z
 DTSTART;VALUE=DATE:20261125
 DTEND;VALUE=DATE:20261126
 SUMMARY:[تقديري] خدمة MSC الجديدة بين شمال الهند والبحر الأحمر
@@ -19,17 +19,17 @@ X-WRLDLINE-APPROXIMATE:TRUE
 END:VEVENT
 BEGIN:VEVENT
 UID:opec-plus-december-2026-watch-0@wrldline
-DTSTAMP:20261119T100000Z
+DTSTAMP:20261122T194800Z
 DTSTART;VALUE=DATE:20261129
 DTEND;VALUE=DATE:20261130
-SUMMARY:اجتماع أوبك+ في 29 نوفمبر
-DESCRIPTION:هو القرار الحاسم لمستوى إنتاج يناير، والسوق ينتظره أكثر من بيان نوفمبر.\nالموعد كما ورد في الملف: 29 نوفمبر 2026\nالملف: https://al-ghaib.us.ci/dossier/opec-plus-december-2026.html
+SUMMARY:اجتماع الدول السبع والاجتماع الوزاري الأوسع لأوبك+
+DESCRIPTION:نراجع البيانين بشكل منفصل لمعرفة ما إذا صدر قرار للإنتاج بعد ديسمبر أو تعدّل جدول المتابعة. إعلان الموعد لا يعني صدور قرار.\nالموعد كما ورد في الملف: 29 نوفمبر 2026\nالملف: https://al-ghaib.us.ci/dossier/opec-plus-december-2026.html
 URL:https://al-ghaib.us.ci/dossier/opec-plus-december-2026.html#watch
 CATEGORIES:الطاقة\,الاقتصاد\,الأسواق\,التجارة
 END:VEVENT
 BEGIN:VEVENT
 UID:opec-plus-december-2026-watch-1@wrldline
-DTSTAMP:20261119T100000Z
+DTSTAMP:20261122T194800Z
 DTSTART;VALUE=DATE:20261201
 DTEND;VALUE=DATE:20261202
 SUMMARY:[تقديري] علاوات أرامكو لشهر يناير
@@ -40,7 +40,7 @@ X-WRLDLINE-APPROXIMATE:TRUE
 END:VEVENT
 BEGIN:VEVENT
 UID:opec-plus-december-2026-watch-2@wrldline
-DTSTAMP:20261119T100000Z
+DTSTAMP:20261122T194800Z
 DTSTART;VALUE=DATE:20261215
 DTEND;VALUE=DATE:20261216
 SUMMARY:[تقديري] تقرير أوبك الشهري وتقرير وكالة الطاقة الدولية
@@ -51,7 +51,7 @@ X-WRLDLINE-APPROXIMATE:TRUE
 END:VEVENT
 BEGIN:VEVENT
 UID:qatarenergy-lng-2026-watch-1@wrldline
-DTSTAMP:20261119T100000Z
+DTSTAMP:20261122T194800Z
 DTSTART;VALUE=DATE:20270101
 DTEND;VALUE=DATE:20270102
 SUMMARY:[تقديري] بدء إنتاج مشروع Golden Pass الأمريكي

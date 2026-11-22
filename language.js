@@ -627,6 +627,13 @@ Object.assign(AR_EN,{
  "ورلدلاين نيوز — الصفحة الرئيسية":"WRLDLINE News home","تاريخ اليوم":"Today's date",
  "بانتظار الأخبار":"Waiting for news","تسجيل دخول":"Sign in","العربية / English":"Arabic / English"
 });
+Object.assign(AR_EN,{
+ "أولويات التغطية":"Coverage priorities","من تحرير WRLDLINE":"WRLDLINE Originals","الطاقة":"Energy",
+ "تابع قرار أوبك+":"Follow the OPEC+ decision","التجارة والشحن":"Trade and shipping",
+ "تحليل بيانات الموانئ السعودية":"Saudi ports: data analysis (Arabic)",
+ "القرارات العالمية وأثرها على الخليج":"Global decisions and the Gulf",
+ "المواعيد والقرارات التي نتابعها":"Dates and decisions we are watching"
+});
 const original=new WeakMap();
 function translateValue(value,lang){const trimmed=String(value??"").trim();if(!trimmed)return value;if(lang==="en"){if(AR_EN[trimmed])return String(value).replace(trimmed,AR_EN[trimmed]);const keys=Object.keys(AR_EN).filter(k=>trimmed.startsWith(k)&&k.length>2&&(k.endsWith(":")||k.endsWith("،")||k==="عضوية Plus فعالة حتى")).sort((a,b)=>b.length-a.length);if(keys.length){const k=keys[0];return String(value).replace(trimmed,AR_EN[k]+trimmed.slice(k.length));}return value;}if(/[\u0600-\u06FF]/.test(trimmed))return value;if(reverseMap[trimmed])return String(value).replace(trimmed,reverseMap[trimmed]);const keys=Object.keys(reverseMap).filter(k=>trimmed.startsWith(k)&&k.length>2&&(k.endsWith(":")||k.endsWith(","))).sort((a,b)=>b.length-a.length);if(keys.length){const k=keys[0];return String(value).replace(trimmed,reverseMap[k]+trimmed.slice(k.length));}return value;}
 const reverseMap=Object.fromEntries(Object.entries(AR_EN).map(([a,e])=>[e,a]));

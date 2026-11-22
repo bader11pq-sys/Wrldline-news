@@ -100,6 +100,48 @@ test("rendered dossier exposes the required product sections", () => {
   assert.match(html, /rel="canonical"/);
 });
 
+test("the optional reader brief has three source-linked answers before the dossier body", () => {
+  const pilot = dossiers.find((d) => d.slug === "opec-plus-december-2026");
+  const now = Math.max(...dossiers.map((d) => Date.parse(d.updatedAt)));
+  const html = renderDossier(pilot, now);
+  const brief = html.match(/<section [^>]*id="reader-brief"[^>]*>[\s\S]*?<\/section>/)?.[0];
+  assert.ok(brief);
+  assert.equal((brief.match(/<dt>/g) || []).length, 3);
+  assert.match(brief, /href="#changed"/);
+  assert.match(brief, /href="#facts"/);
+  assert.match(brief, /href="#watch"/);
+  assert.ok(brief.includes(`datetime="${pilot.readerBrief.nextOn.slice(0, 10)}"`));
+  for (const key of ["change", "confirmed", "next"]) {
+    for (const ref of pilot.readerBrief[key].sourceRefs) {
+      assert.ok(brief.includes(pilot.sourceMap.get(ref).url.replaceAll("&", "&amp;")));
+    }
+  }
+  assert.ok(html.indexOf(brief) < html.indexOf('id="facts"'));
+  assert.ok(fs.readFileSync(path.join(OUT, `${pilot.slug}.html`), "utf8").includes(brief));
+  assert.doesNotMatch(renderDossier(validate(base(), "x.json"), now), /id="reader-brief"/);
+});
+
+test("an incomplete, unsourced or out-of-order reader brief is rejected", () => {
+  const raw = base();
+  raw.readerBrief = {
+    reviewedOn: "2026-11-02", nextOn: "2026-11-09",
+    ...Object.fromEntries(["change", "confirmed", "next"].map((key) =>
+      [key, { text: "<b>نص</b>", sourceRefs: ["s1"] }])),
+  };
+  assert.match(renderDossier(validate(raw, "x.json"), Date.parse(raw.updatedAt)), /&lt;b&gt;نص&lt;\/b&gt;/);
+  for (const corrupt of [
+    (b) => delete b.confirmed,
+    (b) => { b.change.sourceRefs = []; },
+    (b) => { b.next.sourceRefs = ["missing"]; },
+    (b) => { b.reviewedOn = "2026-11-03"; },
+    (b) => { b.nextOn = "2026-11-01"; },
+  ]) {
+    const invalid = structuredClone(raw);
+    corrupt(invalid.readerBrief);
+    assert.throws(() => validate(invalid, "x.json"), DossierError);
+  }
+});
+
 test("user-supplied text is escaped in HTML output", () => {
   const raw = base();
   raw.title = 'عنوان <script>alert(1)</script> تجريبي';
