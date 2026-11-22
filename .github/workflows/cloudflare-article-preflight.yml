@@ -1,15 +1,19 @@
-name: Cloudflare article release preflight
+name: Cloudflare article production release
 on:
   push:
     branches: [ops/cloudflare-article-preflight]
     paths: [.github/workflows/cloudflare-article-preflight.yml]
 permissions: {}
+concurrency:
+  group: wrldline-public-article-production
+  cancel-in-progress: false
 jobs:
-  production-read:
+  production:
+    if: ${{ github.event.before == '9287a0ddffbd698c78c765149b38d6ccbaeb5538' && github.run_attempt == 1 }}
     runs-on: ubuntu-24.04
-    timeout-minutes: 3
+    timeout-minutes: 8
     steps:
-      - name: Verify only the existing article Worker and route
+      - name: Publish the verified article template only
         env:
           CF_PREFLIGHT_TOKEN: ${{ secrets.CLOUDFLARE_API_KEY }}
         shell: bash
@@ -21,52 +25,148 @@ jobs:
           fi
           temp="$(mktemp -d)"
           trap 'rm -rf -- "$temp"' EXIT
+          fail() { echo "$1"; exit 1; }
+          valid_version='^[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12}$'
           request() {
+            local path="$1"
+            shift
             curl --silent --show-error --connect-timeout 7 --max-time 20 \
               --proto '=https' --output "$temp/response.json" --write-out '%{http_code}' \
               --header "Authorization: Bearer $CF_PREFLIGHT_TOKEN" \
-              "https://api.cloudflare.com/client/v4/$1"
+              "$@" "https://api.cloudflare.com/client/v4/$path"
           }
+          raw='https://raw.githubusercontent.com/bader11pq-sys/Wrldline-news/bbc7146de56a5065bc7aa6108e8f22ad43e1980a/cloudflare/workers/wrldline-public'
+          curl --fail --silent --show-error --proto '=https' --max-time 15 "$raw/worker.js" --output "$temp/release.mjs"
+          curl --fail --silent --show-error --proto '=https' --max-time 15 "$raw/wrangler.jsonc" --output "$temp/config.json"
+          printf '%s  %s\n' \
+            'a7abebc3ff277d501e72a060f930bd8130b960460f4cfa5f34afd4aac199dfdb' "$temp/release.mjs" \
+            '0d523e9081bee7d031d822832ced660216a941749a3d50b65e4620209efb9898' "$temp/config.json" \
+            | sha256sum --check --status || fail 'Immutable Worker inputs did not pass checksum validation.'
+
           result="$(request 'zones?name=al-ghaib.us.ci')"
-          if [[ "$result" != '200' ]]; then
-            printf 'Cloudflare did not grant a zone lookup (HTTP %s).\n' "$result"
-            exit 1
-          fi
+          [[ "$result" == '200' ]] || fail "Cloudflare zone lookup failed (HTTP $result)."
           zone="$(jq -er 'select(.success == true) | [.result[] | select(.name == "al-ghaib.us.ci" and .status == "active")] | select(length == 1) | .[0].id | select(test("^[0-9a-f]{32}$"))' "$temp/response.json")"
           account="$(jq -er --arg zone "$zone" '.result[] | select(.id == $zone) | .account.id | select(test("^[0-9a-f]{32}$"))' "$temp/response.json")"
-          result="$(request "zones/$zone/workers/routes")"
-          if [[ "$result" != '200' ]]; then
-            printf 'Cloudflare did not grant the route lookup (HTTP %s).\n' "$result"
-            exit 1
+          versions="accounts/$account/workers/workers/wrldline-public/versions"
+          deployments="accounts/$account/workers/scripts/wrldline-public/deployments"
+          check_routes() {
+            local status
+            status="$(request "zones/$zone/workers/routes")" || return 1
+            [[ "$status" == '200' ]] &&
+              jq -e --slurpfile config "$temp/config.json" '
+                .success == true and
+                ([.result[] | select(.script == "wrldline-public") | .pattern] | sort) ==
+                ($config[0].routes | map(.pattern) | sort)
+              ' "$temp/response.json" >/dev/null
+          }
+          active_version() {
+            local status
+            status="$(request "$deployments")" || return 1
+            [[ "$status" == '200' ]] || return 1
+            jq -er --arg uuid "$valid_version" '
+              select(.success == true) | .result.deployments[0].versions |
+              select(length == 1 and .[0].percentage == 100) | .[0].version_id | select(test($uuid))
+            ' "$temp/response.json"
+          }
+          read_version() {
+            local id="$1" name="$2" status
+            status="$(request "$versions/$id?include=modules")" || return 1
+            [[ "$status" == '200' ]] || return 1
+            jq -e --arg id "$id" --slurpfile config "$temp/config.json" '
+              .success == true and (.result |
+                .id == $id and .main_module == $config[0].main and
+                .compatibility_date == $config[0].compatibility_date and
+                ((.compatibility_flags // []) == []) and
+                (.assets == null) and (.migrations == null) and (.migration_tag == null) and
+                ((.containers // []) == []) and ((.package_dependencies // []) == []) and
+                (.modules | length == 1 and .[0].name == $config[0].main and .[0].content_type == "application/javascript+module") and
+                (.bindings |
+                  (length == ($config[0].vars | length)) and all(.[]; .type == "plain_text" and (.text | type) == "string") and
+                  (map({key: .name, value: .text}) | from_entries) == $config[0].vars)
+              )
+            ' "$temp/response.json" >/dev/null || return 1
+            jq -r '.result.modules[0].content_base64' "$temp/response.json" | base64 --decode > "$temp/$name.mjs" || return 1
+            jq -S '.result | {bindings: (.bindings | sort_by(.name)), compatibility_date, compatibility_flags: (.compatibility_flags // []), limits, cache_options, placement, exports, main_module}' \
+              "$temp/response.json" > "$temp/$name-settings.json"
+          }
+          public_http() {
+            local path="$1" name="$2" status
+            status="$(curl --silent --show-error --proto '=https' --max-time 12 --header 'Cache-Control: no-cache' \
+              --output "$temp/check-$name" --write-out '%{http_code}' "https://al-ghaib.us.ci/$path")" || return 1
+            [[ "$status" == '200' ]]
+          }
+          surfaces() {
+            public_http 'news/15e78087-3dab-4568-8b03-dbd9ab5c487e' country &&
+              public_http 'news/6fdf0bf7-86d0-419d-82c2-0c46a20c806b' region &&
+              public_http 'news/f7d98a84-c5e6-4f4b-a35d-3fc179991a25' absent &&
+              public_http 'news/' archive &&
+              public_http 'rss.xml' rss &&
+              grep -Fq 'data-public-article' "$temp/check-country" &&
+              grep -Fq 'data-public-article' "$temp/check-region" &&
+              grep -Fq 'data-public-article' "$temp/check-absent" &&
+              grep -Fq 'https://al-ghaib.us.ci/news/' "$temp/check-archive" &&
+              grep -Fq '<rss version="2.0"' "$temp/check-rss"
+          }
+          country_rendering() {
+            grep -Fq '<span class="public-news-event-country">دولة الحدث: <bdi>تركيا</bdi></span>' "$temp/check-country" &&
+              ! grep -Fq '<span class="public-news-event-country">' "$temp/check-region" &&
+              ! grep -Fq '<span class="public-news-event-country">' "$temp/check-absent"
+          }
+          send_deployment() {
+            local id="$1" reason="$2"
+            jq -n --arg id "$id" --arg reason "$reason" \
+              '{strategy: "percentage", versions: [{version_id: $id, percentage: 100}], annotations: {"workers/message": $reason}}' > "$temp/deployment.json"
+            request "$deployments" --header 'Content-Type: application/json' --data-binary "@$temp/deployment.json"
+          }
+
+          check_routes || fail 'The active routes do not match the exact article Worker contract.'
+          before="$(active_version)" || fail 'A single active Worker version at 100% was not confirmed.'
+          read_version "$before" before || fail 'Live module, compatibility date, or bindings did not match the contract.'
+          if cmp -s "$temp/before.mjs" "$temp/release.mjs"; then
+            surfaces && country_rendering || fail 'This release is already active but production verification failed.'
+            echo 'The exact article template is already live and verified; no write needed.'
+            exit 0
           fi
-          jq -e '.success == true and any(.result[]; .pattern == "al-ghaib.us.ci/news/*" and .script == "wrldline-public")' "$temp/response.json" >/dev/null \
-            || { echo 'Expected article route was not confirmed.'; exit 1; }
-          result="$(request "accounts/$account/workers/scripts/wrldline-public/deployments")"
-          if [[ "$result" != '200' ]]; then
-            printf 'Cloudflare did not grant the deployment lookup (HTTP %s).\n' "$result"
-            exit 1
+          printf '%s  %s\n' '0ac39f1723b0c8d2d478afad4cd30c1380de4180637356475f7097b497df2295' "$temp/before.mjs" |
+            sha256sum --check --status || fail 'Live code differs from the reviewed repository baseline; not replacing it.'
+          surfaces || fail 'The existing live article, archive or RSS baseline did not pass; no deployment attempted.'
+          echo "Baseline verified. Recovery version: $before."
+
+          base64 --wrap=0 "$temp/release.mjs" > "$temp/release.b64"
+          jq --rawfile module "$temp/release.b64" '
+            with_entries(select(.value != null)) +
+            {annotations: {"workers/message": "Correct the public article event country (bbc7146)"},
+             modules: [{name: .main_module, content_type: "application/javascript+module", content_base64: $module}]}
+          ' "$temp/before-settings.json" > "$temp/upload.json"
+          result="$(request "$versions?deploy=false" --header 'Content-Type: application/json' --data-binary "@$temp/upload.json")" \
+            || fail 'Version upload did not return a response; no traffic change requested.'
+          [[ "$result" == '200' || "$result" == '201' ]] || fail "Version upload failed (HTTP $result); no traffic change requested."
+          candidate="$(jq -er --arg uuid "$valid_version" 'select(.success == true) | .result.id | select(test($uuid))' "$temp/response.json")" \
+            || fail 'Cloudflare did not confirm a candidate version identifier.'
+          [[ "$candidate" != "$before" ]] || fail 'Candidate and previous version identifiers unexpectedly match.'
+          read_version "$candidate" candidate && cmp -s "$temp/candidate.mjs" "$temp/release.mjs" &&
+            cmp -s "$temp/candidate-settings.json" "$temp/before-settings.json" \
+            || fail 'Uploaded version did not preserve the exact module and runtime settings; no traffic change requested.'
+          check_routes && [[ "$(active_version)" == "$before" ]] \
+            || fail 'Production changed during staging; no traffic change requested.'
+          echo "Validated candidate: $candidate."
+          result="$(send_deployment "$candidate" 'Publish the verified event-country renderer')" || result='network-error'
+          echo "Production deployment returned HTTP $result."
+          for attempt in 1 2 3 4; do
+            if [[ "$(active_version)" == "$candidate" ]] && surfaces && country_rendering && check_routes; then
+              echo 'Live verification passed: localized event country, no publisher/region fallback, archive and RSS.'
+              exit 0
+            fi
+            echo "Live verification not yet confirmed (attempt $attempt)."
+            if [[ "$attempt" != 4 ]]; then sleep 5; fi
+          done
+          current="$(active_version)" || fail 'The active version could not be read. Inspect Cloudflare before changing production again.'
+          if [[ "$current" == "$candidate" ]]; then
+            result="$(send_deployment "$before" 'Restore the last verified article template after failed smoke checks')" || result='network-error'
+            echo "Rollback returned HTTP $result."
+            [[ "$(active_version)" == "$before" ]] && surfaces \
+              || fail 'Rollback could not be verified. Restore the logged recovery version in Cloudflare.'
+            fail 'Candidate failed live smoke checks. Previous version restored and public surfaces verified.'
           fi
-          jq -e '.success == true and (.result.deployments[0].versions | length == 1) and .result.deployments[0].versions[0].percentage == 100' "$temp/response.json" >/dev/null \
-            || { echo 'A single active Worker version at 100% was not confirmed.'; exit 1; }
-          echo 'Confirmed active article Worker and route. No production changes made.'
-          active="$(jq -er '.result.deployments[0].versions[0].version_id | select(test("^[0-9a-f-]{36}$"))' "$temp/response.json")"
-          result="$(request "accounts/$account/workers/workers/wrldline-public/versions/$active?include=modules")"
-          if [[ "$result" != '200' ]]; then
-            printf 'Cloudflare did not grant the active module lookup (HTTP %s).\n' "$result"
-            exit 1
-          fi
-          jq -e '.success == true and (.result.modules | length == 1) and (.result.modules[0].content_type == "application/javascript+module")' "$temp/response.json" >/dev/null \
-            || { echo 'The active Worker does not have the expected single JavaScript module.'; exit 1; }
-          jq -r '.result.modules[0].content_base64' "$temp/response.json" | base64 --decode > "$temp/active.mjs"
-          curl --fail --silent --show-error --proto '=https' --max-time 15 \
-            'https://raw.githubusercontent.com/bader11pq-sys/Wrldline-news/9f1e6bc7cc74ce40e3f3f2ecdafb3e792f713f71/cloudflare/workers/wrldline-public/worker.js' --output "$temp/main.mjs"
-          if cmp -s "$temp/active.mjs" "$temp/main.mjs"; then
-            echo 'Active source matches the protected repository baseline byte for byte.'
-          else
-            echo 'Active source differs from the raw repository baseline.'
-            if grep -Fq 'text(article.event_country || article.country, 120)' "$temp/active.mjs"; then echo 'The narrow country fallback patch anchor is present.'; fi
-            if grep -Fq 'function renderArticle(article, now, trust' "$temp/active.mjs"; then echo 'The expected article renderer anchor is present.'; fi
-          fi
-          jq -e '.result.bindings | (map(.name) | sort) == ["PUBLIC_TRUST_ENABLED","SUPABASE_ANON_KEY","SUPABASE_URL"] and all(.[]; .type == "plain_text")' "$temp/response.json" >/dev/null \
-            || { echo 'The active bindings differ from the repository contract.'; exit 1; }
-          echo 'The active Worker has exactly the three expected environment bindings.'
+          [[ "$current" == "$before" ]] || fail 'An independent deployment was detected; it was not overwritten.'
+          fail 'Candidate was not activated; the previous version still serves production.'
