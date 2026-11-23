@@ -54,7 +54,7 @@
     if (row.summary.length > 1000000) throw new Error("Edition exceeds the reading limit");
     return { lang, title: row.title, body: row.summary, complete: true, editorialEdition: true };
   }
-  function mount({ host, tools, heading, id, title, body, lang, uiLang, preferred, editorial, published = true,
+  function mount({ host, lead, tools, heading, id, title, body, lang, uiLang, preferred, editorial, published = true,
     clip = false, onView, onSelect, signal: parentSignal }) {
     const doc = host.ownerDocument, source = { lang: originalLanguage(lang, title), title, body, complete: false };
     const sourceKey = locale(source.lang) || "original";
@@ -117,9 +117,17 @@
       heading.dataset.languageManaged = "";
       host.dataset.languageManaged = "";
       if (globalThis.WLReaderProse) {
-        globalThis.WLReaderProse.renderInto(host, version.body, { lang: version.lang, editorial, contents: true, english: ui === "en" });
+        const prose = globalThis.WLReaderProse;
+        const copy = lead ? prose.splitLead(version.body) : { details: version.body };
+        const options = { lang: version.lang, editorial, contents: true, english: ui === "en", headingLevel: lead ? 3 : 2 };
+        if (lead) {
+          lead.lang = version.lang;
+          lead.dir = host.dir;
+          prose.renderInto(lead, copy.lead, { ...options, contents: false });
+        }
+        prose.renderInto(host, copy.details, options);
         host.classList.add("is-formatted");
-      } else host.textContent = version.body;
+      } else (lead || host).textContent = version.body;
       labels();
       onView?.(version, ui);
     }

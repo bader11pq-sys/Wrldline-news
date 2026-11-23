@@ -3,6 +3,7 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs/promises');
 const path = require('node:path');
 const vm = require('node:vm');
+const reader = require('../reader-prose.js');
 const ROOT = path.resolve(__dirname, '..');
 const NOW = new Date('2026-11-15T04:00:00.000Z');
 const ORIGIN = 'https://al-ghaib.us.ci';
@@ -51,7 +52,9 @@ test('initial HTML contains published summary, reader impact context, canonical 
   assert.ok(html.includes(a.ai_summary));
   assert.ok(html.includes(a.ai_reader_impact));
   assert.ok(html.includes(a.ai_watch_next));
-  assert.ok(html.includes("وش يعني لك؟"));
+  assert.ok(html.includes("لماذا يهم؟"));
+  assert.deepEqual([...html.matchAll(/data-reader-step="([^"]+)"/g)].map(match => match[1]),
+    ['event', 'known', 'source', 'impact', 'watch', 'details']);
   assert.ok(html.includes("https://wa.me/?text="));
   assert.ok(html.includes("https://twitter.com/intent/tweet?text="));
   assert.ok(html.includes("https://t.me/share/url?url="));
@@ -87,7 +90,39 @@ test('missing or unavailable reader-context RPC never blocks the attributed publ
   assert.equal(response.status, 200);
   assert.ok(html.includes(a.summary));
   assert.ok(html.includes(a.source_url));
-  assert.ok(!html.includes("وش يعني لك؟"));
+  assert.doesNotMatch(html, /data-reader-step="(?:impact|watch)"/);
+});
+
+test('reader split agrees across server and browser and retains structured copy without duplication', async () => {
+  const { splitLead } = await modulePromise;
+  const structured = '### نطاق التغطية\r\n• خبر أول.\r\n• معلومة ثانية.\r\n\r\nهذه تفاصيل إضافية.';
+  const long = `${'كلمة '.repeat(44)}توقّف هنا. ${'تفاصيل '.repeat(80)}`;
+  for (const value of ['', 'First line\nSecond line', '## Heading only', structured, long, '• One\n• Two']) {
+    const result = splitLead(value);
+    assert.deepEqual(result, reader.splitLead(value));
+    const normalize = text => text.trim().replace(/\s+/g, ' ');
+    assert.equal(normalize(`${result.lead} ${result.details}`), normalize(value));
+  }
+  const a = article(102, { summary: structured, language: 'ar' });
+  const html = await (await get(await workerFor(fixture([a])), '/news/' + a.id)).text();
+  assert.match(html, /data-reading-lead><h3 dir="auto">نطاق التغطية<\/h3><ul><li dir="auto">خبر أول\.<\/li><\/ul>/);
+  assert.match(html, /data-reading-body><ul><li dir="auto">معلومة ثانية\.<\/li><\/ul><p dir="auto">هذه تفاصيل إضافية\.<\/p>/);
+  const visible = html.replace(/<script\b[\s\S]*?<\/script>|<[^>]+>/g, '');
+  assert.equal(visible.split('خبر أول.').length - 1, 1);
+  assert.equal(visible.split('معلومة ثانية.').length - 1, 1);
+  const archive = await (await get(await workerFor(fixture([a])), '/news/')).text();
+  assert.match(archive, /class="pn-card-summary"[^>]*>نطاق التغطية خبر أول\. معلومة ثانية\./);
+});
+
+test('empty article data renders honest English fallbacks without invented impact or a source link', async () => {
+  const a = article(103, { lang: 'en', title: 'An attributed item', summary: null, source_name: null, source_url: null });
+  const html = await (await get(await workerFor(fixture([a])), '/news/' + a.id)).text();
+  assert.deepEqual([...html.matchAll(/data-reader-step="([^"]+)"/g)].map(match => match[1]),
+    ['event', 'known', 'source', 'details']);
+  assert.match(html, /<h2>What happened\?<\/h2>/);
+  assert.match(html, /<p data-reading-missing>No published summary/);
+  assert.match(html, /<p data-source-missing>The original source link is unavailable/);
+  assert.doesNotMatch(html, /data-reader-step="source"[^>]*><h2>[^<]*<\/h2><a/);
 });
 
 test('unknown/malformed UUID and unpublished, future, undated or missing records are true noindex 404s', async () => {
@@ -270,7 +305,7 @@ test('English archive keeps original titles and passes language to article links
 test('analytics hooks and server-visible uncertainty exist without trusting legacy confirmed/AI fields', async () => {
   const a = article(1, { verification: 'confirmed', ai_confidence: 1 }), html = await (await get(await workerFor(fixture([a])), '/news/' + a.id)).text();
   assert.match(html, /src="\/analytics-config\.js/); assert.match(html, /src="\/analytics\.js/);
-  assert.match(html, /data-audience-article data-article-id=/); assert.match(html, /data-category="world"/); assert.match(html, /data-trust-ssr="1"/);
+  assert.match(html, /data-audience-article data-article-id=/); assert.match(html, /data-category="world"/); assert.match(html, /data-server-trust="unconfirmed"/);
   assert.match(html, /لم يُثبت تأكيد بشري/); assert.doesNotMatch(html, /<strong>تأكيد تحريري بشري مسجل/);
 });
 

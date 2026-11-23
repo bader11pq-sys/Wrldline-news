@@ -98,7 +98,7 @@ function sourceBoxMarkup(a){
  const source=escapeHTML(sourceText);
  const link=a.sourceURL?'<a class="source-link" href="'+escapeHTML(a.sourceURL)+'" target="_blank" rel="noopener noreferrer" data-source-link data-article-id="'+escapeHTML(a.id)+'">'+ui("قراءة الخبر لدى المصدر الأصلي ↗","Read at original source ↗")+'</a>':'<span class="source-missing">'+ui("رابط المصدر الأصلي غير متوفر. لا نستبدله برابط وهمي.","The original source link is unavailable. We do not substitute a fake link.")+'</span>';
  const sponsor=kind==="sponsored"?'<small class="sponsor-disclosure">'+ui("بالتعاون مع: ","In partnership with: ")+escapeHTML(a.sponsorName||ui("راعٍ لم يحدد","Unnamed sponsor"))+(a.sponsorURL?' · <a href="'+escapeHTML(a.sponsorURL)+'" target="_blank" rel="noopener noreferrer sponsored">'+ui("موقع الراعي ↗","Sponsor site ↗")+'</a>':"")+'</small>':"";
- return '<div class="source-box source-box-'+kind+'"><span>'+ui("المصدر الأصلي","Original source")+'</span><strong>'+source+'</strong>'+link+sponsor+'<small class="publication-date">'+ui("تاريخ النشر: ","Published: ")+escapeHTML(formatDate(a.published_at))+'</small></div>';
+ return '<section class="reader-step source-box source-box-'+kind+'" data-reader-step="source"><h2>'+ui("ما المصدر؟","What is the source?")+'</h2><strong dir="auto">'+source+'</strong>'+link+sponsor+'</section>';
 }
 function correctionMarkup(a){if(!a.correctionNote)return "";return '<div class="correction-note" role="note"><strong>'+ui("تصحيح منشور","Published correction")+'</strong><p>'+escapeHTML(a.correctionNote)+'</p><small>'+escapeHTML(formatDate(a.correctedAt||a.published_at))+'</small></div>';}
 const GENERIC_FEED_HEADLINES=/^(?:آخر الأخبار العاجلة في العراق وكوردستان والعالم|نوفمبر\\s+20\\d{2}(?:\\s*[-–—|]\\s*شفق نيوز)?|أرقام\\s*:\\s*.*(?:الاخبار|الأخبار).*(?:تاسي|سوق الأسهم)|مباشر\\s*[—–-]\\s*الأخبار المالية والأسواق والرؤى الاستثمارية)$/i;
@@ -763,7 +763,7 @@ function articleMediaMarkup(article){
  return imageMarkup(article,"modal-image");
 }
 function cardExcerpt(value,max=420){
- const text=String(value||"");
+ const text=String(value||"").replace(/^[ \t]*(?:#{2,4}|[•●▪])[ \t]+/gmu,"").replace(/\s+/gu," ").trim();
  if(text.length<=max)return text;
  const prefix=text.slice(0,max).replace(/[\uD800-\uDBFF]$/u,"");
  const boundary=prefix.lastIndexOf(" ");
@@ -1055,18 +1055,27 @@ function openArticle(id,updateUrl=true,returnFocus,article=null){
   '<div class="modal-article-body"><header class="reader-article-header"><div class="story-meta"><span class="category-label">'+escapeHTML(categoryName(a.cat))+'</span>'+
   typeBadgesMarkup(a)+articleCountryMarkup(a)+'</div><h1 dir="auto">'+escapeHTML(a.title)+'</h1><div class="reader-byline">'+
   '<span dir="auto">'+escapeHTML(a.src)+'</span>'+(published?'<time datetime="'+escapeHTML(published)+'" aria-label="'+ui("تاريخ النشر: ","Published: ")+escapeHTML(formatDate(published))+'">'+escapeHTML(formatDate(published))+'</time>':'')+
-  '</div></header>'+(media?'<figure class="reader-article-media">'+media+'</figure>':'')+
-  correctionMarkup(a)+'<div class="reader-article-editions"></div><div class="modal-summary reader-prose"></div>'+newsDataMetaMarkup(a)+
-  (a.newsdataAiSummary?'<section class="ai-insight"><strong>NewsData.io AI</strong><p>'+escapeHTML(a.newsdataAiSummary)+'</p></section>':'')+
-  (a.aiSummary?'<section class="ai-insight"><strong>'+ui("تحليل WRLDLINE AI","WRLDLINE AI analysis")+'</strong><p>'+escapeHTML(a.aiSummary)+'</p><small>'+ui("مؤشر الحدث: ","Event risk: ")+escapeHTML(riskLabel(a.aiRiskLevel))+' · '+escapeHTML(a.aiRiskScore)+'/100</small></section>':'')+
-  (state.lang==="ar"&&a.aiReaderImpact?'<section class="ai-impact"><h3>وش يعني لك؟</h3><p>'+escapeHTML(a.aiReaderImpact)+'</p><small>قراءة آلية مساعدة مبنية على نص الخبر، وليست تحققاً بشرياً أو نصيحة مالية.</small></section>':'')+
-  (state.lang==="ar"&&a.aiWatchNext?'<section class="ai-impact ai-impact--watch"><h3>ما الذي نراقبه تالياً؟</h3><p>'+escapeHTML(a.aiWatchNext)+'</p></section>':'')+
-  sourceBoxMarkup(a)+'<p class="disclaimer"><span data-edition-disclosure>'+escapeHTML(provenanceNote(a))+'</span> <a href="'+ui("corrections.html","corrections-en.html")+'">'+ui("سياسة التصحيح","Corrections policy")+'</a>.</p>'+
+  '</div></header>'+
+  '<section class="reader-step" data-reader-step="event"><h2>'+ui("ماذا حدث؟","What happened?")+'</h2><div class="reader-lead reader-prose" data-language-managed></div>'+
+  '<p class="reader-missing">'+ui("لا يتوفر ملخص منشور هنا. راجع المصدر أدناه.","No published summary is available here. See the source below.")+'</p></section>'+
+  '<section class="reader-step" data-reader-step="known"><h2>'+ui("ماذا نعرف؟","What do we know?")+'</h2><p>'+(
+   a.verification==="disputed"?ui("الخبر محل خلاف. راجع المصدر والأدلة المتاحة.","The story is disputed. Consult the source and available evidence."):
+   ui("النص منسوب إلى ناشره. النشر هنا لا يعني تحققًا بشريًا مستقلًا.","The text is attributed to its publisher. Publication here does not establish independent human verification."))+'</p>'+correctionMarkup(a)+'</section>'+
+  sourceBoxMarkup(a)+
+  (state.lang==="ar"&&a.aiReaderImpact?'<section class="reader-step reader-context" data-reader-step="impact"><h2>لماذا يهم؟</h2><p dir="auto">'+escapeHTML(a.aiReaderImpact)+'</p><small>قراءة مساعدة بالذكاء الاصطناعي، وليست تحققًا بشريًا.</small></section>':'')+
+  (state.lang==="ar"&&a.aiWatchNext?'<section class="reader-step reader-context" data-reader-step="watch"><h2>ما الذي نراقبه تالياً؟</h2><p dir="auto">'+escapeHTML(a.aiWatchNext)+'</p><small>متابعة مقترحة بالذكاء الاصطناعي، وليست تنبؤًا.</small></section>':'')+
+  '<section class="reader-step reader-details" data-reader-step="details"><h2>'+ui("تفاصيل إضافية ومراجع","Further details and references")+'</h2>'+
+  '<div class="reader-article-editions"></div><div class="modal-summary reader-prose reader-full"></div>'+
+  (media?'<figure class="reader-article-media">'+media+'</figure>':'')+newsDataMetaMarkup(a)+
+  (a.newsdataAiSummary?'<section class="ai-insight"><h3>NewsData.io AI</h3><p dir="auto">'+escapeHTML(a.newsdataAiSummary)+'</p></section>':'')+
+  (a.aiSummary?'<section class="ai-insight"><h3>'+ui("قراءة مساعدة بالذكاء الاصطناعي","AI-assisted reading")+'</h3><p dir="auto">'+escapeHTML(a.aiSummary)+'</p><small>'+ui("مؤشر الحدث: ","Event risk: ")+escapeHTML(riskLabel(a.aiRiskLevel))+' · '+escapeHTML(a.aiRiskScore)+'/100</small></section>':'')+
+  '<p class="disclaimer"><span data-edition-disclosure>'+escapeHTML(provenanceNote(a))+'</span> <a href="'+ui("corrections.html","corrections-en.html")+'">'+ui("سياسة التصحيح","Corrections policy")+'</a>.</p></section>'+
   '<div class="article-actions"><button class="outline-button" id="modalListen" type="button">♫ '+ui("استمع للخبر","Listen to story")+'</button>'+
   '<button class="outline-button" id="modalShare" type="button">↗ '+ui("مشاركة الخبر","Share story")+'</button>'+
   '<button class="outline-button" id="modalSave">'+(state.saved.has(a.id)?ui("★ إزالة من المحفوظات","★ Remove saved"):ui("☆ حفظ الخبر","☆ Save story"))+'</button>'+
   socialMarkup+'</div></div>';
- const prose=host.querySelector(".reader-prose");
+ const prose=host.querySelector(".reader-full"),lead=host.querySelector(".reader-lead");
+ const missing=host.querySelector(".reader-missing");
  const options={lang:a.sourceLanguage,editorial:/WRLDLINE/i.test(a.src||"")};
  let viewed=a;
  const publicURL=publicArticleURL(a), editions=window.WLArticleEditions;
@@ -1076,13 +1085,14 @@ function openArticle(id,updateUrl=true,returnFocus,article=null){
    '<a class="outline-button" data-edition-permalink href="'+escapeHTML(publicURL)+'">↗ '+ui("فتح صفحة الخبر المستقلة","Open article page")+'</a>'+
    '<a class="outline-button" data-article-correction href="/contact.html?'+escapeHTML(correction.toString())+'#form">'+ui("أبلغ عن خطأ","Report an error")+'</a>');
  }
- if(options.lang)prose.lang=options.lang;
+ if(options.lang)prose.lang=lead.lang=options.lang;
  if(editions)host.articleEditions=editions.mount({
-  host:prose,tools:host.querySelector(".reader-article-editions"),heading:host.querySelector("h1"),
+  host:prose,lead,tools:host.querySelector(".reader-article-editions"),heading:host.querySelector("h1"),
   id:a.id,title:a.originalTitle||a.title,body:a.originalSummary||(!a.hasTranslation?a.summary:""),lang:a.sourceLanguage,
   editorial:options.editorial,published:!!publicURL,uiLang:state.lang,preferred:state.lang,
   clip:window.WLPublicArticleBody?.mayBeClipped(a.originalSummary),
   onView(version){
+   missing.hidden=!!version.body?.trim();
    viewed={...a,title:version.title,summary:version.body,readingLang:version.lang,hasTranslation:!!version.editorialEdition,translationStatus:"published",translationSource:"editorial"};
    const disclosure=host.querySelector("[data-edition-disclosure]");
    if(disclosure)disclosure.textContent=options.editorial&&version.complete&&!version.editorialEdition?ui("النص الكامل كما نشرته هيئة تحرير WRLDLINE.","Full article as published by WRLDLINE."):provenanceNote(viewed);
@@ -1097,8 +1107,15 @@ function openArticle(id,updateUrl=true,returnFocus,article=null){
    }
   }
  });
- else if(window.WLReaderProse)window.WLReaderProse.renderInto(prose,a.summary,options);
- else{prose.classList.add("is-plain");prose.dir="auto";prose.textContent=a.summary;}
+ else{
+  missing.hidden=!!a.summary?.trim();
+  const formatter=window.WLReaderProse;
+  const copy=formatter?.splitLead(a.summary);
+  if(copy){
+   formatter.renderInto(lead,copy.lead,{...options,headingLevel:3});
+   formatter.renderInto(prose,copy.details,{...options,headingLevel:3});
+  }else{lead.classList.add("is-plain");lead.dir="auto";lead.textContent=a.summary;}
+ }
  document.getElementById("modalClose").addEventListener("click",closeArticle);
  document.getElementById("readerTextSize").addEventListener("click",event=>{
   const selected=host.classList.toggle("reader-text-large");

@@ -74,18 +74,23 @@ test("source URLs must be HTTPS and free of credentials", () => {
   }
 });
 
-test("seven desks link to existing content and maintain a lightweight homepage", () => {
+test("the six priorities appear in order and link to existing content", () => {
   const sections = read("sections.html");
-  assert.equal([...sections.matchAll(/<section class="hn-desk"/g)].length, 7);
+  assert.deepEqual([...sections.matchAll(/<section class="hn-desk"[^>]*>[\s\S]*?<h2>([^<]+)<\/h2>/g)].map(match => match[1]), [
+    "السياسة والعلاقات الدولية", "الحقوق والحريات", "الاقتصاد والطاقة والتجارة",
+    "المجتمع والثقافة والشؤون الشبابية", "الخليج والعالم العربي", "التقنية والعلوم وتأثيرها على المنطقة"
+  ]);
   const homepage = read("index.html");
   assert.match(homepage, /الأخبار من أجل الإنسان/);
-  assert.match(homepage, /id="moreMenu">[\s\S]*?<a href="sections\.html"/);
+  assert.match(homepage, /class="wl-nav-link wl-nav-sections" href="sections\.html"/);
   assert.doesNotMatch(sections, /<(script|iframe)\b/i);
+  assert.match(sections, /href="index\.html\?country=SAU#newsSection"/);
+  for (const id of ["justice-law", "investigations", "rights-knowledge"]) assert.ok(sections.includes(`id="${id}"`));
   for (const [, link] of sections.matchAll(/href="([^"#][^"]*)"/g)) {
     if (link.startsWith("https://")) continue;
     const path = link.split(/[?#]/)[0].replace(/^\/+/, "");
     if (path.startsWith("section/")) {
-      assert.match(path, /^section\/(?:politics|economy|world|rights|society|health)$/);
+      assert.match(path, /^section\/(?:politics|economy|world|rights|security|society|culture|health|tech|science)$/);
       continue; // The Worker serves these canonical routes rather than static files.
     }
     assert.ok(existsSync(resolve(root, path)), `Missing ${path}`);

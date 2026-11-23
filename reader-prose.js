@@ -10,6 +10,26 @@
   const heading = /^#{2,4}\s+(.+)$/u;
   const longParagraph = 560;
 
+  // Keep the author's wording. Take the first text block, with any heading
+  // directly above it, rather than generating a second summary.
+  function splitLead(value) {
+    const text = String(value ?? "").replace(/\r\n?/g, "\n").trim();
+    let start = 0;
+    for (const match of text.matchAll(/[^\n]+/gu)) {
+      const line = match[0].trim();
+      if (!line || heading.test(line)) continue;
+      start = match.index;
+      break;
+    }
+    const first = text.slice(start).match(/^[^\n]*/u)?.[0] || "";
+    let end = start + first.length;
+    if (first.length > longParagraph && !bullet.test(first.trim()) && !heading.test(first.trim())) {
+      const stop = [...first.matchAll(/[.!?؟]\s+(?=\S)/gu)].find(match => match.index >= 140 && match.index < 520);
+      if (stop) end = start + stop.index + 1;
+    }
+    return { lead: text.slice(0, end).trim(), details: text.slice(end).trim() };
+  }
+
   function splitLongLine(line, lang) {
     if (line.length <= longParagraph) return [line];
     let boundaries;
@@ -71,7 +91,7 @@
     const headings = [];
     const prefix = target.closest?.("dialog") ? "wl-reader-section-" : "wl-story-section-";
     for (const block of rows) {
-      const el = doc.createElement(block.type === "heading" ? "h2" : block.type === "list" ? "ul" : "p");
+      const el = doc.createElement(block.type === "heading" ? (options?.headingLevel === 3 ? "h3" : "h2") : block.type === "list" ? "ul" : "p");
       el.dir = "auto";
       if (dense && block.type === "paragraph") el.className = "reader-dense-lines";
       if (block.type === "list") {
@@ -138,5 +158,5 @@
     return result;
   }
 
-  return { blocks, renderInto };
+  return { blocks, renderInto, splitLead };
 });
