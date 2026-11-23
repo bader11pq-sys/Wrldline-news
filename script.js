@@ -11,6 +11,10 @@ const MAIN_FEED_LIMIT = 24;
 const SUPPLEMENTAL_FEED_LIMIT = 8;
 const MAX_FEED_OFFSET = 240;
 const PUBLIC_NEWS_RPC = WRLDLINE_PUBLIC_NEWS_API+"/rest/v1/rpc/public_home_news_recent_v3";
+// Dedicated, index-backed feeds: asking the main RPC for breaking/exclusive-only
+// rows forced a scan and intermittently hit the database statement timeout.
+const BREAKING_FEED_RPC = WRLDLINE_PUBLIC_NEWS_API+"/rest/v1/rpc/public_breaking_feed";
+const EXCLUSIVE_FEED_RPC = WRLDLINE_PUBLIC_NEWS_API+"/rest/v1/rpc/public_exclusive_feed";
 const WRLDLINE_TAXONOMY = window.WRLDLINE_TAXONOMY || null;
 const eventDesk = window.WLEventDesk;
 const eventCatalog = eventDesk?.fromPage(document) || [];
@@ -289,9 +293,11 @@ async function loadSupplemental(name,before,retryButton){
  renderSupplementalNotice(name);
  const since=new Date(Date.parse(before)-24*60*60*1000).toISOString();
  try{
-  section.rows=section.filter
-   ?await getPublicNewsRows({p_limit:SUPPLEMENTAL_FEED_LIMIT,p_before:before,p_since:name==="breaking"?since:null,p_offset:0,p_newsdata_only:false,[section.filter]:true},{timeout:3500})
-   :await getPublicNewsRows({p_days:7,p_limit:5},{url:WRLDLINE_PUBLIC_NEWS_API+"/rest/v1/rpc/public_top_read_articles",timeout:3500});
+  section.rows=name==="breaking"
+   ?await getPublicNewsRows({p_limit:SUPPLEMENTAL_FEED_LIMIT,p_since:since},{url:BREAKING_FEED_RPC,timeout:6000})
+   :name==="exclusive"
+   ?await getPublicNewsRows({p_limit:SUPPLEMENTAL_FEED_LIMIT},{url:EXCLUSIVE_FEED_RPC,timeout:6000})
+   :await getPublicNewsRows({p_days:7,p_limit:5},{url:WRLDLINE_PUBLIC_NEWS_API+"/rest/v1/rpc/public_top_read_articles",timeout:6000});
   section.status="ready";
  }catch(error){
   section.status="error";
