@@ -213,6 +213,12 @@ function validate(raw, file) {
         }];
       })),
     },
+    assessment: raw.assessment == null ? null : {
+      question: requireString(raw.assessment, "question", `${where} assessment`, { max: 180 }),
+      evidence: requireString(raw.assessment, "evidence", `${where} assessment`, { max: 440 }),
+      notEnough: requireString(raw.assessment, "notEnough", `${where} assessment`, { max: 320 }),
+      sourceRefs: requireArray(raw.assessment, "sourceRefs", `${where} assessment`).map(String),
+    },
     corrections: Array.isArray(raw.corrections)
       ? raw.corrections.map((c, i) => ({
           at: requireISO(c, "at", `${where} corrections[${i}]`),
@@ -237,6 +243,7 @@ function validate(raw, file) {
   dossier.narratives.unverified.forEach((n) => checkRefs(n.sourceRefs, "unverified"));
   dossier.context.forEach((c) => checkRefs(c.sourceRefs, "context"));
   dossier.impact.actual.forEach((n) => checkRefs(n.sourceRefs, "impact.actual"));
+  if (dossier.assessment) checkRefs(dossier.assessment.sourceRefs, "assessment");
   if (dossier.readerBrief) {
     const b = dossier.readerBrief;
     if (day(b.reviewedOn) > day(dossier.updatedAt) || (b.nextOn && day(b.nextOn) < day(b.reviewedOn))) {
@@ -357,6 +364,7 @@ function renderDossier(d, now, catalog = []) {
   </section>`;
 
   const facts = `<dl class="facts">${d.facts.map((f) => `<div><dt>${esc(f.label)}</dt><dd>${esc(f.value)}${sourceLinks(f.sourceRefs, d.sourceMap)}</dd></div>`).join("")}</dl>`;
+  const assessment = !d.assessment ? "" : `<section class="block" id="assessment"><div class="block-head"><h2>ما الدليل الذي يغيّر التقييم؟</h2><span class="muted">معيار تحريري، لا تطوّر جديد</span></div><h3>${esc(d.assessment.question)}</h3><dl class="facts"><div><dt>ما الذي نبحث عنه؟</dt><dd>${esc(d.assessment.evidence)}</dd></div><div><dt>ما الذي لا يكفي وحده؟</dt><dd>${esc(d.assessment.notEnough)}</dd></div></dl><p>مراجع ونقاط بداية للتحقق:</p>${sourceLinks(d.assessment.sourceRefs, d.sourceMap)}</section>`;
 
   const whatChanged = `<ol class="changed">${d.whatChanged.slice().sort((a, b) => Date.parse(b.at) - Date.parse(a.at)).map((c) => `<li><time datetime="${attr(c.at)}">${esc(arabicDate(c.at))}</time><p>${esc(c.text)}${sourceLinks(c.sourceRefs, d.sourceMap)}</p></li>`).join("")}</ol>`;
 
@@ -444,6 +452,8 @@ function renderDossier(d, now, catalog = []) {
       <section class="block" id="impact"><div class="block-head"><h2>الأثر على السعودية والخليج</h2><span class="muted">نفصل الفعلي عن المحتمل</span></div><div class="sector-tags">${d.sectors.map((s) => `<span>${esc(s)}</span>`).join("")}</div>${impact}</section>
 
       <section class="block" id="watch"><div class="block-head"><h2>ماذا نراقب تالياً؟</h2><span class="muted">مواعيد ومؤشرات قابلة للتحقق</span></div>${watch}</section>
+
+      ${assessment}
 
       ${related}
 

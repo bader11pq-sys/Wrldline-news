@@ -14,7 +14,7 @@
 </head>
 <body><main class="wrap">
 <header class="top"><a class="brand" href="index.html">WRLDLINE / NEWS</a><nav class="account-nav" aria-label="روابط الموقع"><a class="back" href="index.html">الأخبار</a><a class="back" href="history.html">الموسوعة</a><a class="back" href="map.html">المرصد</a><a class="back" href="shorts.html">Shorts</a><a class="back" href="about.html">عن الموقع</a><a class="back" href="privacy.html">الخصوصية</a><a class="back" href="terms.html">الشروط</a><a class="back" href="contact.html">التواصل</a></nav></header>
-<section class="intro"><div class="eyebrow">YOUR WRLDLINE ID</div><h1>حسابك. عالمك.</h1><p>أنشئ حسابك، نظّم قراءتك، واحصل على تجربة إخبارية أوسع مع عضوية WRLDLINE PLUS.</p></section>
+<section class="intro"><div class="eyebrow">YOUR WRLDLINE ID</div><h1>حسابك. عالمك.</h1><p>أنشئ حسابك، نظّم قراءتك، واحصل على تجربة إخبارية أوسع مع عضوية WRLDLINE PLUS.</p><p id="accountBriefingReturn" hidden><a class="back" href="daily-briefing.html">العودة إلى ملخص العالم اليومي</a></p></section>
 <div class="layout">
 <section class="panel" id="authPanel"><h2>ابدأ حسابك</h2><p class="muted">سجّل الدخول أو أنشئ حساباً مجانياً خلال لحظات.</p>
 <div class="tabs"><button type="button" class="active" data-tab="login">تسجيل الدخول</button><button type="button" data-tab="signup">حساب جديد</button></div>
@@ -30,11 +30,18 @@
 <p class="footnote">الأسعار بالدولار الأمريكي. لا يتم احتساب الضرائب تلقائياً ضمن السعر حالياً؛ قد تترتب التزامات ضريبية بحسب بلد نشاطك وعملائك. لا تُدخل بيانات بطاقتك إلا في صفحة دفع Stripe الآمنة.</p></section>
 <p class="footnote">WRLDLINE NEWS · حسابات آمنة عبر Supabase Auth · مدفوعات عبر Stripe Checkout عند الإعداد</p>
 </main>
+<script src="briefing-model.js?v=20261123-edition-desk"></script>
 <script>
 const SUPABASE_URL="https://vmaxbnogmmfyrcucapnq.supabase.co";
 const SUPABASE_ANON_KEY="sb_publishable_D3c88u75_LcEN460Y3Jcpw__EfqUnBx";
 const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
 const $=id=>document.getElementById(id);let mode="login",session=null,recovering=false;
+const briefingReturn=window.WLBriefing?.accountReturn(new URLSearchParams(location.search).get("next"));
+if(briefingReturn){
+  const date=briefingReturn.split("?date=")[1];
+  if(date)$("accountBriefingReturn").querySelector("a").href="./daily-briefing.html?date="+encodeURIComponent(date);
+  $("accountBriefingReturn").hidden=false;
+}
 function status(id,msg,type=""){const el=$(id);el.textContent=msg;el.className="status "+type;}
 document.querySelectorAll("[data-tab]").forEach(btn=>btn.addEventListener("click",()=>{mode=btn.dataset.tab;document.querySelectorAll("[data-tab]").forEach(b=>b.classList.toggle("active",b===btn));$("nameField").classList.toggle("hidden",mode!=="signup");$("authSubmit").textContent=mode==="signup"?"إنشاء الحساب":"تسجيل الدخول";$("password").autocomplete=mode==="signup"?"new-password":"current-password";status("authStatus",mode==="signup"?"ستصلك رسالة لتأكيد البريد الإلكتروني إذا كان التأكيد مفعلاً.":"أهلاً بعودتك.");}));
 $("authForm").addEventListener("submit",async e=>{e.preventDefault();const b=$("authSubmit");b.disabled=true;status("authStatus","جارٍ تنفيذ الطلب...");try{let result;if(mode==="signup"){result=await db.auth.signUp({email:$("email").value.trim(),password:$("password").value,options:{data:{display_name:$("displayName").value.trim()},emailRedirectTo:"https://al-ghaib.us.ci/account.html"}});}else{result=await db.auth.signInWithPassword({email:$("email").value.trim(),password:$("password").value});}if(result.error)throw result.error;if(mode==="signup"&&result.data.user?.identities?.length){window.WRLDLINE_ANALYTICS?.track("signup",{});}if(mode==="signup"&&!result.data.session){status("authStatus","تم إنشاء الحساب. تحقق من بريدك الإلكتروني لتأكيده ثم سجّل الدخول.","ok");}else{session=result.data.session;await renderAccount();status("authStatus","تم تسجيل الدخول بنجاح.","ok");}}catch(err){status("authStatus","تعذر إكمال العملية: "+err.message,"error");}finally{b.disabled=false;}});

@@ -137,6 +137,8 @@ async def main():
         await page.set_viewport_size({"width": 375, "height": 812})
         assert await page.evaluate("document.documentElement.scrollWidth <= innerWidth")
         await expect(page.locator("#zoomIn")).to_be_in_viewport()
+        assert await page.evaluate("""() => document.querySelector('.monitor-compare').getBoundingClientRect().top
+            > document.querySelector('.monitor-map-panel').getBoundingClientRect().bottom""")
         if os.environ.get("WRLDLINE_SCREENSHOTS"):
             await page.screenshot(path="/tmp/wrldline-edition-monitor-mobile.png")
         await page.set_viewport_size({"width": 1440, "height": 870})
@@ -159,8 +161,13 @@ async def main():
         state["feed"] = 200
         await page.locator("#retryFeed").click()
         await expect(page.locator("#statEvents")).to_have_text("24")
+        await page.locator("#monitorCompareFirst").select_option("SAU")
+        await page.locator("#monitorCompareSecond").select_option("JPN")
+        await expect(page.locator("#monitorCompareResult h3")).to_have_text(["Saudi Arabia", "Japan"])
+        await expect(page.locator("#monitorCompareStatus")).to_contain_text("not a comparison of country safety")
         await page.locator("#countryFilter").select_option("JPN")
         await expect(page.locator("#eventList h3")).to_have_text(["Report in Japan"])
+        await expect(page.locator("#monitorCompareResult h3")).to_have_text(["Saudi Arabia", "Japan"])
         state["fail_map"] = False
         await page.locator("#retryMap").click()
         await expect(page.locator("#mapMessage")).to_be_hidden()

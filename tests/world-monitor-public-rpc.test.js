@@ -16,7 +16,7 @@ test("world monitor uses a restricted public RPC and keeps boundaries independen
   assert.doesNotMatch(map+model, /\/rest\/v1\/articles\?|WRLDLINE_AUTH|getAccessToken/);
   assert.match(model, /credentials:"omit"/);
   assert.match(map, /map boundaries unavailable/i);
-  assert.match(html, /editorial-display\.js\?v=20261122-edition[\s\S]*map-model\.js[\s\S]*map\.js\?v=20261122-edition/);
+  assert.match(html, /editorial-display\.js\?v=[\w-]+[\s\S]*map-model\.js\?v=[\w-]+[\s\S]*map\.js\?v=[\w-]+/);
   assert.match(map, /loadBoundaries\(\);\s*loadFeed\(\);/);
   assert.match(model, /editorial\.codeOf\(row\.ai_country_code\)/);
   assert.match(map, /M\.fetchFeed\(\)/);

@@ -23,6 +23,8 @@
       copyright: "© <span data-year>2026</span> WRLDLINE NEWS — News content is attributed to its original sources.", editorial: "Analysis and context by WRLDLINE editorial."
     }
   };
+  copy.ar.analysis = "مكتب الفهم والتحليل";
+  copy.en.analysis = "Analysis Desk";
   const t = (key) => copy[lang][key] || copy.ar[key];
   const other = lang === "ar" ? "en" : "ar";
   const nextURL = new URL(location.href);
@@ -70,6 +72,7 @@
       <a class="wl-nav-link" href="/news/?lang=${lang}">${lang === "ar" ? "الأرشيف" : "Archive"}</a>
       <a class="wl-nav-link" href="topics.html">${t("topics")}</a>
       <a class="wl-nav-link wl-nav-link--shorts" href="shorts.html">${t("shorts")}</a>
+      <a class="wl-nav-link" href="analysis.html">${t("analysis")}</a>
       <a class="wl-nav-link" href="context.html">${t("context")}</a>
       <a class="wl-nav-link" href="balance.html">${t("balance")}</a>
       <a class="wl-nav-link" href="impact.html">${t("impact")}</a>

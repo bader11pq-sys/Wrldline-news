@@ -14,7 +14,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css?v=20261114-editorial5">
-  <link rel="stylesheet" href="markets.css?v=20261114-editorial5">
+  <link rel="stylesheet" href="markets.css?v=20261123-edition-desk">
   <link rel="manifest" href="manifest.json">
   <link rel="stylesheet" href="site-enhancements.css">
 </head>
@@ -30,39 +30,54 @@
       <a class="nav-link" href="index.html">الرئيسية</a><a class="nav-link" href="index.html#breakingSection">الأخبار العاجلة</a><a class="nav-link" href="index.html#">اقتصاد وأسواق</a><a class="nav-link active" href="markets.html">الأسواق العالمية</a><a class="nav-link" href="map.html">مرصد العالم</a>
     </div></nav>
   </header>
-  <main class="container page-shell markets-shell">
+  <main class="container page-shell markets-shell" id="mainContent" data-no-reveal>
     <section class="markets-hero">
-      <div><p class="eyebrow">WRLDLINE FINANCIAL DESK</p><h1>الأسواق العالمية<span>.</span></h1><p class="welcome-subtitle">الطاقة والمعادن والعملات والأسهم والصناديق في لوحة واحدة.</p></div>
-      <div class="markets-stamp"><span class="market-pulse"></span><strong>MARKET DATA</strong><small>تغذية خارجية من TradingView</small></div>
+      <div><p class="eyebrow">WRLDLINE FINANCIAL DESK</p><h1 data-market-en="Global markets">الأسواق العالمية</h1><p class="welcome-subtitle" data-market-en="Quote, source and observation time in one place. Compare assets, then find the story behind the move.">السعر ومصدره ووقت رصده في مكانٍ واحد. قارن بين الأصول ثم اقرأ ما وراء الحركة.</p><a class="market-action" href="analysis.html" data-market-en="Analysis desk">مكتب الفهم والتحليل</a></div>
+      <div class="markets-stamp"><strong>MARKET DESK</strong><small data-market-en="Observation times in Riyadh">أوقات الرصد بتوقيت الرياض</small></div>
     </section>
     <section class="market-section direct-market-section">
-      <div class="section-heading"><div><span class="section-kicker">DIRECT API FEED</span><h2>الأسعار من مزودي البيانات</h2><p class="muted">أسعار من Finnhub مع Alpha Vantage كمسار احتياطي عند توفره.</p></div><span class="market-feed-status" id="marketFeedStatus">جارٍ الاتصال بمزودي البيانات…</span></div>
-      <div class="direct-market-grid" id="directMarketGrid"><div class="market-loading">جارٍ تحميل الأسعار…</div></div><div class="direct-fx-head"><span class="section-kicker">FOREIGN EXCHANGE · ALPHA VANTAGE</span><span class="market-feed-status" id="directFxStatus">جارٍ تحميل سعر الصرف…</span></div><div class="direct-market-grid direct-fx-grid" id="directFxGrid"><div class="market-loading">جارٍ تحميل سعر الدولار مقابل الريال…</div></div>
+      <div class="section-heading"><div><span class="section-kicker">PROVIDER QUOTES</span><h2 data-market-en="Quote board">لوحة الأسعار</h2><p class="muted" data-market-en="The last time a provider returned data is not the time the quote was observed.">وقت استلام البيانات ليس وقت رصد السعر لدى المزود.</p></div><span class="market-feed-status" id="marketFeedStatus" role="status">جارٍ الاتصال بمزودي البيانات…</span></div>
+      <div class="market-toolbar">
+        <label><span data-market-en="Search by symbol or name">ابحث بالرمز أو الاسم</span><input id="marketQuery" type="search"></label>
+        <label><span data-market-en="Asset class">فئة الأصل</span><select id="marketCategory"></select></label>
+        <label><span data-market-en="Sort quotes">ترتيب الأسعار</span><select id="marketSort"></select></label>
+        <button type="button" class="market-action" id="marketRefresh" data-market-en="Refresh quotes">تحديث الأسعار</button>
+      </div><p class="market-feed-status" id="marketCount" aria-live="polite"></p>
+      <div class="direct-market-grid" id="directMarketGrid"><div class="market-loading">جارٍ تحميل الأسعار…</div></div>
     </section>
-    <section class="market-tape-panel"><div class="market-panel-head"><div><span class="section-kicker">LIVE TICKER</span><h2>شريط الأسواق</h2></div><span class="market-source">TradingView</span></div><div class="tradingview-widget-container"><div class="tradingview-widget-container__widget"></div><div class="tradingview-widget-copyright"><a href="https://www.tradingview.com/" rel="noopener nofollow" target="_blank">بيانات ورسوم TradingView</a></div></div></section>
     <section class="market-section">
-      <div class="section-heading"><div><span class="section-kicker">GLOBAL ASSETS</span><h2>مؤشرات وأصول مختارة</h2></div><span class="muted">تتغير حسب جلسة كل سوق</span></div>
+      <div class="section-heading"><div><span class="section-kicker">QUOTE COMPARISON</span><h2 data-market-en="Compare two assets">قارن بين أصلين</h2></div><button type="button" class="market-action" id="marketClear" disabled data-market-en="Clear comparison">امسح المقارنة</button></div>
+      <p data-market-en="Different currencies, session closes and observation times are not directly interchangeable.">لكل أصل عملته ومرجع تغيّره ووقت رصده. راجعها قبل المقارنة، ولا تتعامل مع النسب على أنها من جلسة واحدة.</p>
+      <div id="marketCompareStatus" class="market-feed-status" role="status"></div><div class="direct-market-grid market-compare" id="marketComparison"></div>
+    </section>
+    <section class="market-section">
+      <div class="section-heading"><div><span class="section-kicker">USD / SAR</span><h2 data-market-en="Dollar and Riyal reference rate">سعر الدولار والريال المرجعي</h2></div><span class="market-feed-status" id="directFxStatus" role="status">جارٍ تحميل سعر الصرف…</span></div>
+      <div class="direct-market-grid direct-fx-grid" id="directFxGrid"></div>
+    </section>
+    <section class="market-section">
+      <div class="section-heading"><div><span class="section-kicker">READ THE MOVE</span><h2 data-market-en="Read the move">اقرأ ما وراء الحركة</h2></div></div>
       <div class="market-cards-grid">
-        <article class="market-card"><span class="market-card-icon">🛢️</span><div><h3>الطاقة</h3><p>خام برنت · خام غرب تكساس · الغاز الطبيعي</p></div><span class="market-card-arrow">↗</span></article>
-        <article class="market-card"><span class="market-card-icon">🥇</span><div><h3>المعادن</h3><p>الذهب · الفضة · النحاس · البلاتين</p></div><span class="market-card-arrow">↗</span></article>
-        <article class="market-card"><span class="market-card-icon">💱</span><div><h3>الفوركس</h3><p>أزواج العملات الرئيسية ومؤشر الدولار</p></div><span class="market-card-arrow">↗</span></article>
-        <article class="market-card"><span class="market-card-icon">₿</span><div><h3>الأصول الرقمية</h3><p>Bitcoin · Ethereum وأبرز العملات الرقمية</p></div><span class="market-card-arrow">↗</span></article>
-        <article class="market-card"><span class="market-card-icon">📈</span><div><h3>الأسهم</h3><p>الأسواق الأمريكية والعالمية والسوق السعودي</p></div><span class="market-card-arrow">↗</span></article>
-        <article class="market-card"><span class="market-card-icon">▦</span><div><h3>الصناديق</h3><p>صناديق المؤشرات المتداولة ETFs</p></div><span class="market-card-arrow">↗</span></article>
+        <article class="market-card"><div><h3 data-market-en="Oil and supply">النفط والمعروض</h3><p data-market-en="Targets, actual output, and different types of oil price.">قارن قرار الإنتاج بالتنفيذ والمخزون، ولا تخلط بين العقد الآجل والسعر الفوري.</p><a href="dossier/opec-plus-december-2026.html" data-market-en="Open the OPEC+ dossier">ملف أوبك+</a></div></article>
+        <article class="market-card"><div><h3 data-market-en="Rates and loans">الفائدة والتمويل</h3><p data-market-en="A policy rate decision does not reprice every loan on the same day.">لا يتغير كل قرض يوم قرار الفائدة؛ نوع الفائدة وموعد إعادة التسعير مهمان.</p><a href="impact.html#fed-rates" data-market-en="Trace the impact of policy rates">تتبّع مسار الفائدة</a></div></article>
+        <article class="market-card"><div><h3 data-market-en="Saudi market">السوق السعودي</h3><p data-market-en="Check the exchange for its calendar, session status and official disclosures.">راجع البورصة لحالة الجلسة والإفصاحات، بدل استنتاج سبب الحركة من السعر وحده.</p><a href="https://www.saudiexchange.sa/" target="_blank" rel="noopener noreferrer" data-market-en="Saudi Exchange">تداول السعودية</a></div></article>
       </div>
     </section>
+    <section class="market-tape-panel"><div class="market-panel-head"><div><span class="section-kicker">MARKET TICKER</span><h2 data-market-en="Market ticker">شريط الأسواق</h2></div><span class="market-source">TradingView</span></div><button type="button" class="market-action" data-market-widget="ticker" aria-controls="tickerWidget" data-market-en="Load ticker">حمّل شريط الأسواق</button> <a href="https://www.tradingview.com/markets/" target="_blank" rel="noopener noreferrer" data-market-en="Open TradingView markets">افتح الأسواق لدى TradingView</a><div id="tickerWidget" class="tradingview-widget-container"></div></section>
     <section class="market-section">
-      <div class="section-heading"><div><span class="section-kicker">MARKET OVERVIEW</span><h2>مراقبة الأصول حسب الفئة</h2></div></div>
-      <div class="market-widget-shell"><div class="tradingview-widget-container"><div class="tradingview-widget-container__widget"></div></div></div>
+      <div class="section-heading"><div><span class="section-kicker">MARKET OVERVIEW</span><h2 data-market-en="Asset charts">رسوم الأصول حسب الفئة</h2></div></div>
+      <button type="button" class="market-action" data-market-widget="overview" aria-controls="overviewWidget" data-market-en="Load asset charts">حمّل رسوم الأصول</button> <a href="https://www.tradingview.com/markets/" target="_blank" rel="noopener noreferrer" data-market-en="Open TradingView markets">افتح الأسواق لدى TradingView</a>
+      <div class="market-widget-shell"><div class="tradingview-widget-container" id="overviewWidget"></div></div>
     </section>
     <section class="market-section heatmap-section">
-      <div class="section-heading"><div><span class="section-kicker">GLOBAL EQUITIES</span><h2>الخريطة الحرارية للأسهم</h2><p class="muted">حجم الشركات وأداء الأسهم ضمن السوق المختار.</p></div></div>
-      <div class="market-widget-shell heatmap-shell"><div class="tradingview-widget-container"><div class="tradingview-widget-container__widget"></div></div></div>
+      <div class="section-heading"><div><span class="section-kicker">US EQUITIES</span><h2 data-market-en="U.S. equity heatmap">الخريطة الحرارية للأسهم الأمريكية</h2><p class="muted" data-market-en="Company size and stock performance for the selected market.">حجم الشركات وأداء الأسهم ضمن السوق المختار.</p></div></div>
+      <button type="button" class="market-action" data-market-widget="heat" aria-controls="heatWidget" data-market-en="Load heatmap">حمّل الخريطة الحرارية</button> <a href="https://www.tradingview.com/heatmap/stock/" target="_blank" rel="noopener noreferrer" data-market-en="Open TradingView heatmap">افتح الخريطة لدى TradingView</a>
+      <div class="market-widget-shell heatmap-shell"><div class="tradingview-widget-container" id="heatWidget"></div></div>
     </section>
-    <section class="market-disclosure"><strong>ملاحظة حول دقة الأسعار وتوقيتها</strong><p>تُقدَّم الأسعار من TradingView ومزوديه؛ وقد تكون بعض البيانات متأخرة أو تتطلب اشتراكًا. يختلف وقت التحديث حسب السوق والأصل. لا تعتمد عليها وحدها لاتخاذ قرارات استثمارية.</p><a href="https://www.tradingview.com/data-coverage/" target="_blank" rel="noopener">تفاصيل تغطية البيانات ومصادرها ↗</a></section>
+    <section class="market-disclosure"><h2 data-market-en="Market data methodology">كيف نعرض الأسعار؟</h2><p data-market-en="Quotes may be delayed or represent a previous close. ‘Older than the reference window’ means an observation is older than 2 hours for crypto, 36 hours for FX, or 96 hours for most traded assets. This is not an exchange-session check or investment advice.">قد تعرض التغذية أسعارًا متأخرة أو إغلاق جلسة سابقة. «أقدم من النافذة المرجعية» تعني مرور أكثر من ساعتين للأصول الرقمية، و36 ساعة للصرف، و96 ساعة لمعظم الأصول المتداولة. لا تتحقق هذه الحدود من حالة جلسة التداول. المعلومات ليست توصية استثمارية.</p><a href="https://www.tradingview.com/data-coverage/" target="_blank" rel="noopener noreferrer" data-market-en="TradingView data coverage">تفاصيل تغطية TradingView ↗</a></section>
   </main>
   <footer class="site-footer"><div class="container footer-main"><a class="brand footer-brand" href="index.html"><span class="brand-mark">W</span><span class="brand-copy"><strong>WRLDLINE</strong><small>GLOBAL NEWS NETWORK</small></span></a><p>معلومات الأسواق من مزودي البيانات الخارجيين.</p><div class="footer-links policy-site-links"><a href="index.html">العودة إلى الأخبار ↑</a><a href="about.html">عن الموقع</a><a href="contact.html">التواصل</a><a href="privacy.html">الخصوصية</a><a href="terms.html">الشروط</a><a href="corrections.html">التصحيح</a><a href="newsletter.html">النشرة</a></div></div><div class="container footer-bottom"><span>© <span id="marketYear"></span> WRLDLINE NEWS</span><span>البيانات لأغراض المعلومات العامة.</span></div></footer>
-  <script src="markets.js?v=20261119-1" defer></script>
+  <script src="market-model.js?v=20261123-edition-desk" defer></script>
+  <script src="markets.js?v=20261123-edition-desk" defer></script>
 <script src="share.js?v=20261113-4" defer></script>
 <script src="analytics-config.js?v=20261114-1"></script>
 <script src="analytics.js?v=20261114-1" defer></script>

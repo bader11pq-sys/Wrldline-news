@@ -87,5 +87,19 @@
       countries: filters.country === "all" ? byCountry.size : Number(events.length > 0)
     };
   }
-  return Object.freeze({ levels, maxRows, defaults, fetchFeed, filtersFrom, filtersTo, normalize, select });
+  function countryStats(byCountry, code) {
+    const reports = byCountry.get(code) || [];
+    const distribution = Object.fromEntries(levels.map(level => [level, 0]));
+    const sources = new Set();
+    let latest = null;
+    for (const report of reports) {
+      distribution[report.severity]++;
+      const publisher = typeof report.source_name === "string" ? report.source_name.trim().normalize("NFKC").toLowerCase() : "";
+      if (publisher) sources.add(publisher);
+      latest = Math.max(latest ?? -Infinity, report.published);
+    }
+    return {count:reports.length, high:distribution.high+distribution.critical, sources:sources.size,
+      top:reports[0]?.severity || null, latest, distribution};
+  }
+  return Object.freeze({ levels, maxRows, defaults, fetchFeed, filtersFrom, filtersTo, normalize, select, countryStats });
 });
