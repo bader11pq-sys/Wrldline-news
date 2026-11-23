@@ -41,6 +41,10 @@ async def main():
             if await decline.is_visible():
                 await decline.click()
             await expect(page.locator(".rf-intro h1")).to_have_text("الأخبار من أجل الإنسان.", use_inner_text=True)
+            await page.wait_for_function("""() => {
+                const mark = document.querySelector('header .wl-brand-mark img');
+                return mark?.complete && mark.naturalWidth === 132 && mark.currentSrc.endsWith('.webp');
+            }""")
             assert await page.evaluate("document.documentElement.scrollWidth <= innerWidth")
             assert await page.locator("#newsSection").evaluate("(e) => e.getBoundingClientRect().top < 620")
             await expect(page.locator("#heroLayout .front-pick-link")).to_have_count(5)
@@ -57,10 +61,13 @@ async def main():
 
             if width == 375:
                 await expect(page.locator('.wlm-chips a[href="rights.html"]')).to_have_text("Rights & freedoms")
-                await expect(page.locator('.wlm-chips a[href="sections.html"]')).to_have_text("News sections")
+                await expect(page.locator('.wlm-chips a[href="/section/world"]')).to_have_text("World")
+                await expect(page.locator('.wlm-chips a[href="sections.html"]')).to_have_count(0)
                 await page.locator(".wlm-tab[aria-controls=wlmSections]").click()
                 await expect(page.locator('#wlmSections a[href="/rights.html"]')).to_be_visible()
-                await expect(page.locator('#wlmSections a[href="/sections.html"]')).to_be_visible()
+                directory = page.locator('#wlmSections a[href="/sections.html"]')
+                await expect(directory).to_be_visible()
+                await expect(directory.locator("strong")).to_have_text("Seven coverage sections")
                 await page.keyboard.press("Escape")
                 await expect(page.locator(".wlm-tab[aria-controls=wlmSections]")).to_be_focused()
 
@@ -123,6 +130,8 @@ async def main():
         assert await page.evaluate("document.documentElement.scrollWidth <= innerWidth")
         await page.locator(".rd-nav a[href='sections.html']").click()
         await expect(page.locator(".hn-desk")).to_have_count(7)
+        for slug in ["politics", "economy", "world", "rights", "society", "health"]:
+            await expect(page.locator(f'.hn-desk a[href="/section/{slug}"]')).to_be_visible()
         assert await page.evaluate("document.documentElement.scrollWidth <= innerWidth")
         await page.locator(".rd-nav a[href='rights-cases/index.html']").click()
         await expect(page.locator("#files .hn-card")).to_have_count(3)
