@@ -75,7 +75,7 @@ async function loadMediaLibrary(){
  host.replaceChildren();const files=(result.data||[]).filter(item=>item.name&&!item.id?.endsWith("/"));
  if(!files.length){const empty=document.createElement("p");empty.className="media-library-empty";empty.textContent=t("لا توجد ملفات في مكتبة الصور بعد.","No media files are in the library yet.");host.append(empty);return;}
  for(const item of files){const path="articles/"+item.name,type=mediaIsVideo(item.name)?"video":"image",card=document.createElement("button");card.type="button";card.className="media-library-item";card.title=item.name;
-  const media=document.createElement(type);media.src=mediaPublicUrl(path);media.alt=item.name;media.loading="lazy";if(type==="video"){media.muted=true;media.playsInline=true;media.preload="metadata";}
+  const media=document.createElement(type);media.src=mediaPublicUrl(path);media.alt=item.name;media.decoding="async";media.addEventListener("error",()=>{media.classList.add("media-library-broken");media.alt=t("تعذر عرض المعاينة","Preview unavailable");});if(type==="video"){media.muted=true;media.playsInline=true;media.preload="metadata";}
   const name=document.createElement("small");name.textContent=item.name;card.append(media,name);card.addEventListener("click",()=>{const url=media.src;$("imageUrl").value=url;$("mediaType").value=type;$("mediaFile").value="";setMediaPreview(url,type);closeMediaLibrary();message(t("تم اختيار الوسائط من المكتبة.","Media selected from the library."));});host.append(card);
  }
 }
