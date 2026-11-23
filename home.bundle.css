@@ -777,12 +777,15 @@ body.modal-open{overflow:hidden}
 
 /* Move only the newest headline; keep the label and motion control stationary. */
 .wl-breaking-text{position:relative;display:block;flex:1;min-width:0;height:28px;line-height:28px;overflow:hidden;white-space:nowrap;direction:ltr;text-align:left;color:inherit;text-decoration:none}
-.wl-breaking-text .breaking-marquee{display:inline-block;min-width:max-content;will-change:transform;animation:wrld-breaking var(--breaking-duration,14s) linear infinite;animation-delay:calc(-.25 * var(--breaking-duration,14s));unicode-bidi:isolate}
+.wl-breaking-text .breaking-marquee{display:inline-block;min-width:max-content;will-change:transform;animation:var(--breaking-animation,wrld-breaking-ltr) var(--breaking-duration,14s) linear infinite;unicode-bidi:isolate}
+.wl-breaking-text.is-rtl{--breaking-animation:wrld-breaking-rtl}
 .wl-breaking-motion{flex:none;min-height:32px;padding:2px 8px;border:1px solid #ffffffa0;border-radius:5px;background:transparent;color:inherit;font:inherit;font-size:11px;cursor:pointer}
 .wl-breaking-text:focus-visible,.wl-breaking-motion:focus-visible{outline:2px solid white;outline-offset:2px}
 .wl-breaking:is(.is-paused,:focus-within) .breaking-marquee{animation:none;transform:none;min-width:0;max-width:100%;overflow:hidden;text-overflow:ellipsis}
 .wl-breaking:is(.is-paused,:focus-within) .wl-breaking-text.is-rtl{text-align:right}
-@keyframes wrld-breaking{from{transform:translateX(var(--breaking-track,100%))}to{transform:translateX(-100%)}}
+/* Enter with the reading edge first: the first word is on the right in Arabic. */
+@keyframes wrld-breaking-ltr{from{transform:translateX(var(--breaking-track,100%))}to{transform:translateX(-100%)}}
+@keyframes wrld-breaking-rtl{from{transform:translateX(-100%)}to{transform:translateX(var(--breaking-track,100%))}}
 @media(prefers-reduced-motion:reduce){.wl-breaking .breaking-marquee{animation:none;transform:none;min-width:0;max-width:100%;overflow:hidden;text-overflow:ellipsis}.wl-breaking-text.is-rtl{text-align:right}.wl-breaking-motion{display:none}}
 @media(max-width:760px){.wl-breaking-in{gap:8px;min-height:40px}.wl-breaking-label{padding-inline:7px;font-size:10px}.wl-breaking-time{font-size:9px}.wl-breaking-text{font-size:11.5px}.breaking-news-card{grid-template-columns:104px minmax(0,1fr);gap:10px;min-height:132px}.breaking-news-image{width:104px;min-height:132px}.breaking-news-copy{padding:13px 13px 13px 0;gap:7px}.breaking-news-copy .story-meta{gap:5px;line-height:1.6}.breaking-news-copy h3{font-size:13px;line-height:1.8}.breaking-news-copy p{font-size:10.5px;line-height:1.7;-webkit-line-clamp:2}.breaking-news-copy .breaking-source{font-size:9px;line-height:1.5}}
 
