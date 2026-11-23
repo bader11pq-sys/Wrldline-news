@@ -42,7 +42,7 @@
     const changed = permitted !== (allowed === true);
     permitted = allowed === true;
     if (permitted && !q("#wlSiteEditorStyles")) {
-      document.head.append(node("link", null, { id:"wlSiteEditorStyles", rel:"stylesheet", href:"/site-editor.css?v=20261123-media-library-v2" }));
+      document.head.append(node("link", null, { id:"wlSiteEditorStyles", rel:"stylesheet", href:"/site-editor.css?v=20261123-media-library-v3-editor-access" }));
     }
     if (!permitted) {
       dialog?.close();
@@ -58,7 +58,7 @@
     const generation = ++roleGeneration;
     if (userId !== session?.user?.id) applyRole(false);
     userId = session?.user?.id;
-    if (!userId || session.user.app_metadata?.role !== "admin") { applyRole(false); return; }
+    if (!userId || !["editor","admin"].includes(session.user.app_metadata?.role)) { applyRole(false); return; }
     authRetryAt = Date.now() + 30_000;
     try {
       const { data, error } = await client.rpc("site_editor", { p_action:"access" });
