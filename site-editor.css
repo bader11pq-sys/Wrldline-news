@@ -62,6 +62,10 @@
 .wl-edit-quick input[name="title"] {font-size:1.125rem;font-weight:700}
 .wl-edit-field.is-check {display:flex;gap:var(--editor-s);align-items:center;min-height:44px}
 .wl-edit-field input[type="checkbox"] {width:1.25rem;min-height:1.25rem;accent-color:var(--editor-accent);flex:none}
+.wl-edit-breaking {border:1px solid var(--editor-line);border-inline-start:3px solid var(--editor-danger);border-radius:.5rem;padding:0 var(--editor-m) var(--editor-s)}
+.wl-edit-breaking label,.wl-edit-breaking input {cursor:pointer}
+.wl-edit-breaking small {display:block;color:var(--editor-muted);font-size:.8125rem}
+.wl-site-editor .wl-edit-publish-breaking {background:#a3232d;border-color:#a3232d;color:white}
 .wl-edit-toolbar,.wl-edit-footer,.wl-edit-confirm {display:flex;align-items:center;gap:var(--editor-s);flex-wrap:wrap}
 .wl-edit-toolbar small {margin-inline-start:auto;color:var(--editor-muted);font-size:.8125rem}
 .wl-edit-preview {background:var(--editor-field);border:1px solid var(--editor-line);border-radius:.5rem;padding:var(--editor-l);overflow-wrap:anywhere}

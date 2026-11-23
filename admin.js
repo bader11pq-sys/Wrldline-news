@@ -8,6 +8,7 @@ const t=(ar,en)=>currentLang()==="ar"?ar:en;
 let cachedArticles=[];
 let trustSchemaAvailable=false;
 let editorialExtrasAvailable=false;
+let canSetBreaking=false;
 let activeArticle=null, editorLoadVersion=0;
 const workspace=window.WLEditorWorkspace;
 const editionEditor=window.WLEditorEditions;
@@ -143,7 +144,7 @@ async function setTranslationStatus(id,status){
  message(status==="published"?t("نُشرت الترجمة بعد المراجعة.","Translation published after review."):t("رُفضت الترجمة.","Translation rejected."));
  await loadTranslationReview();
 }
-async function showSession(){await ensureDb();const {data:{session}}=await db.auth.getSession();const role=session?.user?.app_metadata?.role;const allowed=["editor","admin"].includes(role);$("siteEditorGuide").hidden=role!=="admin";$("loginPanel").classList.toggle("hidden",!!session);$("accessPanel").classList.toggle("hidden",!session||allowed);$("editorPanel").classList.toggle("hidden",!allowed);workspace?.account(allowed?session.user.id:null,async draft=>{
+async function showSession(){await ensureDb();const {data:{session}}=await db.auth.getSession();const role=session?.user?.app_metadata?.role;const allowed=["editor","admin"].includes(role);canSetBreaking=role==="admin";$("breakingAdminOption").classList.toggle("hidden",!canSetBreaking);$("siteEditorGuide").hidden=!canSetBreaking;$("loginPanel").classList.toggle("hidden",!!session);$("accessPanel").classList.toggle("hidden",!session||allowed);$("editorPanel").classList.toggle("hidden",!allowed);workspace?.account(allowed?session.user.id:null,async draft=>{
  if(draft.id)return editArticle({id:draft.id},true);
  resetForm();return true;
 });if(session&&allowed){$("userLabel").textContent=(session.user.email||"محرر مسجل")+" · "+role;void loadArticles();void loadTranslationReview();void loadOpsDashboard();if(opsRefreshTimer)clearInterval(opsRefreshTimer);opsRefreshTimer=setInterval(()=>{if(!document.hidden)loadOpsDashboard();},60000);}else{resetForm();if(opsRefreshTimer)clearInterval(opsRefreshTimer);opsRefreshTimer=null;if(session){message("تم تسجيل الدخول، لكن الحساب لا يحمل دوراً تحريرياً موثوقاً.");}}}
@@ -310,6 +311,7 @@ $("articleForm").addEventListener("submit",async e=>{
    const imageUrl=uploaded?uploaded.url:($("imageUrl").value.trim()||null);
    const payload={title,summary,category:$("category").value,country:$("country").value.trim()||null,source_name:$("contentType").value==="editorial"?"WRLDLINE NEWS":$("source").value.trim(),url:$("sourceUrl").value.trim()||(!/^https?:\/\//i.test(previous?.url||"")&&previous?.url)||("editorial-"+Date.now()),image_url:imageUrl,media_type:uploaded?uploaded.type:(imageUrl?($("mediaType").value||"image"):null),editorial_status:status,is_breaking:$("isBreaking").checked,content_type:$("articleKind").value,sponsor_name:$("articleKind").value==="sponsored"?($("sponsorName").value.trim()||null):null,sponsor_url:$("articleKind").value==="sponsored"?($("sponsorUrl").value.trim()||null):null,correction_note:$("correctionNote").value.trim()||null,corrected_at:$("correctionNote").value.trim()?new Date().toISOString():null};
    payload.source_url=$("sourceUrl").value.trim()||null;payload.event_country=payload.country;
+   if(!canSetBreaking)delete payload.is_breaking;
    if(previous&&previous.country===payload.event_country){delete payload.country;delete payload.event_country;}
    if(previous&&(previous.correction_note||null)===payload.correction_note)payload.corrected_at=previous.corrected_at||null;
    if(!editorialExtrasAvailable){for(const field of ["media_type","content_type","sponsor_name","sponsor_url"])delete payload[field];}
