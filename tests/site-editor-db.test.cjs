@@ -99,6 +99,12 @@ test("only a current admin can enter, read private drafts, publish, edit and acc
     a=await action("save",a.id,a.version,{editorial_status:"rejected",summary:"New material invalidates review."});
     assert.equal(a.trust_needs_review,true);
     assert.equal(a.editorial_status,"rejected");
+    await db.exec("reset role; alter table public.articles add audience_lane text not null default 'excluded'");
+    await claims(admin,"admin");
+    const held = await action("save",null,null,article);
+    assert.equal(held.audience_lane,"excluded");
+    await assert.rejects(action("save",held.id,held.version,{editorial_status:"published"}),/Publication gate did not permit/);
+    assert.equal((await action("load",held.id)).editorial_status,"draft");
     await db.exec("reset role");
     await db.query("update auth.users set raw_app_meta_data='{}' where id=$1",[admin]);
     await claims(admin,"admin");

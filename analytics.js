@@ -223,7 +223,7 @@
   }
   function openSettings() {
     if (dialog) return;
-    dialog = document.createElement("aside"); dialog.className = "wrldline-consent";
+    dialog = document.createElement("div"); dialog.className = "wrldline-consent";
     dialog.setAttribute("role", "dialog");
     dialog.dataset.languageManaged = "";
     dialog.innerHTML = '<p><strong></strong> <span data-consent-intro></span></p><label><input type="checkbox" data-returning> <span data-consent-returning></span></label><p data-consent-policy></p><div class="actions"><button type="button" data-choice="granted" data-consent="granted"></button><button type="button" data-choice="denied" data-consent="denied"></button><button type="button" data-close></button><a href="/privacy.html"></a></div>';

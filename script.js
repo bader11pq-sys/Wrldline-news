@@ -11,6 +11,10 @@ const MAIN_FEED_LIMIT = 24;
 const SUPPLEMENTAL_FEED_LIMIT = 8;
 const MAX_FEED_OFFSET = 240;
 const PUBLIC_NEWS_RPC = WRLDLINE_PUBLIC_NEWS_API+"/rest/v1/rpc/public_home_news_recent_v3";
+// Dedicated, index-backed feeds: asking the main RPC for breaking/exclusive-only
+// rows forced a scan and intermittently hit the database statement timeout.
+const BREAKING_FEED_RPC = WRLDLINE_PUBLIC_NEWS_API+"/rest/v1/rpc/public_breaking_feed";
+const EXCLUSIVE_FEED_RPC = WRLDLINE_PUBLIC_NEWS_API+"/rest/v1/rpc/public_exclusive_feed";
 const WRLDLINE_TAXONOMY = window.WRLDLINE_TAXONOMY || null;
 const eventDesk = window.WLEventDesk;
 const eventCatalog = eventDesk?.fromPage(document) || [];
@@ -289,9 +293,11 @@ async function loadSupplemental(name,before,retryButton){
  renderSupplementalNotice(name);
  const since=new Date(Date.parse(before)-24*60*60*1000).toISOString();
  try{
-  section.rows=section.filter
-   ?await getPublicNewsRows({p_limit:SUPPLEMENTAL_FEED_LIMIT,p_before:before,p_since:name==="breaking"?since:null,p_offset:0,p_newsdata_only:false,[section.filter]:true},{timeout:3500})
-   :await getPublicNewsRows({p_days:7,p_limit:5},{url:WRLDLINE_PUBLIC_NEWS_API+"/rest/v1/rpc/public_top_read_articles",timeout:3500});
+  section.rows=name==="breaking"
+   ?await getPublicNewsRows({p_limit:SUPPLEMENTAL_FEED_LIMIT,p_since:since},{url:BREAKING_FEED_RPC,timeout:6000})
+   :name==="exclusive"
+   ?await getPublicNewsRows({p_limit:SUPPLEMENTAL_FEED_LIMIT},{url:EXCLUSIVE_FEED_RPC,timeout:6000})
+   :await getPublicNewsRows({p_days:7,p_limit:5},{url:WRLDLINE_PUBLIC_NEWS_API+"/rest/v1/rpc/public_top_read_articles",timeout:6000});
   section.status="ready";
  }catch(error){
   section.status="error";
@@ -818,7 +824,7 @@ function renderMissedStories(){
  if(count)count.textContent=!all.length&&(failed||awaiting)?"—":new Intl.NumberFormat(state.lang).format(all.length);
  const more=document.getElementById("missedLoadMoreButton");
  if(more){more.hidden=items.length>=all.length;more.textContent=ui("عرض المزيد","Show more");}
- if(!items.length){host.innerHTML='<div class="wl-empty">'+(failed?partial:awaiting?ui("جارٍ تحميل التغطية الإضافية…","Loading additional coverage…"):ui("لا توجد أخبار إضافية في الدفعات المحمّلة.","No additional stories in the loaded batches."))+'</div>';return;}
+ if(!items.length){host.innerHTML='<div class="wl-empty">'+(failed?partial:awaiting?ui("جارٍ تحميل التغطية الإضافية…","Loading additional coverage…"):ui("لا توجد أخبار إضافية الآن.","No additional stories right now."))+'</div>';return;}
  host.innerHTML=(failed?'<p class="wl-empty">'+partial+'</p>':'')+items.map(a=>'<article class="news-card missed-news-card content-card-'+a.contentType+'"><div class="card-open" role="button" tabindex="0" data-open="'+escapeHTML(a.id)+'">'+imageMarkup(a,"card-image")+'<div class="card-content"><div class="story-meta"><span class="category-label">'+escapeHTML(categoryName(a.cat))+'</span>'+articleCountryMarkup(a)+'<span class="read-time">'+wlReadingTime(a)+'</span>'+wlSaveMarkup(a)+'</div><h3>'+escapeHTML(a.title)+'</h3>'+sourceLineMarkup(a)+'</div></div></article>').join("");
  host.querySelectorAll("[data-open]").forEach(el=>el.addEventListener("click",()=>openArticle(el.dataset.open)));
  host.querySelectorAll("[data-save]").forEach(el=>el.addEventListener("click",e=>{e.stopPropagation();toggleSaved(el.dataset.save);}));
@@ -838,12 +844,14 @@ function renderPopularStories(rows){
 }
 function renderExclusive(){
  const host=document.getElementById("exclusiveNewsGrid");if(!host)return;
- const items=state.frontPageArticles.filter(a=>!a.isNewsDataOnly&&a.isExclusive).sort((a,b)=>Date.parse(b.published_at)-Date.parse(a.published_at)).slice(0,6);
+ const feedRows=Array.isArray(supplemental.exclusive.rows)?supplemental.exclusive.rows.map(normalizeArticle).filter(a=>a.title):[];
+ const pool=feedRows.length?feedRows:state.frontPageArticles.filter(a=>!a.isNewsDataOnly&&a.isExclusive);
+ const items=pool.slice().sort((a,b)=>Date.parse(b.published_at)-Date.parse(a.published_at)).slice(0,6);
  const count=document.getElementById("exclusiveCount");
  const status=supplemental.exclusive.status;
  renderSupplementalNotice("exclusive",!!items.length);
  if(count)count.textContent=!items.length&&status!=="ready"?"—":new Intl.NumberFormat(state.lang).format(items.length);
- if(!items.length){host.innerHTML=status==="error"?'':'<div class="exclusive-empty">'+(status==="loading"?ui("جارٍ تحميل الأخبار الحصرية…","Loading exclusive stories…"):ui("لا توجد أخبار حصرية في الدفعات المحمّلة.","No exclusive stories in the loaded batches."))+'</div>';return;}
+ if(!items.length){host.innerHTML=status==="error"?'':'<div class="exclusive-empty">'+(status==="loading"?ui("جارٍ تحميل الأخبار الحصرية…","Loading exclusive stories…"):ui("لا توجد أخبار حصرية منشورة الآن.","No exclusive stories are published right now."))+'</div>';return;}
  host.innerHTML=items.map(a=>'<article class="news-card exclusive-news-card content-card-'+a.contentType+'"><span class="exclusive-tag">'+ui("حصري لدى المصدر","Publisher exclusive")+'</span><div class="card-open" role="button" tabindex="0" data-open="'+escapeHTML(a.id)+'">'+imageMarkup(a,"card-image")+'<div class="card-content"><div class="story-meta"><span class="category-label">'+escapeHTML(categoryName(a.cat))+'</span>'+typeBadgesMarkup(a)+'<span class="read-time">'+wlReadingTime(a)+'</span>'+wlSaveMarkup(a)+'</div><h3>'+escapeHTML(a.title)+'</h3><p>'+escapeHTML(a.summary)+'</p>'+sourceLineMarkup(a)+'</div></div></article>').join("");
  host.querySelectorAll("[data-open]").forEach(el=>el.addEventListener("click",()=>openArticle(el.dataset.open)));
  host.querySelectorAll("[data-save]").forEach(el=>el.addEventListener("click",e=>{e.stopPropagation();toggleSaved(el.dataset.save);}));
@@ -893,7 +901,7 @@ function renderBreakingSection(){
  const status=supplemental.breaking.status;
  renderSupplementalNotice("breaking",!!items.length);
  if(count)count.textContent=!items.length&&status!=="ready"?"—":ui("آخر 15 دقيقة","Past 15 minutes");
- if(!items.length){host.innerHTML=status==="error"?'':'<div class="breaking-empty">'+(status==="loading"?ui("جارٍ تحميل غرفة العاجل…","Loading breaking news…"):ui("لا أخبار عاجلة في الدفعات المحمّلة خلال آخر 15 دقيقة.","No breaking stories from the past 15 minutes in the loaded batches."))+'</div>';return;}
+ if(!items.length){host.innerHTML=status==="error"?'':'<div class="breaking-empty">'+(status==="loading"?ui("جارٍ تحميل غرفة العاجل…","Loading breaking news…"):ui("لا أخبار عاجلة خلال آخر 15 دقيقة.","No breaking stories in the past 15 minutes."))+'</div>';return;}
  host.innerHTML=items.slice(0,6).map(a=>'<article class="breaking-news-card content-card-'+a.contentType+'" data-content-type="'+a.contentType+'" role="button" tabindex="0" data-open="'+escapeHTML(a.id)+'">'+imageMarkup(a,"breaking-news-image")+'<div class="breaking-news-copy"><div class="story-meta"><span class="breaking-badge">عاجل</span>'+contentBadgeMarkup(a)+'<span>'+escapeHTML(categoryName(a.cat))+'</span><span class="read-time">'+timeAgo(a.published_at)+'</span></div><h3>'+escapeHTML(a.title)+'</h3><p>'+escapeHTML(a.summary)+'</p>'+sourceLineMarkup(a,"breaking-source")+'</div></article>').join("");
  host.querySelectorAll("[data-open]").forEach(el=>el.addEventListener("click",()=>openArticle(el.dataset.open)));
 }

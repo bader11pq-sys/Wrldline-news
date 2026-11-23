@@ -253,8 +253,14 @@ begin
     select to_jsonb(x),x.xmin::text into snapshot,version from public.articles x where id=p_id;
     a:=jsonb_populate_record(null::public.articles,snapshot);
   end if;
+  -- Check the authoritative trigger result after the write. An exception rolls
+  -- back the whole save when the publication gate would hide the story.
+  if p_action = 'save' and a.editorial_status = 'published'
+    and snapshot->>'audience_lane' in ('excluded','pending') then
+    raise exception 'Publication gate did not permit this story' using errcode='P0001';
+  end if;
   return (select jsonb_object_agg(key,value) from jsonb_each(to_jsonb(a))
-          where key=any(fields||array['id','editorial_trust_status','trust_needs_review','human_translation_status']))
+          where key=any(fields||array['id','editorial_trust_status','trust_needs_review','human_translation_status','audience_lane']))
     || jsonb_build_object('version',version,'source_url',case when private.trust_safe_url(a.url) then a.url else a.source_url end);
 end;
 $$;

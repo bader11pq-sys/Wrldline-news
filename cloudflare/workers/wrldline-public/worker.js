@@ -1,13 +1,38 @@
 /* WRLDLINE public summary SSR. Module Worker; no service-role key or user sessions. */
 /** @typedef {Record<string, unknown> & {id: string, published_at: string}} PublicArticle */
-/** @typedef {{title: string, description: string, body: string, canonical?: string, lang?: string, image?: string, schema?: Record<string, unknown> | null, noindex?: boolean, enhance?: boolean}} PageOptions */
+/** @typedef {{title: string, description: string, body: string, canonical?: string, lang?: string, image?: string, schema?: Record<string, unknown> | null, noindex?: boolean, enhance?: boolean, currentPath?: string}} PageOptions */
 /** @typedef {{SUPABASE_URL?: string, SUPABASE_ANON_KEY?: string, PUBLIC_TRUST_ENABLED?: string}} WorkerEnv */
 export const PUBLIC_ORIGIN = "https://al-ghaib.us.ci";
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const XML_HEAD = '<?xml version="1.0" encoding="UTF-8"?>';
 const SITEMAP_NS = 'xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"';
 const MAX_INDEX_PAGES = 50000;
-const PUBLIC_FIELDS = ["id", "title", "summary", "image_url", "author", "lang", "category", "country", "event_country", "source_language", "source_name", "source_url", "url", "published_at", "is_breaking", "verification", "correction_note", "corrected_at"];
+const PUBLIC_FIELDS = ["id", "title", "summary", "image_url", "author", "lang", "category", "country", "event_country", "source_language", "source_name", "source_url", "url", "published_at", "is_breaking", "verification", "correction_note", "corrected_at", "audience_lane", "content_type", "received_at", "gate_reason"];
+
+/* Editorial sections. A section page is a real, indexable page with an
+   introduction, the latest published stories, and a clear statement of what the
+   desk covers. `key` must match public.articles.category. */
+export const SECTIONS = [
+  { slug: "politics", key: "politics", ar: "سياسة", en: "Politics", intro: "القرار السياسي والعلاقات الدولية والانتخابات، وما يعنيه كل ذلك للخليج والعالم العربي.", introEn: "Political decisions, diplomacy, elections, and what they mean for the Gulf and the Arab world." },
+  { slug: "economy", key: "economy", ar: "اقتصاد", en: "Economy", intro: "الطاقة والتجارة والشحن والأسواق والتضخم والموازنات، بأرقام منسوبة إلى مصادرها.", introEn: "Energy, trade, shipping, markets, inflation and budgets, with every figure attributed to its source." },
+  { slug: "world", key: "world", ar: "حول العالم", en: "World", intro: "التطورات الدولية التي تمسّ المنطقة أو تقدّم مقارنة مفيدة للقارئ العربي.", introEn: "International developments that affect the region or offer a useful comparison for the Arab reader." },
+  { slug: "security", key: "security", ar: "أمن ودفاع", en: "Security & defence", intro: "النزاعات والعمليات العسكرية والاتفاقيات الأمنية، مع فصل ما تحقق عمّا لم يتحقق.", introEn: "Conflicts, military operations and security agreements, separating what is established from what is not." },
+  { slug: "society", key: "society", ar: "مجتمع", en: "Society", intro: "التعليم والصحة والعمل والسكن والخدمات، ومن يصل إليها ومن يُستبعد منها.", introEn: "Education, health, work, housing and public services: who reaches them and who is left out." },
+  { slug: "environment", key: "environment", ar: "بيئة", en: "Environment", intro: "المناخ والطاقة النظيفة والمياه والكربون، وأثر السياسات البيئية على الاقتصاد الخليجي.", introEn: "Climate, clean energy, water and carbon, and how environmental policy lands on Gulf economies." },
+  { slug: "tech", key: "tech", ar: "تقنية", en: "Technology", intro: "التقنية والذكاء الاصطناعي والبنية الرقمية، وتأثيرها على المنطقة والأفراد.", introEn: "Technology, AI and digital infrastructure, and their effect on the region and its people." },
+  { slug: "culture", key: "culture", ar: "ثقافة", en: "Culture", intro: "الثقافة والمجتمع والهوية، بعيداً عن أخبار المشاهير.", introEn: "Culture, society and identity, away from celebrity coverage." },
+  { slug: "science", key: "science", ar: "علوم", en: "Science", intro: "العلوم والبحث والصحة العامة بلغة مفهومة ودون مبالغة.", introEn: "Science, research and public health in plain language, without exaggeration." },
+  { slug: "health", key: "health", ar: "صحة", en: "Health", intro: "الصحة العامة والسياسات الصحية وحق الوصول إلى الرعاية.", introEn: "Public health, health policy and the right to access care." },
+  { slug: "rights", key: "rights", ar: "الحقوق والحريات", en: "Rights & freedoms", intro: "الحريات المدنية والسياسية والعدالة والقانون، مع فصل الاتهام عن الحكم.", introEn: "Civil and political freedoms, justice and the law, keeping accusation separate from verdict." }
+];
+const SECTION_BY_SLUG = new Map(SECTIONS.map(section => [section.slug, section]));
+const SECTION_BY_KEY = new Map(SECTIONS.map(section => [section.key, section]));
+
+const ARCHIVE_LANES = {
+  all: { ar: "كل الأخبار", en: "All published", note: "عربي ودولي مختار", noteEn: "Arabic and vetted international" },
+  arabic: { ar: "عربي", en: "Arabic", note: "أولوية المنصة", noteEn: "Platform priority" },
+  world: { ar: "دولي مختار", en: "Vetted world", note: "مصادر دولية موثوقة وذات صلة", noteEn: "Trusted international sources with a regional link" }
+};
 
 /** @param {unknown} value @param {number} [max] */
 export function text(value, max = 12000) {
@@ -46,7 +71,26 @@ function language(value) {
 /** @param {string} lang */
 function labels(lang) {
   const en = !/^(ar|fa|he|ur)(-|$)/.test(lang);
-  return { en, home: en ? "Newsroom" : "غرفة الأخبار", news: en ? "Published news" : "الأخبار المنشورة", source: en ? "Original source" : "المصدر الأصلي", published: en ? "Published" : "تاريخ النشر", author: en ? "By" : "الكاتب", correction: en ? "Published correction" : "تصحيح منشور", share: en ? "Share story" : "مشاركة الخبر", copy: en ? "Copy article link" : "نسخ رابط الخبر", original: en ? "Read at the original source" : "قراءة الخبر لدى المصدر الأصلي", missing: en ? "Original source link unavailable; no substitute link is invented." : "رابط المصدر الأصلي غير متوفر؛ لا نستبدله برابط وهمي.", reading: en ? "WRLDLINE Arabic reader note" : "قراءة WRLDLINE للقارئ العربي", impact: en ? "Why it may matter" : "وش يعني لك؟", watch: en ? "What to watch next" : "ما الذي نراقبه تالياً؟", aiNotice: en ? "AI-assisted context based on the available article text. It is not human verification, a prediction, or personal financial advice." : "سياق مساعد بالذكاء الاصطناعي مستند إلى نص الخبر المتاح؛ لا يُعد تحققاً بشرياً أو تنبؤاً أو نصيحة مالية شخصية.", disclosure: en ? "This page publishes a summary, not the full source story. Full reporting and subsequent updates remain with the attributed source." : "تنشر هذه الصفحة ملخصاً، لا النص الكامل للخبر لدى المصدر. التغطية الكاملة وتحديثاتها متاحة لدى المصدر المنسوب إليه الخبر." };
+  return {
+    en, home: en ? "Newsroom" : "غرفة الأخبار", news: en ? "Published news" : "الأخبار المنشورة",
+    source: en ? "Original source" : "المصدر الأصلي", published: en ? "Published" : "تاريخ النشر",
+    author: en ? "By" : "الكاتب", correction: en ? "Published correction" : "تصحيح منشور",
+    share: en ? "Share story" : "مشاركة الخبر", copy: en ? "Copy article link" : "نسخ رابط الخبر",
+    original: en ? "Read at the original source" : "قراءة الخبر لدى المصدر الأصلي",
+    missing: en ? "Original source link unavailable; no substitute link is invented." : "رابط المصدر الأصلي غير متوفر؛ لا نستبدله برابط وهمي.",
+    reading: en ? "WRLDLINE Arabic reader note" : "قراءة WRLDLINE للقارئ العربي",
+    impact: en ? "Why it may matter" : "وش يعني لك؟", watch: en ? "What to watch next" : "ما الذي نراقبه تالياً؟",
+    aiNotice: en ? "AI-assisted context based on the available article text. It is not human verification, a prediction, or personal financial advice." : "سياق مساعد بالذكاء الاصطناعي مستند إلى نص الخبر المتاح؛ لا يُعد تحققاً بشرياً أو تنبؤاً أو نصيحة مالية شخصية.",
+    disclosure: en ? "This page publishes a summary, not the full source story. Full reporting and subsequent updates remain with the attributed source." : "تنشر هذه الصفحة ملخصاً، لا النص الكامل للخبر لدى المصدر. التغطية الكاملة وتحديثاتها متاحة لدى المصدر المنسوب إليه الخبر.",
+    related: en ? "Follow this story" : "تابع الموضوع",
+    sections: en ? "Sections" : "الأقسام",
+    editorial: en ? "From the WRLDLINE desk" : "من تحرير WRLDLINE",
+    gate: en ? "Every story passes a publication gate before it appears: language, source standing, topic and a supported link to the region. Reaching the database is not enough to be published." : "لا يظهر الخبر لمجرد وصوله إلى قاعدة البيانات؛ تمر كل مادة ببوابة نشر تتحقق من اللغة ومكانة المصدر والموضوع وصلته المدعومة بالمنطقة.",
+    more: en ? "More stories" : "المزيد من الأخبار",
+    emptySection: en ? "No published story in this section yet. We do not pad sections with unrelated material." : "لا توجد مادة منشورة في هذا القسم بعد. لا نملأ الأقسام بمواد غير ذات صلة.",
+    withdrawn: en ? "This story is no longer published" : "هذا الخبر لم يعد منشوراً",
+    withdrawnBody: en ? "It did not pass, or no longer meets, our publication gate. The archive keeps the permanent record of what was published and corrected." : "لم يجتز بوابة النشر أو لم يعد مطابقاً لها. يحفظ الأرشيف سجل ما نُشر وصُحّح."
+  };
 }
 /** @param {string} id */
 function articleURL(id) { return `${PUBLIC_ORIGIN}/news/${id.toLowerCase()}`; }
@@ -55,6 +99,20 @@ function dateLabel(value, lang) {
   const valid = iso(value);
   if (!valid) return "";
   return new Intl.DateTimeFormat(lang, { dateStyle: "long", timeStyle: "short", timeZone: "UTC" }).format(new Date(valid)) + " UTC";
+}
+/** @param {unknown} value @param {string} lang @param {Date} now */
+function relativeLabel(value, lang, now) {
+  const valid = iso(value);
+  if (!valid) return "";
+  const diff = Date.parse(valid) - now.getTime();
+  const minutes = Math.round(diff / 60000);
+  const formatter = new Intl.RelativeTimeFormat(lang, { numeric: "auto" });
+  if (Math.abs(minutes) < 60) return formatter.format(minutes, "minute");
+  const hours = Math.round(minutes / 60);
+  if (Math.abs(hours) < 24) return formatter.format(hours, "hour");
+  const days = Math.round(hours / 24);
+  if (Math.abs(days) < 8) return formatter.format(days, "day");
+  return dateLabel(valid, lang);
 }
 /** @param {unknown} value */
 function authors(value) {
@@ -91,6 +149,19 @@ function modified(article, now) {
   const correction = iso(article.corrected_at);
   return correction && correction >= article.published_at && Date.parse(correction) <= now.getTime() ? correction : article.published_at;
 }
+/** @param {PublicArticle} article */
+function sectionOf(article) {
+  return SECTION_BY_KEY.get(text(article.category, 60).toLowerCase()) || null;
+}
+/** @param {PublicArticle} article @param {string} lang */
+function typeBadge(article, lang) {
+  const l = labels(lang);
+  const kind = text(article.content_type, 40).toLowerCase();
+  const isOriginal = kind === "original" || text(article.source_name, 120) === "WRLDLINE NEWS";
+  if (isOriginal) return `<span class="pn-badge pn-badge--original">${l.editorial}</span>`;
+  if (article.audience_lane === "world") return `<span class="pn-badge pn-badge--world">${l.en ? "Vetted world" : "دولي مختار"}</span>`;
+  return `<span class="pn-badge">${l.en ? "Attributed summary" : "ملخص منسوب"}</span>`;
+}
 /** @param {PublicArticle} article @param {Record<string, unknown> | null} record @param {string} lang @param {Date} now */
 function trustSummary(article, record, lang, now) {
   const l = labels(lang), valid = record && record.id === article.id;
@@ -108,33 +179,34 @@ function trustSummary(article, record, lang, now) {
 }
 
 /** @param {PageOptions} options */
-function shell({ title, description, canonical, lang = "ar", image = "", body, schema = null, noindex = false, enhance = false }) {
+function shell({ title, description, canonical, lang = "ar", image = "", body, schema = null, noindex = false, enhance = false, currentPath = "" }) {
   const l = labels(lang), direction = l.en ? "ltr" : "rtl";
   // Nonce permits JSON-LD, while executable scripts must be same-origin files.
   const nonce = schema ? crypto.randomUUID().replace(/-/g, "") : "";
+  const sectionLinks = SECTIONS.slice(0, 7).map(section => `<a href="/section/${section.slug}"${currentPath === `/section/${section.slug}` ? ' aria-current="page"' : ""}>${l.en ? section.en : section.ar}</a>`).join("");
   const head = `<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#0d1a2b"><title>${escapeHTML(title)}</title>
 <meta name="description" content="${escapeHTML(description)}"><meta name="robots" content="${noindex ? "noindex,nofollow" : "index,follow,max-image-preview:large"}">
 ${canonical ? `<link rel="canonical" href="${escapeHTML(canonical)}">` : ""}
 <meta property="og:type" content="${schema ? "article" : "website"}"><meta property="og:site_name" content="WRLDLINE NEWS">
-<meta property="og:title" content="${escapeHTML(title)}"><meta property="og:description" content="${escapeHTML(description)}">
+<meta property="og:locale" content="${l.en ? "en_US" : "ar_SA"}"><meta property="og:title" content="${escapeHTML(title)}"><meta property="og:description" content="${escapeHTML(description)}">
 ${canonical ? `<meta property="og:url" content="${escapeHTML(canonical)}">` : ""}
 ${image ? `<meta property="og:image" content="${escapeHTML(image)}"><meta name="twitter:image" content="${escapeHTML(image)}">` : ""}
 <meta name="twitter:card" content="${image ? "summary_large_image" : "summary"}"><meta name="twitter:title" content="${escapeHTML(title)}"><meta name="twitter:description" content="${escapeHTML(description)}">
 ${schema ? `<meta property="article:published_time" content="${escapeHTML(schema.datePublished)}"><script nonce="${nonce}" type="application/ld+json">${jsonLD(schema)}</script>` : ""}
-<link rel="icon" href="/favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="/wrld.css?v=20261115-public"><link rel="stylesheet" href="/public-news.css?v=20261115-1">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="/wrld.css?v=20261123-gate1"><link rel="stylesheet" href="/public-news.css?v=20261123-gate1">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Noto+Kufi+Arabic:wght@500;700&family=Manrope:wght@500;700;800&display=swap" rel="stylesheet">
 <link rel="alternate" type="application/rss+xml" title="WRLDLINE NEWS RSS" href="${PUBLIC_ORIGIN}/rss.xml"><link rel="alternate" type="application/atom+xml" title="WRLDLINE NEWS Atom" href="${PUBLIC_ORIGIN}/atom.xml">
 ${!noindex ? '<script src="/analytics-config.js?v=20261115-1" defer></script><script src="/analytics.js?v=20261115-1" defer></script>' : ""}
-${!noindex ? '<script src="/site-editor.js?v=1" defer></script>' : ""}
-${enhance ? '<link rel="stylesheet" href="/article-trust.css?v=20261115-1"><script src="/share.js?v=20261115-canonical" defer></script><script src="/public-news.js?v=20261115-1" defer></script><script src="/article-trust.js?v=20261115-1" defer></script>' : ""}`;
+${!noindex ? '<script src="/site-editor.js?v=2" defer></script>' : ""}
+${enhance ? '<link rel="stylesheet" href="/article-trust.css?v=20261115-1"><script src="/share.js?v=20261115-canonical" defer></script><script src="/public-news.js?v=20261123-gate1" defer></script><script src="/article-trust.js?v=20261115-1" defer></script>' : ""}`;
   const html = `<!doctype html><html lang="${escapeHTML(lang)}" dir="${direction}" data-theme="dark"><head>${head}</head><body class="wl-public-news">
 <a class="skip-link" href="#mainContent">${l.en ? "Skip to content" : "تجاوز إلى المحتوى"}</a>
 <header class="wl-header public-news-header"><div class="wl-container wl-masthead"><a class="wl-brand" href="/" aria-label="WRLDLINE NEWS"><span class="wl-brand-mark" aria-hidden="true">W</span><span class="wl-brand-copy"><strong>WRLDLINE</strong><small>GLOBAL NEWS NETWORK</small></span></a><a class="wl-account" href="/account.html">${l.en ? "My account" : "حسابي"}</a></div>
-<nav class="wl-container public-news-nav" aria-label="${l.en ? "News navigation" : "تصفح الأخبار"}"><a href="/">${l.home}</a><a href="/news/">${l.news}</a><a href="/sources.html">${l.en ? "Sources" : "المصادر"}</a><a href="/about.html">${l.en ? "About" : "عن ورلدلاين"}</a></nav></header>
+<nav class="wl-container public-news-nav" aria-label="${l.en ? "News navigation" : "تصفح الأخبار"}"><a href="/">${l.home}</a><a href="/news/"${currentPath === "/news/" ? ' aria-current="page"' : ""}>${l.news}</a>${sectionLinks}<a href="/sources.html">${l.en ? "Sources" : "المصادر"}</a><a href="/about.html">${l.en ? "About" : "عن ورلدلاين"}</a></nav></header>
 <main class="public-news-main" id="mainContent">${body}</main>
-<footer class="public-news-footer"><div class="wl-container">WRLDLINE NEWS · <a href="/about.html">${l.en ? "Editorial policy" : "السياسة التحريرية"}</a> · <a href="/corrections.html">${l.en ? "Corrections" : "التصحيحات"}</a> · <a href="/rss.xml">RSS</a> · <a href="/atom.xml">Atom</a></div></footer></body></html>`;
+<footer class="public-news-footer"><div class="wl-container"><p class="pn-gate-note">${l.gate}</p>WRLDLINE NEWS · <a href="/about.html">${l.en ? "Editorial policy" : "السياسة التحريرية"}</a> · <a href="/corrections.html">${l.en ? "Corrections" : "التصحيحات"}</a> · <a href="/rss.xml">RSS</a> · <a href="/atom.xml">Atom</a></div></footer></body></html>`;
   return { html, nonce };
 }
 /** @param {PageOptions} options @param {number} [status] */
@@ -153,6 +225,10 @@ function htmlResponse(options, status = 200) {
 }
 /** @param {number} status */
 function errorPage(status) {
+  const l = labels("ar");
+  if (status === 410) {
+    return htmlResponse({ title: `${l.withdrawn} | WRLDLINE`, description: l.withdrawnBody, noindex: true, body: `<p class="public-news-kicker">WRLDLINE · PUBLIC NEWS</p><h1>${l.withdrawn}</h1><p class="public-news-summary">${l.withdrawnBody}</p><p><a href="/news/">${l.news}</a> · <a href="/about.html">${l.en ? "Editorial policy" : "السياسة التحريرية"}</a></p>` }, 410);
+  }
   const missing = status === 404;
   return htmlResponse({ title: missing ? "الخبر غير متوفر | WRLDLINE" : "الأخبار غير متاحة مؤقتاً | WRLDLINE", description: missing ? "لم نعثر على خبر منشور في هذا الرابط." : "تعذر تحميل الخبر الآن. يرجى المحاولة لاحقاً.", noindex: true, body: `<h1>${missing ? "الخبر غير متوفر" : "الأخبار غير متاحة مؤقتاً"}</h1><p class="public-news-summary">${missing ? "قد يكون الرابط غير صحيح أو الخبر غير منشور." : "تعذر تحميل الخبر الآن. يرجى المحاولة لاحقاً."}</p><a href="/news/">العودة إلى الأخبار المنشورة</a>` }, status);
 }
@@ -160,20 +236,44 @@ function errorPage(status) {
 function xmlResponse(body, type = "application/xml") {
   return new Response(XML_HEAD + body, { headers: { "Content-Type": `${type}; charset=utf-8`, "Cache-Control": "no-store", "X-Content-Type-Options": "nosniff" } });
 }
-/** @param {PublicArticle} article @param {Date} now @param {Record<string, unknown> | null} [trust] */
-export function renderArticle(article, now, trust = null) {
+
+/** @param {PublicArticle[]} related @param {string} lang */
+function relatedBlock(related, lang) {
+  const l = labels(lang);
+  if (!related.length) return "";
+  const items = related.map(item => `<li><a href="${articleURL(item.id)}">${escapeHTML(text(item.title, 200))}</a><small>${escapeHTML(relativeLabel(item.published_at, lang, new Date()))}${text(item.source_name, 80) ? ` · ${escapeHTML(text(item.source_name, 80))}` : ""}</small></li>`).join("");
+  return `<section class="pn-related"><h2>${l.related}</h2><ul>${items}</ul></section>`;
+}
+
+/** @param {PublicArticle} article @param {Date} now @param {Record<string, unknown> | null} [trust] @param {PublicArticle[]} [related] */
+export function renderArticle(article, now, trust = null, related = []) {
   const lang = language(article.lang || article.source_language), l = labels(lang);
   const title = text(article.title, 1000) || (l.en ? "Published news" : "خبر منشور");
   const summary = text(article.summary), description = (summary || title).replace(/\s+/g, " ").slice(0, 160);
   const canonical = articleURL(article.id), image = safeURL(article.image_url), original = source(article), by = authors(article.author);
+  const section = sectionOf(article);
+  const rawCategory = text(article.category, 120);
+  // "uncategorized" is a database placeholder, not a section a reader can visit.
+  const sectionLabel = section ? (l.en ? section.en : section.ar) : (/^(?:uncategorized|unknown|other|غير مصنف)$/iu.test(rawCategory) ? "" : rawCategory);
+  const isOriginal = text(article.content_type, 40).toLowerCase() === "original" || text(article.source_name, 120) === "WRLDLINE NEWS";
   /** @type {Record<string, unknown>} */
-  const schema = { "@context": "https://schema.org", "@type": "NewsArticle", "@id": `${canonical}#article`, url: canonical, mainEntityOfPage: canonical, headline: title, description, inLanguage: lang, datePublished: article.published_at, publisher: { "@type": "Organization", name: "WRLDLINE NEWS", url: PUBLIC_ORIGIN } };
+  const schema = {
+    "@context": "https://schema.org", "@type": "NewsArticle", "@id": `${canonical}#article`,
+    url: canonical, mainEntityOfPage: canonical, headline: title, description, inLanguage: lang,
+    datePublished: article.published_at,
+    publisher: { "@type": "Organization", name: "WRLDLINE NEWS", url: PUBLIC_ORIGIN, logo: { "@type": "ImageObject", url: `${PUBLIC_ORIGIN}/assets/brand/wrldline-symbol.png` } }
+  };
   if (summary) schema.articleBody = summary;
   if (image) schema.image = [image];
-  if (by.length) schema.author = by.map(name => ({ "@type": "Person", name }));
-  if (modified(article, now) !== article.published_at) schema.dateModified = modified(article, now);
-  if (original.url) schema.isBasedOn = original.url;
-  if (text(article.category, 120)) schema.articleSection = text(article.category, 120);
+  // An aggregated summary is authored by the desk that selected and attributed it,
+  // never by the source newsroom.
+  schema.author = by.length
+    ? by.map(name => ({ "@type": "Person", name }))
+    : [{ "@type": "Organization", name: isOriginal ? "WRLDLINE NEWS" : "WRLDLINE NEWS editorial desk" }];
+  const updated = modified(article, now);
+  if (updated !== article.published_at) schema.dateModified = updated;
+  if (original.url && !isOriginal) schema.isBasedOn = original.url;
+  if (sectionLabel) schema.articleSection = sectionLabel;
   const correction = text(article.correction_note, 4000);
   const reportedCountry = text(article.event_country, 120);
   const eventCountry = /^(?:دولي|غير محدد|unknown|international|world)$/iu.test(reportedCountry) ? "" : reportedCountry;
@@ -181,60 +281,97 @@ export function renderArticle(article, now, trust = null) {
   const shareTitle = encodeURIComponent(title);
   const shareCaption = encodeURIComponent(`${title} — ${description}`);
   const socialShare = `<div class="public-news-social" aria-label="${l.en ? "Share on social networks" : "مشاركة عبر الشبكات"}"><a href="https://wa.me/?text=${shareCaption}%20${shareUrl}" target="_blank" rel="noopener noreferrer">WhatsApp</a><a href="https://twitter.com/intent/tweet?text=${shareTitle}&url=${shareUrl}" target="_blank" rel="noopener noreferrer">X</a><a href="https://t.me/share/url?url=${shareUrl}&text=${shareTitle}" target="_blank" rel="noopener noreferrer">Telegram</a></div>`;
-  const body = `<nav class="public-news-breadcrumb" aria-label="${l.en ? "Breadcrumb" : "مسار الصفحة"}"><a href="/news/">${l.news}</a> / ${escapeHTML(text(article.category, 120))}</nav>
+  const breadcrumb = section
+    ? `<a href="/news/">${l.news}</a> / <a href="/section/${section.slug}">${escapeHTML(sectionLabel)}</a>`
+    : sectionLabel
+      ? `<a href="/news/">${l.news}</a> / ${escapeHTML(sectionLabel)}`
+      : `<a href="/news/">${l.news}</a>`;
+  const body = `<nav class="public-news-breadcrumb" aria-label="${l.en ? "Breadcrumb" : "مسار الصفحة"}">${breadcrumb}</nav>
 <article data-public-article data-audience-article data-article-id="${article.id}" data-category="${escapeHTML(text(article.category, 120))}" data-share-title="${escapeHTML(title)}" data-share-text="${escapeHTML(description)}" data-share-source="${escapeHTML(original.name)}" data-share-image="${escapeHTML(image)}" data-share-url="${canonical}">
-<p class="public-news-kicker">${escapeHTML([text(article.category, 120), eventCountry].filter(Boolean).join(" · "))}</p>
-<h1>${escapeHTML(title)}</h1><div class="public-news-meta"><span>${l.published}: <time datetime="${article.published_at}">${escapeHTML(dateLabel(article.published_at, lang))}</time></span>${by.length ? `<span>${l.author}: ${escapeHTML(by.join(" · "))}</span>` : ""}${original.name ? `<span>${l.source}: ${escapeHTML(original.name)}</span>` : ""}</div>
+<p class="public-news-kicker">${typeBadge(article, lang)}<span>${escapeHTML([sectionLabel, eventCountry].filter(Boolean).join(" · "))}</span></p>
+<h1>${escapeHTML(title)}</h1><div class="public-news-meta"><span>${l.published}: <time datetime="${article.published_at}" title="${escapeHTML(dateLabel(article.published_at, lang))}">${escapeHTML(relativeLabel(article.published_at, lang, now))}</time></span>${by.length ? `<span>${l.author}: ${escapeHTML(by.join(" · "))}</span>` : ""}${original.name && !isOriginal ? `<span>${l.source}: ${escapeHTML(original.name)}</span>` : ""}${updated !== article.published_at ? `<span>${l.en ? "Updated" : "آخر تحديث"}: ${escapeHTML(dateLabel(updated, lang))}</span>` : ""}</div>
 ${image ? `<figure class="public-news-image"><img src="${escapeHTML(image)}" alt="${escapeHTML(title)}" fetchpriority="high" decoding="async" referrerpolicy="no-referrer"></figure>` : ""}
 <div class="public-news-summary">${summary ? summary.split(/\n\s*\n/).filter(Boolean).map(p => `<p>${escapeHTML(p)}</p>`).join("") : `<p>${l.en ? "A published summary is not available. Consult the original source for the story." : "الملخص المنشور غير متوفر. يُرجى الرجوع إلى المصدر الأصلي للخبر."}</p>`}</div>
 ${(text(article.ai_summary, 1200) || text(article.ai_reader_impact, 900) || text(article.ai_watch_next, 900)) ? `<section class="public-news-intelligence"><h2>${l.reading}</h2>${text(article.ai_summary, 1200) ? `<div><h3>${l.en ? "Analysis" : "القراءة التحليلية"}</h3><p>${escapeHTML(text(article.ai_summary, 1200))}</p></div>` : ""}${text(article.ai_reader_impact, 900) ? `<div><h3>${l.impact}</h3><p>${escapeHTML(text(article.ai_reader_impact, 900))}</p></div>` : ""}${text(article.ai_watch_next, 900) ? `<div><h3>${l.watch}</h3><p>${escapeHTML(text(article.ai_watch_next, 900))}</p></div>` : ""}<small>${l.aiNotice}</small></section>` : ""}
 ${correction ? `<section class="public-news-correction" role="note"><h2>${l.correction}</h2><p>${escapeHTML(correction)}</p>${iso(article.corrected_at) ? `<time datetime="${escapeHTML(iso(article.corrected_at))}">${escapeHTML(dateLabel(article.corrected_at, lang))}</time>` : ""}</section>` : ""}
-<section class="public-news-source"><h2>${l.source}</h2>${original.name ? `<p>${escapeHTML(original.name)}</p>` : ""}${original.url ? `<a href="${escapeHTML(original.url)}" target="_blank" rel="noopener noreferrer">${l.original} ↗</a>` : `<p>${l.missing}</p>`}</section>
+<section class="public-news-source"><h2>${isOriginal ? (l.en ? "Primary documents and sources" : "الوثائق والمصادر الأولية") : l.source}</h2>${original.name ? `<p>${escapeHTML(original.name)}</p>` : ""}${original.url ? `<a href="${escapeHTML(original.url)}" target="_blank" rel="noopener noreferrer">${isOriginal ? (l.en ? "Open the primary source" : "فتح المصدر الأولي") : l.original} ↗</a>` : `<p>${l.missing}</p>`}</section>
 <p class="public-news-disclosure">${l.disclosure}</p>
 <div id="articleTrust" data-article-id="${article.id}" data-trust-ssr="1">${trustSummary(article, trust, lang, now)}</div>
 <div class="public-news-actions"><button type="button" id="publicNewsShare">${l.share}</button><button type="button" id="publicNewsCopy">${l.copy}</button><a href="${canonical}">${l.en ? "Permanent article link" : "الرابط الدائم للخبر"}</a></div>${socialShare}<span class="public-news-status" id="publicNewsStatus" role="status" aria-live="polite"></span>
-<noscript><p class="public-news-disclosure">${l.en ? "This published summary and source link are available without JavaScript." : "الملخص المنشور ورابط المصدر متاحان دون جافاسكريبت."}</p></noscript></article>`;
-  return htmlResponse({ title: `${title} | WRLDLINE NEWS`, description, canonical, lang, image, body, schema, enhance: true });
+<noscript><p class="public-news-disclosure">${l.en ? "This published summary and source link are available without JavaScript." : "الملخص المنشور ورابط المصدر متاحان دون جافاسكريبت."}</p></noscript></article>
+${relatedBlock(related, lang)}`;
+  return htmlResponse({ title: `${title} | WRLDLINE NEWS`, description, canonical, lang, image, body, schema, enhance: true, currentPath: section ? `/section/${section.slug}` : "" });
 }
-/** @param {PublicArticle[]} articles @param {number} page @param {string} lang */
-function renderIndex(articles, page, lang) {
-  const shown = articles.slice(0, 50), canonical = `${PUBLIC_ORIGIN}/news/${page > 1 ? `?page=${page}` : ""}`;
-  const l = labels(lang), target = l.en ? "ar" : "en";
-  /** @param {number} p @param {string} edition */
-  function pageURL(p, edition) {
+
+/** @param {PublicArticle} article @param {string} lang @param {Date} now */
+function feedItem(article, lang, now) {
+  const s = source(article), originalLang = language(article.source_language || article.lang);
+  const section = sectionOf(article);
+  const sectionLabel = section ? section.ar : "";
+  // The hash carries the reader's edition preference to the article page; it is
+  // never sent to the server, so it cannot affect canonicalisation.
+  const link = articleURL(article.id) + (lang === "en" ? "#lang=en" : "");
+  return `<li class="pn-card"><article data-site-editor-row="${escapeHTML(article.id)}"><p class="pn-card-top">${typeBadge(article, lang)}${sectionLabel ? `<a class="pn-card-section" href="/section/${section.slug}">${escapeHTML(sectionLabel)}</a>` : ""}</p><h2><a href="${link}" lang="${originalLang}" dir="auto">${escapeHTML(text(article.title, 1000) || labels(lang).news)}</a></h2><p class="pn-card-summary" lang="${originalLang}" dir="auto">${escapeHTML(text(article.summary, 220))}</p><p class="pn-card-meta"><span>${escapeHTML(s.name || (lang === "en" ? "Source unavailable" : "المصدر غير متاح"))}</span><time datetime="${article.published_at}" title="${escapeHTML(dateLabel(article.published_at, lang))}">${escapeHTML(relativeLabel(article.published_at, lang, now))}</time></p></article></li>`;
+}
+
+/** @param {PublicArticle[]} articles @param {number} page @param {string} lang @param {string} lane @param {Date} now */
+function renderIndex(articles, page, lang, lane, now) {
+  const shown = articles.slice(0, 50);
+  const l = labels(lang);
+  /** @param {number} p @param {string} edition @param {string} targetLane */
+  function pageURL(p, edition, targetLane) {
     const query = new URLSearchParams();
     if (p > 1) query.set("page", String(p));
     if (edition !== "ar") query.set("lang", edition);
-    return "/news/" + (query.size ? `?${query}` : "");
+    if (targetLane !== "all") query.set("lane", targetLane);
+    const qs = query.toString();
+    return "/news/" + (qs ? `?${qs}` : "");
   }
+  // The Arabic edition is canonical for a given page and lane; ?lang=en is a
+  // reading edition of the same stories, not a separate document.
+  const canonical = `${PUBLIC_ORIGIN}${pageURL(page, "ar", lane)}`;
   const description = l.en
-    ? "Browse published news in its original language. Open a story to see whether a reviewed editorial edition is available."
-    : "تصفّح الأخبار المنشورة بلغتها الأصلية. افتح الخبر لمعرفة ما إذا كانت له نسخة تحريرية بلغة أخرى.";
+    ? "Browse published WRLDLINE news. Every story passes a publication gate on language, source standing, topic and a supported regional link before it appears."
+    : "تصفّح الأخبار المنشورة في WRLDLINE. لا يظهر أي خبر قبل أن يجتاز بوابة نشر تتحقق من اللغة ومكانة المصدر والموضوع وصلته المدعومة بالمنطقة.";
+  const tabs = Object.entries(ARCHIVE_LANES).map(([key, value]) => `<a href="${escapeHTML(pageURL(1, lang === "en" ? "en" : "ar", key))}"${key === lane ? ' aria-current="page"' : ""}>${l.en ? value.en : value.ar}</a>`).join("");
   const body = `<p class="public-news-kicker">WRLDLINE · PUBLIC NEWS</p><h1>${l.news}</h1>
-<a class="public-news-edition-link" href="${escapeHTML(pageURL(page, target))}" lang="${target}">${l.en ? "العربية" : "English"}</a><p class="public-news-disclosure">${description}</p>
-<ul class="public-news-list">${shown.map(a => {
-    const s = source(a), originalLang = language(a.source_language || a.lang);
-    const link = articleURL(a.id) + (l.en ? "#lang=en" : "");
-    return `<li><article data-site-editor-row="${a.id}"><h2><a href="${link}" lang="${originalLang}" dir="auto">${escapeHTML(text(a.title, 1000) || l.news)}</a></h2><p lang="${originalLang}" dir="auto">${escapeHTML(text(a.summary, 260))}</p><small>${escapeHTML(s.name)} · <time datetime="${a.published_at}">${escapeHTML(dateLabel(a.published_at, lang))}</time></small></article></li>`;
-  }).join("")}</ul>
+<a class="public-news-edition-link" href="${escapeHTML(pageURL(page, lang === "en" ? "ar" : "en", lane))}" lang="${lang === "en" ? "ar" : "en"}">${l.en ? "العربية" : "English"}</a>
+<nav class="pn-tabs" aria-label="${l.en ? "Publication lanes" : "مسارات النشر"}">${tabs}</nav>
+<p class="public-news-disclosure">${description}</p>
+<ul class="public-news-list pn-card-list">${shown.map(a => feedItem(a, lang, now)).join("")}</ul>
 ${!shown.length ? `<p class="public-news-summary">${l.en ? "No published news on this page." : "لا توجد أخبار منشورة في هذه الصفحة."}</p>` : ""}
-<nav class="public-news-paging" aria-label="${l.en ? "News pages" : "صفحات الأخبار"}">${page > 1 ? `<a href="${escapeHTML(pageURL(page - 1, lang))}">${l.en ? "Previous page" : "الصفحة السابقة"}</a>` : "<span></span>"}${articles.length > 50 ? `<a href="${escapeHTML(pageURL(page + 1, lang))}">${l.en ? "Next page" : "الصفحة التالية"}</a>` : ""}</nav>`;
-  return htmlResponse({ title: `${l.news}${page > 1 ? ` · ${page}` : ""} | WRLDLINE NEWS`, description, canonical, body, lang });
+<nav class="public-news-paging" aria-label="${l.en ? "News pages" : "صفحات الأخبار"}">${page > 1 ? `<a href="${escapeHTML(pageURL(page - 1, lang, lane))}">${l.en ? "Previous page" : "الصفحة السابقة"}</a>` : "<span></span>"}${articles.length > 50 ? `<a href="${escapeHTML(pageURL(page + 1, lang, lane))}">${l.en ? "Next page" : "الصفحة التالية"}</a>` : ""}</nav>`;
+  return htmlResponse({ title: `${l.news}${page > 1 ? ` · ${page}` : ""} | WRLDLINE NEWS`, description, canonical, body, lang, currentPath: "/news/" });
 }
+
+/** @param {Record<string, unknown>} section @param {PublicArticle[]} articles @param {string} lang @param {Date} now */
+function renderSection(section, articles, lang, now) {
+  const l = labels(lang), title = l.en ? section.en : section.ar, intro = l.en ? section.introEn : section.intro;
+  const canonical = `${PUBLIC_ORIGIN}/section/${section.slug}`;
+  const description = `${intro}`.slice(0, 158);
+  const body = `<p class="public-news-kicker">WRLDLINE · ${l.sections.toUpperCase()}</p>
+<h1>${escapeHTML(title)}</h1><p class="pn-section-intro">${escapeHTML(intro)}</p>
+<p class="public-news-disclosure">${l.gate}</p>
+<ul class="public-news-list pn-card-list">${articles.map(a => feedItem(a, lang, now)).join("")}</ul>
+${!articles.length ? `<p class="public-news-summary">${l.emptySection}</p>` : ""}
+<nav class="public-news-paging" aria-label="${l.more}"><a href="/news/">${l.news}</a><a href="/">${l.home}</a></nav>`;
+  return htmlResponse({ title: `${title} | WRLDLINE NEWS`, description, canonical, body, lang, currentPath: `/section/${section.slug}` });
+}
+
 /** @param {PublicArticle[]} articles @param {Date} now */
 function newsSitemap(articles, now) {
   const since = now.getTime() - 48 * 60 * 60 * 1000;
   const recent = articles.filter(a => Date.parse(a.published_at) >= since && Date.parse(a.published_at) <= now.getTime()).slice(0, 1000);
   return xmlResponse(`<urlset ${SITEMAP_NS} xmlns:news="http://www.google.com/schemas/sitemap-news/0.9">${recent.map(a => `<url><loc>${articleURL(a.id)}</loc><news:news><news:publication><news:name>WRLDLINE NEWS</news:name><news:language>${escapeHTML(language(a.lang || a.source_language).split("-")[0])}</news:language></news:publication><news:publication_date>${a.published_at}</news:publication_date><news:title>${escapeHTML(text(a.title, 1000))}</news:title></news:news></url>`).join("")}</urlset>`);
 }
-/** @param {PublicArticle[]} articles */
-function rss(articles) {
-  return xmlResponse(`<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>WRLDLINE NEWS</title><link>${PUBLIC_ORIGIN}/news/</link><description>Published news summaries and original sources / ملخصات الأخبار وروابط مصادرها</description><atom:link href="${PUBLIC_ORIGIN}/rss.xml" rel="self" type="application/rss+xml"/>${articles.length ? `<lastBuildDate>${new Date(articles[0].published_at).toUTCString()}</lastBuildDate>` : ""}${articles.map(a => { const s = source(a); return `<item><title>${escapeHTML(text(a.title, 1000))}</title><link>${articleURL(a.id)}</link><guid isPermaLink="true">${articleURL(a.id)}</guid><description>${escapeHTML(text(a.summary))}</description><pubDate>${new Date(a.published_at).toUTCString()}</pubDate>${s.url ? `<source url="${escapeHTML(s.url)}">${escapeHTML(s.name || new URL(s.url).hostname)}</source>` : ""}</item>`; }).join("")}</channel></rss>`, "application/rss+xml");
+/** @param {PublicArticle[]} articles @param {Date} now */
+function rss(articles, now) {
+  return xmlResponse(`<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>WRLDLINE NEWS</title><link>${PUBLIC_ORIGIN}/news/</link><language>ar</language><description>ملخصات الأخبار المنشورة وروابط مصادرها الأصلية — WRLDLINE NEWS</description><atom:link href="${PUBLIC_ORIGIN}/rss.xml" rel="self" type="application/rss+xml"/>${articles.length ? `<lastBuildDate>${new Date(articles[0].published_at).toUTCString()}</lastBuildDate>` : ""}${articles.map(a => { const s = source(a), section = sectionOf(a); return `<item><title>${escapeHTML(text(a.title, 1000))}</title><link>${articleURL(a.id)}</link><guid isPermaLink="true">${articleURL(a.id)}</guid><description>${escapeHTML(text(a.summary))}</description><pubDate>${new Date(a.published_at).toUTCString()}</pubDate>${section ? `<category>${escapeHTML(section.ar)}</category>` : ""}${s.url ? `<source url="${escapeHTML(s.url)}">${escapeHTML(s.name || new URL(s.url).hostname)}</source>` : ""}</item>`; }).join("")}</channel></rss>`, "application/rss+xml");
 }
 /** @param {PublicArticle[]} articles @param {Date} now */
 function atom(articles, now) {
   const latest = articles.map(a => modified(a, now)).sort().at(-1) || now.toISOString();
-  return xmlResponse(`<feed xmlns="http://www.w3.org/2005/Atom"><id>${PUBLIC_ORIGIN}/atom.xml</id><title>WRLDLINE NEWS</title><subtitle>Published summaries / ملخصات الأخبار المنشورة</subtitle><updated>${latest}</updated><author><name>WRLDLINE NEWS</name><uri>${PUBLIC_ORIGIN}</uri></author><link href="${PUBLIC_ORIGIN}/atom.xml" rel="self" type="application/atom+xml"/><link href="${PUBLIC_ORIGIN}/news/" rel="alternate"/>${articles.map(a => { const s = source(a), by = authors(a.author); return `<entry><id>${articleURL(a.id)}</id><title type="text">${escapeHTML(text(a.title, 1000))}</title><link href="${articleURL(a.id)}" rel="alternate"/><published>${a.published_at}</published><updated>${modified(a, now)}</updated><summary type="text">${escapeHTML(text(a.summary))}</summary>${by.map(name => `<author><name>${escapeHTML(name)}</name></author>`).join("")}${s.name ? `<contributor><name>${escapeHTML(s.name)}</name></contributor>` : ""}${s.url ? `<link href="${escapeHTML(s.url)}" rel="related" title="Original source"/>` : ""}</entry>`; }).join("")}</feed>`, "application/atom+xml");
+  return xmlResponse(`<feed xmlns="http://www.w3.org/2005/Atom"><id>${PUBLIC_ORIGIN}/atom.xml</id><title>WRLDLINE NEWS</title><subtitle>ملخصات الأخبار المنشورة</subtitle><updated>${latest}</updated><author><name>WRLDLINE NEWS</name><uri>${PUBLIC_ORIGIN}</uri></author><link href="${PUBLIC_ORIGIN}/atom.xml" rel="self" type="application/atom+xml"/><link href="${PUBLIC_ORIGIN}/news/" rel="alternate"/>${articles.map(a => { const s = source(a), by = authors(a.author); return `<entry><id>${articleURL(a.id)}</id><title type="text">${escapeHTML(text(a.title, 1000))}</title><link href="${articleURL(a.id)}" rel="alternate"/><published>${a.published_at}</published><updated>${modified(a, now)}</updated><summary type="text">${escapeHTML(text(a.summary))}</summary>${by.map(name => `<author><name>${escapeHTML(name)}</name></author>`).join("")}${s.name ? `<contributor><name>${escapeHTML(s.name)}</name></contributor>` : ""}${s.url ? `<link href="${escapeHTML(s.url)}" rel="related" title="Original source"/>` : ""}</entry>`; }).join("")}</feed>`, "application/atom+xml");
 }
 
 /** @param {{fetchImpl?: typeof fetch, now?: () => Date}} [options] */
@@ -243,14 +380,33 @@ export function createWorker({ fetchImpl = globalThis.fetch.bind(globalThis), no
   /** @param {Request} request @param {WorkerEnv} env */
   async fetch(request, env) {
     const url = new URL(request.url), path = url.pathname;
-    const owned = path === "/news" || path.startsWith("/news/") || path.startsWith("/news-sitemap.xml") || path.startsWith("/article-sitemap") || path.startsWith("/rss.xml") || path.startsWith("/atom.xml");
+    const owned = path === "/news" || path.startsWith("/news/") || path.startsWith("/section/") || path.startsWith("/news-sitemap.xml") || path.startsWith("/article-sitemap") || path.startsWith("/rss.xml") || path.startsWith("/atom.xml");
     // Defensive origin preservation if an overbroad Cloudflare route is accidentally installed.
     if (!owned) return fetchImpl(request);
     if (!["GET", "HEAD"].includes(request.method)) return new Response("Method not allowed", { status: 405, headers: { Allow: "GET, HEAD", "Cache-Control": "no-store", "X-Robots-Tag": "noindex" } });
-    const finish = /** @param {Response} response */ response => request.method === "HEAD" ? new Response(null, { status: response.status, headers: response.headers }) : response;
+    const startedAt = Date.now();
+    /** @type {string[]} */
+    const rpcTimings = [];
+    // One exit point for owned routes: HEAD gets headers only, and every
+    // response carries the server-side duration so slow pages can be diagnosed
+    // without exposing backend details.
+    const finish = /** @param {Response} response */ response => {
+      const headers = new Headers(response.headers);
+      headers.set("Server-Timing", [`wrldline;dur=${Date.now() - startedAt}`, ...rpcTimings].join(", "));
+      return new Response(request.method === "HEAD" ? null : response.body, { status: response.status, headers });
+    };
     const clock = now(), deadline = Date.now() + 20000;
     /** @param {string} name @param {Record<string, unknown>} args @param {number} maxRows @param {boolean} [scalar] @returns {Promise<any>} */
     async function rpc(name, args, maxRows, scalar = false) {
+      const rpcStarted = Date.now();
+      try {
+        return await rpcCall(name, args, maxRows, scalar);
+      } finally {
+        rpcTimings.push(`${name.replace(/^public_/, "")};dur=${Date.now() - rpcStarted}`);
+      }
+    }
+    /** @param {string} name @param {Record<string, unknown>} args @param {number} maxRows @param {boolean} scalar @returns {Promise<any>} */
+    async function rpcCall(name, args, maxRows, scalar) {
       const base = safeURL(env?.SUPABASE_URL);
       if (!base || !base.startsWith("https://") || !env?.SUPABASE_ANON_KEY) throw new Error("Public backend unconfigured");
       const baseURL = new URL(base);
@@ -277,21 +433,45 @@ export function createWorker({ fetchImpl = globalThis.fetch.bind(globalThis), no
       if (!Array.isArray(rows) || rows.length > maxRows) throw new Error("Invalid bounded projection");
       return rows;
     }
-    /** @param {number} limit @param {string | null} [since] @param {number} [offset] @returns {Promise<PublicArticle[]>} */
+/** @param {number} limit @param {string | null} [since] @param {number} [offset] @returns {Promise<PublicArticle[]>} */
     async function recent(limit, since = null, offset = 0) {
       /** @type {Record<string, unknown>[]} */
       const rows = await rpc("public_news_recent", { p_limit: limit, p_before: clock.toISOString(), p_since: since, p_offset: offset }, limit);
       return rows.map(row => projectArticle(row, clock)).filter(/** @returns {a is PublicArticle} */ a => Boolean(a && (!since || a.published_at >= since))).sort((a, b) => b.published_at.localeCompare(a.published_at) || a.id.localeCompare(b.id));
     }
+    // Narrow projection (no full article bodies) so a 50-item page stays small
+    // on mobile and the query can use the lane index.
+    /** @param {number} limit @param {number} offset @param {string} lane @returns {Promise<PublicArticle[]>} */
+    async function listFeed(limit, offset, lane) {
+      /** @type {Record<string, unknown>[]} */
+      const rows = await rpc("public_news_list", { p_limit: limit, p_before: clock.toISOString(), p_since: null, p_offset: offset, p_lane: lane }, limit);
+      return rows.map(row => projectArticle(row, clock)).filter(/** @returns {a is PublicArticle} */ a => Boolean(a)).sort((a, b) => b.published_at.localeCompare(a.published_at) || a.id.localeCompare(b.id));
+    }
     try {
       if (path === "/news") return finish(new Response(null, { status: 308, headers: { Location: `${PUBLIC_ORIGIN}/news/${url.search}`, "Cache-Control": "no-store" } }));
+
+      const sectionMatch = path.match(/^\/section\/([a-z-]{2,30})\/?$/);
+      if (sectionMatch) {
+        const section = SECTION_BY_SLUG.get(sectionMatch[1]);
+        if (!section) return finish(errorPage(404));
+        if (path !== `/section/${section.slug}`) return finish(new Response(null, { status: 308, headers: { Location: `${PUBLIC_ORIGIN}/section/${section.slug}`, "Cache-Control": "no-store" } }));
+        /** @type {Record<string, unknown>[]} */
+        const rows = await rpc("public_section_feed", { p_category: section.key, p_limit: 30, p_before: clock.toISOString(), p_offset: 0 }, 30);
+        const articles = rows.map(row => projectArticle(row, clock)).filter(/** @returns {a is PublicArticle} */ a => Boolean(a)).sort((a, b) => b.published_at.localeCompare(a.published_at) || a.id.localeCompare(b.id));
+        return finish(renderSection(section, articles, url.searchParams.get("lang") === "en" ? "en" : "ar", clock));
+      }
+
       if (path === "/news/") {
         const value = url.searchParams.get("page") || "1";
         if (!/^[1-9]\d{0,5}$/.test(value) || Number(value) > 50000) return finish(errorPage(404));
-        const page = Number(value), articles = await recent(51, null, (page - 1) * 50);
+        const laneParam = url.searchParams.get("lane") || "all";
+        if (!Object.hasOwn(ARCHIVE_LANES, laneParam)) return finish(errorPage(404));
+        const page = Number(value), lang = url.searchParams.get("lang") === "en" ? "en" : "ar";
+        const articles = await listFeed(51, (page - 1) * 50, laneParam);
         if (page > 1 && !articles.length) return finish(errorPage(404));
-        return finish(renderIndex(articles, page, url.searchParams.get("lang") === "en" ? "en" : "ar"));
+        return finish(renderIndex(articles, page, lang, laneParam, clock));
       }
+
       if (path.startsWith("/news/")) {
         const match = path.match(/^\/news\/([^/]+)(\/?)$/);
         if (!match || !UUID.test(match[1])) return finish(errorPage(404));
@@ -299,23 +479,36 @@ export function createWorker({ fetchImpl = globalThis.fetch.bind(globalThis), no
         const rows = await rpc("public_news_article", { p_id: id }, 1);
         const article = rows.length ? projectArticle(rows[0], clock) : null;
         if (!article || article.id !== id) return finish(errorPage(404));
+        // A withdrawn story must stop being indexable and stop being served.
+        if (article.audience_lane === "excluded" || article.audience_lane === "leisure") return finish(errorPage(410));
         if (match[2] || match[1] !== id || url.search) return finish(new Response(null, { status: 308, headers: { Location: articleURL(id), "Cache-Control": "no-store" } }));
-        let trust = null;
-        if (env.PUBLIC_TRUST_ENABLED === "true") {
-          try { trust = await rpc("get_public_article_trust", { p_article_id: id, p_lang: language(article.lang) }, 1, true); }
-          catch { /* Optional credibility data must not remove the public summary. */ }
-        }
-        let intelligence = null;
-        try {
-          const rows = await rpc("public_news_article_intelligence", { p_id: id }, 1);
-          intelligence = rows[0] && rows[0].id === id ? rows[0] : null;
-        } catch { /* New reader context is optional until its migration is deployed. */ }
-        return finish(renderArticle(intelligence ? { ...article, ...intelligence } : article, clock, trust));
+        // The three optional panels are independent: fetch them together so the
+        // reader waits once, not three times. Each may fail without taking the
+        // published summary down with it.
+        const trustPromise = env.PUBLIC_TRUST_ENABLED === "true"
+          ? rpc("get_public_article_trust", { p_article_id: id, p_lang: language(article.lang) }, 1, true).catch(() => null)
+          : Promise.resolve(null);
+        const intelligencePromise = rpc("public_news_article_intelligence", { p_id: id }, 1)
+          .then(/** @param {Record<string, unknown>[]} rows */ rows => (rows[0] && rows[0].id === id ? rows[0] : null))
+          .catch(() => null);
+        const relatedPromise = rpc("public_related_articles", { p_id: id, p_limit: 4 }, 4)
+          .then(/** @param {Record<string, unknown>[]} rows */ rows => rows.map(row => projectArticle(row, clock)).filter(/** @returns {a is PublicArticle} */ a => Boolean(a && a.id !== id)))
+          .catch(() => []);
+        const [trust, intelligence, related] = await Promise.all([trustPromise, intelligencePromise, relatedPromise]);
+        return finish(renderArticle(intelligence ? { ...article, ...intelligence } : article, clock, trust, related));
       }
-      if (path === "/news-sitemap.xml") return finish(newsSitemap(await recent(1000, new Date(clock.getTime() - 48 * 60 * 60 * 1000).toISOString()), clock));
+      if (path === "/news-sitemap.xml") {
+        // Dedicated projection: 1000 identifiers without article bodies. Asking
+        // public_news_recent for 1000 full rows used to exceed the statement
+        // timeout and returned 503 to crawlers.
+        /** @type {Record<string, unknown>[]} */
+        const rows = await rpc("public_news_sitemap_recent", { p_hours: 48, p_limit: 1000 }, 1000);
+        const recentArticles = rows.map(row => projectArticle(row, clock)).filter(/** @returns {a is PublicArticle} */ a => Boolean(a));
+        return finish(newsSitemap(recentArticles, clock));
+      }
       if (path === "/rss.xml" || path === "/atom.xml") {
         const articles = await recent(100, new Date(clock.getTime() - 7 * 86400000).toISOString());
-        return finish(path === "/rss.xml" ? rss(articles) : atom(articles, clock));
+        return finish(path === "/rss.xml" ? rss(articles, clock) : atom(articles, clock));
       }
       if (path === "/article-sitemap.xml") {
         const pages = [];

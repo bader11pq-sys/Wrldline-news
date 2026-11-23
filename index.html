@@ -5,32 +5,24 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#123533">
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
-  <meta name="description" content="WRLDLINE News | الأخبار من أجل الإنسان. منصة إعلامية عربية مستقلة للأخبار والتحقيقات والتوثيق والتوعية بالحقوق والحريات.">
+  <meta name="description" content="منصة عربية للاستخبارات الإخبارية: ملخصات موثقة بمصادرها، سياق، ميزان روايات، وتأثير محتمل على السعودية والخليج، مع بيان ما لم نتحقق منه.">
   <meta name="robots" content="index,follow,max-image-preview:large">
   <link rel="canonical" href="https://al-ghaib.us.ci/">
   <link rel="alternate" type="application/rss+xml" title="WRLDLINE RSS" href="https://al-ghaib.us.ci/rss.xml">
   <link rel="alternate" type="application/atom+xml" title="WRLDLINE Atom" href="https://al-ghaib.us.ci/atom.xml">
   <meta property="og:type" content="website">
-  <meta property="og:title" content="WRLDLINE News | الأخبار من أجل الإنسان">
-  <meta property="og:description" content="منصة إعلامية عربية مستقلة للأخبار والتحقيقات والتوثيق والتوعية بالحقوق والحريات.">
+  <meta property="og:title" content="WRLDLINE NEWS | الأخبار من أجل الإنسان — من الخبر إلى الفهم">
+  <meta property="og:description" content="ملخصات موثقة بمصادرها، سياق، ميزان روايات، وتأثير محتمل على السعودية والخليج.">
   <meta property="og:image" content="https://al-ghaib.us.ci/assets/brand/wrldline-logo-main.jpg">
   <meta property="og:image:alt" content="WRLDLINE NEWS">
   <meta name="twitter:card" content="summary_large_image">
-  <title>WRLDLINE News | الأخبار من أجل الإنسان</title>
+  <title>WRLDLINE NEWS | الأخبار من أجل الإنسان — من الخبر إلى الفهم</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="preconnect" href="https://vmaxbnogmmfyrcucapnq.supabase.co" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Manrope:wght@500;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="wrld.css?v=20261121-breaking4">
   <link rel="manifest" href="manifest.json">
-  <link rel="stylesheet" href="site-enhancements.css?v=20261121-editorial1">
-  <link rel="stylesheet" href="intelligence.css?v=20261114-1">
-  <link rel="stylesheet" href="homepage-polish.css?v=20261122-bilingual">
-  <link rel="stylesheet" href="wl-modern.css?v=20261122-reader">
-  <link rel="stylesheet" href="newsroom-edition.css?v=20261122-edition">
-  <link rel="stylesheet" href="editorial-launch.css?v=20261122-coverage">
-  <link rel="stylesheet" href="/front-page.css?v=20261122-event">
-  <link rel="stylesheet" href="rights-front.css?v=premium-1">
+  <link rel="stylesheet" href="home.bundle.css?v=20261123-gate2">
 </head>
 <body class="wl-home">
   <a class="skip-link" href="#mainContent">تجاوز إلى المحتوى</a>
@@ -83,13 +75,13 @@
   <header class="wl-header" id="siteHeader">
     <div class="wl-container wl-masthead">
       <button class="wl-icon-btn wl-mobile-menu" id="menuButton" aria-label="فتح القائمة" aria-expanded="false" aria-controls="mainNav"><svg aria-hidden="true"><use href="#i-menu"/></svg></button>
-      <a class="wl-brand" href="index.html" aria-label="ورلدلاين نيوز — الصفحة الرئيسية">
+      <a class="wl-brand" href="index.html" aria-label="WRLDLINE NEWS — الصفحة الرئيسية">
         <span class="wl-brand-mark" aria-hidden="true"><img src="/assets/brand/wrldline-symbol.png" alt="" width="44" height="34"></span>
         <span class="wl-brand-copy"><strong>WRLDLINE</strong><small>NEWS</small></span>
       </a>
       <div class="wl-head-actions" data-site-editor-main>
-        <button class="wl-search-trigger" id="searchButton" type="button" aria-label="البحث في الأخبار" aria-haspopup="dialog">
-          <svg aria-hidden="true"><use href="#i-search"/></svg><span>ابحث في الأخبار</span><kbd class="wl-kbd" dir="ltr">Ctrl / ⌘ K</kbd>
+        <button class="wl-search-trigger" id="searchButton" type="button" aria-label="ابحث في الأخبار" aria-haspopup="dialog">
+          <svg aria-hidden="true"><use href="#i-search"/></svg><span>ابحث في الأخبار</span><kbd class="wl-kbd" dir="ltr" aria-hidden="true">Ctrl / ⌘ K</kbd>
         </button>
         <button class="wl-icon-btn" id="savedButton" type="button" aria-label="المحفوظات"><svg aria-hidden="true"><use href="#i-star"/></svg></button>
         <button class="wl-icon-btn" id="themeButton" type="button" aria-label="تغيير المظهر"><svg aria-hidden="true"><use href="#i-moon"/></svg></button>
@@ -104,11 +96,10 @@
           <a class="wl-nav-link wl-nav-rights" href="rights.html" hreflang="ar" data-language-managed><span lang="ar">الحقوق والحريات</span><span lang="en">Rights &amp; freedoms</span></a>
           <a class="wl-nav-link wl-nav-sections" href="sections.html" hreflang="ar" data-language-managed><span lang="ar">أقسام الصحيفة</span><span lang="en">News sections</span></a>
           <a class="wl-nav-link nav-link wl-nav-dossiers" href="/dossier/">ملفات الأحداث</a>
-          <a class="wl-nav-link nav-link" href="#newsSection" data-category="politics">سياسة</a>
-          <a class="wl-nav-link nav-link" href="#newsSection" data-category="economy">اقتصاد</a>
+          <a class="wl-nav-link nav-link" href="/section/politics">سياسة</a>
+          <a class="wl-nav-link nav-link" href="/section/economy">اقتصاد</a>
           <a class="wl-nav-link" href="/news/">الأرشيف</a>
           <a class="wl-nav-link nav-link wl-nav-link--live" href="#breakingSection"><i class="wl-live-dot" aria-hidden="true"></i> عاجل</a>
-          <a class="wl-nav-link wl-nav-monitor" href="map.html">مرصد العالم</a>
         </div>
         <div class="wl-nav-more">
           <button class="wl-more-btn" id="moreButton" type="button" aria-expanded="false" aria-controls="moreMenu">المزيد <svg aria-hidden="true"><use href="#i-chevron"/></svg></button>
@@ -653,8 +644,8 @@
   <script src="public-article-body.js?v=20261122-longread2" defer></script>
   <script src="article-editions.js?v=20261122-bilingual" defer></script>
   <script src="/event-desk.js?v=20261122-event" defer></script>
-  <script src="site-editor.js?v=1" defer></script>
-  <script src="script.js?v=site-editor-1" defer></script>
+  <script src="site-editor.js?v=2" defer></script>
+  <script src="script.js?v=20261123-gate-site-editor1" defer></script>
   <script src="newsroom-data.js?v=20261114-1" defer></script>
   <script src="newsroom.js?v=20261120-feedfast1" defer></script>
   <script src="home.js?v=20261123-rights" defer></script>
@@ -663,7 +654,7 @@
   <script src="coverage-gap.js?v=20261114-1" defer></script>
   <script src="share.js?v=20261113-4" defer></script>
   <script src="analytics-config.js?v=20261114-1" defer></script>
-  <script src="analytics.js?v=20261114-1" defer></script>
+  <script src="analytics.js?v=20261123-a11y1" defer></script>
   <script src="wl-modern.js?v=human-news-1" defer></script>
   <script src="homepage-interactions.js?v=20261122-reader" defer></script>
   <script src="rights-front.js?v=premium-1" defer></script>

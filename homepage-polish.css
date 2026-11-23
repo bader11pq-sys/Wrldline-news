@@ -61,7 +61,7 @@ body.wl-home{background:var(--paper)}
 }
 html[data-theme="light"] .wl-home{
   --paper:#f7f7f4;--paper-2:#f0f1ed;--surface:#fff;--surface-2:#f4f5f1;--surface-3:#e9ece7;
-  --ink:#172333;--ink-2:#354456;--muted:#687789;--muted-2:#8793a0;
+  --ink:#172333;--ink-2:#354456;--muted:#5f6e80;--muted-2:#65707c;
   --line:#e2e7e3;--line-strong:#cbd4ce;--gold:#a77a32;--gold-strong:#886322;--gold-soft:#f4ecd9;
   --blue:#376d91;--blue-soft:#e8f0f5;
 }

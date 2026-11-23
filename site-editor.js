@@ -175,6 +175,7 @@
     if (error?.code === "40001") return t("تغيّر المحتوى في نافذة أخرى. نصّك ما زال هنا؛ انسخه قبل إعادة فتح الخبر لدمج التعديلات.","This story changed elsewhere. Your text is still here; copy it before reopening to merge changes.");
     if (error?.code === "23505") return t("هذا الرابط أو السجل مستخدم بالفعل. راجع القيمة وحاول مرة أخرى.","This link or entry already exists. Check it and retry.");
     if (error?.code === "P0002") return t("لم يعد هذا المحتوى متاحًا.","This content is no longer available.");
+    if (error?.message === "Publication gate did not permit this story") return t("منعت سياسة النشر ظهور المادة. راجع العنوان والمصدر واللغة والقسم، أو احفظها كمسودة. نصك ما زال هنا.","The publication policy blocked this story. Check its headline, source, language, and section, or save it as a draft. Your text is still here.");
     if (error?.message === "Existing machine translation requires the review queue") return t("هذه ترجمة آلية موجودة؛ راجعها من قائمة الترجمات في لوحة التحرير.","This is an existing machine translation. Use the dashboard’s translation review queue.");
     if (/claim|evidence|translation|human.*review/i.test(error?.message || "") && /^(22|23|P0|42501)/.test(error?.code || "")) {
       return t("تعذّر اعتماد المراجعة. تحقق من الأدلة الداعمة، حالة الادعاءات وملاحظة المراجعة البشرية.","Review could not be recorded. Check supporting evidence, claim statuses and the human review note.");
@@ -412,7 +413,8 @@
       if (dialog !== owner) return;
       selected = value; dirty = false; renderWriter();
       say(value.editorial_status === "published" ?
-        (previous === "published" ? t("حُفظت التعديلات على الموقع.","Changes saved.") : t("تم النشر على الموقع.","Published.")) :
+        (value.audience_lane === "leisure" ? t("حُفظت المادة في الأرشيف الرياضي، دون ظهورها في الموجز الرئيسي أو صفحة خبر مستقلة.","Saved to the sports archive. This story does not appear in the main feed or on a standalone article page.") :
+          previous === "published" ? t("حُفظت التعديلات على الموقع.","Changes saved.") : t("تم النشر على الموقع.","Published.")) :
         value.editorial_status === "draft" ? t("حُفظت المسودة الخاصة.","Private draft saved.") : t("حُفظ المحتوى دون نشره.","Saved without publishing."),"success");
       publishEvent(value,previous);
     } catch(error) { if (dialog === owner) say(explain(error),"error"); }

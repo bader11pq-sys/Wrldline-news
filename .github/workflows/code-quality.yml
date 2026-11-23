@@ -41,11 +41,12 @@ jobs:
           tests=(tests/*.test.js tests/*.test.mjs tests/*.test.cjs)
           test "${#tests[@]}" -gt 0
           node --test "${tests[@]}"
-      - name: Verify generated event files and front page
+      - name: Verify generated event files, front page and stylesheet bundle
         run: |
           node scripts/build-dossiers.mjs
           node scripts/build-rights-cases.cjs --check
-          git diff --exit-code -- index.html dossier/ sitemap.xml
+          node scripts/build-home-css.mjs --check
+          git diff --exit-code -- index.html dossier/ sitemap.xml home.bundle.css
       - uses: denoland/setup-deno@v2
         with:
           deno-version: 'v2.5.6'
@@ -66,6 +67,7 @@ jobs:
           export PGBIN=/usr/lib/postgresql/16/bin
           bash tests/editorial-trust-db.sh
           bash tests/notifications-db.sh
+          bash tests/public-read-migrations.sh
       - name: Validate committed JSON and local HTML script/style assets
         shell: bash
         run: |
