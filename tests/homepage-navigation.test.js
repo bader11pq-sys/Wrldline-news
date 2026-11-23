@@ -21,6 +21,7 @@ test("homepage primary navigation follows the core reader journey", () => {
   assert.deepEqual(primaryLinks, [
     "index.html",
     "rights.html",
+    "sections.html",
     "/dossier/",
     "#newsSection",
     "#newsSection",
