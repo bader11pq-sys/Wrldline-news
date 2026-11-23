@@ -68,6 +68,7 @@ html[lang="en"] .rf-opening span[lang="en"],html[lang="en"] :is(.wl-nav-rights,.
 .rf-extra{margin-block:1.4rem;border-block:1px solid var(--rf-line)}
 .rf-extra :is(.wl-container,.wl-dossier-strip,.wl-watch-strip){max-width:none;width:100%;padding-inline:0}
 .rf-extra[open] > summary{border-block-end:1px solid var(--rf-line)}
+.rf-extra > summary{scroll-margin-block:var(--reader-anchor) 5rem}
 .rf-extra :is([id]){scroll-margin-block:6rem}
 .rf-editor-selection{margin-block-start:1.35rem}
 #frontEditionTitle{scroll-margin-block:6rem}
