@@ -952,11 +952,16 @@ function updateBreaking(){
  const headline=item?normalizeText(item.title):"";
  if(marquee.textContent!==headline||title.dataset.articleId!==(item?.id||"")){
   title.dataset.articleId=item?.id||"";
-  marquee.textContent=headline;
+  // A new headline starts a fresh CSS animation, including when its direction changes.
+  const nextMarquee=marquee.cloneNode(false);
+  nextMarquee.textContent=headline;
   title.title=headline;
   title.href=(item&&publicArticleURL({id:item.id,editorialStatus:"published"}))||"#breakingSection";
-  title.classList.toggle("is-rtl",/[\u0590-\u08FF]/.test(headline));
-  marquee.getAnimations?.().forEach(animation=>{animation.currentTime=0;});
+  // Keep Arabic headlines RTL even when an acronym precedes the Arabic text.
+  const arabic=/^ar(?:-|$)/i.test(item?.lang||item?.source_language||"")&&/[\u0620-\u064A\u066E-\u06D3]/.test(headline);
+  nextMarquee.dir=arabic?"rtl":"auto";
+  marquee.replaceWith(nextMarquee);
+  title.classList.toggle("is-rtl",getComputedStyle(nextMarquee).direction==="rtl");
   sizeBreakingMarquee();
  }
  clearTimeout(section.expiryTimer);

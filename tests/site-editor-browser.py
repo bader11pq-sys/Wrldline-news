@@ -94,7 +94,19 @@ async def check_breaking_lifecycle(browser, allow_local):
     cards = page.locator("#breakingNewsGrid h3")
     await expect(ticker).to_have_text("أول خبر من هيئة التحرير")
     await expect(cards).to_have_text(["أول خبر من هيئة التحرير", "خبر سابق يبقى في القسم"])
-    await expect(ticker.locator("bdi")).to_have_css("animation-name", "wrld-breaking")
+    await check_ticker_entry(ticker, "rtl")
+    await page.evaluate("""() => WLSiteEditorFixture.setBreakingRows([{
+      ...breakingRowsForTest.old,title:"UN: تبدأ الجولة الجديدة اليوم الساعة 12:30 بتوقيت الرياض"
+    }])""")
+    await expect(ticker).to_contain_text("الساعة 12:30")
+    await check_ticker_entry(ticker, "rtl")
+    await page.evaluate("""() => WLSiteEditorFixture.setBreakingRows([{
+      ...breakingRowsForTest.old,title:"Riyadh announces a new round of talks this afternoon",lang:"en",audience_lane:"world"
+    }])""")
+    await expect(ticker).to_contain_text("Riyadh announces")
+    await check_ticker_entry(ticker, "ltr")
+    await page.evaluate("WLSiteEditorFixture.setBreakingRows([breakingRowsForTest.old])")
+    await expect(ticker).to_have_text("أول خبر من هيئة التحرير")
     await page.locator("#breakingMotion").click()
     await expect(ticker.locator("bdi")).to_have_css("animation-name", "none")
     await page.locator("#breakingMotion").click()
@@ -122,6 +134,46 @@ async def check_breaking_lifecycle(browser, allow_local):
     await expect(cards).to_have_count(0)
     assert not failures, failures
     await context.close()
+
+
+async def check_ticker_entry(ticker, direction):
+    # Check physical word visibility, not just textContent or the CSS class.
+    result = await ticker.locator("bdi").evaluate("""async (headline) => {
+      const animation = headline.getAnimations()[0];
+      if (!animation) throw new Error("The headline is not moving");
+      animation.pause();
+      await animation.ready;
+      const duration = animation.effect.getTiming().duration;
+      const track = headline.parentElement.getBoundingClientRect();
+      const words = [...headline.textContent.matchAll(/\\S+/gu)];
+      function visible(word) {
+        const range = document.createRange();
+        range.setStart(headline.firstChild,word.index);
+        range.setEnd(headline.firstChild,word.index+word[0].length);
+        const rect = range.getBoundingClientRect();
+        return Math.min(rect.right,track.right)-Math.max(rect.left,track.left)>1;
+      }
+      const travel = headline.getBoundingClientRect().width+track.width;
+      const entryTime = 20*duration/travel;
+      async function position(time) {
+        animation.currentTime = time;
+        // The compositor applies transform changes on the next paint.
+        await new Promise(requestAnimationFrame);
+        await new Promise(requestAnimationFrame);
+        return {left:headline.getBoundingClientRect().left,time:animation.currentTime,progress:animation.effect.getComputedTiming().progress,
+          transform:getComputedStyle(headline).transform, name:getComputedStyle(headline).animationName};
+      }
+      const before = await position(entryTime);
+      const result = {direction:getComputedStyle(headline).direction,first:visible(words[0]),last:visible(words.at(-1))};
+      const after = await position(entryTime+15*duration/travel);
+      result.delta = Math.round((after.left-before.left)*10)/10;
+      result.animation = animation.animationName;
+      result.frames = [before,after,track.width,travel,headline.clientWidth,duration];
+      animation.play();
+      return result;
+    }""")
+    assert result["direction"] == direction and result["first"] and not result["last"], result
+    assert 14 < (result["delta"] if direction == "rtl" else -result["delta"]) < 16, result
 
 
 if __name__ == "__main__":
