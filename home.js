@@ -248,24 +248,39 @@
       host.innerHTML = '<div class="dossier-strip-loading">تعذر تحميل الملفات الآن. <a href="dossier/">افتح صفحة الملفات</a>.</div>';
     }
   }
-  function boot() {
-    void renderDossiers();
-    renderContext([]);
-    renderBalance([]);
-    renderMirror([]);
-    renderShortsPreview([]);
+  const extras = $("#homeExtras");
+  let latestArticles = [];
+  let extrasStarted = false;
+  function renderExtraPreviews() {
+    renderContext(latestArticles);
+    renderBalance(latestArticles);
+    renderMirror(latestArticles);
+    renderShortsPreview(latestArticles);
+  }
+  function loadExtraScript(src) {
+    const script = document.createElement("script");
+    script.src = src;
+    script.async = true;
+    document.head.append(script);
+  }
+  function openExtras() {
+    if (extras && !extras.open) return;
+    renderExtraPreviews();
+    if (extrasStarted) return;
+    extrasStarted = true;
     renderPromises();
     renderExplainers();
+    if (!extras) { void renderDossiers(); return; }
+    loadExtraScript("watch-strip.js?v=20261119-2");
+    // Merge the live publications after the static fallback is in the grid.
+    void renderDossiers().then(() => loadExtraScript("editorial-publications.js?v=20261123-rights"));
   }
-
-  boot();
+  extras?.addEventListener("toggle", openExtras);
+  openExtras();
 
   document.addEventListener("wrldline:news", e => {
-    const articles = e.detail?.articles || [];
-    renderRooms(articles);
-    renderShortsPreview(articles);
-    renderContext(articles);
-    renderBalance(articles);
-    renderMirror(articles);
+    latestArticles = e.detail?.articles || [];
+    renderRooms(latestArticles);
+    if (!extras || extras.open) renderExtraPreviews();
   });
 })();

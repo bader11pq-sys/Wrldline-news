@@ -27,7 +27,8 @@
     el("editionMonitorStatus").textContent = status[phase][index];
     el("editionMonitorMetrics").hidden = snapshot === null;
     if (!snapshot) return;
-    const number = new Intl.NumberFormat(english ? "en" : "ar-SA");
+    // The Arabic zero resembles a dot at dashboard sizes. Use a clearly shaped 0.
+    const number = new Intl.NumberFormat(english ? "en" : "ar-SA", { numberingSystem: "latn" });
     for (const [id, value] of Object.entries(snapshot)) el(id).textContent = number.format(value);
   }
   async function load() {
