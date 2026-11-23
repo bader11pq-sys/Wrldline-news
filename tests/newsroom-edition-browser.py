@@ -261,17 +261,15 @@ async def main():
         await expect(page.locator("#connectionLabel")).to_have_text("News feed loaded")
         await expect(page.locator("#lastUpdated")).to_contain_text("Latest story in the feed:")
         await expect(page.locator("#lastUpdated")).to_contain_text("Last successful load:")
-        await expect(page.locator(".wl-nav-scroll")).to_contain_text("Event files")
-        await expect(page.locator(".editorial-focus")).to_contain_text("Coverage priorities")
-        await expect(page.locator(".editorial-focus")).to_contain_text("Trade and shipping")
+        await expect(page.locator(".wl-nav-scroll a[href='sections.html']")).to_have_text("All sections", use_inner_text=True)
+        await expect(page.locator(".wl-nav-scroll a[href='analysis.html']")).to_have_text("Analysis")
+        await expect(page.locator("#moreButton")).to_have_text("More", use_inner_text=True)
         await expect(page.get_by_role("button", name="Load older news")).to_be_enabled()
         if os.environ.get("WRLDLINE_SCREENSHOTS"):
             await page.evaluate("window.scrollTo({top:0,behavior:'instant'})")
             await page.screenshot(path="/tmp/wrldline-edition-home-desktop.png")
-        await page.locator(".edition-monitor").scroll_into_view_if_needed()
-        await expect(page.locator("#editionReportCount")).to_have_text("1")
-        await expect(page.locator("#editionHighCount")).to_have_text("0")
-        await expect(page.locator("#editionMonitorStatus")).to_contain_text("not country safety")
+        await expect(page.locator("#homeExtras .edition-monitor")).to_be_hidden()
+        await expect(page.locator('#signalHub a[href="analysis.html#tools"]')).to_be_visible()
         if os.environ.get("WRLDLINE_SCREENSHOTS"):
             await page.screenshot(path="/tmp/wrldline-edition-home-snapshot.png")
         await page.locator("#countryFilter").select_option("SAU")
@@ -291,6 +289,8 @@ async def main():
         await trigger.click()
         dialog = page.locator("#articleModal")
         await expect(dialog.locator("h1")).to_have_text("Saudi railway outlook")
+        await expect(dialog.locator("[data-reader-step] > h2")).to_have_text(
+            ["What happened?", "What do we know?", "What is the source?", "Further details and references"])
         await expect(dialog.locator(".story-country")).to_have_text("Saudi Arabia")
         await expect(dialog.locator(".source-box strong")).to_have_text("Example Journal")
         await expect(dialog.locator(".source-box a")).to_have_attribute("href", FIRST[0]["url"])
@@ -323,6 +323,9 @@ async def main():
         for mode, text in [("empty", "no classified reports"), ("error", "snapshot is unavailable")]:
             context, page, state, errors = await setup(browser, 375, monitor_mode=mode, home_failure=(mode == "empty"))
             await open_home(page, "?lang=en")
+            extras = page.locator("#homeExtras > summary")
+            await extras.evaluate("(el) => el.scrollIntoView({block:'center',behavior:'instant'})")
+            await extras.click()
             await page.locator(".edition-monitor").scroll_into_view_if_needed()
             await expect(page.locator("#editionMonitorStatus")).to_contain_text(text)
             if mode == "error":

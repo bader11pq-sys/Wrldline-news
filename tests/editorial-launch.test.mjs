@@ -7,12 +7,11 @@ const story = "/originals/saudi-ports-2025.html";
 const dossier = "/dossier/opec-plus-december-2026.html";
 
 test("coverage priorities link to a dossier, the first original and the watchlist", () => {
-  const home = read("index.html");
-  const focus = home.match(/<section [^>]*aria-labelledby="editorialFocusTitle"[^>]*>[\s\S]*?<\/section>/)?.[0];
-  assert.ok(focus);
+  const focus = read("sections.html");
   for (const target of ["/originals/", story, `${dossier}#reader-brief`, "/dossier/watchlist.html"]) {
     assert.ok(focus.includes(`href="${target}"`), target);
   }
+  assert.match(read("analysis.html"), /href="dossier\/watchlist\.html"/);
   for (const href of [story, "/originals/"]) {
     assert.ok(read("sitemap.xml").includes(`<loc>https://al-ghaib.us.ci${href}</loc>`));
   }

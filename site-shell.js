@@ -25,6 +25,10 @@
   };
   copy.ar.analysis = "مكتب الفهم والتحليل";
   copy.en.analysis = "Analysis Desk";
+  copy.ar.sections = "الأقسام";
+  copy.en.sections = "Sections";
+  copy.ar.briefing = "ملخص اليوم";
+  copy.en.briefing = "Daily briefing";
   const t = (key) => copy[lang][key] || copy.ar[key];
   const other = lang === "ar" ? "en" : "ar";
   const nextURL = new URL(location.href);
@@ -64,23 +68,12 @@
         <a class="wl-account" href="index.html#account"><svg aria-hidden="true"><use href="#i-user"/></svg> ${t("account")}</a>
       </div>
     </div>
-    <div class="wl-nav-wrap" id="mainNav"><nav class="wl-nav" aria-label="${t("navHome")}"><div class="wl-nav-scroll">
+    <div class="wl-nav-wrap" id="mainNav"><nav class="wl-nav" aria-label="${t("sections")}"><div class="wl-nav-scroll">
       <a class="wl-nav-link" href="index.html">${t("navHome")}</a>
-      <a class="wl-nav-link" href="/map.html">${t("monitor")}</a>
-      <a class="wl-nav-link" href="dossier/">${t("dossiers")}</a>
-      <a class="wl-nav-link" href="dossier/watchlist.html">${t("watchlist")}</a>
+      <a class="wl-nav-link" href="sections.html" hreflang="ar">${t("sections")}</a>
+      <a class="wl-nav-link" href="analysis.html" hreflang="ar">${t("analysis")}</a>
+      <a class="wl-nav-link" href="daily-briefing.html">${t("briefing")}</a>
       <a class="wl-nav-link" href="/news/?lang=${lang}">${lang === "ar" ? "الأرشيف" : "Archive"}</a>
-      <a class="wl-nav-link" href="topics.html">${t("topics")}</a>
-      <a class="wl-nav-link wl-nav-link--shorts" href="shorts.html">${t("shorts")}</a>
-      <a class="wl-nav-link" href="analysis.html">${t("analysis")}</a>
-      <a class="wl-nav-link" href="context.html">${t("context")}</a>
-      <a class="wl-nav-link" href="balance.html">${t("balance")}</a>
-      <a class="wl-nav-link" href="impact.html">${t("impact")}</a>
-      <a class="wl-nav-link" href="history.html">${t("history")}</a>
-      <a class="wl-nav-link" href="mirror.html">${t("mirror")}</a>
-      <a class="wl-nav-link" href="explainers.html">${t("explainers")}</a>
-      <a class="wl-nav-link" href="promises.html">${t("promises")}</a>
-      <a class="wl-nav-link" href="history-library.html">${t("library")}</a>
     </div></nav></div>
   </div>
   <div class="hx-read-progress"><i id="readProgress"></i></div>
@@ -104,10 +97,10 @@
   const f = document.getElementById("siteFooter"); if (f) f.outerHTML = footer;
 
   const page = location.pathname.split("/").pop() || "index.html";
-  const map = { "history.html": "history.html", "history-explore.html": "history.html", "history-dossier.html": "history.html", "history-compare.html": "history.html", "history-library.html": "history-library.html", "context.html": "context.html", "balance.html": "balance.html", "impact.html": "impact.html", "promises.html": "promises.html", "mirror.html": "mirror.html", "explainers.html": "explainers.html", "topics.html": "topics.html", "watchlist.html": "dossier/watchlist.html", "claims.html": "dossier/claims.html", "digest.html": "dossier/digest.html" };
-  const active = map[page];
+  const analysisPages = new Set(["history.html", "history-explore.html", "history-dossier.html", "history-compare.html", "history-library.html", "context.html", "balance.html", "impact.html", "promises.html", "mirror.html", "explainers.html", "reading.html"]);
+  const active = analysisPages.has(page) ? "analysis.html" : page;
   document.querySelectorAll(".wl-nav-link").forEach(a => {
-    if (a.getAttribute("href") === active) { a.classList.add("is-active"); a.setAttribute("aria-current", "page"); }
+    if (a.getAttribute("href") === active) { a.classList.add("is-active"); a.setAttribute("aria-current", active === page ? "page" : "location"); }
   });
   const bar = document.querySelector(".wl-head-actions");
   if (bar && !document.querySelector('script[src*="language.js"]')) {

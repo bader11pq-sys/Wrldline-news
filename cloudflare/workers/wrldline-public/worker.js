@@ -86,9 +86,13 @@ function labels(lang) {
     author: en ? "By" : "الكاتب", correction: en ? "Published correction" : "تصحيح منشور",
     share: en ? "Share story" : "مشاركة الخبر", copy: en ? "Copy article link" : "نسخ رابط الخبر",
     original: en ? "Read at the original source" : "قراءة الخبر لدى المصدر الأصلي",
-    missing: en ? "Original source link unavailable; no substitute link is invented." : "رابط المصدر الأصلي غير متوفر؛ لا نستبدله برابط وهمي.",
-    reading: en ? "WRLDLINE Arabic reader note" : "قراءة WRLDLINE للقارئ العربي",
-    impact: en ? "Why it may matter" : "وش يعني لك؟", watch: en ? "What to watch next" : "ما الذي نراقبه تالياً؟",
+    missing: en ? "The original source link is unavailable." : "رابط المصدر الأصلي غير متوفر.",
+    event: en ? "What happened?" : "ماذا حدث؟", known: en ? "What do we know?" : "ماذا نعرف؟",
+    sourceQuestion: en ? "What is the source?" : "ما المصدر؟",
+    impact: en ? "Why does it matter?" : "لماذا يهم؟", watch: en ? "What to watch next?" : "ما الذي نراقبه تالياً؟",
+    details: en ? "Further details and references" : "تفاصيل إضافية ومراجع",
+    reading: en ? "AI-assisted reading" : "قراءة مساعدة بالذكاء الاصطناعي",
+    noSummary: en ? "No published summary is available here. See the source below." : "لا يتوفر ملخص منشور هنا. راجع المصدر أدناه.",
     aiNotice: en ? "AI-assisted context based on the available article text. It is not human verification, a prediction, or personal financial advice." : "سياق مساعد بالذكاء الاصطناعي مستند إلى نص الخبر المتاح؛ لا يُعد تحققاً بشرياً أو تنبؤاً أو نصيحة مالية شخصية.",
     disclosure: en ? "This page publishes a summary, not the full source story. Full reporting and subsequent updates remain with the attributed source." : "تنشر هذه الصفحة ملخصاً، لا النص الكامل للخبر لدى المصدر. التغطية الكاملة وتحديثاتها متاحة لدى المصدر المنسوب إليه الخبر.",
     related: en ? "Follow this story" : "تابع الموضوع",
@@ -180,11 +184,11 @@ function trustSummary(article, record, lang, now) {
   const humanTranslation = valid && record.human_translation_status === "reviewed" && translationDate && Date.parse(translationDate) <= now.getTime();
   const confirmed = valid && record.editorial_trust_status === "confirmed" && record.trust_needs_review === false && reviewed && Date.parse(reviewed) <= now.getTime() && (!translated || humanTranslation);
   const disputed = valid ? record.editorial_trust_status === "disputed" : article.verification === "disputed";
-  const heading = l.en ? "Verification context" : "سياق التحقق";
-  const status = confirmed ? (l.en ? "Human editorial confirmation recorded" : "تأكيد تحريري بشري مسجل") : disputed ? (l.en ? "Disputed — consult the evidence and source" : "خبر محل خلاف — راجع الأدلة والمصدر") : (l.en ? "Human confirmation not established on this page" : "لم يُثبت تأكيد بشري في هذه الصفحة");
+  const key = confirmed ? "confirmed" : disputed ? "disputed" : "unconfirmed";
+  const status = confirmed ? (l.en ? "Human editorial confirmation recorded" : "تأكيد تحريري بشري مسجل") : disputed ? (l.en ? "Disputed — consult the evidence and source" : "الخبر محل خلاف. راجع الأدلة والمصدر.") : (l.en ? "Human confirmation not established on this page" : "لم يُثبت تأكيد بشري في هذه الصفحة");
   const note = l.en ? "Breaking labels, AI analysis and source counts alone are not human verification." : "وسم العاجل وتحليل الذكاء الاصطناعي وأعداد المصادر وحدها ليست تحققاً بشرياً.";
-  const translation = translated ? `<p>${humanTranslation ? (l.en ? "Human translation review recorded." : "مراجعة بشرية للترجمة مسجلة.") : (l.en ? "Human translation review is not established." : "لم تُثبت مراجعة بشرية للترجمة.")}</p>` : "";
-  return `<section class="public-news-source" data-server-trust><h2>${heading}</h2><p><strong>${status}</strong></p><p>${note}</p>${translation}</section>`;
+  const translation = translated ? `<p data-translation-review="${humanTranslation ? "reviewed" : "unconfirmed"}">${humanTranslation ? (l.en ? "Human translation review recorded." : "مراجعة بشرية للترجمة مسجلة.") : (l.en ? "Human translation review is not established." : "لم تُثبت مراجعة بشرية للترجمة.")}</p>` : "";
+  return `<div data-server-trust="${key}"><p><strong>${status}</strong></p><p data-trust-note>${note}</p>${translation}</div>`;
 }
 
 /** @param {PageOptions} options */
@@ -192,7 +196,6 @@ function shell({ title, description, canonical, lang = "ar", image = "", body, s
   const l = labels(lang), direction = l.en ? "ltr" : "rtl";
   // Nonce permits JSON-LD, while executable scripts must be same-origin files.
   const nonce = schema ? crypto.randomUUID().replace(/-/g, "") : "";
-  const sectionLinks = SECTIONS.slice(0, 7).map(section => `<a href="/section/${section.slug}"${currentPath === `/section/${section.slug}` ? ' aria-current="page"' : ""}>${l.en ? section.en : section.ar}</a>`).join("");
   const head = `<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#0d1a2b"><title>${escapeHTML(title)}</title>
 <meta name="description" content="${escapeHTML(description)}"><meta name="robots" content="${noindex ? "noindex,nofollow" : "index,follow,max-image-preview:large"}">
@@ -203,17 +206,17 @@ ${canonical ? `<meta property="og:url" content="${escapeHTML(canonical)}">` : ""
 ${image ? `<meta property="og:image" content="${escapeHTML(image)}"><meta name="twitter:image" content="${escapeHTML(image)}">` : ""}
 <meta name="twitter:card" content="${image ? "summary_large_image" : "summary"}"><meta name="twitter:title" content="${escapeHTML(title)}"><meta name="twitter:description" content="${escapeHTML(description)}">
 ${schema ? `<meta property="article:published_time" content="${escapeHTML(schema.datePublished)}"><script nonce="${nonce}" type="application/ld+json">${jsonLD(schema)}</script>` : ""}
-<link rel="icon" href="/favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="/wrld.css?v=20261123-gate1"><link rel="stylesheet" href="/public-news.css?v=20261123-gate1">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="/wrld.css?v=20261123-gate1"><link rel="stylesheet" href="/public-news.css?v=20261123-reading-order">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Noto+Kufi+Arabic:wght@500;700&family=Manrope:wght@500;700;800&display=swap" rel="stylesheet">
 <link rel="alternate" type="application/rss+xml" title="WRLDLINE NEWS RSS" href="${PUBLIC_ORIGIN}/rss.xml"><link rel="alternate" type="application/atom+xml" title="WRLDLINE NEWS Atom" href="${PUBLIC_ORIGIN}/atom.xml">
 ${!noindex ? '<script src="/analytics-config.js?v=20261115-1" defer></script><script src="/analytics.js?v=20261115-1" defer></script>' : ""}
 ${!noindex ? '<script src="/site-editor.js?v=20261123-live-breaking" defer></script>' : ""}
-${enhance ? '<link rel="stylesheet" href="/article-trust.css?v=20261115-1"><script src="/share.js?v=20261115-canonical" defer></script><script src="/public-news.js?v=20261123-gate1" defer></script><script src="/article-trust.js?v=20261115-1" defer></script>' : ""}`;
+${enhance ? '<link rel="stylesheet" href="/article-trust.css?v=20261115-1"><script src="/share.js?v=20261115-canonical" defer></script><script src="/public-news.js?v=20261123-reading-order" defer></script><script src="/article-trust.js?v=20261115-1" defer></script>' : ""}`;
   const html = `<!doctype html><html lang="${escapeHTML(lang)}" dir="${direction}" data-theme="dark"><head>${head}</head><body class="wl-public-news">
 <a class="skip-link" href="#mainContent">${l.en ? "Skip to content" : "تجاوز إلى المحتوى"}</a>
 <header class="wl-header public-news-header"><div class="wl-container wl-masthead"><a class="wl-brand" href="/" aria-label="WRLDLINE NEWS"><span class="wl-brand-mark" aria-hidden="true">W</span><span class="wl-brand-copy"><strong>WRLDLINE</strong><small>GLOBAL NEWS NETWORK</small></span></a><a class="wl-account" href="/account.html">${l.en ? "My account" : "حسابي"}</a></div>
-<nav class="wl-container public-news-nav" aria-label="${l.en ? "News navigation" : "تصفح الأخبار"}"><a href="/">${l.home}</a><a href="/news/"${currentPath === "/news/" ? ' aria-current="page"' : ""}>${l.news}</a>${sectionLinks}<a href="/sources.html">${l.en ? "Sources" : "المصادر"}</a><a href="/about.html">${l.en ? "About" : "عن ورلدلاين"}</a></nav></header>
+<nav class="wl-container public-news-nav" aria-label="${l.en ? "News navigation" : "تصفح الأخبار"}"><a href="/${l.en ? "?lang=en" : ""}">${l.home}</a><a href="/news/${l.en ? "?lang=en" : ""}"${currentPath === "/news/" ? ' aria-current="page"' : ""}>${l.news}</a><a href="/sections.html" hreflang="ar">${l.sections}</a><a href="/analysis.html" hreflang="ar">${l.en ? "Analysis" : "الفهم والتحليل"}</a></nav></header>
 <main class="public-news-main" id="mainContent">${body}</main>
 <footer class="public-news-footer"><div class="wl-container"><p class="pn-gate-note">${l.gate}</p>WRLDLINE NEWS · <a href="/about.html">${l.en ? "Editorial policy" : "السياسة التحريرية"}</a> · <a href="/corrections.html">${l.en ? "Corrections" : "التصحيحات"}</a> · <a href="/rss.xml">RSS</a> · <a href="/atom.xml">Atom</a></div></footer></body></html>`;
   return { html, nonce };
@@ -254,6 +257,26 @@ function relatedBlock(related, lang) {
   return `<section class="pn-related"><h2>${l.related}</h2><ul>${items}</ul></section>`;
 }
 
+/** Keep in step with the progressive reader in reader-prose.js. @param {string} value */
+export function splitLead(value) {
+  const body = String(value ?? "").replace(/\r\n?/g, "\n").trim();
+  const heading = /^#{2,4}\s+(.+)$/u, bullet = /^[•●▪]\s+(.+)$/u;
+  let start = 0;
+  for (const match of body.matchAll(/[^\n]+/gu)) {
+    const line = match[0].trim();
+    if (!line || heading.test(line)) continue;
+    start = match.index;
+    break;
+  }
+  const first = body.slice(start).match(/^[^\n]*/u)?.[0] || "";
+  let end = start + first.length;
+  if (first.length > 560 && !bullet.test(first.trim()) && !heading.test(first.trim())) {
+    const stop = [...first.matchAll(/[.!?؟]\s+(?=\S)/gu)].find(match => match.index >= 140 && match.index < 520);
+    if (stop) end = start + stop.index + 1;
+  }
+  return { lead: body.slice(0, end).trim(), details: body.slice(end).trim() };
+}
+
 /** @param {PublicArticle} article @param {Date} now @param {Record<string, unknown> | null} [trust] @param {PublicArticle[]} [related] */
 export function renderArticle(article, now, trust = null, related = []) {
   const lang = language(article.lang || article.source_language), l = labels(lang);
@@ -284,6 +307,24 @@ export function renderArticle(article, now, trust = null, related = []) {
   if (original.url && !isOriginal) schema.isBasedOn = original.url;
   if (sectionLabel) schema.articleSection = sectionLabel;
   const correction = text(article.correction_note, 4000);
+  const { lead, details } = splitLead(summary);
+  const readingSummary = text(article.ai_summary, 1200), impact = text(article.ai_reader_impact, 900), watch = text(article.ai_watch_next, 900);
+  const paragraphs = (/** @type {string} */ value) => {
+    const blocks = [];
+    let list = [];
+    const flush = () => { if (list.length) blocks.push(`<ul>${list.join("")}</ul>`); list = []; };
+    for (const row of value.split("\n")) {
+      const line = row.trim();
+      if (!line) continue;
+      const item = line.match(/^[•●▪]\s+(.+)$/u);
+      if (item) { list.push(`<li dir="auto">${escapeHTML(item[1])}</li>`); continue; }
+      flush();
+      const heading = line.match(/^#{2,4}\s+(.+)$/u);
+      blocks.push(heading ? `<h3 dir="auto">${escapeHTML(heading[1])}</h3>` : `<p dir="auto">${escapeHTML(line)}</p>`);
+    }
+    flush();
+    return blocks.join("");
+  };
   const reportedCountry = text(article.event_country, 120);
   const eventCountry = /^(?:دولي|غير محدد|unknown|international|world)$/iu.test(reportedCountry) ? "" : reportedCountry;
   const shareUrl = encodeURIComponent(canonical);
@@ -297,15 +338,20 @@ export function renderArticle(article, now, trust = null, related = []) {
       : `<a href="/news/">${l.news}</a>`;
   const body = `<nav class="public-news-breadcrumb" aria-label="${l.en ? "Breadcrumb" : "مسار الصفحة"}">${breadcrumb}</nav>
 <article data-public-article data-audience-article data-article-id="${article.id}" data-category="${escapeHTML(text(article.category, 120))}" data-share-title="${escapeHTML(title)}" data-share-text="${escapeHTML(description)}" data-share-source="${escapeHTML(original.name)}" data-share-image="${escapeHTML(image)}" data-share-url="${canonical}">
-<p class="public-news-kicker">${typeBadge(article, lang)}<span>${escapeHTML([sectionLabel, eventCountry].filter(Boolean).join(" · "))}</span></p>
+<p class="public-news-kicker">${typeBadge(article, lang)}<span data-kicker-label data-kicker-country="${escapeHTML(eventCountry)}">${escapeHTML([sectionLabel, eventCountry].filter(Boolean).join(" · "))}</span></p>
 <h1>${escapeHTML(title)}</h1><div class="public-news-meta"><span>${l.published}: <time datetime="${article.published_at}" title="${escapeHTML(dateLabel(article.published_at, lang))}">${escapeHTML(relativeLabel(article.published_at, lang, now))}</time></span>${by.length ? `<span>${l.author}: ${escapeHTML(by.join(" · "))}</span>` : ""}${original.name && !isOriginal ? `<span>${l.source}: ${escapeHTML(original.name)}</span>` : ""}${updated !== article.published_at ? `<span>${l.en ? "Updated" : "آخر تحديث"}: ${escapeHTML(dateLabel(updated, lang))}</span>` : ""}</div>
-${image ? `<figure class="public-news-image"><img src="${escapeHTML(image)}" alt="${escapeHTML(title)}" fetchpriority="high" decoding="async" referrerpolicy="no-referrer"></figure>` : ""}
-<div class="public-news-summary">${summary ? summary.split(/\n\s*\n/).filter(Boolean).map(p => `<p>${escapeHTML(p)}</p>`).join("") : `<p>${l.en ? "A published summary is not available. Consult the original source for the story." : "الملخص المنشور غير متوفر. يُرجى الرجوع إلى المصدر الأصلي للخبر."}</p>`}</div>
-${(text(article.ai_summary, 1200) || text(article.ai_reader_impact, 900) || text(article.ai_watch_next, 900)) ? `<section class="public-news-intelligence"><h2>${l.reading}</h2>${text(article.ai_summary, 1200) ? `<div><h3>${l.en ? "Analysis" : "القراءة التحليلية"}</h3><p>${escapeHTML(text(article.ai_summary, 1200))}</p></div>` : ""}${text(article.ai_reader_impact, 900) ? `<div><h3>${l.impact}</h3><p>${escapeHTML(text(article.ai_reader_impact, 900))}</p></div>` : ""}${text(article.ai_watch_next, 900) ? `<div><h3>${l.watch}</h3><p>${escapeHTML(text(article.ai_watch_next, 900))}</p></div>` : ""}<small>${l.aiNotice}</small></section>` : ""}
-${correction ? `<section class="public-news-correction" role="note"><h2>${l.correction}</h2><p>${escapeHTML(correction)}</p>${iso(article.corrected_at) ? `<time datetime="${escapeHTML(iso(article.corrected_at))}">${escapeHTML(dateLabel(article.corrected_at, lang))}</time>` : ""}</section>` : ""}
-<section class="public-news-source"><h2>${isOriginal ? (l.en ? "Primary documents and sources" : "الوثائق والمصادر الأولية") : l.source}</h2>${original.name ? `<p>${escapeHTML(original.name)}</p>` : ""}${original.url ? `<a href="${escapeHTML(original.url)}" target="_blank" rel="noopener noreferrer">${isOriginal ? (l.en ? "Open the primary source" : "فتح المصدر الأولي") : l.original} ↗</a>` : `<p>${l.missing}</p>`}</section>
-<p class="public-news-disclosure">${l.disclosure}</p>
-<div id="articleTrust" data-article-id="${article.id}" data-trust-ssr="1">${trustSummary(article, trust, lang, now)}</div>
+<section class="pn-reading-step" data-reader-step="event"><h2>${l.event}</h2><div class="public-news-summary" data-reading-lead>${paragraphs(lead)}</div><p data-reading-missing${lead ? " hidden" : ""}>${l.noSummary}</p></section>
+<section class="pn-reading-step" data-reader-step="known"><h2>${l.known}</h2>${trustSummary(article, trust, lang, now)}
+${correction ? `<aside class="public-news-correction" role="note"><h3>${l.correction}</h3><p>${escapeHTML(correction)}</p>${iso(article.corrected_at) ? `<time datetime="${escapeHTML(iso(article.corrected_at))}">${escapeHTML(dateLabel(article.corrected_at, lang))}</time>` : ""}</aside>` : ""}</section>
+<section class="pn-reading-step public-news-source" data-reader-step="source" data-primary-source="${isOriginal}"><h2>${l.sourceQuestion}</h2>${original.name ? `<p dir="auto">${escapeHTML(original.name)}</p>` : ""}${original.url ? `<a href="${escapeHTML(original.url)}" target="_blank" rel="noopener noreferrer">${isOriginal ? (l.en ? "Open the primary source" : "فتح المصدر الأولي") : l.original} ↗</a>` : `<p data-source-missing>${l.missing}</p>`}</section>
+${impact ? `<section class="pn-reading-step pn-reading-context" data-reader-step="impact"><h2>${l.impact}</h2><p dir="auto">${escapeHTML(impact)}</p><small data-ai-notice>${l.aiNotice}</small></section>` : ""}
+${watch ? `<section class="pn-reading-step pn-reading-context" data-reader-step="watch"><h2>${l.watch}</h2><p dir="auto">${escapeHTML(watch)}</p><small data-ai-notice>${l.aiNotice}</small></section>` : ""}
+<section class="pn-reading-step" data-reader-step="details"><h2>${l.details}</h2>
+<div class="public-news-summary" data-reading-body>${paragraphs(details)}</div>
+${image ? `<figure class="public-news-image"><img src="${escapeHTML(image)}" alt="${escapeHTML(title)}" loading="lazy" decoding="async" referrerpolicy="no-referrer"></figure>` : ""}
+${readingSummary ? `<aside class="pn-reading-context"><h3 data-ai-reading>${l.reading}</h3><p dir="auto">${escapeHTML(readingSummary)}</p><small data-ai-notice>${l.aiNotice}</small></aside>` : ""}
+<p class="public-news-disclosure">${isOriginal ? (l.en ? "Published by the WRLDLINE newsroom." : "نشرته هيئة تحرير WRLDLINE.") : l.disclosure}</p>
+<details class="pn-reading-evidence"><summary>${l.en ? "Verification record and references" : "سجل التحقق وروابط الأدلة"}</summary><div id="articleTrust" data-article-id="${article.id}"></div><noscript><p>${l.en ? "See the original source above for the documents and links available without JavaScript." : "راجع المصدر أعلاه للاطلاع على الروابط والوثائق المتاحة دون جافاسكريبت."}</p></noscript></details></section>
 <div class="public-news-actions"><button type="button" id="publicNewsShare">${l.share}</button><button type="button" id="publicNewsCopy">${l.copy}</button><a href="${canonical}">${l.en ? "Permanent article link" : "الرابط الدائم للخبر"}</a></div>${socialShare}<span class="public-news-status" id="publicNewsStatus" role="status" aria-live="polite"></span>
 <noscript><p class="public-news-disclosure">${l.en ? "This published summary and source link are available without JavaScript." : "الملخص المنشور ورابط المصدر متاحان دون جافاسكريبت."}</p></noscript></article>
 ${relatedBlock(related, lang)}`;
@@ -317,10 +363,11 @@ function feedItem(article, lang, now) {
   const s = source(article), originalLang = language(article.source_language || article.lang);
   const section = sectionOf(article);
   const sectionLabel = section ? section.ar : "";
+  const excerpt = text(article.summary).replace(/^[ \t]*(?:#{2,4}|[•●▪])[ \t]+/gmu, "").replace(/\s+/gu, " ").trim().slice(0, 220);
   // The hash carries the reader's edition preference to the article page; it is
   // never sent to the server, so it cannot affect canonicalisation.
   const link = articleURL(article.id) + (lang === "en" ? "#lang=en" : "");
-  return `<li class="pn-card"><article data-site-editor-row="${escapeHTML(article.id)}"><p class="pn-card-top">${typeBadge(article, lang)}${sectionLabel ? `<a class="pn-card-section" href="/section/${section.slug}">${escapeHTML(sectionLabel)}</a>` : ""}</p><h2><a href="${link}" lang="${originalLang}" dir="auto">${escapeHTML(text(article.title, 1000) || labels(lang).news)}</a></h2><p class="pn-card-summary" lang="${originalLang}" dir="auto">${escapeHTML(text(article.summary, 220))}</p><p class="pn-card-meta"><span>${escapeHTML(s.name || (lang === "en" ? "Source unavailable" : "المصدر غير متاح"))}</span><time datetime="${article.published_at}" title="${escapeHTML(dateLabel(article.published_at, lang))}">${escapeHTML(relativeLabel(article.published_at, lang, now))}</time></p></article></li>`;
+  return `<li class="pn-card"><article data-site-editor-row="${escapeHTML(article.id)}"><p class="pn-card-top">${typeBadge(article, lang)}${sectionLabel ? `<a class="pn-card-section" href="/section/${section.slug}">${escapeHTML(sectionLabel)}</a>` : ""}</p><h2><a href="${link}" lang="${originalLang}" dir="auto">${escapeHTML(text(article.title, 1000) || labels(lang).news)}</a></h2><p class="pn-card-summary" lang="${originalLang}" dir="auto">${escapeHTML(excerpt)}</p><p class="pn-card-meta"><span>${escapeHTML(s.name || (lang === "en" ? "Source unavailable" : "المصدر غير متاح"))}</span><time datetime="${article.published_at}" title="${escapeHTML(dateLabel(article.published_at, lang))}">${escapeHTML(relativeLabel(article.published_at, lang, now))}</time></p></article></li>`;
 }
 
 /** @param {PublicArticle[]} articles @param {number} page @param {string} lang @param {string} lane @param {Date} now */

@@ -14,37 +14,20 @@
  };
  const svg=k=>'<svg viewBox="0 0 24 24" aria-hidden="true">'+ico[k]+'</svg>';
  const sections=()=>[
-  [t('الأخبار','News'),[
-   ['index.html',t('الرئيسية','Home'),t('أهم ما يحدث الآن','Top stories now')],
-   ['rights.html',t('الحقوق والحريات','Rights & freedoms'),t('دليل الحقوق ودفتر الدليل','Rights guide and evidence desk · Arabic')],
-   ['sections.html',t('أقسام الصحيفة السبعة','Seven coverage sections'),t('السياسة والاقتصاد والعدالة والمجتمع والعالم','Politics, economy, justice, society and more · Arabic')],
-   ['rights-cases/index.html',t('ملفات القضايا الحقوقية','Rights dossiers'),t('التسلسل الزمني والأدلة والمتابعة','Timelines, evidence, and follow-up · Arabic')],
+  [t('الأقسام التحريرية','Editorial sections'),[
+   ['sections.html',t('دليل الأقسام الستة','Six editorial priorities'),t('اعرض كل مسارات التغطية','Browse the coverage guide · Arabic')],
+   ['/section/politics',t('السياسة والعلاقات الدولية','Politics & international affairs'),t('القرارات والدبلوماسية','Decisions and diplomacy')],
+   ['/section/rights',t('الحقوق والحريات','Rights & freedoms'),t('الحقوق المدنية والعدالة','Civil rights and justice')],
+   ['/section/economy',t('الاقتصاد والطاقة والتجارة','Economy, energy & trade'),t('الطاقة والأسعار والشحن','Energy, prices and shipping')],
+   ['sections.html#people-society',t('المجتمع والثقافة والشباب','Society, culture & youth'),t('التعليم وفرص العمل','Education and opportunity · Arabic')],
+   ['sections.html#world',t('الخليج والعالم العربي','The Gulf & Arab world'),t('مختارات من التغطية الإقليمية','Selected regional coverage · Arabic')],
+   ['sections.html#tech-science',t('التقنية والعلوم','Technology & science'),t('البحث والبنية الرقمية','Research and digital infrastructure · Arabic')]]],
+  [t('الموجزات والأرشيف','Briefings & archive'),[
    ['/news/',t('الأرشيف','Archive'),t('كل الأخبار المنشورة','All published news')],
    ['daily-briefing.html',t('ملخص اليوم','Daily briefing'),t('أهم ما حدث باختصار','What mattered today')],
-   ['shorts.html','Shorts',t('موجز عمودي سريع','Quick vertical feed')],
-   ['/dossier/',t('ملفات الأحداث','Event dossiers'),t('السياق الكامل للقصص الكبرى','Full context of big stories')],
-   ['markets.html',t('الأسواق','Markets'),t('الطاقة والعملات والمؤشرات','Energy, FX and indices')]]],
+   ['shorts.html','Shorts',t('موجز عمودي سريع','Quick vertical feed')]]],
   [t('الفهم والتحليل','Analysis'),[
-   ['analysis.html',t('مكتب الفهم والتحليل','Analysis desk'),t('اختر مسار القراءة','Choose a reading path · Arabic')],
-   ['context.html',t('غرفة السياق','Context room'),t('الخلفية وما نعرفه','Background and what we know')],
-   ['balance.html',t('ميزان الروايات','Narrative balance'),t('قارن التغطيات','Compare coverage')],
-   ['impact.html',t('أطلس التأثير','Impact atlas'),t('الأثر على المنطقة','Regional impact')],
-   ['explainers.html',t('افهمها في دقيقة','Explainers'),t('شرح مبسّط','Simple explainers')],
-   ['promises.html',t('ذاكرة الوعود','Promise tracker'),t('القرارات والتعهدات','Decisions & pledges')],
-   ['mirror.html',t('مرآة التاريخ','History mirror'),t('الحدث وسياقه التاريخي','Events in context')],
-   ['intelligence.html',t('ورلدلاين إنتليجنس','Intelligence'),t('ما تغيّر وما وراءه','What changed and why')]]],
-  [t('استكشف','Explore'),[
-   ['map.html',t('مرصد العالم','World map'),t('التغطية جغرافياً','Coverage by place')],
-   ['topics.html',t('الموضوعات','Topics'),t('حسب اهتمامك','By interest')],
-   ['tags.html',t('الوسوم','Tags'),t('أخبار كل وسم','News by tag')],
-   ['history.html',t('الموسوعة التاريخية','History'),t('أحداث وشخصيات','Events & people')],
-   ['sources.html',t('دليل المصادر','Sources'),t('الناشرون ومصادرنا','Our publishers')],
-   ['newsletter.html',t('النشرة البريدية','Newsletter'),t('الأخبار في بريدك','News in your inbox')]]],
-  [t('عن ورلدلاين','About'),[
-   ['about.html',t('من نحن','About us'),t('رسالتنا ومنهجنا','Mission & method')],
-   ['corrections.html',t('التصحيحات','Corrections'),t('الشفافية في الأخطاء','Transparent fixes')],
-   ['contact.html',t('تواصل معنا','Contact'),t('راسل غرفة الأخبار','Reach the newsroom')],
-   ['account.html',t('حسابي','My account'),t('التفضيلات والمحفوظات','Preferences & saved')]]]
+   ['analysis.html',t('مكتب الفهم والتحليل','Analysis desk'),t('مسارات قراءة وملفات وأدوات متخصصة','Reading paths, dossiers and specialist tools · Arabic')]]]
  ];
  const href=h=>/^(\/|#|https?:)/.test(h)?h:'/'+h;
 
@@ -69,7 +52,8 @@
    }
    inner.appendChild(c);
   });
-  const all=document.createElement('button');all.type='button';all.className='wlm-chip';all.textContent=t('كل الأقسام','All sections');all.setAttribute('aria-haspopup','dialog');all.addEventListener('click',openSheet);inner.appendChild(all);
+  const all=primary.some(a=>a.getAttribute('href')==='sections.html')?null:document.createElement('button');
+  if(all){all.type='button';all.className='wlm-chip';all.setAttribute('aria-haspopup','dialog');all.addEventListener('click',openSheet);inner.appendChild(all);}
   bar.appendChild(inner);header.after(bar);
   const syncChips=()=>{
    bar.setAttribute('aria-label',t('تنقل سريع بين الأقسام','Quick sections'));
@@ -80,7 +64,7 @@
     chip.classList.toggle('is-active',!!current);
     if(current)chip.setAttribute('aria-current',current);else chip.removeAttribute('aria-current');
    });
-   all.textContent=t('كل الأقسام','All sections');
+   if(all)all.textContent=t('كل الأقسام','All sections');
   };
   syncChips();document.addEventListener('wrldline:category',syncChips);document.addEventListener('wrldline:language',syncChips);
  }
@@ -88,8 +72,9 @@
  // 2) All-sections sheet
  const sheet=document.createElement('dialog');sheet.className='wlm-sheet';sheet.dataset.languageManaged='';sheet.id='wlmSections';sheet.setAttribute('aria-labelledby','wlmSectionsTitle');
  function renderSections(){
+  const hrefFor=h=>/^(?:\/news\/$|\/section\/)/.test(h)&&document.documentElement.lang==='en'?h+'?lang=en':href(h);
   sheet.innerHTML='<div class="wlm-sheet-panel"><div class="wlm-sheet-head"><h2 id="wlmSectionsTitle">'+t('كل الأقسام','All sections')+'</h2><button class="wlm-close" type="button" data-close autofocus aria-label="'+t('إغلاق','Close')+'">×</button></div>'+
-   sections().map(([g,items])=>'<section><h3 class="wlm-group">'+g+'</h3><ul class="wlm-grid">'+items.map(([h,n,d])=>'<li><a class="wlm-item" href="'+href(h)+'"><strong>'+n+'</strong><small>'+d+'</small></a></li>').join('')+'</ul></section>').join('')+'</div>';
+   sections().map(([g,items])=>'<section><h3 class="wlm-group">'+g+'</h3><ul class="wlm-grid">'+items.map(([h,n,d])=>'<li><a class="wlm-item" href="'+hrefFor(h)+'"><strong>'+n+'</strong><small>'+d+'</small></a></li>').join('')+'</ul></section>').join('')+'</div>';
  }
  renderSections();
  document.body.appendChild(sheet);

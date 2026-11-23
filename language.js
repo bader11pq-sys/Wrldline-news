@@ -633,6 +633,7 @@ Object.assign(AR_EN,{
  "أولويات التغطية":"Coverage priorities","من تحرير WRLDLINE":"WRLDLINE Originals","الطاقة":"Energy",
  "تابع قرار أوبك+":"Follow the OPEC+ decision","التجارة والشحن":"Trade and shipping",
  "تحليل بيانات الموانئ السعودية":"Saudi ports: data analysis (Arabic)",
+ "الفهم والتحليل":"Analysis",
  "القرارات العالمية وأثرها على الخليج":"Global decisions and the Gulf",
  "المواعيد والقرارات التي نتابعها":"Dates and decisions we are watching"
 });

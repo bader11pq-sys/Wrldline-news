@@ -6,7 +6,7 @@ const path = require("node:path");
 
 const read = (file) => fs.readFileSync(path.join(__dirname, "..", file), "utf8");
 
-test("homepage primary navigation prioritizes the main editorial desks and archive", () => {
+test("homepage keeps the three lead desks, directory and analysis in primary navigation", () => {
   const html = read("index.html");
   const primaryStart = html.indexOf('<div class="wl-nav-scroll">');
   const primaryEnd = html.indexOf("</div>", primaryStart);
@@ -15,35 +15,35 @@ test("homepage primary navigation prioritizes the main editorial desks and archi
   const primary = html.slice(primaryStart, primaryEnd);
   const more = html.slice(menuStart, menuEnd);
   assert.ok(primaryStart >= 0 && primaryEnd > primaryStart, "primary navigation exists");
-  assert.ok(menuStart >= 0 && menuEnd > menuStart, "Explore menu exists");
+  assert.ok(menuStart >= 0 && menuEnd > menuStart, "More menu exists");
 
   const primaryLinks = [...primary.matchAll(/<a\b[^>]*href="([^"]+)"/g)].map(match => match[1]);
   assert.deepEqual(primaryLinks, [
     "index.html",
     "/section/politics",
-    "/section/economy",
-    "/section/world",
-    "/dossier/",
     "rights.html",
-    "analysis.html",
-    "/news/",
-    "#breakingSection"
+    "/section/economy",
+    "sections.html",
+    "analysis.html"
   ]);
 
-  // The world news desk is distinct from the specialist World Monitor.
-  assert.ok(!primary.includes('href="map.html"'), "map.html must not sit in the primary bar");
-  assert.ok(more.includes('href="map.html"'), "map.html must remain reachable from Explore");
-  assert.ok(!primary.includes('href="#newsSection"'), "a self-referencing anchor is not a section page");
-  assert.match(html, /<span lang="ar">استكشف<\/span><span lang="en">Explore<\/span>/);
+  assert.deepEqual([...more.matchAll(/<a\b[^>]*href="([^"]+)"/g)].map(match => match[1]),
+    ["#breakingSection", "/news/", "shorts.html", "topics.html"]);
+  assert.match(html, /<span lang="ar">المزيد<\/span><span lang="en">More<\/span>/);
+  assert.match(html, /href="analysis\.html#tools"/);
+  assert.doesNotMatch(html, /class="wl-desk-grid"|id="promisesPreview"|id="explainersRail"/);
+});
 
-  for (const route of [
-    "sections.html", "context.html", "balance.html", "impact.html", "mirror.html", "history.html",
-    "map.html", "sources.html", "daily-briefing.html", "shorts.html",
-    "topics.html", "tags.html", "promises.html", "explainers.html"
-  ]) {
-    assert.ok(more.includes('href="' + route + '"'), route + " remains reachable from Explore");
+test("specialist tools are reachable from one hub and not repeated in mobile navigation", () => {
+  const mobile = read("wl-modern.js");
+  const hub = read("analysis.html").split('id="tools"')[1];
+  for (const route of ["context.html", "balance.html", "impact.html", "mirror.html", "map.html",
+    "markets.html", "sources.html", "history.html", "promises.html", "explainers.html", "dossier/watchlist.html"]) {
+    assert.ok(hub.includes(`href="${route}"`), route);
+    assert.ok(!mobile.includes(`['${route}'`), route);
   }
-  assert.equal((more.match(/href="shorts\.html"/g) || []).length, 1, "Shorts is not duplicated in More");
+  assert.match(mobile, /Six editorial priorities/);
+  assert.match(mobile, /\['analysis\.html'/);
 });
 
 test("More menu stays usable on narrow screens and can scroll", () => {
