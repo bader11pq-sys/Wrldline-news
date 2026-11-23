@@ -9,6 +9,15 @@ const SITEMAP_NS = 'xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"';
 const MAX_INDEX_PAGES = 50000;
 const PUBLIC_FIELDS = ["id", "title", "summary", "image_url", "author", "lang", "category", "country", "event_country", "source_language", "source_name", "source_url", "url", "published_at", "is_breaking", "verification", "correction_note", "corrected_at", "audience_lane", "content_type", "received_at", "gate_reason"];
 
+/* Common guesses and older links: slug -> the section that covers it. */
+const SECTION_ALIASES = new Map([
+  ["energy", "economy"], ["business", "economy"], ["markets", "economy"], ["trade", "economy"], ["oil", "economy"],
+  ["defence", "security"], ["defense", "security"], ["military", "security"],
+  ["technology", "tech"], ["ai", "tech"], ["climate", "environment"],
+  ["international", "world"], ["global", "world"],
+  ["freedoms", "rights"], ["human-rights", "rights"], ["justice", "rights"],
+  ["education", "society"], ["sport", "culture"], ["sports", "culture"]
+]);
 /* Editorial sections. A section page is a real, indexable page with an
    introduction, the latest published stories, and a clear statement of what the
    desk covers. `key` must match public.articles.category. */
@@ -451,7 +460,9 @@ export function createWorker({ fetchImpl = globalThis.fetch.bind(globalThis), no
 
       const sectionMatch = path.match(/^\/section\/([a-z-]{2,30})\/?$/);
       if (sectionMatch) {
-        const section = SECTION_BY_SLUG.get(sectionMatch[1]);
+        // Slugs readers and other sites already guess or link to. They resolve to
+        // the section that actually covers the subject instead of a 404.
+        const section = SECTION_BY_SLUG.get(sectionMatch[1]) || SECTION_BY_SLUG.get(SECTION_ALIASES.get(sectionMatch[1]) || "");
         if (!section) return finish(errorPage(404));
         if (path !== `/section/${section.slug}`) return finish(new Response(null, { status: 308, headers: { Location: `${PUBLIC_ORIGIN}/section/${section.slug}`, "Cache-Control": "no-store" } }));
         /** @type {Record<string, unknown>[]} */

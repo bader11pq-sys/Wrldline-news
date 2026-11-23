@@ -315,3 +315,14 @@ test('a real category still names its section in Arabic', async () => {
   assert.equal(schema.articleSection, 'اقتصاد');
   assert.match(html, /href="\/section\/economy"/);
 });
+
+test('a guessed section slug redirects to the section that covers it', async () => {
+  const worker = await workerFor(fixture());
+  for (const [slug, target] of [['energy', 'economy'], ['defence', 'security'], ['technology', 'tech'], ['human-rights', 'rights']]) {
+    const res = await get(worker, `/section/${slug}`, { headers: { Accept: 'text/html' } });
+    assert.equal(res.status, 308, `${slug} should redirect`);
+    assert.equal(res.headers.get('Location'), `${ORIGIN}/section/${target}`);
+  }
+  const unknown = await get(worker, '/section/astrology', { headers: { Accept: 'text/html' } });
+  assert.equal(unknown.status, 404, 'an unknown slug is still a 404');
+});
