@@ -48,6 +48,7 @@ h1,h2,h3{text-wrap:balance}
 .rd-file-meta{display:flex;justify-content:space-between;flex-wrap:wrap;gap:.18rem .65rem;color:var(--rd-muted);font-size:.76rem;font-weight:650}
 .rd-file h3{font-size:clamp(1.14rem,2vw,1.6rem);line-height:1.35;margin-block:.38rem}
 .rd-file p{color:var(--rd-muted);font-size:.9rem}
+.rd-file-link{display:inline-flex;align-items:center;min-block-size:44px;font-size:.86rem;font-weight:800;color:var(--rd-accent)}
 .rd-file details{margin-block-start:.55rem;border-block-start:1px solid var(--rd-line)}
 .rd-file summary{cursor:pointer;min-block-size:44px;align-content:center;font-weight:750;font-size:.88rem;color:var(--rd-accent)}
 .rd-file summary:hover{text-decoration:underline}

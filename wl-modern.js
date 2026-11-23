@@ -17,6 +17,8 @@
   [t('الأخبار','News'),[
    ['index.html',t('الرئيسية','Home'),t('أهم ما يحدث الآن','Top stories now')],
    ['rights.html',t('الحقوق والحريات','Rights & freedoms'),t('دليل الحقوق ودفتر الدليل','Rights guide and evidence desk · Arabic')],
+   ['sections.html',t('أقسام الصحيفة السبعة','Seven coverage sections'),t('السياسة والاقتصاد والعدالة والمجتمع والعالم','Politics, economy, justice, society and more · Arabic')],
+   ['rights-cases/index.html',t('ملفات القضايا الحقوقية','Rights dossiers'),t('التسلسل الزمني والأدلة والمتابعة','Timelines, evidence, and follow-up · Arabic')],
    ['/news/',t('الأرشيف','Archive'),t('كل الأخبار المنشورة','All published news')],
    ['daily-briefing.html',t('ملخص اليوم','Daily briefing'),t('أهم ما حدث باختصار','What mattered today')],
    ['shorts.html','Shorts',t('موجز عمودي سريع','Quick vertical feed')],

@@ -44,6 +44,7 @@ jobs:
       - name: Verify generated event files and front page
         run: |
           node scripts/build-dossiers.mjs
+          node scripts/build-rights-cases.cjs --check
           git diff --exit-code -- index.html dossier/ sitemap.xml
       - uses: denoland/setup-deno@v2
         with:
