@@ -4,7 +4,7 @@
  if(window.__wlModern)return;window.__wlModern=true;
  const t=(ar,e)=>document.documentElement.lang==='en'?e:ar;
  const path=location.pathname.replace(/\/index\.html$/,'/');
- const isHome=path==='/'||path==='';
+ const isHome=document.body.classList.contains('wl-home')||path==='/'||path==='';
  const ico={
   home:'<path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/>',
   live:'<circle cx="12" cy="12" r="3"/><path d="M6.3 6.3a8 8 0 000 11.4M17.7 6.3a8 8 0 010 11.4"/>',
@@ -16,12 +16,15 @@
  const sections=()=>[
   [t('الأخبار','News'),[
    ['index.html',t('الرئيسية','Home'),t('أهم ما يحدث الآن','Top stories now')],
+   ['rights.html',t('الحقوق والحريات','Rights & freedoms'),t('دليل الحقوق ودفتر الدليل','Rights guide and evidence desk · Arabic')],
    ['/news/',t('الأرشيف','Archive'),t('كل الأخبار المنشورة','All published news')],
    ['daily-briefing.html',t('ملخص اليوم','Daily briefing'),t('أهم ما حدث باختصار','What mattered today')],
    ['shorts.html','Shorts',t('موجز عمودي سريع','Quick vertical feed')],
-   ['context.html',t('ملفات الأحداث','Event dossiers'),t('السياق الكامل للقصص الكبرى','Full context of big stories')],
+   ['/dossier/',t('ملفات الأحداث','Event dossiers'),t('السياق الكامل للقصص الكبرى','Full context of big stories')],
    ['markets.html',t('الأسواق','Markets'),t('الطاقة والعملات والمؤشرات','Energy, FX and indices')]]],
   [t('الفهم والتحليل','Analysis'),[
+   ['analysis.html',t('مكتب الفهم والتحليل','Analysis desk'),t('اختر مسار القراءة','Choose a reading path · Arabic')],
+   ['context.html',t('غرفة السياق','Context room'),t('الخلفية وما نعرفه','Background and what we know')],
    ['balance.html',t('ميزان الروايات','Narrative balance'),t('قارن التغطيات','Compare coverage')],
    ['impact.html',t('أطلس التأثير','Impact atlas'),t('الأثر على المنطقة','Regional impact')],
    ['explainers.html',t('افهمها في دقيقة','Explainers'),t('شرح مبسّط','Simple explainers')],
@@ -47,12 +50,14 @@
  const header=document.querySelector('header.wl-header,header');
  const primary=[...document.querySelectorAll('.wl-nav-scroll a')];
  if(header&&primary.length){
-  const bar=document.createElement('nav');bar.className='wlm-chips';bar.setAttribute('aria-label',t('تنقل سريع بين الأقسام','Quick sections'));
+  const bar=document.createElement('nav');bar.className='wlm-chips';bar.dataset.languageManaged='';bar.setAttribute('aria-label',t('تنقل سريع بين الأقسام','Quick sections'));
   const inner=document.createElement('div');inner.className='wlm-chips-in';
+  const labelOf=a=>a.querySelector(`:scope > span[lang="${document.documentElement.lang}"]`)?.textContent.trim() ?? a.textContent.trim();
   primary.forEach(a=>{
    const c=document.createElement('a');c.className='wlm-chip';c.href=a.getAttribute('href');
-   if(a.classList.contains('wl-nav-link--live')){c.classList.add('wlm-chip--live');c.innerHTML='<i aria-hidden="true"></i>';c.append(a.textContent.trim());}
-   else c.textContent=a.textContent.trim();
+   if(a.hreflang)c.hreflang=a.hreflang;
+   if(a.classList.contains('wl-nav-link--live')){c.classList.add('wlm-chip--live');c.innerHTML='<i aria-hidden="true"></i>';c.append(labelOf(a));}
+   else c.textContent=labelOf(a);
    if(a.dataset.category){
     c.dataset.readerCategory=a.dataset.category;
     c.addEventListener('click',e=>{
@@ -67,7 +72,7 @@
   const syncChips=()=>{
    bar.setAttribute('aria-label',t('تنقل سريع بين الأقسام','Quick sections'));
    primary.forEach((a,i)=>{
-    const chip=inner.children[i];const label=a.textContent.trim();
+    const chip=inner.children[i];const label=labelOf(a);
     if(chip.lastChild?.nodeType===Node.TEXT_NODE)chip.lastChild.nodeValue=label;
     const current=a.getAttribute('aria-current');
     chip.classList.toggle('is-active',!!current);
@@ -79,7 +84,7 @@
  }
 
  // 2) All-sections sheet
- const sheet=document.createElement('dialog');sheet.className='wlm-sheet';sheet.id='wlmSections';sheet.setAttribute('aria-labelledby','wlmSectionsTitle');
+ const sheet=document.createElement('dialog');sheet.className='wlm-sheet';sheet.dataset.languageManaged='';sheet.id='wlmSections';sheet.setAttribute('aria-labelledby','wlmSectionsTitle');
  function renderSections(){
   sheet.innerHTML='<div class="wlm-sheet-panel"><div class="wlm-sheet-head"><h2 id="wlmSectionsTitle">'+t('كل الأقسام','All sections')+'</h2><button class="wlm-close" type="button" data-close autofocus aria-label="'+t('إغلاق','Close')+'">×</button></div>'+
    sections().map(([g,items])=>'<section><h3 class="wlm-group">'+g+'</h3><ul class="wlm-grid">'+items.map(([h,n,d])=>'<li><a class="wlm-item" href="'+href(h)+'"><strong>'+n+'</strong><small>'+d+'</small></a></li>').join('')+'</ul></section>').join('')+'</div>';
@@ -98,7 +103,7 @@
  matchMedia('(max-width: 900px)').addEventListener('change',event=>{if(!event.matches)closeSheet();});
 
  // 3) Mobile bottom tab bar
- const tab=document.createElement('nav');tab.className='wlm-tabbar';
+ const tab=document.createElement('nav');tab.className='wlm-tabbar';tab.dataset.languageManaged='';
  const items=[
   {k:'home',l:['الرئيسية','Home'],h:'/',active:isHome},
   {k:'live',l:['عاجل','Breaking'],h:isHome?'#breakingSection':'/#breakingSection',cls:'wlm-tab--live'},

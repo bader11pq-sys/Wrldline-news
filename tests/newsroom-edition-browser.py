@@ -241,6 +241,8 @@ async def main():
             await expect(page.locator("#newsGrid .reader-story-link")).to_have_count(24)
             await page.get_by_role("button", name="التبديل إلى العربية").click()
             await expect(page.locator("#editionMonitorTitle")).to_have_text("مرصد العالم")
+            if mode == "empty":
+                await expect(page.locator("#editionReportCount")).to_have_text("0")
             await page.locator("#themeButton").click()
             await expect(page.locator("html")).to_have_attribute("data-theme", "dark")
             assert await page.evaluate("document.documentElement.scrollWidth <= innerWidth")
