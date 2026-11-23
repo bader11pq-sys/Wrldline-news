@@ -11,6 +11,7 @@
   "routes": [
     {"pattern": "al-ghaib.us.ci/news", "zone_name": "al-ghaib.us.ci"},
     {"pattern": "al-ghaib.us.ci/news/*", "zone_name": "al-ghaib.us.ci"},
+    {"pattern": "al-ghaib.us.ci/section/*", "zone_name": "al-ghaib.us.ci"},
     {"pattern": "al-ghaib.us.ci/news-sitemap.xml*", "zone_name": "al-ghaib.us.ci"},
     {"pattern": "al-ghaib.us.ci/article-sitemap*", "zone_name": "al-ghaib.us.ci"},
     {"pattern": "al-ghaib.us.ci/rss.xml*", "zone_name": "al-ghaib.us.ci"},
