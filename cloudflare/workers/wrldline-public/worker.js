@@ -251,7 +251,9 @@ export function renderArticle(article, now, trust = null, related = []) {
   const summary = text(article.summary), description = (summary || title).replace(/\s+/g, " ").slice(0, 160);
   const canonical = articleURL(article.id), image = safeURL(article.image_url), original = source(article), by = authors(article.author);
   const section = sectionOf(article);
-  const sectionLabel = section ? (l.en ? section.en : section.ar) : text(article.category, 120);
+  const rawCategory = text(article.category, 120);
+  // "uncategorized" is a database placeholder, not a section a reader can visit.
+  const sectionLabel = section ? (l.en ? section.en : section.ar) : (/^(?:uncategorized|unknown|other|غير مصنف)$/iu.test(rawCategory) ? "" : rawCategory);
   const isOriginal = text(article.content_type, 40).toLowerCase() === "original" || text(article.source_name, 120) === "WRLDLINE NEWS";
   /** @type {Record<string, unknown>} */
   const schema = {
@@ -280,7 +282,9 @@ export function renderArticle(article, now, trust = null, related = []) {
   const socialShare = `<div class="public-news-social" aria-label="${l.en ? "Share on social networks" : "مشاركة عبر الشبكات"}"><a href="https://wa.me/?text=${shareCaption}%20${shareUrl}" target="_blank" rel="noopener noreferrer">WhatsApp</a><a href="https://twitter.com/intent/tweet?text=${shareTitle}&url=${shareUrl}" target="_blank" rel="noopener noreferrer">X</a><a href="https://t.me/share/url?url=${shareUrl}&text=${shareTitle}" target="_blank" rel="noopener noreferrer">Telegram</a></div>`;
   const breadcrumb = section
     ? `<a href="/news/">${l.news}</a> / <a href="/section/${section.slug}">${escapeHTML(sectionLabel)}</a>`
-    : `<a href="/news/">${l.news}</a> / ${escapeHTML(sectionLabel)}`;
+    : sectionLabel
+      ? `<a href="/news/">${l.news}</a> / ${escapeHTML(sectionLabel)}`
+      : `<a href="/news/">${l.news}</a>`;
   const body = `<nav class="public-news-breadcrumb" aria-label="${l.en ? "Breadcrumb" : "مسار الصفحة"}">${breadcrumb}</nav>
 <article data-public-article data-audience-article data-article-id="${article.id}" data-category="${escapeHTML(text(article.category, 120))}" data-share-title="${escapeHTML(title)}" data-share-text="${escapeHTML(description)}" data-share-source="${escapeHTML(original.name)}" data-share-image="${escapeHTML(image)}" data-share-url="${canonical}">
 <p class="public-news-kicker">${typeBadge(article, lang)}<span>${escapeHTML([sectionLabel, eventCountry].filter(Boolean).join(" · "))}</span></p>

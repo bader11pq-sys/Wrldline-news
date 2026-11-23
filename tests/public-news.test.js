@@ -298,3 +298,20 @@ test('public RPC uses Worker-compatible manual redirects and never follows a 3xx
   assert.equal(new URL(f.calls[0].url).origin, ENV.SUPABASE_URL);
   assert.ok(!(await response.text()).includes('other.example'));
 });
+
+test('an uncategorized story does not claim a section it cannot link to', async () => {
+  const { renderArticle } = await modulePromise;
+  const html = await renderArticle(article(7, { category: 'uncategorized', source_name: 'WRLDLINE NEWS', content_type: 'original' }), NOW).text();
+  const schema = JSON.parse(html.match(/<script[^>]*application\/ld\+json[^>]*>([\s\S]*?)<\/script>/)[1]);
+  assert.equal(schema.articleSection, undefined, 'a database placeholder must not reach structured data');
+  assert.ok(!/الأرشيف\s*\/\s*</.test(html), 'the breadcrumb must not end in a dangling separator');
+  assert.match(html, /<nav class="public-news-breadcrumb"[^>]*><a href="\/news\/">/);
+});
+
+test('a real category still names its section in Arabic', async () => {
+  const { renderArticle } = await modulePromise;
+  const html = await renderArticle(article(8, { category: 'economy' }), NOW).text();
+  const schema = JSON.parse(html.match(/<script[^>]*application\/ld\+json[^>]*>([\s\S]*?)<\/script>/)[1]);
+  assert.equal(schema.articleSection, 'اقتصاد');
+  assert.match(html, /href="\/section\/economy"/);
+});
