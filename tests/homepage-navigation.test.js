@@ -23,12 +23,17 @@ test("homepage primary navigation follows the core reader journey", () => {
     "rights.html",
     "sections.html",
     "/dossier/",
-    "#newsSection",
-    "#newsSection",
+    "/section/politics",
+    "/section/economy",
     "/news/",
-    "#breakingSection",
-    "map.html"
+    "#breakingSection"
   ]);
+
+  // The world monitor used to sit in the primary bar and pushed the archive and
+  // breaking links out of reach on a 390 px phone. It stays reachable from More.
+  assert.ok(!primary.includes('href="map.html"'), "map.html must not sit in the primary bar");
+  assert.ok(more.includes('href="map.html"'), "map.html must remain reachable from More");
+  assert.ok(!primary.includes('href="#newsSection"'), "a self-referencing anchor is not a section page");
 
   for (const route of [
     "context.html", "balance.html", "impact.html", "mirror.html", "history.html",
