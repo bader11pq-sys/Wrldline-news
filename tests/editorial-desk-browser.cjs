@@ -76,6 +76,13 @@ async function run(browser, base, shots) {
     await page.waitForURL("**/daily-briefing.html?date=2026-11-19");
     await visible("#publicBriefing .briefing-story");
     assert.match(await page.locator("#briefingSignIn").getAttribute("href"),/date%3D2026-11-19/);
+    await page.locator("#briefingSignIn").click();
+    await visible("#accountBriefingReturn");
+    const returnLink = page.locator("#accountBriefingReturn a");
+    assert.equal(new URL(await returnLink.getAttribute("href"), page.url()).pathname,"/daily-briefing.html");
+    await returnLink.click();
+    await page.waitForURL("**/daily-briefing.html?date=2026-11-19");
+    await visible("#publicBriefing .briefing-story");
     await page.locator("#latestBriefing").click();
     await page.waitForURL(/\/daily-briefing\.html$/);
     await visible("#publicBriefing .briefing-story");
