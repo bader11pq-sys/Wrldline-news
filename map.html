@@ -13,7 +13,7 @@
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Manrope:wght@400;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="vendor/leaflet-1.9.4.css" integrity="sha256-M3v8pcq9A7OYFbJwD+vis7ft9VkhxZzUn4jssyghIwM=">
   <link rel="stylesheet" href="site-enhancements.css">
-  <link rel="stylesheet" href="map.css?v=20261122-edition">
+  <link rel="stylesheet" href="map.css?v=20261123-edition-desk">
 </head>
 <body class="map-page">
   <a class="monitor-skip" href="#mainContent" data-copy="skip" data-language-managed>انتقل إلى المرصد</a>
@@ -61,6 +61,7 @@
     </section>
     <nav class="monitor-jumps" aria-label="أقسام المرصد" data-aria-copy="jumpNav">
       <a href="#analysisTitle" data-copy="jumpAnalysis">التوزيع وتوقيت النشر</a>
+      <a href="#monitorCompareTitle" data-copy="compareTitle">مقارنة التغطية بين بلدين</a>
       <a href="#panelTitle" data-copy="jumpReports">التقارير المصنّفة</a>
     </nav>
     <div class="monitor-grid">
@@ -123,6 +124,16 @@
         <ol id="countryLeaders" class="monitor-leaders"></ol>
       </section>
     </div>
+    <section class="monitor-panel monitor-compare" aria-labelledby="monitorCompareTitle">
+      <header class="monitor-panel-head"><div><h2 id="monitorCompareTitle" tabindex="-1" data-copy="compareTitle">مقارنة التغطية بين بلدين</h2><p data-copy="compareHint">نفس الفترة ونوع الحدث ومستوى الخطورة. الاختياران مستقلان عن فلتر الدولة في الخريطة.</p></div></header>
+      <div class="monitor-compare-grid">
+        <label><span data-copy="compareFirst">البلد الأول</span><select id="monitorCompareFirst"><option value="all">اختر بلدًا</option></select></label>
+        <label><span data-copy="compareSecond">البلد الثاني</span><select id="monitorCompareSecond"><option value="all">اختر بلدًا</option></select></label>
+      </div>
+      <p id="monitorCompareStatus" role="status"></p>
+      <div class="monitor-compare-grid" id="monitorCompareResult"></div>
+      <p><a href="context.html" data-copy="readContext">اقرأ ملفات السياق</a> · <a href="sources.html" data-copy="readSources">تصفّح دليل المصادر</a></p>
+    </section>
     <details class="monitor-method">
       <summary id="methodTitle" data-copy="methodTitle">كيف تقرأ الخريطة؟</summary>
       <p data-copy="method">لون البلد يمثّل أعلى مستوى خطورة لخبر مطابق في التغطية المصنّفة، وليس مستوى خطورة البلد نفسه أو تحذيراً للسفر. عدم وجود إشارة لا يعني عدم وقوع أحداث، وقد تصل الأخبار من مصادرها بتأخير.</p>
@@ -138,8 +149,8 @@
   <script src="vendor/leaflet-1.9.4.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" defer></script>
   <script src="language.js?v=20261122-edition" defer></script>
   <script src="editorial-display.js?v=20261122-edition" defer></script>
-  <script src="map-model.js?v=20261122-edition" defer></script>
-  <script src="map.js?v=20261122-edition" defer></script>
+  <script src="map-model.js?v=20261123-edition-desk" defer></script>
+  <script src="map.js?v=20261123-edition-desk" defer></script>
   <script src="share.js?v=20261113-4" defer></script>
   <script src="analytics-config.js?v=20261114-1"></script>
   <script src="analytics.js?v=20261114-1" defer></script>

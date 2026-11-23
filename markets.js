@@ -1,66 +1,201 @@
-(()=> {
- const $=(s)=>document.querySelector(s);
- const lang=localStorage.getItem("wrldline:language")==="en"?"en":"ar";
- const now=new Date();
- $("#marketYear").textContent=now.getFullYear();
- $("#marketDate").textContent=new Intl.DateTimeFormat(lang==="ar"?"ar-SA-u-ca-gregory":"en-US-u-ca-gregory",{weekday:"long",year:"numeric",month:"long",day:"numeric",calendar:"gregory"}).format(now);
- if(lang==="en"){document.documentElement.lang="en";document.documentElement.dir="ltr";$("#marketLanguage").textContent="العربية";document.querySelector(".markets-hero h1").innerHTML='Global Markets<span>.</span>';document.querySelector(".welcome-subtitle").textContent="Energy, metals, currencies, equities and funds in one dashboard.";}
- $("#marketLanguage").addEventListener("click",()=>{localStorage.setItem("wrldline:language",lang==="ar"?"en":"ar");location.reload();});
- const theme=localStorage.getItem("wrldline:theme")||"light";document.documentElement.dataset.theme=theme;$("#marketThemeButton").textContent=theme==="dark"?"☀":"☾";
- $("#marketThemeButton").addEventListener("click",()=>{const next=document.documentElement.dataset.theme==="dark"?"light":"dark";document.documentElement.dataset.theme=next;localStorage.setItem("wrldline:theme",next);$("#marketThemeButton").textContent=next==="dark"?"☀":"☾";});
- const nav=$("#marketNav");$("#marketMenuButton").addEventListener("click",()=>{const open=nav.classList.toggle("mobile-open");$("#marketMenuButton").setAttribute("aria-expanded",String(open));});
- function widget(host,src,config){
- const script=document.createElement("script");script.src=src;script.async=true;script.type="text/javascript";script.text=JSON.stringify(config);
- script.onerror=()=>{host.innerHTML='<div class="market-loading">تعذر تحميل أداة TradingView. تحقق من مانع المحتوى أو الاتصال ثم أعد تحميل الصفحة.</div>';};
- host.appendChild(script);
- setTimeout(()=>{if(!host.querySelector("iframe")&&!host.querySelector(".market-loading"))host.innerHTML='<div class="market-loading">لم تظهر أداة TradingView خلال المهلة المتوقعة. يمكنك متابعة الأسعار المباشرة أعلاه أو إعادة المحاولة.</div>';},12000);
-}
- const containers=document.querySelectorAll(".tradingview-widget-container");
- widget(containers[0],"https://s3.tradingview.com/external-embedding/embed-widget-ticker-tape.js",{symbols:[{proName:"TVC:UKOIL",title:"Brent"},{proName:"TVC:USOIL",title:"WTI"},{proName:"TVC:GOLD",title:"Gold"},{proName:"TVC:SILVER",title:"Silver"},{proName:"FX:EURUSD",title:"EUR/USD"},{proName:"FX:USDJPY",title:"USD/JPY"},{proName:"BINANCE:BTCUSDT",title:"Bitcoin"},{proName:"BINANCE:ETHUSDT",title:"Ethereum"},{proName:"TADAWUL:2222",title:"Saudi Aramco"},{proName:"TADAWUL:1120",title:"Al Rajhi"}],showSymbolLogo:true,colorTheme:theme,isTransparent:false,displayMode:"adaptive",locale:lang==="ar"?"ar":"en"});
- widget(containers[1],"https://s3.tradingview.com/external-embedding/embed-widget-market-overview.js",{colorTheme:theme,dateRange:"1D",showChart:true,locale:lang==="ar"?"ar":"en",width:"100%",height:490,largeChartUrl:"",isTransparent:false,showSymbolLogo:true,showFloatingTooltip:false,plotLineColorGrowing:"#26a69a",plotLineColorFalling:"#ef5350",tabs:[{title:"الطاقة والمعادن",symbols:[{s:"NYMEX:CL1!",d:"WTI Crude Oil"},{s:"ICEEUR:BRN1!",d:"Brent Crude Oil"},{s:"NYMEX:NG1!",d:"Natural Gas"},{s:"COMEX:GC1!",d:"Gold"},{s:"COMEX:SI1!",d:"Silver"},{s:"COMEX:HG1!",d:"Copper"}]},{title:"العملات",symbols:[{s:"FX:EURUSD",d:"EUR/USD"},{s:"FX:GBPUSD",d:"GBP/USD"},{s:"FX:USDJPY",d:"USD/JPY"},{s:"TVC:DXY",d:"US Dollar Index"},{s:"FX:USDSAR",d:"USD/SAR"}]},{title:"العملات الرقمية",symbols:[{s:"BINANCE:BTCUSDT",d:"Bitcoin"},{s:"BINANCE:ETHUSDT",d:"Ethereum"},{s:"BINANCE:BNBUSDT",d:"BNB"},{s:"BINANCE:SOLUSDT",d:"Solana"},{s:"BINANCE:XRPUSDT",d:"XRP"}]},{title:"الأسهم والصناديق",symbols:[{s:"NASDAQ:AAPL",d:"Apple"},{s:"NASDAQ:NVDA",d:"NVIDIA"},{s:"NASDAQ:MSFT",d:"Microsoft"},{s:"AMEX:SPY",d:"S&P 500 ETF"},{s:"NASDAQ:QQQ",d:"Nasdaq 100 ETF"},{s:"TADAWUL:2222",d:"Saudi Aramco"},{s:"TADAWUL:1120",d:"Al Rajhi Bank"},{s:"TADAWUL:7010",d:"stc"}]}]});
- widget(containers[2],"https://s3.tradingview.com/external-embedding/embed-widget-stock-heatmap.js",{exchanges:[],dataSource:"SPX500",grouping:"sector",blockSize:"market_cap_basic",blockColor:"change",locale:lang==="ar"?"ar":"en",symbolUrl:"",colorTheme:theme,hasTopBar:true,isDataSetEnabled:true,isZoomEnabled:true,isTransparent:false,width:"100%",height:"540"});
+(() => {
+  "use strict";
+  const $ = id => document.getElementById(id), M = window.WLMarkets;
+  const safeGet = key => { try { return localStorage.getItem(key); } catch { return ""; } };
+  const safeSet = (key, value) => { try { localStorage.setItem(key, value); } catch {} };
+  const requested = new URLSearchParams(location.search).get("lang");
+  const lang = requested || safeGet("wrldline:language"), en = lang === "en";
+  const tr = (ar, english) => en ? english : ar;
+  const locales = tr("ar-SA-u-ca-gregory", "en-US");
+  const base = "https://vmaxbnogmmfyrcucapnq.supabase.co/functions/v1/market-data";
+  const state = { rows: [], fx: null, checked: 0, fxChecked: 0, error: false, fxError: false, busy: false, compared: [] };
+  const catalog = {
+    all: ["كل الفئات", "All assets"], stock: ["أسهم", "Stocks"], etf: ["صناديق", "ETFs"], crypto: ["أصول رقمية", "Crypto"],
+    energy: ["طاقة", "Energy"], metals: ["معادن", "Metals"], fx: ["عملات", "Currencies"], index: ["مؤشرات", "Indices"], other: ["أخرى", "Other"]
+  };
+  const date = new Intl.DateTimeFormat(locales, {dateStyle:"medium", timeStyle:"short", timeZone:"Asia/Riyadh"});
+  const amount = (value, unit) => `${new Intl.NumberFormat("en", { maximumFractionDigits: value < 1 ? 6 : 4, minimumFractionDigits: 2 }).format(value)} ${unit}`;
+  const change = value => value === null ? "—" : `${value > 0 ? "+" : ""}${value.toFixed(2)}%`;
+  const name = q => en ? q.label : q.labelAr;
+  const text = (tag, value, cls) => {
+    const n = document.createElement(tag);
+    n.textContent = value;
+    if (cls) n.className = cls;
+    return n;
+  };
+  function action(label, callback) {
+    const button = text("button", label, "market-action");
+    button.type = "button"; button.addEventListener("click", callback);
+    return button;
+  }
+  const checkedTime = millis => millis ? `${date.format(millis)} ${tr("الرياض","Riyadh")}` : tr("الوقت غير معروف","Time unknown");
+  const freshnessLabel = code => ({
+    old: tr("قراءة أقدم من النافذة المرجعية","Older than the reference window"),
+    dated: tr("آخر قراءة من المزود","Latest provider observation"),
+    unknown: tr("وقت الرصد غير متاح","Observation time unavailable")
+  })[code];
+  function quoteCard(q, fx = false, compact = false) {
+    const card = text("article", "", "direct-market-card");
+    const title = text("h3", name(q)); title.dir = "auto";
+    const meta = text("div", "", "direct-market-top");
+    meta.append(title, text("small", tr(...catalog[q.category])));
+    const value = text("strong", amount(q.price,q.currency), "direct-market-price");
+    value.dir = "ltr";
+    const delta = text("div", fx ? tr("سعر مرجعي","Reference rate") :
+      q.changePercent === null ? tr("التغير غير متاح","Change unavailable") : change(q.changePercent),
+      "direct-market-change " + (q.changePercent > 0 ? "up" : q.changePercent < 0 ? "down" : ""));
+    if (!fx && q.changePercent !== null) delta.dir = "ltr";
+    const foot = text("div", "", "direct-market-foot");
+    const observed = text("time", checkedTime(q.timestamp));
+    if (q.timestamp) observed.dateTime = new Date(q.timestamp).toISOString();
+    foot.append(text("span",q.provider), observed);
+    const note = text("span", freshnessLabel(q.freshness), "market-freshness market-freshness--" + q.freshness);
+    card.append(meta,value,delta,note,foot);
+    if (compact && q.previousClose !== null) card.append(text("p", tr("الإغلاق المرجعي: ","Reference close: ") + amount(q.previousClose,q.currency)));
+    const actions = text("div", "", "market-card-actions");
+    actions.append(action(tr("مشاركة","Share"), () => window.WRLDLINE_SHARE?.share({
+      title: `${name(q)} · ${amount(q.price,q.currency)}`,
+      description: `${checkedTime(q.timestamp)}${q.changePercent === null ? "" : " · " + change(q.changePercent)}`,
+      category: tr("الأسواق","Markets"), source: q.provider
+    })));
+    if (!fx && !compact) {
+      const selected = state.compared.includes(q.symbol);
+      const button = action(selected ? tr("أزل من المقارنة","Remove from comparison") : tr("أضف للمقارنة","Add to comparison"), () => {
+        if (state.compared.includes(q.symbol)) state.compared = state.compared.filter(s => s !== q.symbol);
+        else if (state.compared.length < 2) state.compared.push(q.symbol);
+        else { $("marketCompareStatus").textContent = tr("أزل أصلًا قبل إضافة آخر.","Remove one asset before adding another."); return; }
+        render();
+        const restored = [...$("directMarketGrid").querySelectorAll("[data-compare]")].find(el => el.dataset.compare === q.symbol);
+        restored?.focus();
+        if (state.compared.length === 2) $("marketCompareStatus").textContent = tr("أصلان جاهزان للمقارنة أدناه.","Two assets are ready to compare below.");
+      });
+      button.setAttribute("aria-pressed", String(selected));
+      button.dataset.compare = q.symbol;
+      actions.append(button);
+    }
+    card.append(actions);
+    return card;
+  }
+  function render() {
+    const filtered = M.filter(state.rows, $("marketCategory").value, $("marketQuery").value, $("marketSort").value);
+    const grid = $("directMarketGrid");
+    const focused = grid.contains(document.activeElement) && document.activeElement.dataset.compare;
+    grid.replaceChildren(...(filtered.length ? filtered.map(quoteCardWrapper) : [text("p",
+      state.rows.length ? tr("لا توجد أسعار تطابق البحث أو الفئة.","No prices match the selected search or category.") :
+        state.busy ? tr("جارٍ تحميل الأسعار…","Loading quotes…") : tr("لا توجد أسعار صالحة للعرض. جرّب التحديث أو راجع أدوات الرسم.","No usable quotes. Refresh or open the charting tools."), "market-loading")]));
+    if (focused) [...grid.querySelectorAll("[data-compare]")].find(el=>el.dataset.compare===focused)?.focus({preventScroll:true});
+    $("marketCount").textContent = tr(`${filtered.length} من ${state.rows.length} أسعار`,`Showing ${filtered.length} of ${state.rows.length} quotes`);
+    $("marketFeedStatus").textContent = state.error ? (state.rows.length ? tr("تعذر التحديث؛ نعرض آخر قراءة مستلمة.","Refresh failed; showing the previous response.") : tr("التغذية غير متاحة.","Feed unavailable.")) :
+      state.checked ? tr("آخر وصول للبيانات: ","Last feed response: ") + checkedTime(state.checked) : tr("جارٍ الفحص…","Checking…");
+    $("directFxStatus").textContent = state.fxError ? (state.fx ? tr("تعذر التحديث؛ القراءة السابقة معروضة.","Refresh failed; previous reading shown.") : tr("سعر الصرف غير متاح الآن.","FX reference unavailable.")) :
+      state.fxChecked ? tr("آخر وصول للبيانات: ","Last feed response: ") + checkedTime(state.fxChecked) : tr("جارٍ الفحص…","Checking…");
+    $("directFxGrid").replaceChildren(state.fx ? quoteCard(state.fx,true) : text("p",
+      state.fxError ? tr("أعد المحاولة من لوحة الأسعار.","Retry from the quote board.") : tr("انتظر وصول سعر الصرف.","Waiting for the reference rate."), "market-loading"));
+    const comparison = state.compared.map(symbol => state.rows.find(q => q.symbol === symbol)).filter(Boolean);
+    $("marketComparison").replaceChildren(...(comparison.length ? comparison.map(q => quoteCard(q,false,true)) : [text("p", tr("اختر أصلين من لوحة الأسعار.","Choose two assets from the quote board."))]));
+    $("marketClear").disabled = comparison.length === 0;
+  }
+  function quoteCardWrapper(q) { return quoteCard(q); }
+  async function feed(mode) {
+    const response = await fetch(`${base}?mode=${mode}`, {cache:"no-store", credentials:"omit", signal:AbortSignal.timeout(10000)});
+    if (!response.ok) throw new Error("Feed unavailable");
+    return response.json();
+  }
+  async function update(includeFx = false) {
+    if (state.busy) return;
+    state.busy = true;
+    $("marketRefresh").disabled = true;
+    const quotes = feed("quotes").then(payload => {
+      const rows = M.quotes(payload.quotes);
+      if (!rows.length) throw new Error("No valid quotes");
+      state.rows = rows; state.checked = Date.now(); state.error = false;
+      state.compared = state.compared.filter(symbol => rows.some(row=>row.symbol===symbol));
+    }).catch(()=>{ state.error = true; }).finally(render);
+    const fx = (includeFx || !state.fxChecked) ? feed("fx").then(payload => {
+      const row = M.normalize(payload.quote,Date.now(),true);
+      if (!row) throw new Error("No valid FX");
+      state.fx = row; state.fxChecked = Date.now(); state.fxError = false;
+    }).catch(()=>{ state.fxError = true; }).finally(render) : Promise.resolve();
+    await Promise.all([quotes, fx]);
+    state.busy = false; $("marketRefresh").disabled = false; render();
+  }
 
- const feedStatus=$("#marketFeedStatus"),feedGrid=$("#directMarketGrid");
- const apiBase="https://vmaxbnogmmfyrcucapnq.supabase.co/functions/v1/market-data";
- const money=(v,currency)=>new Intl.NumberFormat(lang==="ar"?"ar-SA":"en-US",{maximumFractionDigits:v<1?5:2,minimumFractionDigits:v<1?4:2}).format(v)+" "+currency;
- const loadDirectQuotes=async()=>{
-  if(!feedGrid)return;
-  try{
-   const response=await fetch(apiBase+"?mode=quotes",{cache:"no-store",signal:AbortSignal.timeout(10000)});
-   const payload=await response.json();
-   if(!response.ok||!Array.isArray(payload.quotes))throw new Error(payload.error||"Market feed unavailable");
-   const good=payload.quotes.filter(q=>q.ok);
-   feedGrid.innerHTML=good.map(q=>{
-    const positive=Number(q.change)>=0,change=(positive?"+":"")+Number(q.change).toFixed(2),pct=(positive?"+":"")+Number(q.changePercent).toFixed(2)+"%";
-    const name=lang==="ar"?q.labelAr:q.label;
-    const updated=q.timestamp?new Date(q.timestamp).toLocaleTimeString(lang==="ar"?"ar-SA":"en-US",{hour:"2-digit",minute:"2-digit",second:"2-digit"}):"";
-    return '<article class="direct-market-card"><div class="direct-market-top"><span>'+name+'</span><small>'+q.category.toUpperCase()+'</small></div><strong class="direct-market-price">'+money(Number(q.price),q.currency||"USD")+'</strong><div class="direct-market-change '+(positive?"up":"down")+'">'+change+' ('+pct+')</div><div class="direct-market-foot"><span>'+q.provider+' · '+(lang==="ar"?"سعر مزود API":"API provider price")+'</span><time datetime="'+(q.timestamp||"")+'">'+updated+'</time></div><button class="direct-market-share" type="button" data-share-market="'+q.symbol+'">↗ '+(lang==="ar"?"مشاركة السعر":"Share price")+'</button></article>';
-   }).join("")||'<div class="market-loading">'+(lang==="ar"?"لم تصل أسعار صالحة من المزودين حتى الآن.":"No valid quotes received from providers yet.")+'</div>';
-   feedStatus.textContent=good.length?(lang==="ar"?"آخر استجابة: ":"Last response: ")+new Date(payload.checkedAt||Date.now()).toLocaleTimeString(lang==="ar"?"ar-SA":"en-US"):(lang==="ar"?"لا توجد تغذية مباشرة متاحة الآن":"No live feed available right now");
-   feedGrid.querySelectorAll("[data-share-market]").forEach(button=>button.addEventListener("click",()=>{
-    const q=good.find(item=>item.symbol===button.dataset.shareMarket);if(!q||!window.WRLDLINE_SHARE)return;
-    window.WRLDLINE_SHARE.share({title:(lang==="ar"?q.labelAr:q.label)+" — "+money(Number(q.price),q.currency||"USD"),description:(lang==="ar"?"التغير: ":"Change: ")+Number(q.change).toFixed(2)+" ("+Number(q.changePercent).toFixed(2)+"%)",category:lang==="ar"?"أسعار الأسواق":"Market quote",source:q.provider});
-   }));
-  }catch(error){feedStatus.textContent=lang==="ar"?"تعذر الاتصال":"Connection failed";feedGrid.innerHTML='<div class="market-loading">'+(lang==="ar"?"تعذر جلب الأسعار: ":"Could not load provider quotes: ")+String(error.message||error)+'</div>';console.error("WRLDLINE market feed:",error);}
- };
- loadDirectQuotes();setInterval(loadDirectQuotes,60000);
-document.addEventListener("DOMContentLoaded",()=>window.WRLDLINE_ANALYTICS?.track("market_view",{page_path:"/markets.html"}));
- const fxGrid=$("#directFxGrid"),fxStatus=$("#directFxStatus");
- const loadFxRate=async()=>{
-  if(!fxGrid)return;
-  try{
-   const response=await fetch(apiBase+"?mode=fx",{cache:"no-store",signal:AbortSignal.timeout(10000)});
-   const payload=await response.json();
-   if(!response.ok||!payload.quote?.ok)throw new Error(payload.error||"FX feed unavailable");
-   const q=payload.quote,asOf=[q.asOf,q.timeZone].filter(Boolean).join(" · ")||"";
-   fxGrid.innerHTML='<article class="direct-market-card"><div class="direct-market-top"><span>الدولار الأمريكي / الريال السعودي</span><small>FX</small></div><strong class="direct-market-price">'+money(Number(q.price),"SAR")+'</strong><div class="direct-market-change">'+(lang==="ar"?"سعر الصرف المرجعي":"Reference exchange rate")+'</div><div class="direct-market-foot"><span>'+q.provider+'</span><time>'+asOf+'</time></div><button class="direct-market-share" type="button" id="directFxShare">↗ '+(lang==="ar"?"مشاركة السعر":"Share rate")+'</button></article>';
-   fxStatus.textContent=(lang==="ar"?"آخر تحديث لدى المزود: ":"Provider update: ")+asOf;
-   $("#directFxShare")?.addEventListener("click",()=>{
-    if(!window.WRLDLINE_SHARE)return;
-    window.WRLDLINE_SHARE.share({title:"الدولار الأمريكي مقابل الريال السعودي",description:"1 USD = "+Number(q.price).toFixed(5)+" SAR",category:"أسعار صرف العملات",source:"Alpha Vantage"});
-   });
-  }catch(error){fxStatus.textContent=lang==="ar"?"تعذر تحديث الصرف":"FX update failed";fxGrid.innerHTML='<div class="market-loading">'+(lang==="ar"?"تعذر جلب سعر الصرف: ":"Could not load FX rate: ")+String(error.message||error)+'</div>';console.error("WRLDLINE FX:",error);}
- };
- loadFxRate();setInterval(loadFxRate,3600000);
+  for (const [key, names] of Object.entries(catalog)) $("marketCategory").append(new Option(tr(...names), key));
+  for (const [value, ar, english] of [["default","ترتيب المزود","Provider order"],["newest","أحدث رصد","Latest observation"],["up","الأكثر ارتفاعًا","Biggest gains"],["down","الأكثر انخفاضًا","Biggest declines"]]) {
+    $("marketSort").append(new Option(tr(ar,english),value));
+  }
+  for (const [id, event] of [["marketCategory","change"],["marketQuery","input"],["marketSort","change"]]) $(id).addEventListener(event,render);
+  $("marketRefresh").addEventListener("click", () => update(true));
+  $("marketClear").addEventListener("click", () => { state.compared = []; $("marketCompareStatus").textContent = ""; render(); $("marketQuery").focus(); });
+  $("marketYear").textContent = new Date().getFullYear();
+  $("marketDate").textContent = new Intl.DateTimeFormat(locales, {dateStyle:"full", timeZone:"Asia/Riyadh"}).format(new Date());
+  $("marketLanguage").textContent = tr("English","العربية");
+  $("marketLanguage").addEventListener("click", () => {
+    const next = new URL(location.href), other = tr("en","ar");
+    safeSet("wrldline:language", other); next.searchParams.set("lang",other); location.assign(next);
+  });
+  if (en) {
+    document.documentElement.lang = "en"; document.documentElement.dir = "ltr";
+    document.querySelectorAll("[data-market-en]").forEach(n => { n.textContent = n.dataset.marketEn; });
+  }
+  function setTheme(value) {
+    const dark = value === "dark";
+    document.documentElement.dataset.theme = dark ? "dark" : "light";
+    $("marketThemeButton").textContent = dark ? "☀" : "☾";
+    $("marketThemeButton").setAttribute("aria-pressed", String(dark));
+  }
+  setTheme(safeGet("wrldline:theme"));
+  $("marketThemeButton").addEventListener("click", () => {
+    const next = document.documentElement.dataset.theme === "dark" ? "light" : "dark";
+    safeSet("wrldline:theme",next); setTheme(next);
+  });
+  $("marketMenuButton").addEventListener("click", () => {
+    const open = $("marketNav").classList.toggle("mobile-open");
+    $("marketMenuButton").setAttribute("aria-expanded", String(open));
+  });
 
+  // Third-party widgets are optional. Native prices and editorial reading links
+  // remain available even when the external widget is blocked.
+  const widgets = {
+    ticker: ["ticker-tape", { symbols:[["TVC:UKOIL","Brent"],["TVC:USOIL","WTI"],["TVC:GOLD","Gold"],["TADAWUL:TASI","TASI"],["FX:USDSAR","USD/SAR"],["NASDAQ:NVDA","NVIDIA"]].map(([proName,title])=>({proName,title})), showSymbolLogo:true,displayMode:"adaptive" }],
+    overview: ["market-overview", { dateRange:"1D",showChart:true,width:"100%",height:450,showSymbolLogo:true,tabs:[
+      {title:tr("الطاقة والمعادن","Energy & metals"),symbols:["NYMEX:CL1!","ICEEUR:BRN1!","NYMEX:NG1!","COMEX:GC1!","COMEX:SI1!"].map(s=>({s}))},
+      {title:tr("السوق السعودي","Saudi market"),symbols:["TADAWUL:TASI","TADAWUL:2222","TADAWUL:1120","TADAWUL:7010"].map(s=>({s}))},
+      {title:tr("العملات","Currencies"),symbols:["FX:EURUSD","FX:USDJPY","TVC:DXY","FX:USDSAR"].map(s=>({s}))},
+      {title:tr("أسهم وصناديق","Stocks & ETFs"),symbols:["NASDAQ:AAPL","NASDAQ:NVDA","AMEX:SPY","NASDAQ:QQQ"].map(s=>({s}))}
+    ] }],
+    heat: ["stock-heatmap", { exchanges:[],dataSource:"SPX500",grouping:"sector",blockSize:"market_cap_basic",blockColor:"change",hasTopBar:true,isDataSetEnabled:true,isZoomEnabled:true,width:"100%",height:"480" }]
+  };
+  document.querySelectorAll("[data-market-widget]").forEach(button => {
+    button.addEventListener("click", () => {
+      const host = $(button.getAttribute("aria-controls")), [type, options] = widgets[button.dataset.marketWidget];
+      if (!host || host.querySelector("iframe")) return;
+      const area = text("div", "", "tradingview-widget-container__widget");
+      const script = document.createElement("script");
+      const status = text("p", tr("جارٍ تحميل الأداة…","Loading chart…"), "market-loading");
+      status.setAttribute("role","status");
+      button.disabled = true;
+      host.replaceChildren(area, status);
+      script.src = `https://s3.tradingview.com/external-embedding/embed-widget-${type}.js`;
+      script.async = true;
+      script.textContent = JSON.stringify({...options,locale:tr("ar","en"),colorTheme:document.documentElement.dataset.theme,isTransparent:false});
+      let timer;
+      const titleFrames = () => host.querySelectorAll("iframe").forEach(frame => {
+        if (!frame.title) frame.title = tr("أداة أسواق TradingView","TradingView market tool");
+      });
+      const observer = new MutationObserver(() => {
+        if (host.querySelector("iframe")) { clearTimeout(timer); titleFrames(); status.remove(); observer.disconnect(); button.hidden = true; }
+      });
+      const fail = () => {
+        clearTimeout(timer); observer.disconnect(); button.disabled = false;
+        host.replaceChildren(text("p", tr("لم تُحمّل الأداة؛ استعمل رابط المزود أو حاول مجددًا.","Chart unavailable; use the provider link or try again."), "market-loading"));
+      };
+      observer.observe(host,{childList:true,subtree:true}); script.onerror = fail;
+      timer = setTimeout(fail,11000); host.insertBefore(script,status);
+    });
+  });
+  render();
+  update(true);
+  setInterval(() => { if (!document.hidden) update(state.fxChecked < Date.now() - 3600000); }, 60000);
+  window.WRLDLINE_ANALYTICS?.track("market_view", { page_path:"/markets.html" });
 })();

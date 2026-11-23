@@ -25,6 +25,13 @@
     timeline:["توقيت النشر","Publication timeline"], timelineHint:["عدد الأخبار المطابقة في ست فترات متساوية، بتوقيت جهازك.","Matching reports in six equal intervals, in your device’s time zone."],
     countriesTitle:["أبرز الإشارات حسب الدولة","Leading signals by country"], countriesHint:["مرتّبة حسب أعلى خطورة، ثم عدد التقارير، عبر جميع الدول المطابقة.","Ranked by highest severity, then report count, across matching countries."],
     analysisPending:["تظهر الأعداد بعد تحميل الخلاصة.","Counts appear after the feed loads."], analysisEmpty:["لا توجد إشارات مطابقة.","No matching signals."],
+    compareTitle:["مقارنة التغطية بين بلدين","Compare coverage across two countries"],
+    compareHint:["نفس الفترة ونوع الحدث ومستوى الخطورة. الاختياران مستقلان عن فلتر الدولة في الخريطة.","Same publication window, event type and severity. These selections are independent of the map’s country filter."],
+    compareFirst:["البلد الأول","First country"], compareSecond:["البلد الثاني","Second country"], pickCountry:["اختر بلدًا","Select a country"],
+    comparePick:["اختر بلدين مختلفين للمقارنة.","Choose two different countries to compare."],
+    compareLimit:["هذه أعداد تغطية من الخلاصة، لا مقارنة لأمان البلدين. أسماء الناشرين لا تعني مصادر مستقلة.","These are feed counts, not a comparison of country safety. Publisher names do not imply independent sources."],
+    comparePublishers:["أسماء ناشرين مختلفة","Distinct publisher names"], compareLatest:["آخر نشر مطابق","Latest matching publication"],
+    readContext:["اقرأ ملفات السياق","Read Context Room dossiers"], readSources:["تصفّح دليل المصادر","Browse the source directory"],
     methodTitle:["كيف تقرأ الخريطة؟","How to read the map"],
     method:["لون البلد يمثّل أعلى مستوى خطورة لخبر مطابق في التغطية المصنّفة آلياً، وليس مستوى خطورة البلد نفسه أو تحذيراً للسفر. عدم وجود إشارة لا يعني عدم وقوع أحداث، وقد تصل الأخبار من مصادرها بتأخير.","A country’s color represents the highest severity of a matching, automatically classified report, not the country’s safety or a travel advisory. No signal does not mean no events occurred, and reports can arrive late."]
   };
@@ -252,6 +259,28 @@
     }):[el("li",msg("analysisEmpty"),"monitor-analysis-empty")]));
     if(previous)[...leaders.querySelectorAll("button")].find(button=>button.dataset.country===previous)?.focus({preventScroll:true});
   }
+  function compareCountries(entries) {
+    const inputs = [$("monitorCompareFirst"), $("monitorCompareSecond")];
+    for (const input of inputs) replaceOptions(input, [["all", msg("pickCountry")], ...entries]);
+    const [first, second] = inputs.map(input => input.value);
+    const host = $("monitorCompareResult");
+    const statusLine = $("monitorCompareStatus");
+    if (first === "all" || second === "all" || first === second || lastChecked === null) {
+      host.replaceChildren();
+      statusLine.textContent = msg(lastChecked === null ? (feedState === "error" ? "error" : "analysisPending") : "comparePick");
+      return;
+    }
+    statusLine.textContent = [feedState === "stale" ? msg("stale") : "", msg("compareLimit"), capped ? msg("limited") : ""].filter(Boolean).join(" ");
+    host.replaceChildren(...[first, second].map(code => {
+      const s = M.countryStats(view.byCountry, code), card = el("article", "", "monitor-compare-card"), stats = el("dl", "");
+      for (const [label, value] of [
+        ["count", number(s.count)], ["highItems", number(s.high)], ["comparePublishers", number(s.sources)],
+        ["topLevel", msg(s.top || "neutral")], ["compareLatest", s.latest === null ? "—" : date(s.latest)]
+      ]) stats.append(el("dt", msg(label)), el("dd", value));
+      card.append(el("h3", countryName(code, boundaryNames.get(code))), stats);
+      return card;
+    }));
+  }
   function render() {
     const filters = activeFilters();
     // Anchor stale views to the last successful snapshot instead of aging them into a false zero.
@@ -264,7 +293,9 @@
     const available = new Map(boundaryNames);
     for (const event of items) if (!available.has(event.countryCode)) available.set(event.countryCode, "");
     if (filters.country !== "all" && !available.has(filters.country)) available.set(filters.country, "");
-    replaceOptions($("countryFilter"), [["all", msg("allCountries")], ...[...available].map(([code, name]) => [code, countryName(code, name)]).sort(order)]);
+    const countriesForSelect = [...available].map(([code, name]) => [code, countryName(code, name)]).sort(order);
+    replaceOptions($("countryFilter"), [["all", msg("allCountries")], ...countriesForSelect]);
+    compareCountries(countriesForSelect);
     const {events, countries, high} = view;
     for (const [id, value] of [["statEvents", events.length], ["statCountries", countries], ["statHigh", high]]) $(id).textContent = lastChecked === null ? "—" : number(value);
     $("panelTitle").textContent = filters.country === "all" ? msg("eventTitle") : countryName(filters.country, available.get(filters.country));
@@ -313,6 +344,7 @@
     }
   }
   for (const id of ["timeFilter", "eventTypeFilter", "riskFilter", "countryFilter", "eventOrder"]) $(id).addEventListener("change", changeFilter);
+  for (const id of ["monitorCompareFirst", "monitorCompareSecond"]) $(id).addEventListener("change", render);
   $("resetFilters").addEventListener("click", () => {
     $("timeFilter").value = "24";
     for (const id of ["eventTypeFilter", "riskFilter", "countryFilter"]) $(id).value = "all";

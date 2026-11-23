@@ -195,3 +195,13 @@ body.map-page{margin:0;background:var(--paper);color:var(--ink)}
   .monitor-method { order:5; }
   .monitor-order select { max-inline-size:9rem; }
 }
+.monitor-compare{margin-block:1rem}
+.monitor-compare-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.65rem;padding-inline:1rem}
+.monitor-compare-grid label{display:grid;gap:.25rem;min-width:0}
+.monitor-compare-grid select{min-height:44px;min-width:0;font:inherit;background:var(--surface,Canvas);color:var(--text,CanvasText);border:1px solid var(--line,currentColor);border-radius:6px;padding:.3rem}
+.monitor-compare-card{border:1px solid var(--line,currentColor);border-radius:8px;padding:.7rem;overflow-wrap:anywhere}
+.monitor-compare-card h3{margin:0;font-size:1rem}
+.monitor-compare-card dl{margin:.4rem 0;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:.4rem;font-size:.86rem}
+.monitor-compare-card dd{margin:0;text-align:end;font-weight:700}
+.monitor-compare>p{margin:.65rem 1rem}
+@media(max-width:600px){.monitor-compare-grid{grid-template-columns:1fr}}

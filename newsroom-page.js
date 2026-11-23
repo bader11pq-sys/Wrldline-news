@@ -6,28 +6,61 @@
   const esc = window.WLNR?.escapeHTML || (v => String(v ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c])));
   const D = window.WLNR?.data || { context: [], mirror: [], promises: [], explainers: [], impact: [] };
   const page = document.body.dataset.newsroomPage || "context";
+  const lenses = window.WLContextResearch || {};
+  const normalize = v => window.WLNR.normalize(v);
+  const matches = (query, ...parts) => normalize(query).split(" ").every(word => normalize(parts.flat().join(" ")).includes(word));
+  let refreshView = () => {}, activeId = "", opener = null, dataPending = true;
   let articles = [];
   let state = {};
 
   const detail = () => $("#nrDetail");
-  function openDetail(html) {
+  function openDetail(html, id) {
     const el = detail();
     if (!el) return;
+    opener = document.activeElement?.closest("[data-ctx],[data-impact],[data-pair],[data-exp]") || null;
+    activeId = id;
     el.innerHTML = html;
     el.hidden = false;
-    el.scrollIntoView({ behavior: "smooth", block: "start" });
+    el.setAttribute("aria-label", $("h2", el)?.textContent || "قراءة الملف");
+    el.setAttribute("role", "region");
+    const title = $("h2", el);
+    if (title) { title.tabIndex = -1; title.focus({ preventScroll: true }); }
+    el.scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "start" });
+    try { history.replaceState(null, "", "#" + encodeURIComponent(id)); } catch {}
   }
   function closeDetail() {
     const el = detail();
-    if (!el) return;
+    if (!el || el.hidden) return;
     el.hidden = true;
     el.innerHTML = "";
+    if (hashId() === activeId) {
+      try { history.replaceState(null, "", location.pathname + location.search); } catch {}
+    }
+    if (opener?.isConnected) opener.focus();
+    else $("#nrToolbar input, #nrToolbar button, #nrRoot [role=button]")?.focus();
+    activeId = "";
+  }
+  function hashId() {
+    try { return decodeURIComponent(location.hash.slice(1)); } catch { return ""; }
+  }
+  function cardActions(selector, key, action) {
+    $$(selector).forEach(card => {
+      card.setAttribute("role", "button");
+      card.setAttribute("aria-label", $("h3", card)?.textContent || "افتح الملف");
+      card.addEventListener("click", () => action(card.dataset[key]));
+      card.addEventListener("keydown", event => {
+        if (event.key !== "Enter" && event.key !== " ") return;
+        event.preventDefault();
+        action(card.dataset[key]);
+      });
+    });
   }
   function srcLinks(list) {
     if (!list || !list.length) return "";
     return '<div class="nr-source-line">' + list.map(s => {
-      const title = Array.isArray(s) ? s[0] : s.title;
-      const url = Array.isArray(s) ? s[1] : s.url;
+      const title = Array.isArray(s) ? s[0] : s?.title;
+      const url = window.WLNR.safeURL(Array.isArray(s) ? s[1] : s?.url);
+      if (!title) return "";
       return url ? '<a href="' + esc(url) + '" target="_blank" rel="noopener noreferrer">' + esc(title) + " ↗</a>" : '<span>' + esc(title) + "</span>";
     }).join("") + "</div>";
   }
@@ -50,27 +83,71 @@
   function empty(title, text) {
     return '<div class="nr-empty"><b>' + esc(title) + "</b>" + esc(text) + "</div>";
   }
+  function lensBlock(lens) {
+    if (!lens) return "";
+    return '<section class="desk-lens" aria-label="دليل القراءة والتحقق"><span class="desk-kicker">دليل القراءة والتحقق</span><h3>' +
+      esc(lens.question) + '</h3><p>' + esc(lens.thesis) + '</p><dl>' + lens.measures.map(([label, measure]) =>
+        '<div><dt>' + esc(label) + '</dt><dd>' + esc(measure) + '</dd></div>').join("") +
+      '</dl><p><strong>حدود الاستنتاج:</strong> ' + esc(lens.caution) + '</p><strong>مراجع القياس</strong>' +
+      srcLinks(lens.sources) + '<strong>اقرأ من زاوية أخرى</strong><div>' +
+      lens.routes.map(([label, href]) => '<a href="' + esc(href) + '">' + esc(label) + '</a>').join("") + '</div></section>';
+  }
+  function setupDesk() {
+    const descriptions = {
+      context: ["خلفية لا تنتهي عند العنوان", "ابدأ بسؤال الملف، ثم افصل بين ما تغيّر وما بقي مجهولًا. أدلة القياس في الملفات المرجعية تبين متى يمكن تعديل الاستنتاج."],
+      balance: ["تشابه العناوين ليس تعددًا للأدلة", "المقارنة آلية وعلى عينة من أحدث المواد العامة؛ قد تعيد عدة مواقع نشر الوكالة نفسها. راجع الناشر الأول وتاريخ التصريح قبل الاستدلال."],
+      impact: ["من الحدث إلى الأثر، لا من التزامن إلى السببية", "اختر سلسلة، ثم اختبر كل حلقة: هل تغيرت كلفة الوسيط؟ من يتحملها؟ ومتى يمكن رصدها؟ السلاسل تفسيرية وليست توقعات سعرية."],
+      mirror: ["المقارنة التاريخية تُفهم بحدودها", "ابدأ بوجه الشبه في الآلية، ثم ابحث عن الفرق في المؤسسات والتقنية. لا تستخدم التشابه للتنبؤ بنتيجة الحاضر."],
+      explainers: ["اعرف ما يقيسه المصطلح، وما لا يقيسه", "جرّب تطبيق الشرح على بيان أو رقم فعلي، وافتح المصادر المرتبطة حين يتغير السياق أو تتغير القواعد."],
+      promises: ["التعهد شيء والتنفيذ شيء آخر", "الحالة تخص الأدلة المذكورة في كل سجل. النسب المعروضة تقديرات تحريرية، لا مقياسًا موحدًا ولا بيانات لحظية."]
+    };
+    const nodes = [["مكتب الفهم والتحليل","analysis.html"], ["السياق","context.html"], ["الروايات","balance.html"], ["التأثير","impact.html"], ["مرآة التاريخ","mirror.html"], ["الشروحات","explainers.html"], ["الوعود","promises.html"]];
+    const after = $(".nr-hero");
+    if (!after || !descriptions[page]) return;
+    const [title, description] = descriptions[page];
+    if (!document.querySelector('link[href*="editorial-desk.css"]')) {
+      const css = document.createElement("link");
+      css.rel = "stylesheet";
+      css.href = "editorial-desk.css?v=20261123";
+      document.head.append(css);
+    }
+    after.insertAdjacentHTML("afterend", '<div class="nr-wrap" data-no-reveal><aside class="desk-routes" aria-label="مسارات القراءة"><span class="desk-kicker">' +
+      esc(title) + '</span><p>' + esc(description) + '</p><nav aria-label="أدوات التحليل">' + nodes.map(([label, href]) =>
+        '<a href="' + href + '"' + (href === page + ".html" ? ' aria-current="page"' : "") + '>' + label + '</a>').join("") + '</nav></aside></div>');
+  }
 
   /* ---------- Context ---------- */
   function renderContext() {
-    stats([[D.context.length, "ملف سياق"], [articles.length, "عنواناً مباشراً"], [new Set(D.context.map(c => c.tag)).size, "تصنيفات"]]);
     const tags = ["all", ...new Set(D.context.map(c => c.tag).filter(Boolean))];
     const toolbar = $("#nrToolbar");
     if (toolbar) toolbar.innerHTML = '<div class="nr-search"><svg aria-hidden="true"><use href="#i-search"/></svg><input id="ctxSearch" type="search" placeholder="ابحث في الملفات…" aria-label="بحث في ملفات السياق"></div>' +
       tags.map(t => '<button class="nr-chip' + (t === "all" ? " is-active" : "") + '" data-tag="' + esc(t) + '">' + (t === "all" ? "كل الملفات" : esc(t)) + "</button>").join("") +
-      '<span class="nr-count" id="ctxCount"></span>';
+      '<label class="nr-sort-label">رتّب حسب <select class="nr-select" id="ctxSort"><option value="editorial">مسارات مرجعية أولًا</option><option value="live">الأكثر ارتباطًا بالتغطية العامة</option><option value="alpha">أبجديًا</option></select></label><span class="nr-count" id="ctxCount" role="status"></span>';
     const root = $("#nrRoot");
     const draw = () => {
       const q = state.q || "";
-      const rows = D.context.filter(c => (state.tag === "all" || !state.tag || c.tag === state.tag) && (!q || (c.title + " " + c.dek + " " + (c.keywords || []).join(" ")).includes(q)));
+      stats([[D.context.length, "ملف سياق"], [Object.keys(lenses).length, "أدلة قراءة"], [new Set(D.context.map(c => c.tag)).size, "تصنيفات"]]);
+      for (const tag of new Set(D.context.map(c => c.tag).filter(Boolean))) {
+        if ($$("[data-tag]", toolbar).some(btn => btn.dataset.tag === tag)) continue;
+        const btn = document.createElement("button");
+        btn.type = "button"; btn.className = "nr-chip"; btn.dataset.tag = tag; btn.textContent = tag;
+        toolbar.insertBefore(btn, $(".nr-sort-label", toolbar));
+      }
+      $$("[data-tag]", toolbar).forEach(btn => btn.setAttribute("aria-pressed", String(btn.classList.contains("is-active"))));
+      const rows = D.context.filter(c => (state.tag === "all" || !state.tag || c.tag === state.tag) &&
+        matches(q, c.title, c.dek, c.keywords || [], lenses[c.id]?.question));
+      if (state.sort === "alpha") rows.sort((a,b) => a.title.localeCompare(b.title, "ar"));
+      else if (state.sort === "live") rows.sort((a,b) => matchArticles(b, 99).length - matchArticles(a, 99).length);
+      else rows.sort((a,b) => Number(Boolean(lenses[b.id])) - Number(Boolean(lenses[a.id])));
       if ($("#ctxCount")) $("#ctxCount").textContent = rows.length + " ملفاً";
       root.innerHTML = rows.length ? '<div class="nr-grid">' + rows.map(c => {
         const live = matchArticles(c, 99).length;
-        return '<article class="nr-card" data-ctx="' + esc(c.id) + '" tabindex="0"><div class="nr-card-top"><span class="nr-tag">' + esc(c.tag || "سياق") + '</span><span class="nr-meta">' + (live > 0 ? live + " عنواناً مباشراً" : "ملف تحليلي") + '</span></div><h3>' + esc(c.title) + "</h3><p>" + esc(c.dek) + '</p><div class="nr-card-foot"><span>افتح الملف</span><span>←</span></div></article>';
+        return '<article class="nr-card" data-ctx="' + esc(c.id) + '" tabindex="0"><div class="nr-card-top"><span class="nr-tag">' + esc(c.tag || "سياق") + '</span><span class="nr-meta">' + (live > 0 ? live + " عنوانًا مرتبطًا" : lenses[c.id] ? "دليل قراءة" : "ملف سياق") + '</span></div><h3>' + esc(c.title) + "</h3><p>" + esc(lenses[c.id]?.question || c.dek) + '</p><div class="nr-card-foot"><span>افتح الملف</span><span>←</span></div></article>';
       }).join("") + "</div>" : empty("لا ملفات مطابقة", "جرّب كلمة أخرى أو أزل التصفية.");
-      root.querySelectorAll("[data-ctx]").forEach(card => card.addEventListener("click", () => openContext(card.dataset.ctx)));
+      cardActions("[data-ctx]", "ctx", openContext);
     };
     toolbar?.addEventListener("input", e => { if (e.target.id === "ctxSearch") { state.q = e.target.value.trim(); draw(); } });
+    toolbar?.addEventListener("change", e => { if (e.target.id === "ctxSort") { state.sort = e.target.value; draw(); } });
     toolbar?.addEventListener("click", e => {
       const btn = e.target.closest("[data-tag]");
       if (!btn) return;
@@ -79,13 +156,15 @@
       draw();
     });
     draw();
-    const hash = location.hash.slice(1);
+    refreshView = () => { draw(); if (!activeId && D.context.some(c => c.id === hashId())) openContext(hashId()); };
+    const hash = hashId();
     if (hash && D.context.some(c => c.id === hash)) openContext(hash);
   }
   function openContext(id) {
     const c = D.context.find(x => x.id === id);
     if (!c) return;
     openDetail('<div class="nr-detail-head"><div><span class="nr-tag">' + esc(c.tag || "سياق") + "</span><h2>" + esc(c.title) + "</h2><p>" + esc(c.dek) + '</p></div><button class="nr-close" type="button" aria-label="إغلاق"><svg aria-hidden="true"><use href="#i-close"/></svg></button></div>' +
+      lensBlock(lenses[id]) +
       '<div class="nr-block"><h3>الخلفية</h3><ul>' + (c.background || []).map(x => "<li>" + esc(x) + "</li>").join("") + "</ul></div>" +
       '<div class="nr-two"><div class="nr-known"><h4>ما نعرفه</h4><ul>' + (c.known || []).map(x => "<li>" + esc(x) + "</li>").join("") + '</ul></div><div class="nr-unknown"><h4>ما لا نعرفه بعد</h4><ul>' + (c.unknown || []).map(x => "<li>" + esc(x) + "</li>").join("") + "</ul></div></div>" +
       (c.editorial_thesis || c.what_changed ? '<div class="nr-block"><h3>الخلاصة التحريرية</h3><p>' + esc(c.editorial_thesis || "") + '</p>' + (c.what_changed ? '<p><b>ما تغيّر:</b> ' + esc(c.what_changed) + '</p>' : "") + '</div>' : "") +
@@ -96,9 +175,8 @@
         const description = Array.isArray(s) ? (s[2] || s[1] || "") : [s.conditions, s.consequences].filter(Boolean).join(" — ");
         return '<div class="nr-scenario"><div class="nr-scenario-top"><span>' + esc(label) + "</span></div><p>" + esc(description) + "</p></div>";
       }).join("") + "</div></div>" +
-      '<div class="nr-block"><h3>مصادر الملف</h3>' + srcLinks(c.sources) + "</div>" + liveBlock(c));
+      '<div class="nr-block"><h3>مصادر الملف</h3>' + srcLinks(c.sources) + "</div>" + liveBlock(c), id);
     detail().querySelector(".nr-close")?.addEventListener("click", closeDetail);
-    history.replaceState(null, "", "#" + id);
   }
 
   /* ---------- Balance ---------- */
@@ -117,7 +195,8 @@
       if ($("#balCount")) $("#balCount").textContent = rows.length + " تقاطعاً · " + sources.size + " مصدراً";
       stats([[rows.length, "تقاطعاً"], [sources.size, "مصدراً"], [rows.length ? Math.round(rows.reduce((n, c) => n + c.sourceCount, 0) / rows.length) : 0, "متوسط المصادر"]]);
       if (!rows.length) {
-        root.innerHTML = empty("لا تقاطعات كافية الآن", "قد تكون التغطية الحالية من مصدر واحد، أو خارج النافذة الزمنية. وسّع النافذة أو قلّل الحد الأدنى للمصادر.");
+        root.innerHTML = dataPending ? empty("جارٍ فحص العناوين العامة", "ستظهر المقارنات بعد تحميل عينة الأخبار.") :
+          empty("لا تقاطعات كافية في العينة المتاحة", "وسّع النافذة أو قلّل الحد الأدنى للمصادر. عدم ظهور تقاطع هنا لا يعني غياب تغطيات أخرى.");
         return;
       }
       root.innerHTML = rows.map(c => {
@@ -127,7 +206,7 @@
             const f = c.framing.find(x => x.article === a)?.terms || [];
             const u = window.WLNR.safeURL(window.WLNR.articleURL(a));
             return '<div class="nr-headline"><div class="nr-headline-src"><b>' + esc(window.WLNR.sourceName(a)) + "</b>" + esc(window.WLNR.timeAgo(a.published_at)) + '</div><div><a href="' + esc(u || "#") + '" target="_blank" rel="noopener noreferrer">' + esc(a.title) + "</a>" + (f.length ? '<div class="nr-frames">' + f.map(t => '<span class="nr-frame">' + esc(t) + "</span>").join("") + "</div>" : "") + "</div></div>";
-          }).join("") + '</div><div class="nr-cluster-foot"><span>فارق التوقيت: ' + c.timeGapH + ' ساعة · ' + c.articles.length + ' عنواناً</span><span>مؤشر التوازن <span class="nr-balance-meter"><i style="width:' + c.balance + '%"></i></span> ' + c.balance + "/100</span></div></article>";
+          }).join("") + '</div><div class="nr-cluster-foot"><span>فارق التوقيت: ' + c.timeGapH + ' ساعة · ' + c.articles.length + ' عنوانًا</span><span>تطابق آلي، وليس تحققًا من الرواية</span></div><details class="nr-comparison-note"><summary>كيف أقارن هذه الروايات؟</summary><ol><li>افتح أقدم رواية متاحة وحدّد ما نسبته إلى شاهد أو وثيقة.</li><li>افحص إن كانت العناوين تعيد نشر الناشر الأول قبل عدّها أدلة مستقلة.</li><li>دوّن ما يمكن التحقق منه بنص أو بيانات، واترك ما لم يثبت معلقًا.</li></ol></details></article>';
       }).join("");
     };
     toolbar?.addEventListener("input", e => { if (e.target.id === "balSearch") { state.q = e.target.value.trim(); draw(); } });
@@ -140,14 +219,24 @@
       draw();
     });
     draw();
+    refreshView = draw;
   }
 
   /* ---------- Impact ---------- */
   function renderImpact() {
     stats([[D.impact.length, "سلاسل تأثير"], [new Set(D.impact.flatMap(i => (i.sectors || []).map(s => s[0]))).size, "قطاعاً"], [new Set(D.impact.flatMap(i => (i.countries || []).map(c => c[0]))).size, "دولة"]]);
     const root = $("#nrRoot");
-    root.innerHTML = '<div class="nr-grid">' + D.impact.map(i => '<article class="nr-card" data-impact="' + esc(i.id) + '" tabindex="0"><div class="nr-card-top"><span class="nr-tag">' + esc(i.kicker) + '</span><span class="nr-meta">' + (i.chain || []).length + ' خطوات</span></div><h3>' + esc(i.title) + "</h3><p>" + esc(i.event) + '</p><div class="nr-card-foot"><span>افتح السلسلة</span><span>←</span></div></article>').join("") + "</div>";
-    root.querySelectorAll("[data-impact]").forEach(card => card.addEventListener("click", () => openImpact(card.dataset.impact)));
+    const toolbar = $("#nrToolbar");
+    if (toolbar) toolbar.innerHTML = '<div class="nr-search"><input type="search" id="impactSearch" placeholder="ابحث عن حدث أو قطاع أو بلد…" aria-label="بحث في أطلس التأثير"></div><span class="nr-count" id="impactCount" role="status"></span>';
+    const draw = () => {
+      const rows = D.impact.filter(i => matches($("#impactSearch")?.value || "", i.title, i.event, i.kicker, [...(i.sectors || []), ...(i.countries || [])].map(s => s[0])));
+      $("#impactCount").textContent = rows.length + " سلسلة";
+      root.innerHTML = rows.length ? '<div class="nr-grid">' + rows.map(i => '<article class="nr-card" data-impact="' + esc(i.id) + '" tabindex="0"><div class="nr-card-top"><span class="nr-tag">' + esc(i.kicker) + '</span><span class="nr-meta">' + (i.chain || []).length + ' خطوات</span></div><h3>' + esc(i.title) + "</h3><p>" + esc(i.event) + '</p><div class="nr-card-foot"><span>افتح السلسلة</span><span>←</span></div></article>').join("") + "</div>" : empty("لا سلاسل مطابقة", "جرّب اسم قطاع أو بلد آخر.");
+      cardActions("[data-impact]", "impact", openImpact);
+    };
+    toolbar?.addEventListener("input", draw);
+    draw();
+    if (hashId()) openImpact(hashId());
   }
   function openImpact(id) {
     const i = D.impact.find(x => x.id === id);
@@ -159,7 +248,7 @@
       '<div class="nr-block"><h3>الدول الأكثر تأثراً</h3><div class="nr-players">' + (i.countries || []).map(c => '<div class="nr-player"><b>' + esc(c[0]) + "</b><span>" + esc(c[1]) + "</span></div>").join("") + "</div></div>" +
       '<div class="nr-block"><h3>في الحياة اليومية</h3><div class="nr-chips">' + (i.everyday || []).map(x => "<span>" + esc(x) + "</span>").join("") + "</div></div>" +
       '<div class="nr-block"><h3>ما يجب مراقبته</h3><ul>' + (i.watch || []).map(x => "<li>" + esc(x) + "</li>").join("") + "</ul></div>" +
-      '<div class="nr-block"><h3>المصادر</h3>' + srcLinks(i.sources) + "</div>");
+      '<div class="nr-block"><h3>المصادر</h3>' + srcLinks(i.sources) + "</div>", id);
     detail().querySelector(".nr-close")?.addEventListener("click", closeDetail);
   }
 
@@ -174,15 +263,16 @@
     if (toolbar) toolbar.innerHTML = '<button class="nr-chip is-active" data-status="all">الكل</button>' +
       [["done", "منجز"], ["partial", "جزئي"], ["stalled", "متعثر"], ["pending", "قيد التنفيذ"]].map(([s, l]) => '<button class="nr-chip" data-status="' + s + '">' + l + "</button>").join("") +
       '<select class="nr-select" id="promArea" aria-label="المجال"><option value="all">كل المجالات</option>' + areas.map(a => '<option value="' + esc(a) + '">' + esc(a) + "</option>").join("") + "</select>" +
-      '<span class="nr-count" id="promCount"></span>';
+      '<div class="nr-search"><input type="search" id="promiseSearch" placeholder="ابحث عن تعهد أو جهة…" aria-label="بحث في ذاكرة الوعود"></div><span class="nr-count" id="promCount" role="status"></span>';
     const root = $("#nrRoot");
     const draw = () => {
-      const rows = D.promises.filter(p => (state.status === "all" || p.status === state.status) && (state.area === "all" || p.area === state.area));
+      const rows = D.promises.filter(p => (state.status === "all" || p.status === state.status) && (state.area === "all" || p.area === state.area) &&
+        matches($("#promiseSearch")?.value || "", p.promise, p.who, p.area, p.id));
       if ($("#promCount")) $("#promCount").textContent = rows.length + " وعداً";
       if (!rows.length) { root.innerHTML = empty("لا وعود مطابقة", "جرّب حالة أخرى أو مجالاً آخر."); return; }
       root.innerHTML = rows.map(p => {
         const [label, cls] = window.WLNR.statusMeta(p.status);
-        return '<article class="nr-promise"><div class="nr-promise-head"><span class="nr-status ' + cls + '">' + esc(label) + "</span><h3>" + esc(p.promise) + "</h3></div>" +
+        return '<article class="nr-promise" id="' + esc(p.id) + '"><div class="nr-promise-head"><span class="nr-status ' + cls + '">' + esc(label) + "</span><h3>" + esc(p.promise) + "</h3></div>" +
           '<div class="nr-progress"><i style="width:' + Math.max(0, Math.min(100, p.progress || 0)) + '%"></i></div>' +
           '<div class="nr-promise-meta"><span>' + esc(p.who) + "</span><span>" + esc(p.area) + "</span><span>أُعلن: " + esc(p.made) + "</span><span>الموعد: " + esc(p.due) + "</span><span>" + (p.progress || 0) + "%</span></div>" +
           '<div class="nr-promise-grid"><div><b>معيار التحقق</b><p>' + esc(p.criterion) + "</p></div><div><b>ما حدث فعلاً</b><p>" + esc(p.evidence) + "</p></div></div>" +
@@ -197,7 +287,9 @@
       draw();
     });
     toolbar?.addEventListener("change", e => { if (e.target.id === "promArea") { state.area = e.target.value; draw(); } });
+    toolbar?.addEventListener("input", e => { if (e.target.id === "promiseSearch") draw(); });
     draw();
+    if (hashId()) document.getElementById(hashId())?.scrollIntoView();
   }
 
   /* ---------- Mirror ---------- */
@@ -208,7 +300,7 @@
     const root = $("#nrRoot");
     const draw = () => {
       const q = state.q || "";
-      const rows = D.mirror.filter(m => !q || (m.nowTitle + " " + m.pastTitle + " " + m.lesson).includes(q));
+      const rows = D.mirror.filter(m => matches(q, m.nowTitle, m.pastTitle, m.lesson, m.pastEra));
       if ($("#mirCount")) $("#mirCount").textContent = rows.length + " مقارنة";
       root.innerHTML = rows.length ? `<div class="nr-grid">${rows.map(m => `
         <article class="nr-pair" data-pair="${esc(m.id)}" tabindex="0">
@@ -219,10 +311,12 @@
           </div>
           <div class="nr-pair-foot"><span>${(m.similarities || []).length} تشابهاً · ${(m.differences || []).length} فرقاً</span><span>افتح ←</span></div>
         </article>`).join("")}</div>` : empty("لا مقارنات مطابقة", "جرّب كلمة أخرى.");
-      root.querySelectorAll("[data-pair]").forEach(card => card.addEventListener("click", () => openMirror(card.dataset.pair)));
+      cardActions("[data-pair]", "pair", openMirror);
     };
     toolbar?.addEventListener("input", e => { if (e.target.id === "mirSearch") { state.q = e.target.value.trim(); draw(); } });
     draw();
+    refreshView = () => { draw(); if (!activeId && hashId()) openMirror(hashId()); };
+    if (hashId()) openMirror(hashId());
   }
   function openMirror(id) {
     const m = D.mirror.find(x => x.id === id);
@@ -234,7 +328,7 @@
       (Array.isArray(m.comparativeAnalysis) && m.comparativeAnalysis.length ? '<div class="nr-block"><h3>التحليل المقارن</h3><ul>' + m.comparativeAnalysis.map(x => '<li>' + esc(x) + '</li>').join("") + '</ul></div>' : '') +
       (m.limits ? '<div class="nr-block"><h3>حدود المقارنة</h3><p>' + esc(m.limits) + '</p></div>' : '') +
       (m.pastDossier ? '<div class="nr-block"><a class="wl-btn wl-btn--ghost" href="history-dossier.html?id=' + encodeURIComponent(m.pastDossier) + '">افتح الملف التاريخي المرتبط ←</a></div>' : "") +
-      '<div class="nr-block"><h3>المصادر</h3>' + srcLinks(m.sources) + "</div>");
+      '<div class="nr-block"><h3>المصادر</h3>' + srcLinks(m.sources) + "</div>", id);
     detail().querySelector(".nr-close")?.addEventListener("click", closeDetail);
   }
 
@@ -249,10 +343,10 @@
     const root = $("#nrRoot");
     const draw = () => {
       const q = state.q || "";
-      const rows = D.explainers.filter(e => (state.kick === "all" || !state.kick || e.kicker === state.kick) && (!q || (e.title + " " + e.summary).includes(q)));
+      const rows = D.explainers.filter(e => (state.kick === "all" || !state.kick || e.kicker === state.kick) && matches(q, e.title, e.summary, (e.terms || []).map(t => t[0])));
       if ($("#expCount")) $("#expCount").textContent = rows.length + " شرحاً";
       root.innerHTML = rows.length ? '<div class="nr-grid">' + rows.map(e => '<article class="nr-card nr-explainer" data-exp="' + esc(e.id) + '" tabindex="0"><div class="nr-card-top"><span class="nr-tag">' + esc(e.kicker) + '</span><span class="nr-meta">' + esc(e.minutes) + ' دقائق</span></div><h3>' + esc(e.title) + "</h3><p>" + esc(e.summary) + '</p><div class="nr-card-foot"><span>اقرأ الشرح</span><span>←</span></div></article>').join("") + "</div>" : empty("لا شروحات مطابقة", "جرّب كلمة أخرى.");
-      root.querySelectorAll("[data-exp]").forEach(card => card.addEventListener("click", () => openExplainer(card.dataset.exp)));
+      cardActions("[data-exp]", "exp", openExplainer);
     };
     toolbar?.addEventListener("input", e => { if (e.target.id === "expSearch") { state.q = e.target.value.trim(); draw(); } });
     toolbar?.addEventListener("click", e => {
@@ -263,6 +357,7 @@
       draw();
     });
     draw();
+    if (hashId()) openExplainer(hashId());
   }
   function openExplainer(id) {
     const e = D.explainers.find(x => x.id === id);
@@ -271,7 +366,7 @@
       '<article class="nr-article">' + (e.sections || []).map(s => "<h3>" + esc(s[0]) + "</h3><p>" + esc(s[1]) + "</p>").join("") + "</article>" +
       '<div class="nr-article-grid"><div class="nr-block"><h3>مصطلحات</h3>' + (e.terms || []).map(t => '<div class="nr-player" style="margin-bottom:6px"><b>' + esc(t[0]) + "</b><span>" + esc(t[1]) + "</span></div>").join("") + '</div><div class="nr-block"><h3>أرقام</h3>' + (e.numbers || []).map(n => '<div class="nr-player" style="margin-bottom:6px"><b style="color:var(--gold-strong);font:800 16px var(--font-en)">' + esc(n[0]) + "</b><span>" + esc(n[1]) + "</span></div>").join("") + "</div></div>" +
       '<div class="nr-block"><h3>أسئلة متكررة</h3><div class="nr-faq">' + (e.faq || []).map(f => "<details><summary>" + esc(f[0]) + "</summary><p>" + esc(f[1]) + "</p></details>").join("") + "</div></div>" +
-      '<div class="nr-block"><h3>اقرأ أيضاً</h3><div class="nr-chips">' + (e.related || []).map(r => '<a class="nr-chip" href="' + esc(r[1]) + '">' + esc(r[0]) + "</a>").join("") + "</div></div>");
+      '<div class="nr-block"><h3>اقرأ أيضاً</h3><div class="nr-chips">' + (e.related || []).map(r => '<a class="nr-chip" href="' + esc(r[1]) + '">' + esc(r[0]) + "</a>").join("") + "</div></div>", id);
     detail().querySelector(".nr-close")?.addEventListener("click", closeDetail);
   }
 
@@ -301,7 +396,16 @@
 
   async function boot() {
     initChrome();
-    const articlesPromise = window.WLNR.fetchArticles(300).catch(() => []);
+    setupDesk();
+    const renderers = { context: renderContext, balance: renderBalance, impact: renderImpact, promises: renderPromises, mirror: renderMirror, explainers: renderExplainers };
+    (renderers[page] || renderContext)();
+    const hashActions = {context: openContext, impact: openImpact, mirror: openMirror, explainers: openExplainer};
+    window.addEventListener("hashchange", () => {
+      const id = hashId();
+      if (id && id !== activeId) hashActions[page]?.(id);
+      else if (!id) closeDetail();
+    });
+    const articlesPromise = ["context", "balance"].includes(page) && window.WLNR.fetchArticles(24).catch(() => []);
     const editorialPromise = (page === "context" || page === "mirror") ? (async () => {
       try {
         const section = page;
@@ -316,7 +420,7 @@
             item.tag = item.tag || "تحديث تحريري";
             item.sources = item.sources || (row.sources || []).map(s => [s.title || s.publisher, s.url]);
             const index = D.context.findIndex(x => x.id === id);
-            if (index >= 0) D.context[index] = item; else D.context.push(item);
+            if (index >= 0 && !lenses[id]) D.context[index] = item; else if (index < 0) D.context.push(item);
           } else {
             item.nowTitle = item.nowTitle || row.title;
             item.sources = item.sources || (row.sources || []).map(s => [s.title || s.publisher, s.url]);
@@ -326,9 +430,10 @@
         });
       } catch (error) { console.warn("WRLDLINE dynamic editorial feed:", error); }
     })() : Promise.resolve();
-    articles = await articlesPromise;
-    await editorialPromise;
-    ({ context: renderContext, balance: renderBalance, impact: renderImpact, promises: renderPromises, mirror: renderMirror, explainers: renderExplainers }[page] || renderContext)();
+    const [publicRows] = await Promise.all([articlesPromise, editorialPromise]);
+    articles = publicRows || [];
+    dataPending = false;
+    refreshView();
   }
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot);
   else boot();
