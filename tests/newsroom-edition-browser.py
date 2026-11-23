@@ -64,6 +64,10 @@ async def setup(browser, width, *, monitor_mode="ready", home_failure=False):
             unavailable = state["monitor_mode"] == "error"
             await route.fulfill(status=503 if unavailable else 200,
                                 json=MONITOR if state["monitor_mode"] == "ready" else [])
+        elif url.path.endswith("/rpc/public_breaking_feed"):
+            await section_response(route, "breaking")
+        elif url.path.endswith("/rpc/public_exclusive_feed"):
+            await section_response(route, "exclusive")
         elif url.path.endswith("/rpc/public_home_news_recent_v3"):
             args = route.request.post_data_json
             name = next((label for key, label in (("p_newsdata_only", "dedicated"),
