@@ -27,7 +27,7 @@ self.addEventListener("install", event => {
       ...["rights-desk.css", "rights-front.css", "rights-front.js", "human-news.css", "rights-cases.js", "script.js"].map(file => "/" + file + "?v=premium-1")];
     const firstVisitShell = ["/assets/brand/wrldline-symbol-small.webp", "/source-directory.css?v=1",
       ...["home.bundle.css","script.js","home.js","newsroom-edition.js","event-desk.js","coverage-gap.js","analytics.js","intelligence-sources.js"].map(file => "/" + file + "?v=20261123-reader-start")];
-    const publicShell = [...SHELL_URLS.filter(url => url !== "/newsletter.html" && !url.endsWith(".mp3")), ...readerShell, ...metadataShell, ...editionShell, ...monitorShell, ...readingShell, ...articleShell, ...coverageShell, ...shortsShell, ...eventShell, ...feedStatusShell, ...standardsShell, ...analysisShell, ...rightsShell, ...firstVisitShell, "/notification-config.js", "/notification-client.js", "/site-editor.js?v=20261123-live-breaking", "/site-editor.css?v=20261123-live-breaking"];
+    const publicShell = [...SHELL_URLS.filter(url => url !== "/newsletter.html" && !url.endsWith(".mp3")), ...readerShell, ...metadataShell, ...editionShell, ...monitorShell, ...readingShell, ...articleShell, ...coverageShell, ...shortsShell, ...eventShell, ...feedStatusShell, ...standardsShell, ...analysisShell, ...rightsShell, ...firstVisitShell, "/notification-config.js", "/notification-client.js", "/site-editor.js?v=20261123-media-library-v2", "/site-editor.css?v=20261123-media-library-v2"];
     await Promise.allSettled(publicShell.map(async url => {
       try { const response = await fetch(new Request(url, { cache: "reload" })); if (response.ok) await cache.put(url, response); } catch {}
     }));

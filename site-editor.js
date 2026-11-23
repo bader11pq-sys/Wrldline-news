@@ -42,7 +42,7 @@
     const changed = permitted !== (allowed === true);
     permitted = allowed === true;
     if (permitted && !q("#wlSiteEditorStyles")) {
-      document.head.append(node("link", null, { id:"wlSiteEditorStyles", rel:"stylesheet", href:"/site-editor.css?v=20261123-live-breaking" }));
+      document.head.append(node("link", null, { id:"wlSiteEditorStyles", rel:"stylesheet", href:"/site-editor.css?v=20261123-media-library-v2" }));
     }
     if (!permitted) {
       dialog?.close();
