@@ -127,6 +127,7 @@ ${schema ? `<meta property="article:published_time" content="${escapeHTML(schema
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Noto+Kufi+Arabic:wght@500;700&family=Manrope:wght@500;700;800&display=swap" rel="stylesheet">
 <link rel="alternate" type="application/rss+xml" title="WRLDLINE NEWS RSS" href="${PUBLIC_ORIGIN}/rss.xml"><link rel="alternate" type="application/atom+xml" title="WRLDLINE NEWS Atom" href="${PUBLIC_ORIGIN}/atom.xml">
 ${!noindex ? '<script src="/analytics-config.js?v=20261115-1" defer></script><script src="/analytics.js?v=20261115-1" defer></script>' : ""}
+${!noindex ? '<script src="/site-editor.js?v=1" defer></script>' : ""}
 ${enhance ? '<link rel="stylesheet" href="/article-trust.css?v=20261115-1"><script src="/share.js?v=20261115-canonical" defer></script><script src="/public-news.js?v=20261115-1" defer></script><script src="/article-trust.js?v=20261115-1" defer></script>' : ""}`;
   const html = `<!doctype html><html lang="${escapeHTML(lang)}" dir="${direction}" data-theme="dark"><head>${head}</head><body class="wl-public-news">
 <a class="skip-link" href="#mainContent">${l.en ? "Skip to content" : "تجاوز إلى المحتوى"}</a>
@@ -214,7 +215,7 @@ function renderIndex(articles, page, lang) {
 <ul class="public-news-list">${shown.map(a => {
     const s = source(a), originalLang = language(a.source_language || a.lang);
     const link = articleURL(a.id) + (l.en ? "#lang=en" : "");
-    return `<li><article><h2><a href="${link}" lang="${originalLang}" dir="auto">${escapeHTML(text(a.title, 1000) || l.news)}</a></h2><p lang="${originalLang}" dir="auto">${escapeHTML(text(a.summary, 260))}</p><small>${escapeHTML(s.name)} · <time datetime="${a.published_at}">${escapeHTML(dateLabel(a.published_at, lang))}</time></small></article></li>`;
+    return `<li><article data-site-editor-row="${a.id}"><h2><a href="${link}" lang="${originalLang}" dir="auto">${escapeHTML(text(a.title, 1000) || l.news)}</a></h2><p lang="${originalLang}" dir="auto">${escapeHTML(text(a.summary, 260))}</p><small>${escapeHTML(s.name)} · <time datetime="${a.published_at}">${escapeHTML(dateLabel(a.published_at, lang))}</time></small></article></li>`;
   }).join("")}</ul>
 ${!shown.length ? `<p class="public-news-summary">${l.en ? "No published news on this page." : "لا توجد أخبار منشورة في هذه الصفحة."}</p>` : ""}
 <nav class="public-news-paging" aria-label="${l.en ? "News pages" : "صفحات الأخبار"}">${page > 1 ? `<a href="${escapeHTML(pageURL(page - 1, lang))}">${l.en ? "Previous page" : "الصفحة السابقة"}</a>` : "<span></span>"}${articles.length > 50 ? `<a href="${escapeHTML(pageURL(page + 1, lang))}">${l.en ? "Next page" : "الصفحة التالية"}</a>` : ""}</nav>`;

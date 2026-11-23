@@ -365,7 +365,7 @@ function setFeedConnection(status){
  const el=document.getElementById("newsStatus");
  el.classList.toggle("is-updating",status==="loading");el.classList.toggle("is-error",status==="error"||status==="stale");
 }
-async function fetchNews(manual=false){
+async function fetchNews(manual=false,quiet=false){
  if(state.loading||state.paging)return;
  // Don't replace the reader's browse window or a focused result in the background.
  if(!manual&&(state.offset>MAIN_FEED_LIMIT||document.querySelector("dialog[open]")||document.activeElement.closest("#newsGrid,#heroLayout,.wl-feed-controls,#categoryChips,#missedNewsSection,#breakingSection,#exclusiveSection,#popularStoriesSection")))return;
@@ -392,7 +392,7 @@ async function fetchNews(manual=false){
    const linkedId=new URLSearchParams(location.search).get("article");
    if(linkedId&&!document.querySelector("dialog[open]"))openArticle(linkedId,false);
   }
-  if(manual)showToast(ui("تم تحميل الموجز","Feed loaded"));
+  if(manual&&!quiet)showToast(ui("تم تحميل الموجز","Feed loaded"));
   // The retrospective uses already loaded, eligible coverage rather than
   // requesting the separate NewsData-only lane that the renderer excludes.
   const sections=await Promise.allSettled(Object.keys(supplemental).map(name=>loadSupplemental(name,now)));
@@ -406,7 +406,7 @@ async function fetchNews(manual=false){
  }catch(err){
   console.warn("WRLDLINE feed unavailable:",err);
   state.feedStatus=state.before?"stale":"error";setFeedConnection(state.feedStatus);
-  if(manual)showToast(ui("تعذر تحديث الأخبار. تحقق من الاتصال وحاول مجددًا.","Could not refresh news. Check your connection and try again."));
+  if(manual&&!quiet)showToast(ui("تعذر تحديث الأخبار. تحقق من الاتصال وحاول مجددًا.","Could not refresh news. Check your connection and try again."));
   if(!state.before)renderFetchFailure();
   if(document.getElementById("searchOverlay").open)renderSearch();
   renderFeedMeta();
@@ -522,6 +522,25 @@ function renderFollowPanel(){
 async function initPersonalization(){
  if(!window.supabase?.createClient)return;
  state.db=window.WRLDLINE_AUTH?.client||window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
+ const pendingEditorRefresh=new WeakMap();
+ window.WLSiteEditor?.attach(state.db,(article)=>{
+  const dialog=document.querySelector(".wl-site-editor[open]");
+  const refresh=async(updates)=>{
+   const reader=document.getElementById("articleModal");
+   const requested=document.getElementById("modalContent")?.dataset.readingStory;
+   const edited=reader?.open&&updates.get(requested);
+   if(edited&&edited.editorial_status!=="published")closeArticle();
+   await fetchNews(true,true);
+   if(edited&&reader.open&&edited.editorial_status==="published"&&state.articleById?.has(requested))openArticle(requested,false);
+  };
+  if(!dialog){void refresh(new Map([[article.id,article]]));return;}
+  let updates=pendingEditorRefresh.get(dialog);
+  if(!updates){
+   updates=new Map();pendingEditorRefresh.set(dialog,updates);
+   dialog.addEventListener("close",()=>void refresh(updates),{once:true});
+  }
+  updates.set(article.id,article);
+ });
  const {data:{session}}=await state.db.auth.getSession();await handlePersonalSession(session);
  initNewsRealtime();
  state.db.auth.onAuthStateChange((_event,session)=>{setTimeout(()=>handlePersonalSession(session),0);});
@@ -772,11 +791,13 @@ function renderFeed(){
    template.innerHTML='<article class="news-card reader-card content-card-'+a.contentType+'" data-content-type="'+a.contentType+'">'+imageMarkup(a,"card-image")+'<div class="card-content"><h3 lang="'+lang+'"><button class="reader-story-link" type="button" data-open="'+escapeHTML(a.id)+'" dir="auto">'+escapeHTML(a.title)+'</button></h3>'+wlCardMeta(a)+'<p lang="'+lang+'" dir="auto">'+escapeHTML(cardExcerpt(a.summary))+'</p>'+newsDataMetaMarkup(a)+sourceLineMarkup(a)+(a.correctionNote?'<span class="correction-chip">'+ui("تم التصحيح","Corrected")+'</span>':'')+'</div></article>';
    const card=template.content.firstElementChild;
    card.dataset.storyId=a.id;card.readerArticle=a;
+   if(publicArticleURL(a))card.dataset.siteEditorRow=a.id;
    return card;
   };
   const blocks=!editionHasFilters()&&eventCatalog.length?eventDesk.group(items,eventCatalog):items.map(item=>({item}));
   placeFeedChildren(host,blocks.map(block=>block.dossier?renderEventStack(stacks.get(block.dossier.slug),block.dossier,block.items,cardFor):cardFor(block.item)));
  }
+ window.WLSiteEditor?.syncRows(host);
  renderFeedMeta();renderPageControls();
 }
 function renderMissedStories(){
@@ -959,6 +980,7 @@ function openArticle(id,updateUrl=true,returnFocus){
  track("view_article",{article_id:a.id,content_type:a.contentType,category:a.cat,source_domain:sourceDomain(a.sourceURL),has_source_link:!!a.sourceURL});
  const host=document.getElementById("modalContent");
  host.articleEditions?.stop();
+ host.dataset.readingStory=a.id;
  host.dataset.languageManaged="";
  const published=publicationISO(a), media=articleMediaMarkup(a);
  let largeText=false;
@@ -1027,6 +1049,7 @@ function openArticle(id,updateUrl=true,returnFocus){
  document.getElementById("modalListen").addEventListener("click",()=>playArticleAudio(viewed));
  renderRelatedCoverage(host,a);
  showModal("articleModal",returnFocus);
+ window.WLSiteEditor?.setStory(publicURL ? a.id : null,host.querySelector(".reader-top-actions"));
  try{document.dispatchEvent(new CustomEvent("wrldline:article-opened",{detail:{article:a}}));}catch(error){console.warn("WRLDLINE intelligence:",error);}
 }
 let currentArticleAudioUrl = null;
