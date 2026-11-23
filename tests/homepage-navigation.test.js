@@ -20,11 +20,11 @@ test("homepage primary navigation follows the core reader journey", () => {
   const primaryLinks = [...primary.matchAll(/<a\b[^>]*href="([^"]+)"/g)].map(match => match[1]);
   assert.deepEqual(primaryLinks, [
     "index.html",
-    "rights.html",
-    "sections.html",
-    "/dossier/",
     "/section/politics",
     "/section/economy",
+    "/dossier/",
+    "rights.html",
+    "sections.html",
     "/news/",
     "#breakingSection"
   ]);
