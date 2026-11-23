@@ -30,7 +30,7 @@
   <link rel="stylesheet" href="newsroom-edition.css?v=20261122-edition">
   <link rel="stylesheet" href="editorial-launch.css?v=20261122-coverage">
   <link rel="stylesheet" href="/front-page.css?v=20261122-event">
-  <link rel="stylesheet" href="rights-front.css?v=human-news-1">
+  <link rel="stylesheet" href="rights-front.css?v=premium-1">
 </head>
 <body class="wl-home">
   <a class="skip-link" href="#mainContent">تجاوز إلى المحتوى</a>
@@ -163,7 +163,7 @@
           </div>
           <a class="rf-desk" href="rights.html" hreflang="ar">
             <img src="assets/rights-file-small.webp" width="320" height="240" alt="" decoding="async">
-            <div><span class="rf-desk-label"><span lang="ar">القسم الصحفي</span><span lang="en">Reporting desk · Arabic</span></span>
+            <div><span class="rf-desk-label"><span lang="ar">دفتر الدليل</span><span lang="en">Evidence desk · Arabic</span></span>
               <strong><span lang="ar">الحقوق والحريات</span><span lang="en">Rights &amp; freedoms</span></strong>
               <span class="rf-desk-deck"><span lang="ar">من نصّ القانون إلى أثره على الناس</span><span lang="en">From the law to people’s lives</span></span>
             </div><b class="rf-desk-arrow" aria-hidden="true">↗</b>
@@ -220,7 +220,16 @@
       <div class="wl-main-grid">
         <section class="wl-feed" id="newsSection" aria-labelledby="feedTitle" tabindex="-1">
           <div class="wl-feed-head">
-            <div><span class="wl-kicker">CONTINUOUS COVERAGE</span><h2 id="feedTitle">أحدث الأخبار</h2></div>
+            <div class="rf-feed-heading"><h2 id="feedTitle">أحدث الأخبار</h2>
+              <div class="rf-view-switch" id="readerViewSwitch" role="group" aria-label="طريقة عرض الأخبار" hidden data-language-managed>
+                <button type="button" data-reader-view="headlines" aria-pressed="false" aria-controls="newsGrid">
+                  <svg viewBox="0 0 16 16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"><path d="M3 4h10M3 8h10M3 12h10"/></svg><span lang="ar">عناوين</span><span lang="en">Headlines</span>
+                </button>
+                <button type="button" data-reader-view="cards" aria-pressed="false" aria-controls="newsGrid">
+                  <svg viewBox="0 0 16 16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.3"><rect x="2.5" y="3" width="11" height="10" rx="1.4"/><path d="M2.5 7h11"/></svg><span lang="ar">بطاقات</span><span lang="en">Cards</span>
+                </button>
+              </div>
+            </div>
             <div class="wl-feed-controls">
               <select id="countryFilter" class="wl-select" aria-label="دولة الحدث" data-language-managed><option value="all">كل الدول</option></select>
               <select id="formatFilter" class="wl-select" aria-label="صيغة المحتوى" data-language-managed><option value="all">كل الصيغ</option></select>
@@ -644,7 +653,7 @@
   <script src="public-article-body.js?v=20261122-longread2" defer></script>
   <script src="article-editions.js?v=20261122-bilingual" defer></script>
   <script src="/event-desk.js?v=20261122-event" defer></script>
-  <script src="script.js?v=20261123-feed-sections" defer></script>
+  <script src="script.js?v=premium-1" defer></script>
   <script src="newsroom-data.js?v=20261114-1" defer></script>
   <script src="newsroom.js?v=20261120-feedfast1" defer></script>
   <script src="home.js?v=20261123-rights" defer></script>
@@ -656,6 +665,6 @@
   <script src="analytics.js?v=20261114-1" defer></script>
   <script src="wl-modern.js?v=human-news-1" defer></script>
   <script src="homepage-interactions.js?v=20261122-reader" defer></script>
-  <script src="rights-front.js?v=20261123-1" defer></script>
+  <script src="rights-front.js?v=premium-1" defer></script>
 </body>
 </html>

@@ -13,7 +13,8 @@ async def main():
     async with async_playwright() as pw:
         browser = await pw.chromium.launch(executable_path=os.environ.get("WRLDLINE_CHROMIUM_PATH") or None)
         for width in (375, 1440):
-            context = await browser.new_context(viewport={"width": width, "height": 900}, service_workers="block")
+            context = await browser.new_context(viewport={"width": width, "height": 900}, service_workers="block",
+                                                has_touch=width == 375, reduced_motion="reduce")
 
             async def route_fixture(route):
                 req = route.request
@@ -63,10 +64,18 @@ async def main():
                 await page.keyboard.press("Escape")
                 await expect(page.locator(".wlm-tab[aria-controls=wlmSections]")).to_be_focused()
 
+            extras_summary = page.locator("#homeExtras > summary")
+            async def toggle_extras():
+                # Scroll into the usable viewport, not underneath the sticky header or mobile dock.
+                await extras_summary.evaluate("(el) => el.scrollIntoView({block:'center',behavior:'instant'})")
+                if width == 375:
+                    await extras_summary.tap()
+                else:
+                    await extras_summary.click()
             async with page.expect_request(lambda req: urlparse(req.url).path.endswith("/dossier/index.json")):
-                await page.locator("#homeExtras > summary").click()
+                await toggle_extras()
             await expect(page.locator("#dossierStripGrid .dossier-strip-card").first).to_be_visible()
-            await page.locator("#homeExtras > summary").click()
+            await toggle_extras()
             assert not await page.locator("#homeExtras").evaluate("(e) => e.open")
             await page.goto(f"{BASE}/index.html#contextBand")
             await expect(page.locator("#contextBand")).to_be_visible()

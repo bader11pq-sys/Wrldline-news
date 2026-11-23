@@ -9,10 +9,11 @@
   <meta name="description" content="ملفات حقوقية مستقلة: ما حدث، الأثر على الناس، ما تثبته المصادر، وما يستحق المتابعة.">
   <link rel="icon" href="../favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="../rights-desk.css?v=human-news-1">
-  <link rel="stylesheet" href="../human-news.css?v=1">
+  <link rel="stylesheet" href="../human-news.css?v=premium-1">
+  <script src="../rights-cases.js?v=premium-1" defer></script>
   <title>ملفات القضايا الحقوقية | WRLDLINE News</title>
 </head>
-<body>
+<body class="hn-cases">
   <a class="rd-skip" href="#caseMain">تجاوز إلى المحتوى</a>
   <header class="rd-bar"><div class="rd-wrap rd-bar-inner">
     <a class="rd-wordmark" href="../index.html" aria-label="ورلدلاين نيوز، الرئيسية"><span lang="en" dir="ltr">WRLDLINE <span class="rd-period">News</span></span></a>
@@ -25,20 +26,33 @@
       <p class="rd-deck">ملفات حقوقية مستقلة: ما حدث، الأثر على الناس، ما تثبته المصادر، وما يستحق المتابعة.</p>
       <nav class="hn-jumps" aria-label="داخل دفتر الدليل"><a href="#files">الملفات المنشورة</a><a href="#labels">وسوم التحقق</a><a href="../rights.html#rightsGuides">دليل الحقوق</a></nav>
     </header>
-    <div class="hn-cards" id="files" tabindex="-1">
-      <article class="hn-card">
-        <p class="rd-kicker">ملف مرجعي · الأردن</p><h2><a href="jordan-expression.html">الأردن: حرية التعبير وقانون الجرائم الإلكترونية</a></h2>
+    <section id="files" tabindex="-1" aria-labelledby="filesTitle">
+    <h2 class="hn-shelf-title" id="filesTitle">الملفات المنشورة</h2>
+    <div class="hn-filter" hidden>
+      <div><label for="caseSearch">ابحث في الملفات</label><input type="search" id="caseSearch" placeholder="اسم الملف أو البلد" autocomplete="off"></div>
+      <div><label for="caseTopic">الموضوع</label><select id="caseTopic"><option value="">كل المواضيع</option><option>حرية التعبير</option><option>حقوق العمل</option><option>الخصوصية الرقمية</option></select></div>
+      <button type="button" id="caseReset" disabled>مسح البحث</button>
+    </div>
+    <p class="hn-results" id="caseResults" role="status"></p>
+    <p class="hn-note" id="caseEmpty" hidden>لا توجد ملفات تطابق بحثك. جرّب كلمة أخرى أو امسح البحث.</p>
+    <div class="hn-cards">
+      <article class="hn-card" data-topic="حرية التعبير">
+        <p class="rd-kicker">حرية التعبير · ملف مرجعي</p><h3><a href="jordan-expression.html">الأردن: حرية التعبير وقانون الجرائم الإلكترونية</a></h3>
+        <p class="hn-card-place">الأردن</p>
         <p>ملف تشريعي يتتبع نص 2023 وتقارير عن تطبيقه. لا يقدم حصرًا للملاحقات أو تحديثًا للوضع القانوني الراهن.</p><small>نطاق الأدلة حتى <time class="hn-time" datetime="2024-08-13" dir="ltr">2024-08-13</time></small>
       </article>
-      <article class="hn-card">
-        <p class="rd-kicker">ملف مرجعي · قطر</p><h2><a href="qatar-wages.html">قطر: الحد الأدنى للأجر بين القانون والتنفيذ</a></h2>
+      <article class="hn-card" data-topic="حقوق العمل">
+        <p class="rd-kicker">حقوق العمل · ملف مرجعي</p><h3><a href="qatar-wages.html">قطر: الحد الأدنى للأجر بين القانون والتنفيذ</a></h3>
+        <p class="hn-card-place">قطر</p>
         <p>ملف عن الفرق بين صدور حد أدنى للأجر، ووصول الأجر فعليًا، وإمكان استرداده عند تأخر الدفع.</p><small>نطاق الأدلة حتى <time class="hn-time" datetime="2022-11-24" dir="ltr">2022-11-24</time></small>
       </article>
-      <article class="hn-card">
-        <p class="rd-kicker">ملف مرجعي · مصر، العراق، الأردن، لبنان، وتونس</p><h2><a href="mena-digital-privacy.html">خمس دول عربية: الاستهداف الرقمي وكشف الهوية</a></h2>
+      <article class="hn-card" data-topic="الخصوصية الرقمية">
+        <p class="rd-kicker">الخصوصية الرقمية · ملف مرجعي</p><h3><a href="mena-digital-privacy.html">خمس دول عربية: الاستهداف الرقمي وكشف الهوية</a></h3>
+        <p class="hn-card-place">مصر، العراق، الأردن، لبنان، وتونس</p>
         <p>ملف عن الخصوصية الرقمية لأفراد مجتمع الميم. يشرح نطاق الأدلة ولا يعرض تفاصيل يمكن أن تكشف هوية المتضررين.</p><small>نطاق الأدلة حتى <time class="hn-time" datetime="2023-03-22" dir="ltr">2023-03-22</time></small>
       </article>
     </div>
+    </section>
     <aside class="hn-note"><strong>كيف يبدو ملف متابعة قضية؟</strong> <a href="example-detention.html">قضية افتراضية: احتجاز دون محاكمة</a>. أمثلة للتعلّم، وليست بلاغات أو وقائع منشورة.</aside>
     <section class="hn-labels" id="labels" aria-labelledby="labelTitle"><h2 id="labelTitle">كيف نسمّي درجة التحقق؟</h2>
       <dl><div><dt><span class="hn-badge" data-kind="documented">موثّق</span></dt><dd>وثيقة أو سجل قابل للمراجعة يثبت هذه المعلومة في حدود محددة.</dd></div>

@@ -769,7 +769,7 @@ function renderFeed(){
    if(prior&&prior.readerArticle===a)return prior;
    const template=document.createElement("template");
    const lang=escapeHTML(a.hasTranslation?state.lang:a.sourceLanguage);
-   template.innerHTML='<article class="news-card reader-card content-card-'+a.contentType+'" data-content-type="'+a.contentType+'">'+imageMarkup(a,"card-image")+'<div class="card-content">'+wlCardMeta(a)+'<h3 lang="'+lang+'"><button class="reader-story-link" type="button" data-open="'+escapeHTML(a.id)+'" dir="auto">'+escapeHTML(a.title)+'</button></h3><p lang="'+lang+'" dir="auto">'+escapeHTML(cardExcerpt(a.summary))+'</p>'+newsDataMetaMarkup(a)+sourceLineMarkup(a)+(a.correctionNote?'<span class="correction-chip">'+ui("تم التصحيح","Corrected")+'</span>':'')+'</div></article>';
+   template.innerHTML='<article class="news-card reader-card content-card-'+a.contentType+'" data-content-type="'+a.contentType+'">'+imageMarkup(a,"card-image")+'<div class="card-content"><h3 lang="'+lang+'"><button class="reader-story-link" type="button" data-open="'+escapeHTML(a.id)+'" dir="auto">'+escapeHTML(a.title)+'</button></h3>'+wlCardMeta(a)+'<p lang="'+lang+'" dir="auto">'+escapeHTML(cardExcerpt(a.summary))+'</p>'+newsDataMetaMarkup(a)+sourceLineMarkup(a)+(a.correctionNote?'<span class="correction-chip">'+ui("تم التصحيح","Corrected")+'</span>':'')+'</div></article>';
    const card=template.content.firstElementChild;
    card.dataset.storyId=a.id;card.readerArticle=a;
    return card;
