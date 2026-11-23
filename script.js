@@ -823,12 +823,14 @@ function renderPopularStories(rows){
 }
 function renderExclusive(){
  const host=document.getElementById("exclusiveNewsGrid");if(!host)return;
- const items=state.frontPageArticles.filter(a=>!a.isNewsDataOnly&&a.isExclusive).sort((a,b)=>Date.parse(b.published_at)-Date.parse(a.published_at)).slice(0,6);
+ const feedRows=Array.isArray(supplemental.exclusive.rows)?supplemental.exclusive.rows.map(normalizeArticle).filter(a=>a.title):[];
+ const pool=feedRows.length?feedRows:state.frontPageArticles.filter(a=>!a.isNewsDataOnly&&a.isExclusive);
+ const items=pool.slice().sort((a,b)=>Date.parse(b.published_at)-Date.parse(a.published_at)).slice(0,6);
  const count=document.getElementById("exclusiveCount");
  const status=supplemental.exclusive.status;
  renderSupplementalNotice("exclusive",!!items.length);
  if(count)count.textContent=!items.length&&status!=="ready"?"—":new Intl.NumberFormat(state.lang).format(items.length);
- if(!items.length){host.innerHTML=status==="error"?'':'<div class="exclusive-empty">'+(status==="loading"?ui("جارٍ تحميل الأخبار الحصرية…","Loading exclusive stories…"):ui("لا توجد أخبار حصرية في الدفعات المحمّلة.","No exclusive stories in the loaded batches."))+'</div>';return;}
+ if(!items.length){host.innerHTML=status==="error"?'':'<div class="exclusive-empty">'+(status==="loading"?ui("جارٍ تحميل الأخبار الحصرية…","Loading exclusive stories…"):ui("لا توجد أخبار حصرية منشورة الآن.","No exclusive stories are published right now."))+'</div>';return;}
  host.innerHTML=items.map(a=>'<article class="news-card exclusive-news-card content-card-'+a.contentType+'"><span class="exclusive-tag">'+ui("حصري لدى المصدر","Publisher exclusive")+'</span><div class="card-open" role="button" tabindex="0" data-open="'+escapeHTML(a.id)+'">'+imageMarkup(a,"card-image")+'<div class="card-content"><div class="story-meta"><span class="category-label">'+escapeHTML(categoryName(a.cat))+'</span>'+typeBadgesMarkup(a)+'<span class="read-time">'+wlReadingTime(a)+'</span>'+wlSaveMarkup(a)+'</div><h3>'+escapeHTML(a.title)+'</h3><p>'+escapeHTML(a.summary)+'</p>'+sourceLineMarkup(a)+'</div></div></article>').join("");
  host.querySelectorAll("[data-open]").forEach(el=>el.addEventListener("click",()=>openArticle(el.dataset.open)));
  host.querySelectorAll("[data-save]").forEach(el=>el.addEventListener("click",e=>{e.stopPropagation();toggleSaved(el.dataset.save);}));
