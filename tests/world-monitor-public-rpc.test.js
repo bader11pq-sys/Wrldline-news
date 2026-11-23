@@ -32,7 +32,9 @@ test("source directory uses database-side aggregation and safe external links", 
   assert.doesNotMatch(script, /\/rest\/v1\/articles\?/);
   assert.match(script, /credentials: "omit"/);
   assert.match(script, /safeUrl/);
-  assert.match(html, /intelligence-sources\.js\?v=20261121-public-rpc1/);
+  const versionedSource = "/"+html.match(/src="(intelligence-sources\.js\?v=[\w-]+)"/)?.[1];
+  assert.equal(versionedSource, "/intelligence-sources.js?v=20261123-reader-start");
+  assert.match(html, /id="sourceRetry" hidden/);
 });
 
 test("public monitor RPC migrations expose only narrow projections and never grant article table SELECT", () => {

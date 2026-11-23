@@ -79,11 +79,15 @@ test("seven desks link to existing content and maintain a lightweight homepage",
   assert.equal([...sections.matchAll(/<section class="hn-desk"/g)].length, 7);
   const homepage = read("index.html");
   assert.match(homepage, /الأخبار من أجل الإنسان/);
-  assert.match(homepage, /<a class="wl-nav-link wl-nav-sections" href="sections\.html"/);
+  assert.match(homepage, /id="moreMenu">[\s\S]*?<a href="sections\.html"/);
   assert.doesNotMatch(sections, /<(script|iframe)\b/i);
   for (const [, link] of sections.matchAll(/href="([^"#][^"]*)"/g)) {
     if (link.startsWith("https://")) continue;
-    const path = link.split(/[?#]/)[0];
+    const path = link.split(/[?#]/)[0].replace(/^\/+/, "");
+    if (path.startsWith("section/")) {
+      assert.match(path, /^section\/(?:politics|economy|world|rights|society|health)$/);
+      continue; // The Worker serves these canonical routes rather than static files.
+    }
     assert.ok(existsSync(resolve(root, path)), `Missing ${path}`);
   }
 });

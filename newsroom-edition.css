@@ -45,6 +45,9 @@
 .wl-home .edition-monitor-status,
 .wl-home .edition-monitor-metrics dt { color: #c1d0dc; font-size: var(--edition-small); line-height: 1.65; }
 .edition-monitor-status { margin: .625rem 0; }
+.edition-monitor #editionMonitorRetry {
+  min-block-size: 2.75rem; inline-size: auto; margin-inline-end: .375rem;
+}
 .edition-monitor-metrics { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: .375rem; margin-block: .75rem; }
 .edition-monitor-metrics[hidden] { display: none; }
 .edition-monitor-metrics > div { border-block-start: 1px solid #526373; padding-block: .5rem; }

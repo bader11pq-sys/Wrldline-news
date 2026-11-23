@@ -9,7 +9,7 @@
   const labels = Object.freeze({
     dossier: ["ملف الحدث", "Event dossier"],
     original: ["تقرير WRLDLINE الأصلي", "WRLDLINE original reporting"],
-    reported: ["خبر منقول", "Reported news"],
+    reported: ["ملخص منسوب", "Attributed summary"],
     analysis: ["تحليل", "Analysis"],
     opinion: ["رأي", "Opinion"],
     sponsored: ["محتوى مدعوم", "Sponsored"],
@@ -17,7 +17,7 @@
   function isOriginal(article) {
     const row = article?.raw || article;
     return /^WRLDLINE NEWS$/i.test(String(row?.source_name || "").trim()) &&
-      /^editorial-\d+$/.test(String(row?.url || "")) && !row.source_url;
+      /^editorial-(?:\d+|[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12})$/i.test(String(row?.url || "")) && !row.source_url;
   }
   function kind(article) {
     const type = String(article?.content_type || article?.contentType || "").trim().toLowerCase();
