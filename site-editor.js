@@ -348,7 +348,21 @@
       value:a.editorial_status === "published" ? localDate(a.published_at) : "",hint:t("بتوقيت جهازك. اتركه فارغًا للنشر الآن.","Your device’s timezone. Leave blank to publish now.")
     });
     field(grid,"source_url",t("رابط المصدر الأصلي","Original source URL"),"url",{value:a.source_url,max:2048,placeholder:"https://…"});
-    field(grid,"image_url",t("رابط الصورة أو الفيديو","Image or video URL"),"url",{value:a.image_url,max:2048});
+    const imageUrl=field(grid,"image_url",t("رابط الصورة أو الفيديو","Image or video URL"),"url",{value:a.image_url,max:2048});
+    const libraryTools=node("div",null,{class:"wl-edit-media-library-tools"});
+    const libraryButton=button(t("اختيار من مكتبة الصور","Choose from media library"),{type:"button"});
+    const libraryHost=node("div",null,{class:"wl-edit-media-library",hidden:true,"aria-live":"polite"});
+    libraryTools.append(libraryButton,libraryHost);imageUrl.closest("label")?.append(libraryTools);
+    const libraryIsVideo=name=>/\.(mp4|webm|mov)$/i.test(name||"");
+    libraryButton.onclick=async()=>{
+      libraryHost.hidden=false;libraryButton.disabled=true;libraryHost.replaceChildren(node("small",t("جارٍ تحميل المكتبة…","Loading media library…")));
+      const result=await client.storage.from("news-media").list("articles",{limit:100,offset:0,sortBy:{column:"created_at",order:"desc"}});
+      libraryButton.disabled=false;libraryHost.replaceChildren();
+      if(result.error){libraryHost.append(node("small",t("تعذر تحميل المكتبة: ","Could not load library: ")+result.error.message));return;}
+      const files=(result.data||[]).filter(item=>item.name&&!item.id?.endsWith("/"));
+      if(!files.length){libraryHost.append(node("small",t("لا توجد ملفات في المكتبة بعد.","No media files in the library yet.")));return;}
+      for(const item of files){const path="articles/"+item.name,type=libraryIsVideo(item.name)?"video":"image",card=button(null,{type:"button",class:"wl-edit-media-item",title:item.name});const url=client.storage.from("news-media").getPublicUrl(path).data.publicUrl;const media=node(type,null,{src:url,alt:item.name,loading:"lazy"});if(type==="video"){media.muted=true;media.playsInline=true;media.preload="metadata";}card.append(media,node("small",item.name));card.onclick=()=>{imageUrl.value=url;grid.querySelector('[name="media_type"]').value=type;libraryHost.hidden=true;dirty=true;say(t("تم اختيار الوسائط من المكتبة.","Media selected from the library."),"success");};libraryHost.append(card);}
+    };
     field(grid,"media_type",t("نوع الوسائط","Media type"),"select",{options:mediaTypes,value:a.media_type || "image"});
     const sponsorName=field(grid,"sponsor_name",t("اسم الراعي","Sponsor name"),"text",{value:a.sponsor_name,max:120});
     const sponsorUrl=field(grid,"sponsor_url",t("رابط الراعي","Sponsor URL"),"url",{value:a.sponsor_url,max:2048});

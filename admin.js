@@ -64,6 +64,23 @@ function setMediaPreview(url,type){
  const el=document.createElement(type==="video"?"video":"img");el.src=url;el.style.cssText="display:block;max-width:100%;max-height:240px;border-radius:10px;margin-top:8px";
  if(type==="video"){el.controls=true;el.playsInline=true;}host.append(el);
 }
+const mediaIsVideo=name=>/\.(mp4|webm|mov)$/i.test(name||"");
+function mediaPublicUrl(path){return db.storage.from(MEDIA_BUCKET).getPublicUrl(path).data.publicUrl;}
+async function loadMediaLibrary(){
+ const host=$("mediaLibrary");if(!host)return;
+ host.classList.remove("hidden");$("openMediaLibrary").classList.add("hidden");$("closeMediaLibrary").classList.remove("hidden");
+ host.replaceChildren();const loading=document.createElement("p");loading.className="media-library-loading";loading.textContent=t("جارٍ تحميل مكتبة الصور…","Loading media library…");host.append(loading);
+ const result=await db.storage.from(MEDIA_BUCKET).list("articles",{limit:100,offset:0,sortBy:{column:"created_at",order:"desc"}});
+ if(result.error){host.replaceChildren();const error=document.createElement("p");error.className="media-library-empty";error.textContent=t("تعذر تحميل المكتبة: ","Could not load library: ")+result.error.message;host.append(error);return;}
+ host.replaceChildren();const files=(result.data||[]).filter(item=>item.name&&!item.id?.endsWith("/"));
+ if(!files.length){const empty=document.createElement("p");empty.className="media-library-empty";empty.textContent=t("لا توجد ملفات في مكتبة الصور بعد.","No media files are in the library yet.");host.append(empty);return;}
+ for(const item of files){const path="articles/"+item.name,type=mediaIsVideo(item.name)?"video":"image",card=document.createElement("button");card.type="button";card.className="media-library-item";card.title=item.name;
+  const media=document.createElement(type);media.src=mediaPublicUrl(path);media.alt=item.name;media.loading="lazy";if(type==="video"){media.muted=true;media.playsInline=true;media.preload="metadata";}
+  const name=document.createElement("small");name.textContent=item.name;card.append(media,name);card.addEventListener("click",()=>{const url=media.src;$("imageUrl").value=url;$("mediaType").value=type;$("mediaFile").value="";setMediaPreview(url,type);closeMediaLibrary();message(t("تم اختيار الوسائط من المكتبة.","Media selected from the library."));});host.append(card);
+ }
+}
+function closeMediaLibrary(){const host=$("mediaLibrary");if(!host)return;host.classList.add("hidden");$("openMediaLibrary").classList.remove("hidden");$("closeMediaLibrary").classList.add("hidden");}
+$("openMediaLibrary")?.addEventListener("click",()=>void loadMediaLibrary());$("closeMediaLibrary")?.addEventListener("click",closeMediaLibrary);
 $("mediaFile").addEventListener("change",()=>{
  const file=$("mediaFile").files&&$("mediaFile").files[0];if(!file){setMediaPreview($("imageUrl").value,$("mediaType").value);return;}
  setMediaPreview(URL.createObjectURL(file),file.type.startsWith("video/")?"video":"image");
@@ -88,7 +105,7 @@ function resetForm(){
  const original=$("originalArticleLanguage");
  original.disabled=false;
  original.querySelector("option[data-existing]")?.remove();
- $("articleForm").reset();$("articleId").value="";$("contentType").value="news";$("source").value="هيئة التحرير";$("source").readOnly=false;syncContentType();$("editorialStatus").value="published";$("articleKind").value="news";$("sponsorName").value="";$("sponsorUrl").value="";$("correctionNote").value="";syncSponsorFields();$("isBreaking").checked=false;$("mediaType").value="image";$("mediaFile").value="";setMediaPreview("");syncPublishButtons();
+ $("articleForm").reset();$("articleId").value="";$("contentType").value="news";$("source").value="هيئة التحرير";$("source").readOnly=false;syncContentType();$("editorialStatus").value="published";$("articleKind").value="news";$("sponsorName").value="";$("sponsorUrl").value="";$("correctionNote").value="";syncSponsorFields();$("isBreaking").checked=false;$("mediaType").value="image";$("mediaFile").value="";setMediaPreview("");closeMediaLibrary();syncPublishButtons();
  workspace?.setBody("");workspace?.markClean();workspace?.showSavedDraft();
 }
 function syncPublishButtons(){
