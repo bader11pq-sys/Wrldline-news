@@ -1375,6 +1375,13 @@ html[data-theme="dark"] .wl-product-link:hover{background:var(--surface-2)}
 .article-edition-status{margin:8px 0 0;font-size:.84rem;line-height:1.7;color:var(--muted)}
 .article-edition-status:empty{display:none}
 .reader-article-editions{margin-block:16px}
+.reader-start{padding:16px clamp(14px,3vw,22px);border:1px solid var(--line);border-inline-start:3px solid var(--gold-strong);border-radius:12px;background:var(--surface)}
+.reader-start[hidden],.news-grid:empty{display:none}
+.reader-start h3{margin:0 0 4px;font-size:1rem}
+.reader-start p{margin:0;color:var(--muted);font-size:.875rem;line-height:1.65}
+.reader-start ul{display:flex;flex-wrap:wrap;gap:4px 20px;margin:8px 0 0;padding-inline-start:20px}
+.reader-start a{display:inline-block;padding-block:4px;color:inherit;text-decoration:underline;text-underline-offset:3px;line-height:1.65}
+.reader-start a:focus-visible{outline:2px solid var(--gold-strong);outline-offset:3px}
 
 /* wl-modern.css */
 /* WRLDLINE modern access layer: section chips, mobile tab bar, sections sheet */
@@ -1470,6 +1477,9 @@ html.dark .wlm-chip,html.dark .wlm-item,html.dark .wlm-close,[data-theme=dark] .
 .wl-home .edition-monitor-status,
 .wl-home .edition-monitor-metrics dt { color: #c1d0dc; font-size: var(--edition-small); line-height: 1.65; }
 .edition-monitor-status { margin: .625rem 0; }
+.edition-monitor #editionMonitorRetry {
+  min-block-size: 2.75rem; inline-size: auto; margin-inline-end: .375rem;
+}
 .edition-monitor-metrics { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: .375rem; margin-block: .75rem; }
 .edition-monitor-metrics[hidden] { display: none; }
 .edition-monitor-metrics > div { border-block-start: 1px solid #526373; padding-block: .5rem; }

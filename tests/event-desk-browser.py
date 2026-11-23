@@ -83,7 +83,7 @@ async def main():
             await expect(grid.locator(":scope > .reader-card")).to_have_count(22)
             await expect(grid.locator(".content-original")).to_have_text("WRLDLINE original reporting")
             await expect(grid.locator(".content-analysis")).to_have_text("Analysis")
-            await expect(stack.locator(".content-reported").first).to_have_text("Reported news")
+            await expect(stack.locator(".content-reported").first).to_have_text("Attributed summary")
             await stack.locator("summary").click()
             trigger = stack.locator(".reader-story-link").first
             await trigger.click()

@@ -5,14 +5,15 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#123533">
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
-  <meta name="description" content="منصة عربية للاستخبارات الإخبارية: ملخصات موثقة بمصادرها، سياق، ميزان روايات، وتأثير محتمل على السعودية والخليج، مع بيان ما لم نتحقق منه.">
+  <meta name="description" content="تابع آخر الأخبار العربية والعالمية، واقرأ التحليلات السياسية والاقتصادية وملفات الأحداث الموثقة لفهم أثرها على السعودية والخليج والعالم العربي.">
   <meta name="robots" content="index,follow,max-image-preview:large">
   <link rel="canonical" href="https://al-ghaib.us.ci/">
   <link rel="alternate" type="application/rss+xml" title="WRLDLINE RSS" href="https://al-ghaib.us.ci/rss.xml">
   <link rel="alternate" type="application/atom+xml" title="WRLDLINE Atom" href="https://al-ghaib.us.ci/atom.xml">
   <meta property="og:type" content="website">
+  <meta property="og:url" content="https://al-ghaib.us.ci/">
   <meta property="og:title" content="WRLDLINE NEWS | الأخبار من أجل الإنسان — من الخبر إلى الفهم">
-  <meta property="og:description" content="ملخصات موثقة بمصادرها، سياق، ميزان روايات، وتأثير محتمل على السعودية والخليج.">
+  <meta property="og:description" content="أخبار عربية وعالمية، وتحليلات وملفات أحداث موثقة تشرح ما يحدث وأثره على المنطقة.">
   <meta property="og:image" content="https://al-ghaib.us.ci/assets/brand/wrldline-logo-main.jpg">
   <meta property="og:image:alt" content="WRLDLINE NEWS">
   <meta name="twitter:card" content="summary_large_image">
@@ -22,7 +23,7 @@
   <link rel="preconnect" href="https://vmaxbnogmmfyrcucapnq.supabase.co" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Manrope:wght@500;700;800&display=swap" rel="stylesheet">
   <link rel="manifest" href="manifest.json">
-  <link rel="stylesheet" href="home.bundle.css?v=20261123-breaking-rtl">
+  <link rel="stylesheet" href="home.bundle.css?v=20261123-reader-start">
 </head>
 <body class="wl-home">
   <a class="skip-link" href="#mainContent">تجاوز إلى المحتوى</a>
@@ -95,15 +96,17 @@
           <a class="wl-nav-link nav-link is-active" href="index.html" data-category="all">الرئيسية</a>
           <a class="wl-nav-link nav-link" href="/section/politics">سياسة</a>
           <a class="wl-nav-link nav-link" href="/section/economy">اقتصاد</a>
+          <a class="wl-nav-link nav-link" href="/section/world">العالم</a>
           <a class="wl-nav-link nav-link wl-nav-dossiers" href="/dossier/">ملفات الأحداث</a>
           <a class="wl-nav-link wl-nav-rights" href="rights.html" hreflang="ar" data-language-managed><span lang="ar">الحقوق والحريات</span><span lang="en">Rights &amp; freedoms</span></a>
-          <a class="wl-nav-link wl-nav-sections" href="sections.html" hreflang="ar" data-language-managed><span lang="ar">أقسام الصحيفة</span><span lang="en">News sections</span></a>
+          <a class="wl-nav-link nav-link" href="analysis.html">التحليل</a>
           <a class="wl-nav-link" href="/news/">الأرشيف</a>
           <a class="wl-nav-link nav-link wl-nav-link--live" href="#breakingSection"><i class="wl-live-dot" aria-hidden="true"></i> عاجل</a>
         </div>
         <div class="wl-nav-more">
-          <button class="wl-more-btn" id="moreButton" type="button" aria-expanded="false" aria-controls="moreMenu">المزيد <svg aria-hidden="true"><use href="#i-chevron"/></svg></button>
+          <button class="wl-more-btn" id="moreButton" type="button" aria-expanded="false" aria-controls="moreMenu" data-language-managed><span lang="ar">استكشف</span><span lang="en">Explore</span> <svg aria-hidden="true"><use href="#i-chevron"/></svg></button>
           <div class="wl-more-menu" id="moreMenu">
+            <a href="sections.html" hreflang="ar"><span class="wl-more-icon"><svg aria-hidden="true"><use href="#i-layers"/></svg></span><span>أقسام الصحيفة<small>دليل الأقسام والتغطيات التحريرية</small></span></a>
             <div class="wl-more-group-label">الفهم والتحليل</div>
             <a href="analysis.html"><span class="wl-more-icon"><svg aria-hidden="true"><use href="#i-book"/></svg></span><span>مكتب الفهم والتحليل<small>ابدأ بسؤال واختر مسار القراءة</small></span></a>
             <a href="context.html"><span class="wl-more-icon"><svg aria-hidden="true"><use href="#i-layers"/></svg></span><span>غرفة السياق<small>ما الذي سبق الخبر، وما الذي قد يتبعه؟</small></span></a>
@@ -122,7 +125,7 @@
             <a href="daily-briefing.html"><span class="wl-more-icon"><svg aria-hidden="true"><use href="#i-clock"/></svg></span><span>ملخص العالم اليومي<small>أهم ما حدث وما يستحق المتابعة</small></span></a>
             <a href="shorts.html"><span class="wl-more-icon"><svg aria-hidden="true"><use href="#i-bolt"/></svg></span><span>WRLDLINE Shorts<small>موجز عمودي سريع</small></span></a>
             <a href="#missedNewsSection"><span class="wl-more-icon"><svg aria-hidden="true"><use href="#i-layers"/></svg></span><span>أخبار فاتتك<small>ما قد يكون مرّ دون أن تلاحظه</small></span></a>
-            <a href="#exclusiveSection"><span class="wl-more-icon"><svg aria-hidden="true"><use href="#i-spark"/></svg></span><span>الأخبار الحصرية<small>تحقيقات وسبق صحفي موثق</small></span></a>
+            <a href="#exclusiveSection"><span class="wl-more-icon"><svg aria-hidden="true"><use href="#i-spark"/></svg></span><span>الأخبار الحصرية<small>مواد يصفها ناشروها بالحصرية</small></span></a>
           </div>
         </div>
         <span class="wl-progress" id="readProgress" aria-hidden="true"></span>
@@ -251,7 +254,16 @@
             <button id="clearEditionFilters" type="button" hidden>مسح التصفية</button>
             <p id="lastUpdated">بانتظار التحديث</p>
           </div>
-          <div id="newsGrid" class="news-grid" aria-busy="true"><div class="wl-empty">جارٍ تحميل أحدث الأخبار…</div></div>
+          <div id="newsGrid" class="news-grid" aria-busy="true"></div>
+          <aside class="reader-start" id="newsStarter" aria-labelledby="newsStarterTitle" data-language-managed>
+            <h3 id="newsStarterTitle"><span lang="ar">ملفات مختارة للقراءة</span><span lang="en">Selected reading</span></h3>
+            <p><span lang="ar">تغطيات مرجعية يمكنك قراءتها حتى قبل وصول أحدث الأخبار.</span><span lang="en">Background reading available before the latest stories arrive.</span></p>
+            <ul>
+              <li><a href="/dossier/opec-plus-december-2026.html" hreflang="ar"><span lang="ar">أوبك+: إنتاج ديسمبر وما لم يُحسم بعد</span><span lang="en">OPEC+: December output and what remains open (Arabic)</span></a></li>
+              <li><a href="/dossier/hormuz-closure-2026.html" hreflang="ar"><span lang="ar">مضيق هرمز: ماذا نعرف عن الملاحة؟</span><span lang="en">Strait of Hormuz: What do we know about shipping? (Arabic)</span></a></li>
+              <li><a href="/rights-cases/" hreflang="ar"><span lang="ar">دفتر الدليل: ملفات الحقوق والحريات</span><span lang="en">Evidence desk: Rights and freedoms (Arabic)</span></a></li>
+            </ul>
+          </aside>
           <div class="reader-feed-footer">
             <p id="feedPageStatus" role="status"></p>
             <button class="wl-btn wl-btn--primary" id="loadMoreButton" type="button" hidden>تحميل أخبار أقدم</button>
@@ -268,10 +280,12 @@
             <p class="panel-copy" id="editionMonitorDeck">إشارات التغطية المصنّفة بحسب موقع الحدث خلال آخر 24 ساعة.</p>
             <p class="edition-monitor-status" id="editionMonitorStatus" role="status">تُحمَّل الإشارات عند الوصول إلى هذا القسم.</p>
             <dl class="edition-monitor-metrics" id="editionMonitorMetrics" hidden>
-              <div><dt id="editionReportLabel">تقارير مصنّفة</dt><dd id="editionReportCount">—</dd></div>
-              <div><dt id="editionCountryLabel">دول بها إشارات</dt><dd id="editionCountryCount">—</dd></div>
-              <div><dt id="editionHighLabel">مرتفعة أو حرجة</dt><dd id="editionHighCount">—</dd></div>
+              <div><dt id="editionReportLabel">تقارير مصنّفة</dt><dd id="editionReportCount"></dd></div>
+              <div><dt id="editionCountryLabel">دول بها إشارات</dt><dd id="editionCountryCount"></dd></div>
+              <div><dt id="editionHighLabel">مرتفعة أو حرجة</dt><dd id="editionHighCount"></dd></div>
             </dl>
+            <p class="edition-monitor-status" id="editionMonitorTime" hidden></p>
+            <button class="outline-button" type="button" id="editionMonitorRetry" hidden>إعادة المحاولة</button>
             <a class="edition-monitor-link" href="map.html" id="editionMonitorLink">افتح الخريطة</a>
           </section>
           <section class="sidebar-panel">
@@ -362,7 +376,7 @@
     <li class="front-pick front-pick--reported">
       <span class="front-pick-num" aria-hidden="true">05</span>
       <a class="front-pick-link" href="/news/c9e9967a-9096-49ef-8e5e-074a5ce2d733" data-article-edition-link>
-        <span class="front-pick-meta"><span class="front-pick-type"><span lang="ar">خبر منقول</span><span lang="en">Reported news</span></span><span><span lang="ar">الشؤون الإنسانية</span><span lang="en">Humanitarian affairs</span></span></span>
+        <span class="front-pick-meta"><span class="front-pick-type"><span lang="ar">ملخص منسوب</span><span lang="en">Attributed summary</span></span><span><span lang="ar">الشؤون الإنسانية</span><span lang="en">Humanitarian affairs</span></span></span>
         <h3><span lang="ar">مركز الملك سلمان يوزّع مساعدات غذائية على نازحين في اليمن</span><span lang="en">King Salman aid centre distributes food to displaced families in Yemen</span></h3>
         <p><span lang="ar">تغطية «اليوم» لتوزيع المساعدات الغذائية على الأسر النازحة.</span><span lang="en">Alyaum reports on food assistance for displaced families.</span></p>
         <span class="front-pick-foot"><span><span lang="ar">اليوم</span><span lang="en">Alyaum</span></span><span class="front-pick-cta"><span lang="ar">اقرأ القصة</span><span lang="en">Read the story</span> <span aria-hidden="true">↗</span><span class="front-pick-original-lang"></span></span></span>
@@ -418,7 +432,7 @@
           <a class="wl-section-link" href="context.html">غرفة السياق كاملة <svg aria-hidden="true"><use href="#i-arrow"/></svg></a>
         </div>
         <div class="wl-context-grid" id="contextGrid">
-          <div class="wl-context-card"><span class="wl-context-tag">ملف</span><h3>جارٍ فتح غرفة السياق…</h3><p>نربط الخبر بخلفيته وأطرافه وسيناريوهاته المحتملة.</p></div>
+          <div class="wl-context-card"><span class="wl-context-tag">ملف</span><h3>مضيق هرمز والملاحة</h3><p>اقرأ الخلفية وما نعرفه وما لم يُحسم.</p><a href="/dossier/hormuz-closure-2026.html">افتح ملف هرمز</a></div>
           <div class="wl-context-card"><span class="wl-context-tag">ملف</span><h3>ما الذي نعرفه؟</h3><p>فصل واضح بين الحقائق المؤكدة والتقديرات والروايات المتنازع عليها.</p></div>
           <div class="wl-context-card"><span class="wl-context-tag">ملف</span><h3>ما الذي نراقبه؟</h3><p>مؤشرات محددة تساعدك على متابعة ما سيحدث بدلاً من الاكتفاء بردّ الفعل.</p></div>
         </div>
@@ -428,7 +442,7 @@
     <section class="coverage-gap-section" aria-labelledby="coverageGapTitle">
       <div class="wl-container">
         <div class="wl-section-head"><div><span class="wl-kicker">EDITORIAL SIGNAL</span><h2 id="coverageGapTitle">مؤشر فجوة التغطية</h2></div><p id="coverageGapSummary">نقارن الأهمية التقريبية بحجم التغطية، لا بعدد العناوين وحده.</p></div>
-        <div id="coverageGapGrid" class="coverage-gap-grid" aria-live="polite"><div class="gap-card"><p>بانتظار بيانات الأخبار…</p></div></div>
+        <div id="coverageGapGrid" class="coverage-gap-grid" aria-live="polite"><div class="gap-card"><p>يحتاج حساب المؤشر إلى عينة من الأخبار المنشورة.</p></div></div>
         <p class="coverage-gap-note">هذه إشارة تحريرية استكشافية: قد تكشف نقصاً في التغطية، لكنها لا تثبت أن موضوعاً أهم من آخر ولا تقيس جودة الصحافة.</p>
       </div>
     </section>
@@ -444,11 +458,7 @@
           <a class="wl-section-link" href="balance.html">افتح الميزان <svg aria-hidden="true"><use href="#i-arrow"/></svg></a>
         </div>
         <div class="wl-balance-shell" id="balancePreview">
-          <div class="wl-frame-card"><div class="wl-frame-head"><strong>جارٍ تحليل التغطية…</strong><span>مباشر</span></div><p style="font-size:11px;color:var(--muted)">نطابق العناوين المتشابهة ونقارن صياغاتها.</p></div>
-          <div class="wl-balance-side">
-            <div class="wl-balance-stat"><b id="balanceSources">—</b><span>مصادر مستقلة في العينة</span><small>خلال آخر 48 ساعة</small></div>
-            <div class="wl-balance-stat"><b id="balanceClusters">—</b><span>حدث متعدد الروايات</span><small>قابل للمقارنة الآن</small></div>
-          </div>
+          <div class="wl-frame-card"><div class="wl-frame-head"><strong>مقارنة التغطية</strong></div><p>تحتاج المقارنة إلى عناوين من أكثر من ناشر، ولا يثبت تعدد الناشرين استقلال المصادر.</p></div>
         </div>
       </div>
     </section>
@@ -488,7 +498,7 @@
       <section class="wl-section" id="missedNewsSection" aria-labelledby="missedNewsHeading">
         <div class="wl-section-head">
           <div><span class="wl-kicker">MISSED STORIES</span><h2 id="missedNewsHeading">أخبار فاتتك</h2><p id="missedNewsDescription">أخبار عاجلة أو حصرية من آخر 24 ساعة لم تظهر في الدفعة الأولى من الموجز.</p></div>
-          <span class="wl-badge wl-badge--outline" id="missedNewsCount">—</span>
+          <span class="wl-badge wl-badge--outline" id="missedNewsCount" hidden></span>
         </div>
         <div id="missedNewsGrid" class="missed-news-grid"><div class="skeleton-card"><div class="sk-img skeleton"></div><div class="sk-body"><div class="sk-line sk-line--sm skeleton"></div><div class="sk-line sk-line--lg skeleton"></div><div class="sk-line sk-line--md skeleton"></div></div></div></div>
         <div class="load-more-wrap"><button class="wl-btn wl-btn--ghost" id="missedLoadMoreButton" type="button" hidden>عرض المزيد</button></div>
@@ -497,7 +507,7 @@
       <section class="breaking-news-section" id="breakingSection" aria-labelledby="breakingHeading">
         <div class="wl-section-head">
           <div><span class="wl-kicker" style="color:var(--red)">LIVE DESK</span><h2 id="breakingHeading" tabindex="-1">الأخبار العاجلة</h2></div>
-          <span class="wl-badge wl-badge--live" id="breakingCount">—</span>
+          <span class="wl-badge wl-badge--live" id="breakingCount" hidden></span>
         </div>
         <div class="wl-empty reader-failure" id="breakingFeedNotice" hidden><p role="status"></p><button class="outline-button" type="button" data-reader-action="retry-section" data-section="breaking">إعادة محاولة تحميل القسم</button></div>
         <div id="breakingNewsGrid" class="breaking-news-grid"><div class="breaking-empty">جارٍ تحميل غرفة العاجل…</div></div>
@@ -505,8 +515,8 @@
 
       <section class="exclusive-section" id="exclusiveSection" aria-labelledby="exclusiveHeading">
         <div class="wl-section-head">
-          <div><span class="wl-kicker" style="color:var(--gold-strong)">ORIGINAL REPORTING</span><h2 id="exclusiveHeading" tabindex="-1">الأخبار الحصرية</h2><p id="exclusiveDescription">ما يضعه الناشرون بوسم الحصرية صراحة، بعد التحقق التحريري.</p></div>
-          <span class="wl-badge wl-badge--gold" id="exclusiveCount">—</span>
+          <div><span class="wl-kicker" style="color:var(--gold-strong)">PUBLISHER EXCLUSIVES</span><h2 id="exclusiveHeading" tabindex="-1">الأخبار الحصرية</h2><p id="exclusiveDescription">مواد يضع الناشرون عليها وسم الحصرية. الوسم من الناشر وليس تأكيدًا مستقلًا.</p></div>
+          <span class="wl-badge wl-badge--gold" id="exclusiveCount" hidden></span>
         </div>
         <div class="wl-empty reader-failure" id="exclusiveFeedNotice" hidden><p role="status"></p><button class="outline-button" type="button" data-reader-action="retry-section" data-section="exclusive">إعادة محاولة تحميل القسم</button></div>
         <div id="exclusiveNewsGrid" class="exclusive-news-grid"><div class="exclusive-empty">جارٍ التحقق من الأخبار الحصرية…</div></div>
@@ -602,6 +612,7 @@
           <a href="about.html" data-editorial-page="about">المعايير التحريرية</a><a href="topics.html">الموضوعات</a><a href="tags.html">الوسوم</a><a href="advertise.html">للمعلنين</a><a href="contact.html">التواصل</a><a href="privacy.html">الخصوصية</a><a href="terms.html">الشروط</a><a href="corrections.html" data-editorial-page="corrections">التصحيحات</a><a href="newsletter.html">النشرة</a>
         </div>
       </div>
+      <div id="homePrivacyControls"></div>
       <div class="footer-bottom">
         <span>© <span id="year"></span> WRLDLINE NEWS — المحتوى الإخباري يُنسب إلى مصادره الأصلية.</span>
         <span>التحليلات والسياق من تحرير WRLDLINE، وتُعرض منفصلة عن الخبر الخام.</span>
@@ -643,18 +654,18 @@
   <script src="reader-prose.js?v=20261122-longread1" defer></script>
   <script src="public-article-body.js?v=20261122-longread2" defer></script>
   <script src="article-editions.js?v=20261122-bilingual" defer></script>
-  <script src="/event-desk.js?v=20261122-event" defer></script>
+  <script src="/event-desk.js?v=20261123-reader-start" defer></script>
   <script src="site-editor.js?v=20261123-live-breaking" defer></script>
-  <script src="script.js?v=20261123-breaking-rtl" defer></script>
+  <script src="script.js?v=20261123-reader-start" defer></script>
   <script src="newsroom-data.js?v=20261114-1" defer></script>
   <script src="newsroom.js?v=20261120-feedfast1" defer></script>
-  <script src="home.js?v=20261123-rights" defer></script>
-  <script src="newsroom-edition.js?v=20261123-rights" defer></script>
+  <script src="home.js?v=20261123-reader-start" defer></script>
+  <script src="newsroom-edition.js?v=20261123-reader-start" defer></script>
   <script src="intelligence.js?v=20261114-1" defer></script>
-  <script src="coverage-gap.js?v=20261114-1" defer></script>
+  <script src="coverage-gap.js?v=20261123-reader-start" defer></script>
   <script src="share.js?v=20261113-4" defer></script>
   <script src="analytics-config.js?v=20261114-1" defer></script>
-  <script src="analytics.js?v=20261123-a11y1" defer></script>
+  <script src="analytics.js?v=20261123-reader-start" defer></script>
   <script src="wl-modern.js?v=human-news-1" defer></script>
   <script src="homepage-interactions.js?v=20261122-reader" defer></script>
   <script src="rights-front.js?v=premium-1" defer></script>

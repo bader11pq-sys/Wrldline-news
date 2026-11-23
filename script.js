@@ -76,9 +76,9 @@ function typeBadgesMarkup(a){
  let html="";
  if(a.isBreaking)html+='<span class="breaking-badge">'+ui("عاجل","Breaking")+'</span>';
  html+=contentBadgeMarkup(a);
- if(String(a.src||"").toUpperCase().includes("WRLDLINE")){
-  const count=Number(a.verification_independent_count)||Number(a.verification_source_count)||0;const labels={confirmed:ui("مؤكد بمصادر متعددة · "+count+" مصادر","Confirmed by multiple sources · "+count),multi:ui("متعدد المصادر — غير مؤكد · "+count,"Multiple sources — unconfirmed · "+count),preliminary:ui("أولي","Preliminary"),unconfirmed:ui("غير مؤكد","Unconfirmed"),disputed:ui("متنازع عليه","Disputed")};
-  html+='<span class="translation-badge editorial-verification">'+escapeHTML(labels[a.verification]||labels.unconfirmed)+'</span>';
+ if(/^WRLDLINE NEWS$/i.test(a.raw?.source_name||"")){
+  const labels={multi:ui("تعدد المصادر لا يعني التأكيد","Multiple sources do not establish confirmation"),preliminary:ui("أولي","Preliminary"),unconfirmed:ui("غير مؤكد","Unconfirmed"),disputed:ui("متنازع عليه","Disputed")};
+  if(labels[a.verification])html+='<span class="translation-badge editorial-verification">'+escapeHTML(labels[a.verification])+'</span>';
  }
  if(a.hasTranslation&&a.translationStatus&&a.translationStatus!=="none")html+='<span class="translation-badge translation-source">'+escapeHTML(translationBadge(a))+'</span>';
  else if(a.translationFallback)html+='<span class="translation-badge translation-source">'+escapeHTML(translationBadge(a))+'</span>';
@@ -293,7 +293,7 @@ document.addEventListener("click",e=>{const link=e.target.closest?.("[data-sourc
   if(article)openArticle(article,false);else closeArticle(false);
  });
 }
-async function getPublicNewsRows(params, { url=PUBLIC_NEWS_RPC, timeout=8000 }={}){
+async function getPublicNewsRows(params, { url=PUBLIC_NEWS_RPC, timeout=5000 }={}){
  const response=await fetch(url,{method:"POST",headers:{apikey:SUPABASE_ANON_KEY,"Content-Type":"application/json","Accept":"application/json"},body:JSON.stringify(params),signal:AbortSignal.timeout(timeout)});
  if(!response.ok)throw new Error("HTTP "+response.status);
  const rows=await response.json();
@@ -301,7 +301,7 @@ async function getPublicNewsRows(params, { url=PUBLIC_NEWS_RPC, timeout=8000 }={
  return rows;
 }
 function normalizeHomeRows(rows){
- return rows.filter(row=>row?.id).map(normalizeArticle).filter(a=>a.title&&!BLOCKED_EDITORIAL_STATUSES.has(a.editorialStatus)&&!isLowQualityArticle(a)&&(!isTelegramArticle(a.raw)||(a.isBreaking===true&&isDedicatedBreakingSource(a.src))));
+ return rows.filter(row=>row?.id&&(!row.audience_lane||["arabic","world"].includes(row.audience_lane))).map(normalizeArticle).filter(a=>a.title&&!BLOCKED_EDITORIAL_STATUSES.has(a.editorialStatus)&&!isLowQualityArticle(a)&&(!isTelegramArticle(a.raw)||(a.isBreaking===true&&isDedicatedBreakingSource(a.src))));
 }
 async function loadSupplemental(name,before,retryButton){
  const section=supplemental[name],host=document.getElementById(section.grid);
@@ -364,7 +364,7 @@ function refreshReaderData({updateFeed=true,updateSections=true,section=null}={}
   state.frontPageArticles=dedupeArticles(approved.filter(a=>frontIds.has(a.id)));
   if(state.before&&(!section||section!=="popular")){
    renderMissedStories();renderCoveragePulse();
-   document.dispatchEvent(new CustomEvent("wrldline:news",{detail:{articles:state.frontPageArticles}}));
+   document.dispatchEvent(new CustomEvent("wrldline:news",{detail:{articles:state.frontPageArticles,feedStatus:state.feedStatus}}));
   }
   if(!section||section==="exclusive")renderExclusive();
   if(!section||section==="popular")renderPopularStories(state.popularRows);
@@ -395,38 +395,34 @@ async function fetchNews(manual=false,quiet=false){
  // Don't replace the reader's browse window or a focused result in the background.
  if(!manual&&(state.offset>MAIN_FEED_LIMIT||document.querySelector("dialog[open]")||document.activeElement.closest("#newsGrid,#heroLayout,.wl-feed-controls,#categoryChips,#missedNewsSection,#breakingSection,#exclusiveSection,#popularStoriesSection")))return;
  state.loading=true;
+ const firstLoad=!state.before;
+ const now=new Date().toISOString();
+ const retryControl=document.activeElement?.closest("#newsGrid [data-reader-action=retry]");
+ retryControl?.setAttribute("aria-disabled","true");
+ document.getElementById("newsGrid").setAttribute("aria-busy","true");
  const refreshes=["refreshButton","feedRefreshButton"].map(id=>document.getElementById(id));
  refreshes.forEach(el=>{el.classList.add("is-loading");el.setAttribute("aria-busy","true");el.setAttribute("aria-disabled","true");});
  setFeedConnection("loading");
  try{
-  const now=new Date().toISOString();
   const params={p_limit:MAIN_FEED_LIMIT,p_before:now,p_since:null,p_offset:0,p_newsdata_only:false};
   let mainRows;
   try{mainRows=await getPublicNewsRows(params);}
   catch(error){
    if(navigator.onLine===false)throw error;
-   mainRows=await getPublicNewsRows(params,{timeout:4000});
+   mainRows=await getPublicNewsRows(params,{timeout:3000});
   }
-  const firstLoad=!state.before;
   state.feedRows=mainRows;state.before=now;state.offset=mainRows.length;state.more=mainRows.length===MAIN_FEED_LIMIT;
   state.limit=PAGE_SIZE;state.pageStatus="";state.feedStatus="ready";state.loadedAt=state.lastFetchAt=Date.now();
   // Paint the main feed before issuing optional requests, and don't rebuild it
   // when those requests finish.
+  const restoreFocus=retryControl&&retryControl===document.activeElement;
   refreshReaderData();setFeedConnection("ready");renderFeedMeta();
+  if(restoreFocus)document.getElementById("newsSection").focus({preventScroll:true});
   if(firstLoad){
    const linkedId=new URLSearchParams(location.search).get("article");
    if(linkedId&&!document.querySelector("dialog[open]"))openArticle(linkedId,false);
   }
   if(manual&&!quiet)showToast(ui("تم تحميل الموجز","Feed loaded"));
-  // The retrospective uses already loaded, eligible coverage rather than
-  // requesting the separate NewsData-only lane that the renderer excludes.
- const sections=await Promise.allSettled(Object.keys(supplemental).filter(name=>name!=="breaking"||!firstLoad).map(name=>loadSupplemental(name,now)));
-  for(const result of sections)if(result.status==="rejected")console.warn("WRLDLINE supplemental render failed:",result.reason);
-  // A deep link can refer to a separate breaking or exclusive batch.
-  if(firstLoad){
-   const linkedId=new URLSearchParams(location.search).get("article");
-   if(linkedId&&!document.querySelector("dialog[open]"))openArticle(linkedId,false);
-  }
   if(state.user)void syncLocalSavedToCloud().catch(console.warn);
  }catch(err){
   console.warn("WRLDLINE feed unavailable:",err);
@@ -437,8 +433,20 @@ async function fetchNews(manual=false,quiet=false){
   renderFeedMeta();
  }finally{
   state.loading=false;
+  retryControl?.removeAttribute("aria-disabled");
+  document.getElementById("newsGrid").setAttribute("aria-busy","false");
   refreshes.forEach(el=>{el.classList.remove("is-loading");el.removeAttribute("aria-busy");el.removeAttribute("aria-disabled");});
   renderPageControls();
+ }
+ // Start optional reads after the main request settles (even if it failed).
+ // They may recover independently and must not keep the main refresh locked.
+ const sections=await Promise.allSettled(Object.keys(supplemental)
+ .filter(name=>name!=="breaking"||!firstLoad)
+  .map(name=>loadSupplemental(name,now)));
+ for(const result of sections)if(result.status==="rejected")console.warn("WRLDLINE supplemental render failed:",result.reason);
+ if(firstLoad){
+  const linkedId=new URLSearchParams(location.search).get("article");
+  if(linkedId&&!document.querySelector("dialog[open]")&&state.articleById?.has(linkedId))openArticle(linkedId,false);
  }
 }
 async function loadOlderNews(){
@@ -482,12 +490,20 @@ function renderPageControls(){
 }
 function renderFetchFailure(){
  const message='<div class="wl-empty reader-failure"><strong>'+ui("لم نتمكن من تحميل الأخبار","We could not load the news")+'</strong><p>'+ui("يمكنك إعادة المحاولة أو تصفّح الأخبار المنشورة في الأرشيف.","Try again or browse published news in the archive.")+'</p><div><button class="outline-button" type="button" data-reader-action="retry">'+ui("إعادة المحاولة","Retry")+'</button> <a href="/news/">'+ui("تصفّح الأرشيف","Browse the archive")+'</a></div></div>';
- for(const id of ["missedNewsGrid","exclusiveNewsGrid","newsGrid","coveragePulseGrid","popularStoriesGrid"]){
-  const el=document.getElementById(id);if(el){el.setAttribute("aria-busy","false");el.innerHTML=message;}
+ for(const id of ["missedNewsGrid","newsGrid","coveragePulseGrid"]){
+  const el=document.getElementById(id);
+  if(el){
+   el.setAttribute("aria-busy","false");
+   if(id==="newsGrid"){
+    if(!el.contains(document.activeElement))el.innerHTML=message;
+   }else{
+    el.innerHTML='<div class="wl-empty">'+ui("تعذر تحميل عينة الموجز لهذا القسم.","The main feed sample for this section could not load.")+' <a href="#newsSection">'+ui("انتقل إلى أحدث الأخبار لإعادة المحاولة","Go to Latest news to retry")+'</a></div>';
+   }
+  }
  }
  document.getElementById("lastUpdated").textContent=ui("تعذر التحديث","Update unavailable");
- const last=document.getElementById("missedNewsCount");if(last)last.textContent="—";
- const exclusive=document.getElementById("exclusiveCount");if(exclusive)exclusive.textContent="—";
+ const last=document.getElementById("missedNewsCount");if(last){last.textContent="";last.hidden=true;}
+ document.dispatchEvent(new CustomEvent("wrldline:news",{detail:{articles:[],feedStatus:"error"}}));
 }
 function isTelegramArticle(a){return /t\.me|telegram\.me|telegram/i.test([a?.url,a?.source_url,a?.source_name].filter(Boolean).join(" "));}
 function translationNeedsReview(text){
@@ -681,7 +697,7 @@ function updateReaderLabels(){
   missedNewsDescription:ui("أخبار عاجلة أو حصرية من آخر 24 ساعة لم تظهر في الدفعة الأولى من الموجز.","Breaking or exclusive stories from the past 24 hours that did not appear in the first feed batch."),
   breakingHeading:ui("الأخبار العاجلة","Breaking news"),
   exclusiveHeading:ui("الأخبار الحصرية","Exclusive stories"),
-  exclusiveDescription:ui("ما يضعه الناشرون بوسم الحصرية صراحة، بعد التحقق التحريري.","Stories explicitly marked as exclusive by their publishers, subject to editorial checks."),
+  exclusiveDescription:ui("مواد يضع الناشرون عليها وسم الحصرية. الوسم من الناشر وليس تأكيدًا مستقلًا.","Stories marked exclusive by their publishers. The label is not an independent confirmation."),
   popularStoriesHeading:ui("الأكثر قراءة","Most read"),
   popularStoriesDescription:ui("قصص قرأها ثلاثة قراء مختلفين على الأقل خلال آخر 7 أيام. لا نستخدم المشاهدات التجريبية أو بيانات الأفراد في الترتيب.","Stories read by at least three distinct readers in the past seven days. Test views and personal data aren’t used in ranking."),
   popularStoriesWindow:ui("آخر 7 أيام","Past 7 days")
@@ -799,6 +815,8 @@ function renderFeed(){
  const host=document.getElementById("newsGrid"),items=state.filtered.slice(0,state.limit);
  if(!host||!state.before)return;
  host.setAttribute("aria-busy","false");
+ const starter=document.getElementById("newsStarter");
+ if(starter)starter.hidden=!!items.length||editionHasFilters();
  if(!items.length){
   const filtered=editionHasFilters();
   host.innerHTML='<div class="wl-empty reader-failure"><strong>'+ui("لا توجد نتائج في الأخبار المحمّلة","No matches in the loaded stories")+'</strong><p>'+ui("يمكنك تغيير التصفية أو تحميل أخبار أقدم إن توفرت.","Change the filters or load older stories if available.")+'</p>'+(filtered?'<button class="outline-button" type="button" data-reader-action="reset">'+ui("مسح التصفية","Clear filters")+'</button>':'')+'</div>';
@@ -839,7 +857,7 @@ function renderMissedStories(){
  const awaiting=supplemental.breaking.status==="loading"||supplemental.exclusive.status==="loading";
  const partial=failed?ui("بعض أقسام التغطية لم تُحمّل. قد لا تكون هذه القائمة مكتملة.","Some coverage could not load. This list may be incomplete."):"";
  const count=document.getElementById("missedNewsCount");
- if(count)count.textContent=!all.length&&(failed||awaiting)?"—":new Intl.NumberFormat(state.lang).format(all.length);
+ if(count){count.hidden=!all.length&&(failed||awaiting);count.textContent=count.hidden?"":new Intl.NumberFormat(state.lang).format(all.length);}
  const more=document.getElementById("missedLoadMoreButton");
  if(more){more.hidden=items.length>=all.length;more.textContent=ui("عرض المزيد","Show more");}
  if(!items.length){host.innerHTML='<div class="wl-empty">'+(failed?partial:awaiting?ui("جارٍ تحميل التغطية الإضافية…","Loading additional coverage…"):ui("لا توجد أخبار إضافية الآن.","No additional stories right now."))+'</div>';return;}
@@ -862,13 +880,13 @@ function renderPopularStories(rows){
 }
 function renderExclusive(){
  const host=document.getElementById("exclusiveNewsGrid");if(!host)return;
- const feedRows=Array.isArray(supplemental.exclusive.rows)?supplemental.exclusive.rows.map(normalizeArticle).filter(a=>a.title):[];
+ const feedRows=normalizeHomeRows(supplemental.exclusive.rows);
  const pool=feedRows.length?feedRows:state.frontPageArticles.filter(a=>!a.isNewsDataOnly&&a.isExclusive);
  const items=pool.slice().sort((a,b)=>Date.parse(b.published_at)-Date.parse(a.published_at)).slice(0,6);
  const count=document.getElementById("exclusiveCount");
  const status=supplemental.exclusive.status;
  renderSupplementalNotice("exclusive",!!items.length);
- if(count)count.textContent=!items.length&&status!=="ready"?"—":new Intl.NumberFormat(state.lang).format(items.length);
+ if(count){count.hidden=!items.length&&status!=="ready";count.textContent=count.hidden?"":new Intl.NumberFormat(state.lang).format(items.length);}
  if(!items.length){host.innerHTML=status==="error"?'':'<div class="exclusive-empty">'+(status==="loading"?ui("جارٍ تحميل الأخبار الحصرية…","Loading exclusive stories…"):ui("لا توجد أخبار حصرية منشورة الآن.","No exclusive stories are published right now."))+'</div>';return;}
  host.innerHTML=items.map(a=>'<article class="news-card exclusive-news-card content-card-'+a.contentType+'"><span class="exclusive-tag">'+ui("حصري لدى المصدر","Publisher exclusive")+'</span><div class="card-open" role="button" tabindex="0" data-open="'+escapeHTML(a.id)+'">'+imageMarkup(a,"card-image")+'<div class="card-content"><div class="story-meta"><span class="category-label">'+escapeHTML(categoryName(a.cat))+'</span>'+typeBadgesMarkup(a)+'<span class="read-time">'+wlReadingTime(a)+'</span>'+wlSaveMarkup(a)+'</div><h3>'+escapeHTML(a.title)+'</h3><p>'+escapeHTML(a.summary)+'</p>'+sourceLineMarkup(a)+'</div></div></article>').join("");
  host.querySelectorAll("[data-open]").forEach(el=>el.addEventListener("click",()=>openArticle(el.dataset.open)));
@@ -914,7 +932,8 @@ function renderBreakingSection(rows){
  const host=document.getElementById("breakingNewsGrid");if(!host)return;
  const section=supplemental.breaking,count=document.getElementById("breakingCount");
  renderSupplementalNotice("breaking",!!rows.length);
- count.textContent=!rows.length&&section.status!=="ready"?"—":ui("آخر 15 دقيقة","Past 15 minutes");
+ count.hidden=!rows.length&&section.status!=="ready";
+ count.textContent=count.hidden?"":ui("آخر 15 دقيقة","Past 15 minutes");
  const signature=JSON.stringify([state.lang,section.status,rows]);
  if(section.signature===signature)return;
  section.signature=signature;

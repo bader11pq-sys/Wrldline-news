@@ -10,8 +10,13 @@
     {name:"مناخ وعلوم", keys:/مناخ|حرارة|جفاف|طقس|زلزال|علوم|صحة|طاقة/, importance:1.1},
     {name:"حوكمة وتقنية", keys:/انتخاب|حكومة|برلمان|قانون|ذكاء اصطناعي|رقائق|خصوصية|بيانات/, importance:1.05}
   ];
-  function render(articles=[]) {
+  function render(articles=[], status="loading") {
     const host = $("coverageGapGrid"); if (!host) return;
+    if (!articles.length) {
+      $("coverageGapSummary").textContent = "نقارن الأهمية التقريبية بحجم التغطية في عينة الأخبار المتاحة.";
+      host.textContent = status === "error" ? "تعذر تحميل عينة الأخبار؛ لا نحسب مؤشرًا دون بيانات." : "لا توجد عينة أخبار كافية لحساب المؤشر.";
+      return;
+    }
     const rows = topics.map(t => {
       const matches = articles.filter(a => t.keys.test(`${a.title||""} ${a.summary||""}`));
       const sources = new Set(matches.map(a => a.src || a.source_name).filter(Boolean)).size;
@@ -24,6 +29,5 @@
     if ($("coverageGapSummary")) $("coverageGapSummary").textContent = top ? `أكبر فجوة تقديرية الآن: ${top.name} · ${top.gap}/100` : "بانتظار بيانات كافية";
     host.innerHTML = rows.map((r,i) => `<article class="gap-card"><div class="gap-card-top"><span>#${i+1} · ${esc(r.name)}</span><strong>${r.gap}</strong></div><div class="gap-bar"><i style="width:${r.gap}%"></i></div><p>${r.matches ? `${r.matches} عناوين من ${r.sources || 1} مصادر · ${r.recent} خلال 24 ساعة` : "لا توجد تغطية كافية في العينة الحالية"}</p><small>إشارة تحريرية: الأهمية التقريبية ÷ حجم التغطية، وليست حكماً على أهمية حياة الناس.</small></article>`).join("");
   }
-  document.addEventListener("wrldline:news", e => render(e.detail?.articles || []));
-  document.addEventListener("DOMContentLoaded", () => render([]));
+  document.addEventListener("wrldline:news", e => render(e.detail?.articles || [], e.detail?.feedStatus));
 })();

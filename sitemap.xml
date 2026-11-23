@@ -2,6 +2,10 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url><loc>https://al-ghaib.us.ci/</loc></url>
   <url><loc>https://al-ghaib.us.ci/news/</loc></url>
+  <url><loc>https://al-ghaib.us.ci/section/politics</loc></url>
+  <url><loc>https://al-ghaib.us.ci/section/economy</loc></url>
+  <url><loc>https://al-ghaib.us.ci/section/world</loc></url>
+  <url><loc>https://al-ghaib.us.ci/section/rights</loc></url>
   <url><loc>https://al-ghaib.us.ci/originals/</loc></url>
   <url><loc>https://al-ghaib.us.ci/originals/saudi-ports-2025.html</loc></url>
   <url><loc>https://al-ghaib.us.ci/topics.html</loc></url>

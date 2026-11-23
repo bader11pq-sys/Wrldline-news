@@ -197,8 +197,15 @@
     if (!["granted", "denied"].includes(state)) return;
     stop();
     choice = { version: 2, state, returning: state === "granted" && options.returning === true, expires: Date.now() + 180 * DAY };
-    save(localStorage, CONSENT, choice); dialog?.remove(); dialog = null;
+    save(localStorage, CONSENT, choice); closeSettings();
     if (state === "granted") start();
+  }
+  function closeSettings() {
+    if (!dialog) return;
+    const restore = dialog.contains(document.activeElement);
+    const origin = dialog.openedFrom || document.querySelector(".wrldline-privacy-settings");
+    dialog.remove(); dialog = null;
+    if (restore && origin?.isConnected) origin.focus({ preventScroll: true });
   }
   function localizeConsent() {
     const en = document.documentElement.lang === "en";
@@ -221,10 +228,16 @@
     };
     for (const [selector, value] of Object.entries(labels)) dialog.querySelector(selector).textContent = value;
   }
-  function openSettings() {
-    if (dialog) return;
+  function openSettings({ inline = false, trigger = null } = {}) {
+    if (dialog) {
+      if (!inline) { dialog.openedFrom = trigger; dialog.querySelector("button")?.focus(); }
+      return;
+    }
+    const slot = inline && document.getElementById("homePrivacyControls");
     dialog = document.createElement("div"); dialog.className = "wrldline-consent";
-    dialog.setAttribute("role", "dialog");
+    dialog.openedFrom = trigger;
+    dialog.setAttribute("role", slot ? "region" : "dialog");
+    if (slot) dialog.classList.add("wrldline-consent--inline");
     dialog.dataset.languageManaged = "";
     dialog.innerHTML = '<p><strong></strong> <span data-consent-intro></span></p><label><input type="checkbox" data-returning> <span data-consent-returning></span></label><p data-consent-policy></p><div class="actions"><button type="button" data-choice="granted" data-consent="granted"></button><button type="button" data-choice="denied" data-consent="denied"></button><button type="button" data-close></button><a href="/privacy.html"></a></div>';
     localizeConsent();
@@ -232,9 +245,11 @@
     dialog.addEventListener("click", e => {
       const button = e.target.closest("[data-choice]");
       if (button) setConsent(button.dataset.choice, { returning: dialog.querySelector("[data-returning]").checked });
-      else if (e.target.closest("[data-close]")) { dialog.remove(); dialog = null; }
+      else if (e.target.closest("[data-close]")) closeSettings();
     });
-    document.body.appendChild(dialog); dialog.querySelector("button").focus();
+    dialog.addEventListener("keydown", e => { if (e.key === "Escape") closeSettings(); });
+    (slot || document.body).appendChild(dialog);
+    if (!slot) dialog.querySelector("button").focus();
   }
   async function confirmPlus(accessToken) {
     // A checkout click is never a conversion. JWT + trusted billing record are required.
@@ -248,12 +263,14 @@
   function boot() {
     const style = document.createElement("style");
     style.textContent = '.wrldline-consent{position:fixed;inset-inline:12px;bottom:12px;z-index:5000;max-width:620px;max-height:85vh;overflow:auto;margin:auto;padding:18px;border:1px solid #3b506a;border-radius:14px;background:#101b2d;color:#f3f6fb;font:13px/1.85 "IBM Plex Sans Arabic",sans-serif;box-shadow:0 16px 50px #0006}.wrldline-consent p{margin:0 0 10px}.wrldline-consent label{display:block;margin:8px 0}.wrldline-consent a{color:#e0b96f}.wrldline-consent .actions{display:flex;gap:8px;flex-wrap:wrap}.wrldline-consent button,.wrldline-privacy-settings{cursor:pointer;font:inherit;padding:8px 12px;border:1px solid #58708b;border-radius:8px;background:#172941;color:#fff}.wrldline-consent button:first-child{background:#e0b96f;color:#172234}.wrldline-consent :focus-visible,.wrldline-privacy-settings:focus-visible{outline:3px solid #e0b96f;outline-offset:3px}.wrldline-privacy-settings{display:block;margin:16px auto;font-size:12px}';
+    style.textContent += '.wrldline-consent.wrldline-consent--inline{position:static;max-height:none;margin:12px auto;box-shadow:none}';
     document.head.appendChild(style);
-    const button = document.createElement("button"); button.type = "button"; button.className = "wrldline-privacy-settings"; button.dataset.languageManaged = ""; button.addEventListener("click", openSettings); document.body.appendChild(button);
+    const slot = document.getElementById("homePrivacyControls");
+    const button = document.createElement("button"); button.type = "button"; button.className = "wrldline-privacy-settings"; button.dataset.languageManaged = ""; button.addEventListener("click", () => openSettings({ trigger: button })); (slot || document.body).appendChild(button);
     localizeConsent();
     document.addEventListener("wrldline:language", localizeConsent);
-    document.addEventListener("click", e => { if (e.target.closest?.("[data-analytics-settings]")) { e.preventDefault(); openSettings(); } });
-    if (!choice) { clearIdentifiers(); openSettings(); } else if (choice.state === "granted") start(); else clearIdentifiers();
+    document.addEventListener("click", e => { const trigger = e.target.closest?.("[data-analytics-settings]"); if (trigger) { e.preventDefault(); openSettings({ trigger }); } });
+    if (!choice) { clearIdentifiers(); openSettings({ inline: !!slot }); } else if (choice.state === "granted") start(); else clearIdentifiers();
     window.addEventListener("storage", e => {
       if (e.key !== CONSENT) return;
       choice = stored(localStorage, CONSENT); stop(); if (granted()) start();

@@ -4,7 +4,7 @@ from datetime import datetime, timedelta, timezone
 import os
 from urllib.parse import parse_qs, urlparse
 
-from playwright.async_api import async_playwright, expect
+from playwright.async_api import Error, async_playwright, expect
 
 SITE = os.environ.get("WRLDLINE_TEST_SITE", "http://127.0.0.1:4173")
 NOW = datetime.now(timezone.utc)
@@ -46,7 +46,8 @@ async def setup(browser, width, *, monitor_mode="ready", home_failure=False):
     context = await browser.new_context(viewport={"width": width, "height": 850},
                                         service_workers="block", reduced_motion="reduce")
     state = {"monitor_mode": monitor_mode, "home_failure": home_failure, "offsets": [], "first": FIRST,
-             "sections": {}, "section_requests": [], "section_gates": {}}
+             "sections": {}, "section_requests": [], "section_gates": {}, "measurement": [],
+             "source_response": (200, []), "main_gate": None}
 
     async def section_response(route, name):
         state["section_requests"].append(name)
@@ -60,6 +61,12 @@ async def setup(browser, width, *, monitor_mode="ready", home_failure=False):
         url = urlparse(route.request.url)
         if url.netloc == urlparse(SITE).netloc:
             await route.continue_()
+        elif "/audience-collector" in url.path or "analytics" in url.netloc:
+            state["measurement"].append(url.path)
+            await route.fulfill(status=200, json={})
+        elif url.path.endswith("/rpc/public_source_directory"):
+            status, body = state["source_response"]
+            await route.fulfill(status=status, json=body)
         elif url.path.endswith("/rpc/public_world_monitor_feed"):
             unavailable = state["monitor_mode"] == "error"
             await route.fulfill(status=503 if unavailable else 200,
@@ -77,6 +84,13 @@ async def setup(browser, width, *, monitor_mode="ready", home_failure=False):
                 await section_response(route, name)
             else:
                 state["offsets"].append(args["p_offset"])
+                if state["main_gate"]:
+                    await state["main_gate"].wait()
+                    try:
+                        await route.abort()
+                    except Error:
+                        pass  # Chrome already cancelled this timed-out request.
+                    return
                 await route.fulfill(status=503 if state["home_failure"] else 200,
                                     json=OLDER if args["p_offset"] else state["first"])
         elif url.path.endswith("/rpc/public_top_read_articles"):
@@ -96,6 +110,84 @@ async def open_home(page, query=""):
     deny = page.locator('.wrldline-consent [data-choice="denied"]')
     if await deny.is_visible():
         await deny.click()
+
+
+async def check_cold_home_and_sources(browser):
+    for width in (320, 375, 390, 1440):
+        context, page, state, errors = await setup(browser, width)
+        gate = asyncio.Event()
+        state["main_gate"] = gate
+        state["sections"].update(exclusive=(200, [CURRENT_EXCLUSIVE, {**OLDER_EXCLUSIVE, "audience_lane": "excluded"}]),
+                                 breaking=(200, [CURRENT_BREAKING]), popular=(200, [FIRST[1]]))
+        try:
+            await page.goto(f"{SITE}/?lang=en", wait_until="domcontentloaded")
+            starter = page.locator("#newsStarter")
+            consent = page.locator("#homePrivacyControls .wrldline-consent")
+            await expect(starter.locator("a")).to_have_count(3)
+            assert await starter.locator("a").first.get_attribute("href") == "/dossier/opec-plus-december-2026.html"
+            await expect(consent).to_have_css("position", "static")
+            assert await page.evaluate("!document.activeElement.closest('.wrldline-consent')")
+            assert await page.evaluate("document.documentElement.scrollWidth <= innerWidth")
+            await expect(page.locator("#breakingNewsGrid")).to_contain_text(CURRENT_BREAKING["title"])
+            if width != 320:
+                continue
+            retry = page.locator("#newsGrid [data-reader-action=retry]")
+            await expect(retry).to_be_visible(timeout=12000)
+            assert state["offsets"] == [0, 0], state["offsets"]
+            await expect(page.locator("#newsGrid")).to_have_attribute("aria-busy", "false")
+            await expect(page.locator("#exclusiveNewsGrid")).to_contain_text(CURRENT_EXCLUSIVE["title"])
+            await expect(page.locator("#exclusiveNewsGrid")).not_to_contain_text(OLDER_EXCLUSIVE["title"])
+            await expect(page.locator("#popularStoriesGrid")).to_contain_text(FIRST[1]["title"])
+            await expect(page.locator("#coverageGapGrid")).to_contain_text("تعذر تحميل عينة الأخبار")
+            await expect(starter).to_be_visible()
+            assert not state["measurement"], state["measurement"]
+            state["main_gate"] = None
+            gate.set()
+            await retry.focus()
+            await retry.press("Enter")
+            await expect(page.locator("#newsSection")).to_be_focused()
+            await expect(starter).to_be_hidden()
+            privacy = page.locator(".wrldline-privacy-settings")
+            await privacy.click()
+            await page.keyboard.press("Escape")
+            await expect(privacy).to_be_focused()
+            await privacy.click()
+            await page.locator('.wrldline-consent [data-choice="denied"]').click()
+            await expect(privacy).to_be_focused()
+            assert not state["measurement"], state["measurement"]
+            assert not errors, errors
+        finally:
+            gate.set()
+            await context.close()
+
+    context, page, state, errors = await setup(browser, 320)
+    try:
+        state["source_response"] = (503, {})
+        await page.goto(f"{SITE}/sources.html")
+        await expect(page.locator("#sourceStats")).to_contain_text("تعذر تحميل دليل المصادر")
+        await expect(page.locator("#sourceGrid a")).to_have_attribute("href", "/news/")
+        await expect(page.locator("#sourceSearch")).to_be_disabled()
+        state["source_response"] = (200, [
+            {"source_name": "الأخبار التجريبية", "source_language": "ar", "source_scope": "regional",
+             "article_count": 2, "latest_published_at": NOW.isoformat(), "source_url": "https://publisher.example/feed"},
+            {"source_name": "Example Journal", "source_language": "en", "source_scope": "local",
+             "article_count": 1, "latest_published_at": "not-a-timestamp"},
+            {"source_name": "Future Desk", "latest_published_at": (NOW + timedelta(days=2)).isoformat()},
+        ])
+        await page.locator("#sourceRetry").click()
+        await expect(page.locator("#sourceSearch")).to_be_focused()
+        await expect(page.locator(".source-card")).to_have_count(3)
+        await expect(page.locator(".source-card time")).to_have_count(1)
+        await expect(page.locator("#sourceStats")).to_contain_text("آخر فحص للعينة (الرياض)")
+        await page.locator("#sourceSearch").fill("العَرَبيَّة")
+        await expect(page.locator(".source-card h2")).to_have_text("الأخبار التجريبية")
+        await expect(page.locator(".source-card a")).to_have_attribute("href", "https://publisher.example/feed")
+        await page.locator("#sourceScope").select_option("local")
+        await expect(page.locator("#sourceStats")).to_contain_text("لا توجد مصادر تطابق التصفية")
+        assert await page.evaluate("document.documentElement.scrollWidth <= innerWidth")
+        assert not errors, errors
+    finally:
+        await context.close()
 
 
 async def check_supplemental_sections(browser):
@@ -160,6 +252,7 @@ async def check_supplemental_sections(browser):
 async def main():
     async with async_playwright() as p:
         browser = await p.chromium.launch(headless=True, executable_path=os.environ.get("WRLDLINE_CHROMIUM_PATH") or None)
+        await check_cold_home_and_sources(browser)
         await check_supplemental_sections(browser)
         context, page, state, errors = await setup(browser, 1440)
         await open_home(page, "?lang=en")
@@ -234,6 +327,10 @@ async def main():
             await expect(page.locator("#editionMonitorStatus")).to_contain_text(text)
             if mode == "error":
                 await expect(page.locator("#editionMonitorMetrics")).to_be_hidden()
+                state["monitor_mode"] = "ready"
+                await page.locator("#editionMonitorRetry").click()
+                await expect(page.locator("#editionMonitorTime")).to_contain_text("Feed checked (Riyadh)")
+                await expect(page.locator("#editionMonitorLink")).to_be_focused()
             else:
                 await expect(page.locator("#editionReportCount")).to_have_text("0")
             if mode == "empty":

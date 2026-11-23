@@ -73,6 +73,8 @@ test("the introduction point follows chronology; every individual item and hones
   assert.equal(result[2].item, stories[2]);
   const house = {source_name:"WRLDLINE NEWS",url:"editorial-123",content_type:"news"};
   assert.equal(desk.kind(house), "original");
+  assert.equal(desk.kind({...house,url:"editorial-00000000-0000-4000-8000-000000000001"}), "original");
+  assert.equal(desk.kind({...house,url:"https://example.test/editorial-123"}), "reported");
   assert.equal(desk.kind({...house,source_name:"WRLDLINE News Partner"}), "reported");
   assert.equal(desk.kind({...house, source_url:"https://wire.example/a"}), "reported");
   assert.equal(desk.kind({...house,content_type:"analysis"}), "analysis");

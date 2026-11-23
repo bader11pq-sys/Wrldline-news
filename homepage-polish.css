@@ -452,3 +452,10 @@ html[data-theme="dark"] .wl-product-link:hover{background:var(--surface-2)}
 .article-edition-status{margin:8px 0 0;font-size:.84rem;line-height:1.7;color:var(--muted)}
 .article-edition-status:empty{display:none}
 .reader-article-editions{margin-block:16px}
+.reader-start{padding:16px clamp(14px,3vw,22px);border:1px solid var(--line);border-inline-start:3px solid var(--gold-strong);border-radius:12px;background:var(--surface)}
+.reader-start[hidden],.news-grid:empty{display:none}
+.reader-start h3{margin:0 0 4px;font-size:1rem}
+.reader-start p{margin:0;color:var(--muted);font-size:.875rem;line-height:1.65}
+.reader-start ul{display:flex;flex-wrap:wrap;gap:4px 20px;margin:8px 0 0;padding-inline-start:20px}
+.reader-start a{display:inline-block;padding-block:4px;color:inherit;text-decoration:underline;text-underline-offset:3px;line-height:1.65}
+.reader-start a:focus-visible{outline:2px solid var(--gold-strong);outline-offset:3px}
