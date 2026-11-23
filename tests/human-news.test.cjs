@@ -23,7 +23,9 @@ test("dossier outputs are reproducible and fictional example stays out of search
     assert.equal(sitemap.includes(href), row.type !== "example");
     assert.equal(file.includes('content="noindex,follow"'), row.type === "example");
     assert.equal(file.includes('class="hn-source-link"'), row.type !== "example");
-    assert.doesNotMatch(file, /<(script|iframe|form)\b/i);
+    assert.deepEqual(file.match(/<script\b[^>]*>[\s\S]*?<\/script>/gi),
+      ['<script src="../rights-cases.js?v=premium-1" defer></script>']);
+    assert.doesNotMatch(file, /<(iframe|form)\b/i);
   }
 });
 

@@ -101,3 +101,90 @@ html[lang="en"] .rf-opening span[lang="en"],html[lang="en"] :is(.wl-nav-rights,.
   .wl-home .front-edition-masthead{align-items:flex-start}
   .wl-home .front-edition-index{row-gap:.15rem}
 }
+
+/* The front cover: ink, paper, and one copper register line. */
+.wl-home{
+  --rf-cover:oklch(.255 .043 211);
+  --rf-cover-end:oklch(.33 .063 184);
+  --rf-cover-text:#fff9eb;
+  --rf-cover-muted:#d4e1d9;
+  --rf-cover-accent:#f2bb9f;
+  --rf-cover-line:#ffffff38;
+  --rf-type-xs:.75rem;
+  --rf-type-sm:clamp(.8rem,.77rem + .22vw,.95rem);
+  --rf-space-2:.5rem;
+  --rf-space-3:.75rem;
+}
+.wl-home .wl-hero{padding-block:clamp(.65rem,1.55vw,1.15rem) 0}
+.rf-opening{
+  background:linear-gradient(112deg,var(--rf-cover),var(--rf-cover-end));
+  border-block-start:3px solid var(--rf-accent);border-radius:1rem;
+  padding:clamp(1rem,2.05vw,1.8rem);color:var(--rf-cover-text)
+}
+.rf-intro h1{color:var(--rf-cover-text)}
+.rf-intro p{color:var(--rf-cover-muted)}
+.rf-eyebrow{color:var(--rf-cover-accent)}
+.rf-start a,.rf-start b{color:var(--rf-cover-text)}
+.rf-start a:first-child{color:var(--rf-cover);background:var(--rf-cover-text);border-radius:.4rem}
+.rf-start a:first-child b{color:var(--rf-cover)}
+.rf-desk{grid-template-columns:minmax(0,.85fr) minmax(0,1fr);background:color-mix(in srgb,var(--rf-cover) 58%,transparent);border:1px solid var(--rf-cover-line);color:var(--rf-cover-text);border-radius:.65rem;padding:var(--rf-space-2);gap:var(--rf-space-3)}
+.rf-desk img{border-radius:.3rem}
+.rf-desk strong{font-size:clamp(1.08rem,1.74vw,1.57rem)}
+.rf-desk-label,.rf-desk-arrow{color:var(--rf-cover-accent);font-size:var(--rf-type-xs)}
+.rf-desk-deck{color:var(--rf-cover-muted)}
+.wl-home :is(.rf-start a,.rf-desk):focus-visible{outline-color:var(--rf-cover-accent)}
+.rf-compact-index > summary{color:var(--rf-muted)}
+html[data-theme="dark"] .wl-home .wlm-chip.is-active{color:var(--rf-on);background:var(--rf-solid);border-color:var(--rf-line)}
+
+.wl-home .wl-feed-head{flex-direction:column;align-items:stretch;gap:var(--rf-space-2)}
+.rf-feed-heading{display:flex;align-items:center;justify-content:space-between;gap:var(--rf-space-2);flex-wrap:wrap}
+.rf-feed-heading h2{font-size:clamp(1.46rem,2.65vw,2.12rem);line-height:1.12;letter-spacing:-.015em}
+.rf-feed-heading h2::after{content:"";display:block;width:2.3rem;border-block-end:2px solid var(--rf-accent);margin-block-start:.3rem}
+.rf-view-switch:not([hidden]){display:inline-flex;align-items:center;padding:.17rem;background:var(--rf-paper);border:1px solid var(--rf-line);border-radius:.58rem;gap:.12rem}
+.rf-view-switch button{display:inline-flex;align-items:center;justify-content:center;gap:.22rem;min-block-size:44px;padding-inline:.57rem;color:var(--rf-muted);font-weight:750;border-radius:.4rem;font-size:var(--rf-type-xs)}
+.rf-view-switch button[aria-pressed="true"]{color:var(--rf-on);background:var(--rf-solid)}
+.rf-view-switch button:not([aria-pressed="true"]):hover{color:var(--rf-ink);background:var(--surface)}
+.rf-view-switch svg{inline-size:.92rem;block-size:.92rem;flex:none}
+html[lang="en"] .rf-view-switch [lang="ar"],html:not([lang="en"]) .rf-view-switch [lang="en"]{display:none}
+.rf-view-switch button:focus-visible{outline:2px solid var(--rf-accent);outline-offset:2px}
+.wl-home .wl-feed-controls{justify-content:flex-start}
+.wl-home .reader-feed-meta{font-size:var(--rf-type-xs);margin-block:.34rem .55rem;gap:.08rem var(--rf-space-2)}
+.wl-home #newsGrid .reader-card{border-radius:.72rem}
+.wl-home #newsGrid .reader-card .reader-story-link{line-height:1.36}
+.wl-home #newsGrid .reader-card .story-source time{font-size:var(--rf-type-xs)}
+.wl-home #newsGrid .reader-card > .image-placeholder{display:none}
+.wl-home #newsGrid .reader-card > .card-image{order:2}
+.wl-home #newsGrid .reader-card:not(:has(> .card-image:not([data-failed]))){border-block-start:2px solid var(--rf-line)}
+.wl-home #newsGrid[data-reader-view="headlines"]{display:grid;grid-template-columns:minmax(0,1fr);gap:0}
+.wl-home #newsGrid[data-reader-view="headlines"] .reader-card{border:0;border-block-end:1px solid var(--line);border-radius:0;background:var(--surface)}
+.wl-home #newsGrid[data-reader-view="headlines"] .reader-card :is(.card-image,.card-content > p){display:none}
+.wl-home #newsGrid[data-reader-view="headlines"] .reader-card .card-content{padding:var(--rf-space-2) clamp(.72rem,1.65vw,1.25rem);gap:.15rem}
+.wl-home #newsGrid[data-reader-view="headlines"] .reader-card h3{margin:0}
+.wl-home #newsGrid[data-reader-view="headlines"] .reader-card .story-source{margin:0;border:0;padding-block-start:0}
+.wl-home #newsGrid[data-reader-view="headlines"] > .event-stack{margin-block:.15rem var(--rf-space-2)}
+.wl-home #newsGrid[data-reader-view="headlines"] .event-stack-items{grid-template-columns:minmax(0,1fr)}
+@media(min-width:1360px){
+  .wl-home .wl-feed-head{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center}
+  .rf-feed-heading{justify-content:flex-start;column-gap:var(--rf-space-3)}
+  .rf-feed-heading h2{font-size:clamp(1.75rem,2.25vw,2rem)}
+  .wl-home .wl-feed-controls #countryFilter{max-inline-size:9rem}
+}
+@media(hover:hover) and (prefers-reduced-motion:no-preference){
+  .rf-desk img{transition:filter 160ms ease}
+  .rf-desk:hover img{filter:brightness(1.08)}
+  .rf-view-switch button{transition:background-color 140ms ease,color 140ms ease}
+}
+@media(max-width:700px){
+  .rf-opening{border-radius:.72rem;padding:var(--rf-space-3);gap:var(--rf-space-2)}
+  .rf-intro h1{font-size:clamp(1.55rem,6.8vw,2.34rem)}
+  .rf-intro p{font-size:var(--rf-type-sm);line-height:1.6;margin-block-start:.32rem}
+  .rf-desk{grid-template-columns:3.55rem minmax(0,1fr);gap:.53rem;padding:.25rem .4rem;min-block-size:57px}
+  .rf-desk strong{font-size:.98rem;margin:0}
+  .rf-desk-deck{font-size:var(--rf-type-xs)}
+  .rf-desk-arrow{inset-block-start:.15rem}
+  .rf-start{font-size:var(--rf-type-xs);gap:0 .45rem}
+  .rf-start a:first-child{padding-inline:.47rem}
+  .rf-view-switch button{padding-inline:.4rem}
+  .wl-home .reader-feed-meta{line-height:1.45}
+}
+@media(max-width:360px){.rf-view-switch svg{display:none}}

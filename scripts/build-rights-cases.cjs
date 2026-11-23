@@ -39,6 +39,7 @@ function validate(entries) {
     check((slug.startsWith("example-")) === (type === "example"), "example slugs must be distinguishable");
     check(Object.hasOwn(STATE, state) && (type !== "case" || state !== "reference") && (type !== "reference" || state === "reference"), "invalid follow-up state");
     for (const key of ["title","deck","place","authority","legal","impact","next"]) check(text(entry[key]), `missing ${key}`);
+    if (type !== "example") check(text(entry.topic), "missing index topic");
     check(parseDate(updated) && parseDate(checkedThrough) && checkedThrough <= updated, "invalid review or editorial date");
     if (["closed", "changed"].includes(state)) {
       check(text(entry.stateReason) && parseDate(entry.stateDate) && entry.stateDate <= checkedThrough, "missing closure or change reason/date");
@@ -91,10 +92,11 @@ function frame(title, description, filename, content, opts = {}) {
   <meta name="description" content="${escaped(description)}">
   <link rel="icon" href="../favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="../rights-desk.css?v=human-news-1">
-  <link rel="stylesheet" href="../human-news.css?v=1">
+  <link rel="stylesheet" href="../human-news.css?v=premium-1">
+  <script src="../rights-cases.js?v=premium-1" defer></script>
   <title>${escaped(title)} | WRLDLINE News</title>
 </head>
-<body>
+<body class="hn-cases">
   <a class="rd-skip" href="#caseMain">تجاوز إلى المحتوى</a>
   <header class="rd-bar"><div class="rd-wrap rd-bar-inner">
     <a class="rd-wordmark" href="../index.html" aria-label="ورلدلاين نيوز، الرئيسية"><span lang="en" dir="ltr">WRLDLINE <span class="rd-period">News</span></span></a>
@@ -127,8 +129,8 @@ function dossier(entry) {
       <p class="rd-kicker">${example ? "مثال تعليمي، ليس خبرًا" : entry.type === "reference" ? "دفتر الدليل / ملف مرجعي مؤرّخ" : "دفتر الدليل / ملف قضية حقوقية"}</p>
       <h1>${escaped(entry.title)}</h1>
       <p class="rd-deck">${escaped(entry.deck)}</p>
-      <nav class="hn-jumps" aria-label="داخل الملف"><a href="#impact">الأثر على الناس</a><a href="#timeline">التسلسل الزمني</a><a href="#evidence">الأدلة والمصادر</a><a href="#followup">المتابعة</a></nav>
     </header>${example ? '\n    <p class="hn-note"><strong>تنبيه:</strong> هذه قضية افتراضية؛ لا توجد هنا أسماء أو جهات أو وقائع حقيقية.</p>' : ""}
+    <nav class="hn-jumps hn-case-nav" aria-label="داخل الملف"><a href="#impact">الأثر على الناس</a><a href="#timeline">التسلسل الزمني</a><a href="#evidence">الأدلة</a><a href="#sources">المصادر</a><a href="#followup">المتابعة</a></nav>
     <div class="hn-layout">
       <aside class="hn-sidebar" aria-labelledby="basics"><h2 id="basics">المعلومات الأساسية</h2>
         <dl><dt>الدولة أو النطاق</dt><dd>${escaped(entry.place)}</dd><dt>الجهة المعنية</dt><dd>${escaped(entry.authority)}</dd>
@@ -136,18 +138,18 @@ function dossier(entry) {
           <dt>نطاق الأدلة حتى</dt><dd>${time(entry.checkedThrough)}</dd><dt>آخر تحديث تحريري</dt><dd>${time(entry.updated)}</dd></dl>
       </aside>
       <div class="hn-body">
-        <section class="hn-panel" id="impact"><h2>ماذا يعني للناس؟</h2><p>${escaped(entry.impact)}</p></section>
-        <section class="hn-panel" id="timeline"><h2>التسلسل الزمني</h2><ol class="hn-list">
+        <section class="hn-panel" id="impact" tabindex="-1"><h2>ماذا يعني للناس؟</h2><p>${escaped(entry.impact)}</p></section>
+        <section class="hn-panel" id="timeline" tabindex="-1"><h2>التسلسل الزمني</h2><ol class="hn-list">
           ${entry.timeline.map(row => `<li>${time(row.date)}<p>${escaped(row.text)}</p>${refs(row.refs)}</li>`).join("\n          ")}
         </ol></section>
-        <section class="hn-panel" id="evidence"><h2>الأدلة والمصادر</h2>
+        <section class="hn-panel" id="evidence" tabindex="-1"><h2>الأدلة والمصادر</h2>
           <p>الوسم يصف المعلومة المحددة، لا الملف كله. <a href="index.html#labels">معاني الوسوم</a></p>
           <ul class="hn-list">${entry.claims.map(row => `<li>${badge(row.status, STATUS[row.status][0])}<p>${escaped(row.text)}</p>${refs(row.refs)}</li>`).join("\n          ")}</ul>
         </section>
-        <section class="hn-panel" id="sources"><h2>سجل المصادر</h2><ul class="hn-list">
+        <section class="hn-panel" id="sources" tabindex="-1"><h2>سجل المصادر</h2><ul class="hn-list">
           ${sources}
         </ul></section>
-        <section class="hn-panel" id="followup"><h2>المتابعة</h2>
+        <section class="hn-panel" id="followup" tabindex="-1"><h2>المتابعة</h2>
           <dl class="hn-follow">
             <dt>وضع الملف</dt><dd>${badge(entry.state, STATE[entry.state])} ${escaped(review)}${entry.stateReason ? ` ${time(entry.stateDate)}: ${escaped(entry.stateReason)}` : ""}</dd>
             <dt>آخر تطور في نطاق الملف</dt><dd>${time(last.date)}<p>${escaped(last.text)}</p>${refs(last.refs)}</dd>
@@ -165,18 +167,31 @@ function index(entries) {
   const title = "ملفات القضايا الحقوقية";
   const description = "ملفات حقوقية مستقلة: ما حدث، الأثر على الناس، ما تثبته المصادر، وما يستحق المتابعة.";
   const examples = entries.filter(x => x.type === "example");
+  const published = entries.filter(x => x.type !== "example");
+  const topics = [...new Set(published.map(x => x.topic))];
   const content = `    <header class="hn-head">
       <p class="rd-kicker">دفتر الدليل / الأخبار من أجل الإنسان</p>
       <h1>${title}</h1>
       <p class="rd-deck">${description}</p>
       <nav class="hn-jumps" aria-label="داخل دفتر الدليل"><a href="#files">الملفات المنشورة</a><a href="#labels">وسوم التحقق</a><a href="../rights.html#rightsGuides">دليل الحقوق</a></nav>
     </header>
-    <div class="hn-cards" id="files" tabindex="-1">
-      ${entries.filter(x => x.type !== "example").map(x => `<article class="hn-card">
-        <p class="rd-kicker">${x.type === "case" ? "قضية حقوقية" : "ملف مرجعي"} · ${escaped(x.place)}</p><h2><a href="${escaped(x.slug)}.html">${escaped(x.title)}</a></h2>
+    <section id="files" tabindex="-1" aria-labelledby="filesTitle">
+    <h2 class="hn-shelf-title" id="filesTitle">الملفات المنشورة</h2>
+    <div class="hn-filter" hidden>
+      <div><label for="caseSearch">ابحث في الملفات</label><input type="search" id="caseSearch" placeholder="اسم الملف أو البلد" autocomplete="off"></div>
+      <div><label for="caseTopic">الموضوع</label><select id="caseTopic"><option value="">كل المواضيع</option>${topics.map(topic => `<option>${escaped(topic)}</option>`).join("")}</select></div>
+      <button type="button" id="caseReset" disabled>مسح البحث</button>
+    </div>
+    <p class="hn-results" id="caseResults" role="status"></p>
+    <p class="hn-note" id="caseEmpty" hidden>لا توجد ملفات تطابق بحثك. جرّب كلمة أخرى أو امسح البحث.</p>
+    <div class="hn-cards">
+      ${published.map(x => `<article class="hn-card" data-topic="${escaped(x.topic)}">
+        <p class="rd-kicker">${escaped(x.topic)} · ${x.type === "case" ? "قضية حقوقية" : "ملف مرجعي"}</p><h3><a href="${escaped(x.slug)}.html">${escaped(x.title)}</a></h3>
+        <p class="hn-card-place">${escaped(x.place)}</p>
         <p>${escaped(x.deck)}</p><small>نطاق الأدلة حتى ${time(x.checkedThrough)}</small>
       </article>`).join("\n      ")}
     </div>
+    </section>
     ${examples.length ? `<aside class="hn-note"><strong>كيف يبدو ملف متابعة قضية؟</strong> ${examples.map(x => `<a href="${escaped(x.slug)}.html">${escaped(x.title)}</a>`).join(" · ")}. أمثلة للتعلّم، وليست بلاغات أو وقائع منشورة.</aside>` : ""}
     <section class="hn-labels" id="labels" aria-labelledby="labelTitle"><h2 id="labelTitle">كيف نسمّي درجة التحقق؟</h2>
       <dl>${Object.entries(STATUS).map(([key,[label,note]]) => `<div><dt>${badge(key,label)}</dt><dd>${escaped(note)}</dd></div>`).join("\n        ")}</dl>

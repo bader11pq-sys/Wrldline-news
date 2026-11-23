@@ -78,6 +78,9 @@ h1,h2,h3{text-wrap:balance}
 .rd-method-inner p{margin-block-start:.35rem;max-inline-size:37ch}
 .rd-method ol{margin:0;padding-inline-start:1.3rem}
 .rd-method li + li{margin-block-start:.55rem}
+.rd-hero-art img{border-radius:.7rem;border-block-start:3px solid var(--rd-accent)}
+.rd-file,.rd-guide{border-radius:.7rem}
+.rd-jumps .rd-primary{border-radius:.4rem}
 .rd-footer{background:var(--rd-sheet)}
 .rd-footer .rd-wrap{padding-block:.8rem}
 @media(max-width:820px){.rd-files{grid-template-columns:1fr}}
