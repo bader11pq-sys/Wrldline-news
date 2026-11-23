@@ -143,7 +143,7 @@ async function setTranslationStatus(id,status){
  message(status==="published"?t("نُشرت الترجمة بعد المراجعة.","Translation published after review."):t("رُفضت الترجمة.","Translation rejected."));
  await loadTranslationReview();
 }
-async function showSession(){await ensureDb();const {data:{session}}=await db.auth.getSession();const role=session?.user?.app_metadata?.role;const allowed=["editor","admin"].includes(role);$("loginPanel").classList.toggle("hidden",!!session);$("accessPanel").classList.toggle("hidden",!session||allowed);$("editorPanel").classList.toggle("hidden",!allowed);workspace?.account(allowed?session.user.id:null,async draft=>{
+async function showSession(){await ensureDb();const {data:{session}}=await db.auth.getSession();const role=session?.user?.app_metadata?.role;const allowed=["editor","admin"].includes(role);$("siteEditorGuide").hidden=role!=="admin";$("loginPanel").classList.toggle("hidden",!!session);$("accessPanel").classList.toggle("hidden",!session||allowed);$("editorPanel").classList.toggle("hidden",!allowed);workspace?.account(allowed?session.user.id:null,async draft=>{
  if(draft.id)return editArticle({id:draft.id},true);
  resetForm();return true;
 });if(session&&allowed){$("userLabel").textContent=(session.user.email||"محرر مسجل")+" · "+role;void loadArticles();void loadTranslationReview();void loadOpsDashboard();if(opsRefreshTimer)clearInterval(opsRefreshTimer);opsRefreshTimer=setInterval(()=>{if(!document.hidden)loadOpsDashboard();},60000);}else{resetForm();if(opsRefreshTimer)clearInterval(opsRefreshTimer);opsRefreshTimer=null;if(session){message("تم تسجيل الدخول، لكن الحساب لا يحمل دوراً تحريرياً موثوقاً.");}}}

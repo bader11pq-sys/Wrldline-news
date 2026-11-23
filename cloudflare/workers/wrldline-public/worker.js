@@ -208,6 +208,7 @@ ${schema ? `<meta property="article:published_time" content="${escapeHTML(schema
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Noto+Kufi+Arabic:wght@500;700&family=Manrope:wght@500;700;800&display=swap" rel="stylesheet">
 <link rel="alternate" type="application/rss+xml" title="WRLDLINE NEWS RSS" href="${PUBLIC_ORIGIN}/rss.xml"><link rel="alternate" type="application/atom+xml" title="WRLDLINE NEWS Atom" href="${PUBLIC_ORIGIN}/atom.xml">
 ${!noindex ? '<script src="/analytics-config.js?v=20261115-1" defer></script><script src="/analytics.js?v=20261115-1" defer></script>' : ""}
+${!noindex ? '<script src="/site-editor.js?v=2" defer></script>' : ""}
 ${enhance ? '<link rel="stylesheet" href="/article-trust.css?v=20261115-1"><script src="/share.js?v=20261115-canonical" defer></script><script src="/public-news.js?v=20261123-gate1" defer></script><script src="/article-trust.js?v=20261115-1" defer></script>' : ""}`;
   const html = `<!doctype html><html lang="${escapeHTML(lang)}" dir="${direction}" data-theme="dark"><head>${head}</head><body class="wl-public-news">
 <a class="skip-link" href="#mainContent">${l.en ? "Skip to content" : "تجاوز إلى المحتوى"}</a>
@@ -319,7 +320,7 @@ function feedItem(article, lang, now) {
   // The hash carries the reader's edition preference to the article page; it is
   // never sent to the server, so it cannot affect canonicalisation.
   const link = articleURL(article.id) + (lang === "en" ? "#lang=en" : "");
-  return `<li class="pn-card"><article><p class="pn-card-top">${typeBadge(article, lang)}${sectionLabel ? `<a class="pn-card-section" href="/section/${section.slug}">${escapeHTML(sectionLabel)}</a>` : ""}</p><h2><a href="${link}" lang="${originalLang}" dir="auto">${escapeHTML(text(article.title, 1000) || labels(lang).news)}</a></h2><p class="pn-card-summary" lang="${originalLang}" dir="auto">${escapeHTML(text(article.summary, 220))}</p><p class="pn-card-meta"><span>${escapeHTML(s.name || (lang === "en" ? "Source unavailable" : "المصدر غير متاح"))}</span><time datetime="${article.published_at}" title="${escapeHTML(dateLabel(article.published_at, lang))}">${escapeHTML(relativeLabel(article.published_at, lang, now))}</time></p></article></li>`;
+  return `<li class="pn-card"><article data-site-editor-row="${escapeHTML(article.id)}"><p class="pn-card-top">${typeBadge(article, lang)}${sectionLabel ? `<a class="pn-card-section" href="/section/${section.slug}">${escapeHTML(sectionLabel)}</a>` : ""}</p><h2><a href="${link}" lang="${originalLang}" dir="auto">${escapeHTML(text(article.title, 1000) || labels(lang).news)}</a></h2><p class="pn-card-summary" lang="${originalLang}" dir="auto">${escapeHTML(text(article.summary, 220))}</p><p class="pn-card-meta"><span>${escapeHTML(s.name || (lang === "en" ? "Source unavailable" : "المصدر غير متاح"))}</span><time datetime="${article.published_at}" title="${escapeHTML(dateLabel(article.published_at, lang))}">${escapeHTML(relativeLabel(article.published_at, lang, now))}</time></p></article></li>`;
 }
 
 /** @param {PublicArticle[]} articles @param {number} page @param {string} lang @param {string} lane @param {Date} now */
