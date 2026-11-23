@@ -87,6 +87,14 @@ html[lang="en"] .rf-opening span[lang="en"],html[lang="en"] .wl-nav-rights span[
   .wl-home .front-pick h3{font-size:.84rem}
   .wl-home .front-pick--lead h3{font-size:1.08rem}
   .wl-home .front-pick-num{display:none}
+  .wl-home .wl-feed-head{margin-block-end:.4rem;gap:.45rem}
+  .wl-home .wl-feed-head .wl-kicker{display:none}
+  .wl-home .wl-feed-controls{grid-template-columns:repeat(6,minmax(0,1fr));gap:.32rem}
+  .wl-home .wl-feed-controls select{grid-column:span 2;padding-inline:.42rem}
+  .wl-home .wl-feed-controls button{grid-column:span 3}
+  .wl-home .wl-sticky-filters{padding-block:.28rem}
+  .wl-home #newsGrid .reader-card > .card-image{order:2;max-block-size:11rem;object-fit:cover}
+  .wl-home #newsGrid .reader-card > .image-placeholder{display:none}
 }
 @media(max-width:360px){
   .rf-start{gap:.2rem .45rem;font-size:.76rem}
