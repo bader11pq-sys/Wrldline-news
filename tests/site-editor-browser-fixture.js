@@ -53,7 +53,8 @@
     single:async()=>ok(null),maybeSingle:async()=>ok({followed_categories:[],followed_countries:[]}),
     then:(resolve,reject)=>Promise.resolve(ok([])).then(resolve,reject)
   };
-  const realtime={on:()=>realtime,subscribe:()=>realtime};
+  let breakingChange;
+  const realtime={on(_kind,filter,fn){if(filter.table==="breaking_feed_revision")breakingChange=fn;return realtime;},subscribe:()=>realtime};
   const client={
     auth:{getSession:async()=>ok({session:session()}),onAuthStateChange(fn){listeners.add(fn);queueMicrotask(()=>fn("INITIAL_SESSION",session()));return {data:{subscription:{unsubscribe(){listeners.delete(fn);}}}};},signOut:async()=>{role="visitor";for(const fn of listeners)fn("SIGNED_OUT",null);return ok(null);}},
     rpc:api,from:()=>chain,channel:()=>realtime,removeChannel:async()=>{},functions:{invoke:async()=>ok({})}
@@ -67,13 +68,18 @@
       const values=(()=>{try{return JSON.parse(init?.body||"{}");}catch{return {};}})();
       const list=rows().filter(a=>a.editorial_status==="published"&&(!values.p_is_breaking||a.is_breaking)&&(!values.p_is_exclusive||a.is_exclusive));
       const story=rows().find(a=>a.id===values.p_id&&a.editorial_status==="published");
-      const result=url.pathname.includes("public_home_news")?list:url.pathname.includes("public_article_reading")&&story?
+      const result=url.pathname.includes("public_home_news")?list:url.pathname.endsWith("/public_breaking_feed")?list.filter(a=>a.is_breaking):url.pathname.includes("public_article_reading")&&story?
         [{article_id:story.id,body:story.summary,lang:story.lang,complete:true}]:[];
       return Promise.resolve(new Response(JSON.stringify(result),{headers:{"content-type":"application/json"}}));
     }
     return originalFetch(input,init);
   };
-  window.WLSiteEditorFixture={get rows(){return rows();},failNext(){failures++;},setRole(next){role=next;for(const fn of listeners)fn("SIGNED_IN",session());}};
+  window.WLSiteEditorFixture={get rows(){return rows();},failNext(){failures++;},setRole(next){role=next;for(const fn of listeners)fn("SIGNED_IN",session());},
+    setBreakingRows(next){
+      for(const row of next)records[row.id]=row;
+      if(!breakingChange)throw new Error("Not subscribed to the breaking revision");
+      breakingChange();
+    }};
   if(document.querySelector('meta[name="wl-editor-preview"]')) {
     document.addEventListener("DOMContentLoaded",()=>{
       const box=document.createElement("aside");

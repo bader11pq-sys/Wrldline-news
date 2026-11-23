@@ -42,7 +42,7 @@
     const changed = permitted !== (allowed === true);
     permitted = allowed === true;
     if (permitted && !q("#wlSiteEditorStyles")) {
-      document.head.append(node("link", null, { id:"wlSiteEditorStyles", rel:"stylesheet", href:"/site-editor.css?v=20261123-editor-release" }));
+      document.head.append(node("link", null, { id:"wlSiteEditorStyles", rel:"stylesheet", href:"/site-editor.css?v=20261123-live-breaking" }));
     }
     if (!permitted) {
       dialog?.close();
@@ -353,7 +353,11 @@
     const sponsorName=field(grid,"sponsor_name",t("اسم الراعي","Sponsor name"),"text",{value:a.sponsor_name,max:120});
     const sponsorUrl=field(grid,"sponsor_url",t("رابط الراعي","Sponsor URL"),"url",{value:a.sponsor_url,max:2048});
     field(grid,"correction_note",t("تصحيح علني للقارئ","Public correction"),"textarea",{value:a.correction_note,max:1200,wide:true});
-    field(grid,"is_breaking",t("أبرز كخبر عاجل","Mark as breaking"),"checkbox",{value:a.is_breaking});
+    const alert = node("div",null,{class:"wl-edit-breaking"});
+    const breaking = field(alert,"is_breaking",t("خبر عاجل","Breaking news"),"checkbox",{value:a.is_breaking});
+    const alertHint = node("small",t("بعد النشر: ٥ دقائق في الشريط الأحمر، و١٥ دقيقة في قسم العاجل، من وقت النشر.","After publication: 5 minutes in the red ticker and 15 minutes in Breaking News, timed from publication."),{id:"wlEditBreakingHint"});
+    alert.append(alertHint);
+    breaking.setAttribute("aria-describedby",alertHint.id);
     const exclusive=field(grid,"is_exclusive",t("أبرز كخبر حصري","Mark as exclusive"),"checkbox",{value:a.is_exclusive});
     const reason=field(grid,"exclusive_reason",t("ما دليل الحصرية؟","Basis for exclusivity"),"textarea",{value:a.exclusive_reason,max:1200,wide:true});
     function switches() {
@@ -361,7 +365,8 @@
       for (const ctl of [sponsorName,sponsorUrl]) { ctl.closest("label").hidden = !sponsored; ctl.disabled = !sponsored; }
       sponsorName.required=sponsored;
       reason.closest("label").hidden=!exclusive.checked; reason.disabled=!exclusive.checked; reason.required=exclusive.checked && !a.is_exclusive;
-      save.textContent = status.value === "published" ? (a.editorial_status === "published" ? t("حفظ التعديلات","Save changes") : t("نشر الآن","Publish now")) : t("حفظ","Save");
+      save.textContent = status.value === "published" ? (a.editorial_status === "published" ? t("حفظ التعديلات","Save changes") : breaking.checked ? t("نشر خبر عاجل","Publish breaking news") : t("نشر الآن","Publish now")) : t("حفظ","Save");
+      save.classList.toggle("wl-edit-publish-breaking", status.value === "published" && breaking.checked && a.editorial_status !== "published");
     }
     details.append(grid);
     const footer = node("div",null,{class:"wl-edit-footer"});
@@ -371,9 +376,9 @@
     if (live) footer.append(live);
     if (a.editorial_status !== "published") footer.append(draft);
     footer.append(save);
-    kind.onchange=switches; status.onchange=switches; exclusive.onchange=switches;
+    kind.onchange=switches; status.onchange=switches; exclusive.onchange=switches; breaking.onchange=switches;
     switches();
-    form.append(quick,tools,rendered,details,footer);
+    form.append(alert,quick,tools,rendered,details,footer);
     const initial=values(form);
     form.addEventListener("invalid", ev => { if (details.contains(ev.target)) details.open=true; },true);
     form.addEventListener("input",() => { dirty = true; });
@@ -403,6 +408,7 @@
   function publishEvent(article, previous) {
     if (article.editorial_status !== "published" && previous !== "published") return;
     channel?.postMessage({type:"published"});
+    document.dispatchEvent(new Event("wrldline:publication"));
     callback?.(article,previous);
   }
   async function saveWriter(payload) {
