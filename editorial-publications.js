@@ -91,8 +91,9 @@
       if (!key) return;
       const existing = Array.from(document.querySelectorAll("[data-dossier-card]")).find(n => n.dataset.dossierCard === key);
       const details = el("details", null, "editorial-live-update");
+      const linkedSources = row.sources || content.sources;
       details.appendChild(el("summary", "آخر تحديث تحريري موثق · " + new Date(row.updated_at || row.published_at).toLocaleDateString("ar-SA-u-ca-gregory")));
-      details.appendChild(detailBody(content, row.sources || content.sources));
+      details.appendChild(detailBody(content, linkedSources));
       if (existing) {
         const old = $(".editorial-live-update", existing); if (old) old.remove();
         existing.appendChild(details);
@@ -102,6 +103,7 @@
       if (grid) {
         const card = el("article", null, "card editorial-dynamic-card");
         card.dataset.dossierCard = key; card.dataset.status = content.status || "active";
+        card.dataset.sourceCount = String(Array.isArray(linkedSources) ? linkedSources.length : 0);
         card.dataset.sectors = Array.isArray(content.sectors) ? content.sectors.join("|") : "";
         card.dataset.search = [row.title, content.summary, (content.keywords || []).join(" ")].join(" ");
         card.appendChild(el("div", cardStatus(content) + " · " + new Date(row.updated_at || row.published_at).toLocaleDateString("ar-SA-u-ca-gregory"), "card-top"));
@@ -113,6 +115,7 @@
         a.appendChild(el("strong", row.title)); a.appendChild(el("span", content.summary || "ملف حدث محدث بمصادر موثقة")); homeGrid.prepend(a);
       }
     });
+    if (grid && rows.length) document.dispatchEvent(new Event("wrldline:dossiers-updated"));
   }
   function mountWatchlist(rows) {
     const row = rows[0], content = row && row.content;
