@@ -10,6 +10,5 @@
   }
   const base = `${origin}/ai-office`;
   window.WRLDLINE_OFFICE_BASE = base;
-  const link = document.getElementById("office-launcher");
-  if (link) link.href = `${base}/`;
+  document.querySelectorAll("#office-launcher,[data-office-launcher]").forEach(link => { link.href = `${base}/`; });
 })();
