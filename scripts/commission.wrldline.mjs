@@ -75,7 +75,8 @@ async function prepare(){
   if(!officeUser.ok)die(`Cannot bind CEO to the isolated office tables (HTTP ${officeUser.status}).`);
   const selected=await chooseModels();
   const geminiKey=selected?.provider==='gemini'?selected.key:e.WF_GEMINI_KEY||e.WF_GEMINI_FALLBACK_KEY;
-  console.log(selected?`Default live model profile: ${selected.provider}.`:'No available provider verified both model roles; editorial generation will not use mock responses.');
+  if(!selected&&(geminiKey||e.WF_GROQ_KEY||e.WF_OPENROUTER_KEY))die('No configured provider verified both model roles. Keeping the current live deployment.');
+  console.log(selected?`Default live model profile: ${selected.provider}.`:'No AI provider key was supplied. Editorial generation will not use mock responses.');
   const secrets={
     SUPABASE_URL:root,SUPABASE_SERVICE_ROLE_KEY:e.WF_SUPABASE_SERVICE_KEY,
     SUPABASE_PUBLISHABLE_KEY:required('WF_SUPABASE_PUBLISHABLE_KEY'), CEO_USER_ID:user.id,
@@ -93,7 +94,7 @@ async function prepare(){
 
 async function smoke(){
   const {readFileSync,existsSync}=await import('node:fs');
-  const origin='https://worldline-news-office.bader-11pq.workers.dev';
+  const origin='https://al-ghaib.us.ci';
   const base=`${origin}/ai-office`;
   const ready=await get(`${base}/api/health`);
   const health=await ready.json();
@@ -127,14 +128,27 @@ async function smoke(){
   const sessionResult=await session.json(), token=sessionResult.token??sessionResult.access_token;
   if(!token)die('CEO verification did not yield a session.');
   const headers={authorization:`Bearer ${token}`,'content-type':'application/json'};
-  const snapshot=await get(`${base}/api/office/state`,{headers});
-  if(!snapshot.ok||!(await snapshot.json()).modelProfile)die('CEO cannot retrieve the office state.');
-  if(!health.ai){console.log('No provider secret was configured.');return;}
-  for(const tier of ['fast','editor','checker']){
+  const expected=JSON.parse(readFileSync(join(dir,'worldline-office-secrets.json'),'utf8'));
+  const tiers=['fast','editor','checker'];
+  let profile;
+  for(let attempt=0;attempt<12;attempt++){
+    const snapshot=await get(`${base}/api/office/state`,{headers});
+    profile=snapshot.ok?(await snapshot.json()).modelProfile:null;
+    if(profile&&(!expected.MODEL_FAST||(profile.provider===expected.AI_PROVIDER&&tiers.every(t=>profile[t]===expected[`MODEL_${t.toUpperCase()}`]))))break;
+    if(attempt===11)die('The expected model profile did not reach the live office, or a saved CEO override differs from the deployment defaults.');
+    await new Promise(resolve=>setTimeout(resolve,3000));
+  }
+  console.log('Verified an authenticated CEO session on the custom domain.');
+  if(!expected.MODEL_FAST){console.log('No provider profile was commissioned.');return;}
+  let allVerified=true;
+  for(const tier of tiers){
     const r=await get(`${base}/api/office/models/test`,{method:'POST',headers,body:JSON.stringify({tier})});
     const result=await r.json();
-    console.log(`Model ${tier}: ${result.status==='ok'?'verified':'not verified'}${result.model?` (${result.model})`:''}.`);
+    const ok=r.ok&&result.status==='ok'&&result.provider===profile.provider&&result.model===profile[tier];
+    allVerified&&=ok;
+    console.log(`Model ${tier}: ${ok?'verified':'not verified'} (${profile.provider}: ${profile[tier]}).`);
   }
+  if(!allVerified)die('At least one live model role did not verify against the deployed profile.');
 }
 
 try{await (process.argv[2]==='prepare'?prepare():process.argv[2]==='smoke'?smoke():die('Unknown commissioning command.'));}
