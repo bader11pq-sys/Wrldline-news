@@ -1,0 +1,38 @@
+# Worldline News Office — manual research mode
+
+Date: 2026-11-24
+
+## Scope
+
+This change is limited to the Worldline News Office Worker and its employee/task records. It does not re-enable or modify the general news-ingestion pipeline, external RSS/news collectors, classification, translation, or public news queues.
+
+## Production changes applied
+
+- Removed every Cron trigger from `worldline-news-office`.
+- Replaced the Worker scheduled handler with a no-op. Scheduled invocations cannot gather sources or advance tasks.
+- Changed `GET /api/office/sources/status` to a read-only status response. It no longer calls source gathering.
+- Removed source gathering from morning reports. Reports no longer collect headlines.
+- Preserved the sole source-gathering call inside Khalid's research execution path. It is reachable only through a manually assigned office task advanced by an explicit office action.
+- Changed Khalid's role to Researcher & Source Analyst and removed RSS/news API tools from his static role metadata.
+- Corrected Sara's static role label to Arabic Copy Editor.
+- Changed AI prompt resolution to read `system_prompt` from `wrldline_office_employees` at runtime.
+- Changed office persistence to write the database-backed prompts back unchanged, rather than overwriting them with stale bundled prompt text.
+- Updated Khalid's database role and system prompt to prohibit background or scheduled collection and to require evidence before a task can be marked complete.
+- Corrected a historical Khalid research task that had been marked Done despite zero sources. It is now Blocked, with an audit log entry; no retry was triggered.
+
+## Verification
+
+- Cloudflare Worker content upload succeeded.
+- All existing Worker bindings remained present after upload, including secrets, assets, and rate-limit binding.
+- Worker Cron schedule list is empty.
+- Static inspection of the deployed Worker confirms exactly one `await gather(...)` call remains, inside `research(...)`.
+- The sources status endpoint no longer calls `gather`.
+- The scheduled handler is a no-op.
+- Supabase shows all eight employees present; Khalid's role/prompt are updated and Sara's role remains Arabic Copy Editor.
+- The previously false-completed Khalid task is Blocked and has zero sources.
+
+## Important operational behavior
+
+Khalid searches only when the CEO explicitly assigns a research task and the task is advanced through the office's explicit action. There is no office Cron that performs research or advances tasks automatically.
+
+This Worker backup is the deployed bundled entrypoint captured immediately before the change. It is retained for rollback/audit; it is not a substitute for reconstructing and maintaining the original TypeScript source modules.
