@@ -77,7 +77,6 @@
   /* Index filters */
   const cardsHost = $("#dossierCards");
   if (cardsHost) {
-    const cards = $$("[data-dossier-card]", cardsHost);
     const status = { value: "all" };
     const sector = { value: "" };
     const followedOnly = { value: false };
@@ -88,7 +87,7 @@
     const counter = $("#filterStatus");
     function apply() {
       let shown = 0;
-      cards.forEach((card) => {
+      $("[data-dossier-card]", cardsHost).forEach((card) => {
         const okStatus = status.value === "all" || card.dataset.status === status.value;
         const okSector = !sector.value || (card.dataset.sectors || "").split("|").includes(sector.value);
         const okFollow = !followedOnly.value || followed().includes(card.dataset.dossierCard);
