@@ -325,7 +325,7 @@ function promptFor(mode: string, pack: any, date: string) {
 }
 async function publishMode(db: any, mode: string, pack: any) {
   const result = await ai(promptFor(mode, pack, riyadhDate())), obj = result.data || {};
-  if (obj.action === "no_update") return { skipped: true, reason: txt(obj.reason || obj.editorial_note || "لا يوجد تطور يحقق معيار النشر", 600), provider: result.provider };
+  if (obj.action !== "publish") return { skipped: true, reason: txt(obj.reason || obj.editorial_note || "لا يوجد تطور يحقق معيار النشر", 600), provider: result.provider };
   const content = obj.content;
   if (!content || typeof content !== "object") throw new Error("AI did not return content");
   const foundIds = idsIn(content), sourceMap = new Map(pack.sources.map((s: Src) => [s.id, s]));
@@ -374,7 +374,7 @@ async function publishMode(db: any, mode: string, pack: any) {
       if (!["politics", "economy", "security", "world", "tech", "sports", "culture", "health", "science", "environment", "society"].includes(String(item.category || ""))) continue;
       item.source_ids = fresh.map((s) => s.id);
       item.sources = fresh.map((s) => ({ title: s.title, publisher: s.publisher, url: s.url, published_at: s.published_at }));
-      item.confidence = fresh.length >= 3 && fresh.some((s) => s.type === "official") ? "confirmed" : "reported";
+      item.confidence = "reported"; // Source counts never confirm a claim; confirmation is a human editorial decision.
       currentTitles.push(txt(item.headline, 240));
       qualifiedItems.push(item);
     }
@@ -400,58 +400,23 @@ async function publishMode(db: any, mode: string, pack: any) {
   content.slug = key; content.updatedAt = stamp(); content.sourceCount = selected.length;
   const details = selected.map(s => ({ id: s.id, title: s.title, publisher: s.publisher, url: s.url, published_at: s.published_at, type: s.type, source_confidence: s.source_confidence }));
   content.sources = mode.startsWith("context") || mode === "mirror" ? selected.map(s => [s.title + " — " + s.publisher, s.url]) : details;
-  const saved = await db.from("editorial_publications").upsert({
-    section, slug: key, title, status: "published", content, sources: details,
-    research_summary: txt(obj.editorial_note || obj.what_changed || content.editorial_thesis || "", 2200),
-    research_query: txt(pack.query, 700), generated_by: result.provider, published_at: stamp(), updated_at: stamp()
-  }, { onConflict: "section,slug" }).select("id,section,slug,title,published_at,updated_at").single();
-  if (saved.error) throw new Error("Save failed: " + saved.error.message);
-
-  if (mode === "hourly" && Array.isArray(content.items)) {
-    for (let index = 0; index < content.items.length; index++) {
-      const item = content.items[index] || {};
-      const evidence = (Array.isArray(item.sources) ? item.sources : []).filter((s: any) => safeLink(s.url));
-      const firstSource = evidence[0];
-      const uniquePublishers = new Set(evidence.map((s: any) => host(s.url).toLowerCase()).filter(Boolean));
-      const officialCount = evidence.filter((s: any) => s.type === "official").length;
-      const verified = item.confidence === "confirmed" && evidence.length >= 3 && uniquePublishers.size >= 3 && officialCount >= 1;
-      const articleSlug = key + "-" + String(index + 1);
-      const row: any = {
-        url: SITE.replace(/\/+$/, "") + "/editorial/" + articleSlug, guid: "wrldline-editorial:" + articleSlug,
-        title: txt(item.headline, 240),
-        summary: [
-          txt(item.summary, 4200),
-          "السياق: " + txt(item.context, 3000),
-          "لماذا يهم؟ " + txt(item.significance, 2200),
-          "ما الذي نراقبه تالياً؟ " + txt(item.watch_next, 1800),
-          "المصادر: " + evidence.map((s: any) => txt(s.publisher || s.title, 120) + " — " + safeLink(s.url)).join(" | ")
-        ].filter(Boolean).join("\n\n").slice(0, 11800),
-        image_url: safeLink(item.image_url) || null, author: "WRLDLINE NEWS",
-        lang: "ar", source_language: "ar", language_detection: "declared",
-        category: ["politics","economy","security","tech","sports","culture","health","science","environment","society","world"].includes(String(item.category)) ? item.category : "world",
-        country: null, event_country: txt(item.region, 120) || null,
-        geographic_scope: "international", source_scope: "international",
-        source_name: "WRLDLINE NEWS", source_url: firstSource ? safeLink(firstSource.url) : SITE,
-        published_at: stamp(), verification: verified ? "confirmed" : (evidence.length >= 2 ? "multi" : "unconfirmed"),
-        verification_source_count: evidence.length, verification_independent_count: uniquePublishers.size,
-        verification_official_count: officialCount, verification_conflict_count: 0,
-        verification_correction_count: 0, verification_retraction_count: 0,
-        verification_updated_at: stamp(),
-        verification_note: verified ? "تأكيد آلي متعدد المصادر مع مصدر أولي؛ قابل للتحديث عند ظهور أدلة جديدة." : "مادة مدعومة بالمصادر المذكورة ولم تستوفِ معيار التأكيد الأعلى.",
-        editorial_status: "published", content_type: "analysis", is_breaking: false,
-        ai_classification_status: "classified", ai_summary: txt(item.summary, 1200),
-        ai_reader_impact: txt(item.significance, 900), ai_watch_next: txt(item.watch_next, 900),
-        editorial_trust_status: verified ? "confirmed" : "unconfirmed", trust_needs_review: !verified,
-        trust_review_note: verified ? "تحقق آلي متعدد المصادر؛ لا يُنسب إلى مراجعة بشرية." : "تحتاج إلى مراجعة تحريرية قبل رفع حالة الثقة."
-      };
-      const existing = await db.from("articles").select("id").eq("guid", row.guid).maybeSingle();
-      if (existing.error) throw new Error("Could not check editorial article: " + existing.error.message);
-      const write = existing.data
-        ? await db.from("articles").update(row).eq("id", existing.data.id).select("id").single()
-        : await db.from("articles").insert(row).select("id").single();
-      if (write.error) throw new Error("Could not publish editorial article to newsroom: " + write.error.message);
-    }
+  // HUMAN EDITORIAL CONTROL: AI output is stored as a DRAFT only. A human editor publishes it through
+  // public.review_editorial_publication(). A published version is never overwritten by a model;
+  // a revision is stored as a separate draft that references the version it would replace.
+  // Newsroom articles are NOT created automatically from AI output.
+  const existing = await db.from("editorial_publications").select("id,status").eq("section", section).eq("slug", key).maybeSingle();
+  if (existing.error) throw new Error("Could not check existing publication: " + existing.error.message);
+  let draftSlug = key;
+  if (existing.data && existing.data.status === "published") {
+    draftSlug = (key + "-rev-" + stamp().replace(/[^0-9]/g, "").slice(0, 12)).slice(0, 120);
+    content.supersedes = key; content.slug = draftSlug;
   }
+  const saved = await db.from("editorial_publications").upsert({
+    section, slug: draftSlug, title, status: "draft", content, sources: details,
+    research_summary: txt(obj.editorial_note || obj.what_changed || content.editorial_thesis || "", 2200),
+    research_query: txt(pack.query, 700), generated_by: result.provider, updated_at: stamp()
+  }, { onConflict: "section,slug" }).select("id,section,slug,title,published_at,updated_at,status").single();
+  if (saved.error) throw new Error("Save failed: " + saved.error.message);
   return { skipped: false, row: saved.data, provider: result.provider, researchSources: selected.filter(s => s.id.startsWith("source_")).length, articleSources: selected.filter(s => s.id.startsWith("article_")).length };
 }
 function riyadhDate() { return new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Riyadh", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date()); }
@@ -519,12 +484,12 @@ Deno.serve(async (req: Request) => {
       return reply({ ok: true, skipped: true, reason: result.reason, next_due_at: nextDue });
     }
     if (mode === "dossier") await advanceDossierSchedule(db);
-    await log(db, begun.data.id, "published", {
+    await log(db, begun.data.id, "draft", {
       section: mode.startsWith("context") ? "context" : mode, publication_slug: result.row.slug,
       provider: result.provider, research_sources: result.researchSources, article_sources: result.articleSources,
       details: { publication_id: result.row.id, title: result.row.title }
     });
-    return reply({ ok: true, published: true, mode, publication: result.row, provider: result.provider, research_sources: result.researchSources, article_sources: result.articleSources });
+    return reply({ ok: true, draft_created: true, published: false, mode, publication: result.row, provider: result.provider, research_sources: result.researchSources, article_sources: result.articleSources });
   } catch (e) {
     const message = txt(e instanceof Error ? e.message : String(e), 1000);
     await log(db, begun.data.id, "failed", { error_summary: message });
