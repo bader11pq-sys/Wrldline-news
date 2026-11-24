@@ -134,7 +134,7 @@ async def main():
             await expect(page.locator(f'.hn-desk a[href="/section/{slug}"]')).to_be_visible()
         assert await page.evaluate("document.documentElement.scrollWidth <= innerWidth")
         await page.locator(".hn-desk a[href='rights-cases/index.html']").click()
-        await expect(page.locator("#files .hn-card")).to_have_count(3)
+        await expect(page.locator("#files .hn-card")).to_have_count(6)
         await expect(page.locator("#labels .hn-badge")).to_have_count(6)
         await page.locator(".hn-card a[href='qatar-wages.html']").click()
         await page.locator('.hn-jumps a[href="#evidence"]').click()
