@@ -25,7 +25,9 @@ jobs:
       - name: Install pinned check-only browser tooling
         run: |
           python -m pip install 'playwright==1.56.0'
-          python -m playwright install --with-deps chromium
+          # The hosted Ubuntu image already ships Chrome's runtime libraries.
+          # Playwright 1.56's optional apt installer asks for obsolete font packages.
+          python -m playwright install chromium
       - name: Mocked consent, mobile, and failure browser regressions
         env:
           WRLDLINE_BROWSER_ISOLATED: '1'

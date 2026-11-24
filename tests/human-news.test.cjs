@@ -31,7 +31,9 @@ test("dossier outputs are reproducible and fictional example stays out of search
 
 test("a published claim cannot be marked corroborated without cites or confused with an official reply", () => {
   const data = cases();
-  const claim = data[0].claims[1];
+  const claim = data[0].claims.find(row => row.refs.length >= 2);
+  assert.ok(claim, "a claim with multiple references is available");
+  claim.status = "corroborated";
   claim.refs = [claim.refs[0]];
   assert.throws(() => validate(data), /not enough sources/);
   claim.status = "official";
@@ -41,9 +43,10 @@ test("a published claim cannot be marked corroborated without cites or confused 
 test("requires meaningful coverage dates, an impact field, and sources for an attributed reply", () => {
   const data = cases();
   const entry = data[0];
+  const originalDate = entry.checkedThrough;
   entry.checkedThrough = "2024-02-31";
   assert.throws(() => validate(data), /invalid review or editorial date/);
-  entry.checkedThrough = "2024-08-13";
+  entry.checkedThrough = originalDate;
   entry.impact = " ";
   assert.throws(() => validate(data), /missing impact/);
   entry.impact = "Impact in the test data";
