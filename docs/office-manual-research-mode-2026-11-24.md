@@ -46,4 +46,4 @@ Khalid searches only when the CEO explicitly assigns a research task and the tas
 - Run authenticated end-to-end task tests for all eight roles, including Gemini/Groq provider behavior and approval enforcement.
 - Complete a staging service integration for Noura before treating staging/release tasks as functional.
 
-This Worker backup is the deployed bundled entrypoint captured immediately before the change. It is retained for rollback/audit; it is not a substitute for reconstructing and maintaining the original TypeScript source modules.
+The pre-change Worker backup and post-change production snapshot are both retained under `cloudflare-backups/` for rollback and audit. These are compiled bundles, not a substitute for reconstructing and maintaining the original TypeScript source modules.
