@@ -24,6 +24,14 @@ async function authenticatedUser(req: Request) {
   const { data, error } = await db.auth.getUser(token);
   return error ? null : data.user;
 }
+// Application-level abuse/spend limits for OTP (per user, phone, IP and globally). See migration
+// 20261124110000_otp_rate_limits.sql. Fails closed: if the limiter itself errors, the SMS is not sent.
+async function otpAllowed(req: Request, userId: string, action: "start_otp" | "verify_otp", phone: string) {
+  const ip = (req.headers.get("cf-connecting-ip") || (req.headers.get("x-forwarded-for") || "").split(",")[0] || "unknown").trim();
+  const { data, error } = await db.rpc("otp_rate_check", { p_user: userId, p_action: action, p_phone: phone, p_ip: ip });
+  if (error) { console.error("OTP_RATE_CHECK_FAILED", String(error.message || error).slice(0, 200)); return { allowed: false, reason: "limiter_error", retry_after_seconds: 60 }; }
+  return data as { allowed: boolean; reason: string; retry_after_seconds: number };
+}
 async function sendBreaking() {
   if (!MESSAGING_PROFILE || !FROM_NUMBER) throw new Error("TELNYX_MESSAGING_PROFILE_ID and TELNYX_FROM_NUMBER are required for SMS alerts");
   const { data: articles, error } = await db.from("articles").select("id,title,summary,url,source_name,published_at,lang").eq("is_breaking",true).is("sms_notification_sent_at",null).gte("published_at",new Date(Date.now()-30*60*1000).toISOString()).order("published_at",{ascending:false}).limit(20);
@@ -70,13 +78,21 @@ Deno.serve(async (req) => {
     if (action==="start_otp") {
       if (!e164(body.phone)) return json({error:"استخدم رقم الهاتف بصيغة دولية مثل +9665XXXXXXXX"},400);
       if (!VERIFY_PROFILE) return json({error:"TELNYX_VERIFY_PROFILE_ID is not configured"},503);
+      const gate = await otpAllowed(req, user.id, "start_otp", body.phone);
+      if (!gate.allowed) return json({error:"تجاوزت الحد المسموح لطلبات رمز التحقق. حاول لاحقاً.",code:"rate_limited",retry_after_seconds:gate.retry_after_seconds},429);
       await telnyx("verifications/sms",{phone_number:body.phone,verify_profile_id:VERIFY_PROFILE});
       return json({ok:true,message:"تم إرسال رمز التحقق."});
     }
     if (action==="verify_otp") {
       if (!e164(body.phone) || !/^\d{4,10}$/.test(String(body.code||""))) return json({error:"رقم الهاتف أو رمز التحقق غير صالح"},400);
       if (!VERIFY_PROFILE) return json({error:"TELNYX_VERIFY_PROFILE_ID is not configured"},503);
-      await telnyx("verifications/by_phone_number/"+encodeURIComponent(body.phone)+"/actions/verify",{code:String(body.code),verify_profile_id:VERIFY_PROFILE});
+      const gate = await otpAllowed(req, user.id, "verify_otp", body.phone);
+      if (!gate.allowed) return json({error:"محاولات تحقق كثيرة. حاول لاحقاً.",code:"rate_limited",retry_after_seconds:gate.retry_after_seconds},429);
+      const verdict: any = await telnyx("verifications/by_phone_number/"+encodeURIComponent(body.phone)+"/actions/verify",{code:String(body.code),verify_profile_id:VERIFY_PROFILE});
+      // Telnyx answers HTTP 200 for a wrong code too; an explicit non-"accepted" response_code must not verify the phone.
+      // If the field is absent we keep the previous behaviour (contract not exercised live) and log it.
+      if (typeof verdict?.response_code === "string" && verdict.response_code !== "accepted") return json({error:"رمز التحقق غير صحيح.",code:"invalid_code"},400);
+      if (typeof verdict?.response_code !== "string") console.warn("OTP_VERIFY_RESPONSE_CODE_MISSING");
       const {error}=await db.from("user_phone_verifications").upsert({user_id:user.id,phone_e164:body.phone,verified_at:new Date().toISOString(),updated_at:new Date().toISOString()},{onConflict:"user_id"});
       if (error) throw error;
       return json({ok:true,message:"تم تأكيد رقم الهاتف بنجاح."});
@@ -98,6 +114,6 @@ Deno.serve(async (req) => {
   } catch(e: unknown) {
     const message=e instanceof Error ? e.message : String(e);
     console.error("TELNYX_GATEWAY_ERROR",message.slice(0,500));
-    return json({error:message.slice(0,300)},502);
+    return json({error:"تعذر إتمام الطلب حالياً. حاول لاحقاً."},502);
   }
 });
