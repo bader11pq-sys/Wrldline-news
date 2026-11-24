@@ -1,6 +1,6 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {fresh,iso,uid} from '../shared/schema';
+import {dayKey,fresh,iso,uid} from '../shared/schema';
 import worker,{app,mountedRequest} from '../worker';
 import {demoSeed} from '../worker/demo';
 import {ask,listModels,type Env} from '../worker/integrations';
@@ -56,6 +56,29 @@ test('saved model routing is session-protected; demo probe never contacts a prov
   assert.equal((await set('/api/office/models','PUT',profile)).status,200);
   const probe=await set('/api/office/models/test','POST',{tier:'checker'});
   assert.deepEqual(await probe.json(),{demo:true,status:'demo',provider:'groq',model:profile.checker});
+});
+
+test('Gemini routes distinct tiers, omits private probe context, hides thoughts and records token usage',async t=>{
+  const o=fresh(false);
+  o.messages.push({id:uid(),author:'ceo',channel:'layla',text:'private editorial context',createdAt:iso()});
+  const environment={...live,AI_PROVIDER:'gemini' as const,GEMINI_API_KEY:'fixture-google'};
+  const called:string[]=[];
+  t.mock.method(globalThis,'fetch',async(url:string,init:RequestInit)=>{
+    assert.equal(new Headers(init.headers).get('x-goog-api-key'),'fixture-google');
+    assert.doesNotMatch(url,/fixture-google/);
+    called.push(url);
+    const body=JSON.parse(String(init.body));
+    assert.equal(body.generationConfig.thinkingConfig.thinkingLevel,'minimal');
+    assert.doesNotMatch(JSON.stringify(body),/private editorial context/);
+    return json({candidates:[{content:{parts:[{text:'hidden',thought:true},{text:'جاهز'}]}}],usageMetadata:{totalTokenCount:17}});
+  });
+  for(const employee of ['omar','sara','layla'] as const){
+    assert.equal(await ask(environment,o,employee,'Connectivity probe','Reply OK.',512),'جاهز');
+    assert.equal(o.usage[dayKey()][employee],17);
+  }
+  assert.match(called[0],/\/gemini-3\.5-flash-lite:generateContent$/);
+  assert.match(called[1],/\/gemini-3\.6-flash:generateContent$/);
+  assert.equal(called[1],called[2]);
 });
 
 test('public feed and article lookup reject all nonpublished payloads and restrict cross-origin reads',async t=>{

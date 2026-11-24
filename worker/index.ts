@@ -4,7 +4,7 @@ import {z} from 'zod';
 import {agentIds} from '../shared/agents';
 import {dayKey,uid,type Article} from '../shared/schema';
 import {decide,discuss,log,metrics,OfficeError,order,ready,reports,step,type ViewCount} from './engine';
-import {apiKey,ask,gather,listModels,limitTime,mode,modelProfile,safeUrl,SetupError,type Env} from './integrations';
+import {apiKey,ask,gather,listModels,limitTime,mode,modelProfile,providers,safeUrl,SetupError,type Env} from './integrations';
 import {assertLive,demoNew,load,mutate,supa} from './store';
 import {officeBucket,officeResource} from './database';
 
@@ -17,7 +17,7 @@ async function body<T extends z.ZodType>(c:{req:{json():Promise<unknown>}},schem
 app.onError((err,c)=>{if(err instanceof OfficeError)return c.json({error:err.message},err.status as 400);if(err instanceof SetupError)return c.json({error:err.message},503);console.error(err.message);return c.json({error:'The office could not complete this request.'},500);});
 app.use('/api/*',async(c,next)=>{await next();c.header('Cache-Control','no-store');c.header('X-Content-Type-Options','nosniff');c.header('Referrer-Policy','no-referrer');});
 app.use('/api/*',bodyLimit({maxSize:22000,onError:c=>c.json({error:'Request body too large.'},413)}));
-app.get('/api/health',c=>c.json({ok:true,demo:mode(c.env),ai:!mode(c.env)&&!!(apiKey(c.env,'groq')||apiKey(c.env,'openrouter')),releases:!mode(c.env)&&!!c.env.RELEASE_SERVICE_URL,images:!mode(c.env)&&!!c.env.IMAGE_API_KEY,site:safeUrl(c.env.SITE_PUBLIC_URL||'https://al-ghaib.us.ci')?.origin}));
+app.get('/api/health',c=>c.json({ok:true,demo:mode(c.env),ai:!mode(c.env)&&providers.some(p=>!!apiKey(c.env,p)),releases:!mode(c.env)&&!!c.env.RELEASE_SERVICE_URL,images:!mode(c.env)&&!!c.env.IMAGE_API_KEY,site:safeUrl(c.env.SITE_PUBLIC_URL||'https://al-ghaib.us.ci')?.origin}));
 app.post('/api/session',async c=>{
   if(mode(c.env)){const token=uid();demoNew(token);return c.json({token,demo:true});}
   assertLive(c.env);
@@ -88,7 +88,7 @@ app.use('/api/office/*',async(c,next)=>{
 const snapshot=async(e:Env,actor:string)=>{
   const state=await load(e,actor);
   const views:ViewCount[]=state.demo||!state.articles.some(a=>a.status==='published')?[]:await (await supa(e,`/rest/v1/rpc/${officeResource(e,'office_views')}`,{method:'POST',body:JSON.stringify({p_user:actor})})).json();
-  return {...state,modelProfile:modelProfile(e,state),providers:{openrouter:!state.demo&&!!apiKey(e,'openrouter'),groq:!state.demo&&!!apiKey(e,'groq')},analytics:metrics(state,views)};
+  return {...state,modelProfile:modelProfile(e,state),providers:Object.fromEntries(providers.map(p=>[p,!state.demo&&!!apiKey(e,p)])),analytics:metrics(state,views)};
 };
 app.get('/api/office/state',async c=>c.json(await snapshot(c.env,c.get('actor'))));
 app.post('/api/office/orders',async c=>{
@@ -99,7 +99,7 @@ app.post('/api/office/chat',async c=>{
   const data=await body(c,z.object({text:z.string().trim().min(1).max(3800),channel}));
   const actor=c.get('actor');await mutate(c.env,actor,o=>discuss(c.env,o,data.text,data.channel));return c.json(await snapshot(c.env,actor));
 });
-const providerInput=z.enum(['openrouter','groq']),modelId=z.string().trim().regex(/^[a-z0-9_.:/-]{1,140}$/i);
+const providerInput=z.enum(providers),modelId=z.string().trim().regex(/^[a-z0-9_.:/-]{1,140}$/i);
 app.get('/api/office/models/:provider',async c=>{
   const p=providerInput.safeParse(c.req.param('provider'));if(!p.success)throw new OfficeError('مزود غير مدعوم.',422);
   return c.json({models:await listModels(c.env,p.data),demo:mode(c.env)});
@@ -116,7 +116,7 @@ app.post('/api/office/models/test',async c=>{
     const profile=modelProfile(c.env,o);
     if(o.demo)return {demo:true,status:'demo',provider:profile.provider,model:profile[tier]};
     try {
-      await ask(c.env,o,tier==='fast'?'omar':tier==='editor'?'sara':'layla','Connectivity probe','Reply OK only. Do not access or request editorial data.',16);
+      await ask(c.env,o,tier==='fast'?'omar':tier==='editor'?'sara':'layla','Connectivity probe','Reply with a short test response only. Do not access or request editorial data.',512);
       log(o,'Model connection verified',actor,`${profile.provider} ${profile[tier]}`);
       return {demo:false,status:'ok',provider:profile.provider,model:profile[tier]};
     }catch(err){

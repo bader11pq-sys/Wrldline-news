@@ -33,6 +33,8 @@ jobs:
           WF_CLOUDFLARE_EMAIL: ${{ secrets.WORLDLINE_OFFICE_CF_EMAIL }}
           WF_GROQ_KEY: ${{ secrets.GROQ_API_KEY }}
           WF_OPENROUTER_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          WF_GEMINI_KEY: ${{ secrets.GEMINI_API_KEY || secrets.GOOGLE_API_KEY }}
+          WF_GEMINI_FALLBACK_KEY: ${{ secrets.GEMINI_API_KEY2 }}
           WF_IMAGE_KEY: ${{ secrets.OPENAI_API_KEY }}
       - name: Deploy only the new isolated Worker
         run: |

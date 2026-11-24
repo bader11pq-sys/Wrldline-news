@@ -2,6 +2,14 @@
 
 غرفة تحرير عربية بثمانية اختصاصات، ومحادثات منفصلة عن التكليفات، ولوحة اعتماد خاصة برئيس التحرير. هذه الحزمة تتضمن الكود وبيئة تجريبية بلا مفاتيح؛ ولا تنشر البيئة التجريبية أية مواد على الموقع.
 
+## تشغيل المكتب المتصل بموقعك
+
+1. ادخل إلى [غرفة أخبار وورلدلاين](https://al-ghaib.us.ci/ai-office/). عند الدخول لأول مرة، افتح [لوحة التحرير](https://al-ghaib.us.ci/admin.html)، اختر **استعادة كلمة المرور** وأدخل بريد حسابك، ثم عيّن كلمة المرور من الرسالة وارجع إلى المكتب. صلاحية المكتب منفصلة عن صلاحيات تحرير الموقع الأصلي.
+2. افتح بطاقة **عمر** لبدء التكليف، أو بطاقة أي موظف لفتح قناته. **محادثة** تسأل الموظف دون تكليف، بينما **تكليف** يدخل المهمة في سير العمل.
+3. تظهر المواد التي اجتازت التحقق في **الاعتمادات**. راجع النص والمصادر الأصلية ثم اختر **اعتماد ونشر** أو **رفض مع ملاحظات**. تظهر المنشورات المعتمدة فقط في [نشرة غرفة الأخبار](https://al-ghaib.us.ci/office-edition.html).
+
+النسخة الموصولة بالموقع تستخدم `wrangler.wrldline.toml` وترحيلًا معزولًا لجداول `wrldline_office_*`. لا تُشغّل خطوات التثبيت المستقل أدناه على قاعدة الموقع الحالية. محول نشر تغييرات الموقع من داخل المكتب اختياري ومنفصل عن نشر الأخبار، وهو غير موصول بالنسخة الحية.
+
 ## Project layout
 
 ```text
@@ -56,7 +64,7 @@ Open [the local Vite office](http://localhost:5173). The Node server listens on 
 
 ## ربط نماذج الذكاء الاصطناعي
 
-1. أنشئ مفتاحاً من لوحة [Groq](https://console.groq.com/keys) أو [OpenRouter](https://openrouter.ai/settings/keys). احتفظ به في `Settings → Variables and Secrets` للـ Worker، تحت الاسم `GROQ_API_KEY` أو `OPENROUTER_API_KEY`. لا تضعه في GitHub أو واجهة الموقع أو المحادثة.
+1. إذا احتجت إلى تغيير المزوّد أو تدوير مفتاحه، أنشئ مفتاحاً من لوحة [Groq](https://console.groq.com/keys) أو [OpenRouter](https://openrouter.ai/settings/keys) أو [Gemini](https://aistudio.google.com/apikey). احفظه في `Settings → Variables and Secrets` للـ Worker باسم `GROQ_API_KEY` أو `OPENROUTER_API_KEY` أو `GEMINI_API_KEY`. لا تضعه في ملفات Git أو واجهة الموقع أو المحادثة.
 2. افتح **الإعدادات والنماذج** في المكتب واختر المزوّد، ثم **جلب قائمة النماذج**. اختر نموذجاً اقتصادياً للمهام اليومية، ونموذجاً للتحرير النهائي عند سارة، ونموذجاً للتحقق المستقل عند ليلى. يحفظ المكتب أسماء النماذج والمزوّد فقط؛ المفتاح يبقى في الخادم.
 3. اضغط **حفظ التوزيع** ثم **اختبار الاتصال** لكل دور. يتأكد الاختبار من استجابة النموذج من دون إرفاق محادثات أو مسودات. اختبار المزود الحي قد يستهلك قدراً صغيراً من الرصيد؛ في الوضع التجريبي لا يخرج أي طلب. حد الاستخدام في المكتب محسوب بالرموز، وليس بالدولار.
 4. اضغط على بطاقة أي موظف. اختر **محادثة** للاستفسار، أو **تكليف** لتسجيل مهمة في سجل الوردية. في غرفة الاجتماع تستطيع توجيه السؤال لشخص معيّن بكتابة اسمه مثل `@ليلى`.
@@ -89,8 +97,8 @@ Use a **new** Supabase project for the initial installation. Do not run the init
 | `SUPABASE_PUBLISHABLE_KEY` | Server-side Auth API project key. Publishable/legacy anon key, not the service key |
 | `SUPABASE_SERVICE_ROLE_KEY` | Legacy service-role JWT for server-only Data API and private Storage access |
 | `CEO_USER_ID` | UUID created in Auth and inserted into `public.users` |
-| `AI_PROVIDER` | `openrouter` or `groq` |
-| `OPENROUTER_API_KEY`, `GROQ_API_KEY` | Only the selected provider's key is needed |
+| `AI_PROVIDER` | `openrouter`, `groq`, or `gemini` |
+| `OPENROUTER_API_KEY`, `GROQ_API_KEY`, `GEMINI_API_KEY` | Only the selected provider's key is needed |
 | `MODEL_FAST`, `MODEL_EDITOR`, `MODEL_CHECKER` | Optional model overrides. Check availability and price in the provider dashboard. A default is not a promise of free quota |
 | `BRAVE_SEARCH_API_KEY` | Optional corroborating news search; RSS works without this key |
 | `IMAGE_API_KEY`, `IMAGE_MODEL` | Optional OpenAI image integration. Image generation uses separate provider billing and is not capped by the text token budget |

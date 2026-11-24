@@ -8,6 +8,30 @@ const dir=e.RUNNER_TEMP;
 function required(name){if(!e[name])throw Error(`Required deployment input missing: ${name}`);return e[name];}
 async function get(url,options={}){return fetch(url,{...options,signal:AbortSignal.timeout(18000)});}
 const die=message=>{throw Error(message);};
+async function chooseModels(){
+  const options=[
+    ...[...new Set([e.WF_GEMINI_KEY,e.WF_GEMINI_FALLBACK_KEY].filter(Boolean))].map(key=>({provider:'gemini',key,fast:'gemini-3.5-flash-lite',strong:'gemini-3.6-flash'})),
+    ...(e.WF_GROQ_KEY?[{provider:'groq',key:e.WF_GROQ_KEY,fast:'openai/gpt-oss-20b',strong:'openai/gpt-oss-120b'}]:[]),
+    ...(e.WF_OPENROUTER_KEY?[{provider:'openrouter',key:e.WF_OPENROUTER_KEY,fast:'openai/gpt-oss-20b:free',strong:'openai/gpt-oss-120b:free'}]:[])
+  ];
+  const attempts=await Promise.all(options.map(async option=>{
+    const {provider,key,fast,strong}=option;
+    const results=await Promise.all([fast,strong].map(async model=>{
+      try{
+        const gemini=provider==='gemini',text='أجب بكلمة جاهز فقط. هذا اختبار اتصال.';
+        const endpoint=gemini?`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`:`${provider==='groq'?'https://api.groq.com/openai/v1':'https://openrouter.ai/api/v1'}/chat/completions`;
+        const response=await get(endpoint,{method:'POST',headers:{'content-type':'application/json',...(gemini?{'x-goog-api-key':key}:{authorization:`Bearer ${key}`})},body:JSON.stringify(gemini?{contents:[{role:'user',parts:[{text}]}],generationConfig:{thinkingConfig:{thinkingLevel:'minimal'},maxOutputTokens:512}}:{model,max_tokens:512,...(provider==='groq'?{reasoning_effort:'low'}:{}),messages:[{role:'user',content:text}]})});
+        const payload=await response.json().catch(()=>null);
+        const answer=gemini?payload?.candidates?.[0]?.content?.parts?.find(x=>!x.thought&&x.text)?.text:payload?.choices?.[0]?.message?.content;
+        const ok=response.ok&&typeof answer==='string'&&!!answer.trim();
+        console.log(`Provider ${provider} / ${model}: ${ok?'verified':`no usable response (HTTP ${response.status})`}.`);
+        return ok;
+      }catch{console.log(`Provider ${provider} / ${model}: timed out or unavailable.`);return false;}
+    }));
+    return results.every(Boolean)?option:null;
+  }));
+  return attempts.find(Boolean);
+}
 const input=()=>{
   const root=required('WF_SUPABASE_URL').replace(/\/$/,'');
   if(root!=='https://vmaxbnogmmfyrcucapnq.supabase.co')die('Wrong Supabase project. Refusing to provision.');
@@ -49,10 +73,15 @@ async function prepare(){
   if(!/^[0-9a-f-]{36}$/i.test(user.id||''))die('No usable CEO identity.');
   const officeUser=await get(`${root}/rest/v1/wrldline_office_users?on_conflict=id`,{method:'POST',headers:{...headers,prefer:'resolution=ignore-duplicates,return=minimal'},body:JSON.stringify({id:user.id,role:'ceo',name:'رئيس التحرير'})});
   if(!officeUser.ok)die(`Cannot bind CEO to the isolated office tables (HTTP ${officeUser.status}).`);
+  const selected=await chooseModels();
+  const geminiKey=selected?.provider==='gemini'?selected.key:e.WF_GEMINI_KEY||e.WF_GEMINI_FALLBACK_KEY;
+  console.log(selected?`Default live model profile: ${selected.provider}.`:'No available provider verified both model roles; editorial generation will not use mock responses.');
   const secrets={
     SUPABASE_URL:root,SUPABASE_SERVICE_ROLE_KEY:e.WF_SUPABASE_SERVICE_KEY,
     SUPABASE_PUBLISHABLE_KEY:required('WF_SUPABASE_PUBLISHABLE_KEY'), CEO_USER_ID:user.id,
-    AI_PROVIDER:e.WF_GROQ_KEY?'groq':'openrouter',
+    AI_PROVIDER:selected?.provider??(geminiKey?'gemini':e.WF_GROQ_KEY?'groq':'openrouter'),
+    ...(selected?{MODEL_FAST:selected.fast,MODEL_EDITOR:selected.strong,MODEL_CHECKER:selected.strong}:{}),
+    ...(geminiKey?{GEMINI_API_KEY:geminiKey}:{}),
     ...(e.WF_GROQ_KEY?{GROQ_API_KEY:e.WF_GROQ_KEY}:{}),
     ...(e.WF_OPENROUTER_KEY?{OPENROUTER_API_KEY:e.WF_OPENROUTER_KEY}:{}),
     ...(e.WF_IMAGE_KEY?{IMAGE_API_KEY:e.WF_IMAGE_KEY}:{})

@@ -12,5 +12,6 @@ export const agents = {
 export const agentIds = Object.keys(agents) as AgentId[];
 export const models = {
   openrouter:{fast:'qwen/qwen3-8b',editor:'deepseek/deepseek-chat-v3-0324',checker:'deepseek/deepseek-chat-v3-0324'},
-  groq:{fast:'llama-3.1-8b-instant',editor:'llama-3.3-70b-versatile',checker:'llama-3.3-70b-versatile'}
+  groq:{fast:'openai/gpt-oss-20b',editor:'openai/gpt-oss-120b',checker:'openai/gpt-oss-120b'},
+  gemini:{fast:'gemini-3.5-flash-lite',editor:'gemini-3.6-flash',checker:'gemini-3.6-flash'}
 };

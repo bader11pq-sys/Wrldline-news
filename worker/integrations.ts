@@ -8,13 +8,14 @@ import {officeBucket} from './database';
 export interface Env {
   APP_MODE?:string; SUPABASE_URL?:string; SUPABASE_PUBLISHABLE_KEY?:string; SUPABASE_SERVICE_ROLE_KEY?:string; CEO_USER_ID?:string;
   OFFICE_DB_NAMESPACE?:string; LOGIN_LIMIT?:{limit(x:{key:string}):Promise<{success:boolean}>};
-  AI_PROVIDER?:'openrouter'|'groq'; OPENROUTER_API_KEY?:string; GROQ_API_KEY?:string; MODEL_FAST?:string; MODEL_EDITOR?:string; MODEL_CHECKER?:string;
+  AI_PROVIDER?:ProviderId; OPENROUTER_API_KEY?:string; GROQ_API_KEY?:string; GEMINI_API_KEY?:string; MODEL_FAST?:string; MODEL_EDITOR?:string; MODEL_CHECKER?:string;
   BRAVE_SEARCH_API_KEY?:string; IMAGE_API_KEY?:string; IMAGE_MODEL?:string; RELEASE_SERVICE_URL?:string; RELEASE_SERVICE_TOKEN?:string; RELEASE_DEPLOY_TOKEN?:string;
   DAILY_TOKEN_LIMIT?:string; AUTO_BREAKING?:string; SITE_PUBLIC_URL?:string; ASSETS?:{fetch(request:Request):Promise<Response>};
 }
-export const provider = (e:Env) => e.AI_PROVIDER === 'groq' ? 'groq' : 'openrouter';
-export const apiKey = (e:Env,p=provider(e)) => p==='groq' ? e.GROQ_API_KEY : e.OPENROUTER_API_KEY;
-const apiRoot=(p:ProviderId)=>p==='groq'?'https://api.groq.com/openai/v1':'https://openrouter.ai/api/v1';
+export const providers=['openrouter','groq','gemini'] as const;
+export const provider = (e:Env) => e.AI_PROVIDER&&providers.includes(e.AI_PROVIDER) ? e.AI_PROVIDER : 'openrouter';
+export const apiKey = (e:Env,p=provider(e)) => p==='groq' ? e.GROQ_API_KEY : p==='gemini'?e.GEMINI_API_KEY:e.OPENROUTER_API_KEY;
+const apiRoot=(p:ProviderId)=>p==='groq'?'https://api.groq.com/openai/v1':p==='gemini'?'https://generativelanguage.googleapis.com/v1beta/openai':'https://openrouter.ai/api/v1';
 export const modelProfile=(e:Env,o?:Office):ModelProfile=>o?.modelProfile??{provider:provider(e),fast:e.MODEL_FAST||models[provider(e)].fast,editor:e.MODEL_EDITOR||models[provider(e)].editor,checker:e.MODEL_CHECKER||models[provider(e)].checker};
 export async function listModels(e:Env,p:ProviderId):Promise<string[]>{
   if(mode(e))return [...new Set(Object.values(models[p]))];
@@ -48,13 +49,18 @@ export async function ask(e:Env,state:Office,who:AgentId,action:string,payload:u
   const reserve=new TextEncoder().encode(user+system).length+max+256;
   if(aiUsage(state)+reserve>state.dailyLimit) throw new BudgetError('Daily token budget reached. Increase it in Settings to resume.');
   const bucket=state.usage[dayKey()]??={}; bucket[who]=(bucket[who]||0)+reserve;
-  const r=await fetch(`${apiRoot(p)}/chat/completions`,{
-    method:'POST',headers:{authorization:`Bearer ${key}`,'content-type':'application/json'},signal:limitTime(22000),
-    body:JSON.stringify({model,max_tokens:max,temperature:0.2,messages:[{role:'system',content:system},{role:'user',content:user}]})});
+  const gemini=p==='gemini';
+  const geminiId=model.replace(/^models\//,'');
+  const r=await fetch(gemini?`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(geminiId)}:generateContent`:`${apiRoot(p)}/chat/completions`,{
+    method:'POST',headers:{...(gemini?{'x-goog-api-key':key}:{authorization:`Bearer ${key}`}), 'content-type':'application/json'},signal:limitTime(22000),
+    body:JSON.stringify(gemini
+      ? {systemInstruction:{parts:[{text:system}]},contents:[{role:'user',parts:[{text:user}]}],generationConfig:{maxOutputTokens:max,...(/^gemini-3/.test(geminiId)?{thinkingConfig:{thinkingLevel:probe||group==='fast'?'minimal':'low'}}:{})}}
+      : {model,max_tokens:max,temperature:0.2,...(p==='groq'&&model.startsWith('openai/gpt-oss-')?{reasoning_effort:'low'}:{}),messages:[{role:'system',content:system},{role:'user',content:user}]})});
   if(!r.ok) throw new Error(`AI provider returned HTTP ${r.status}.`);
-  const j=await r.json() as {choices?:{message:{content:string}}[];usage?:{total_tokens:number}};
-  if(Number.isSafeInteger(j.usage?.total_tokens)&&j.usage!.total_tokens>0) bucket[who]+=(j.usage!.total_tokens-reserve);
-  const reply=j.choices?.[0]?.message?.content;
+  const j=await r.json() as {choices?:{message:{content:string}}[];usage?:{total_tokens:number};candidates?:{content?:{parts?:{text?:string;thought?:boolean}[]}}[];usageMetadata?:{totalTokenCount:number}};
+  const used=j.usage?.total_tokens??j.usageMetadata?.totalTokenCount;
+  if(used&&Number.isSafeInteger(used)&&used>0) bucket[who]+=(used-reserve);
+  const reply=(gemini?j.candidates?.[0]?.content?.parts?.filter(x=>!x.thought).map(x=>x.text??'').join(''):j.choices?.[0]?.message?.content)?.trim();
   if(!reply) throw new Error('The model returned no usable content.');
   return reply;
 }

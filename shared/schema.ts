@@ -20,7 +20,7 @@ export interface Log {id:string; action:string; actor:string; details:string; cr
 export interface Approval {id:string; targetId:string; decision:'approved'|'rejected'; feedback:string; actor:string; createdAt:string}
 export interface Report {id:string; day:string; type:'morning'|'evening'; createdAt:string; text:string; stories:Source[]}
 export interface ReadEvent {articleId:string; hour:number; day:string; topic:Topic}
-export type ProviderId='openrouter'|'groq';
+export type ProviderId='openrouter'|'groq'|'gemini';
 export interface ModelProfile {provider:ProviderId;fast:string;editor:string;checker:string}
 export interface Office {revision:number; workflows:Workflow[]; tasks:Task[]; articles:Article[]; messages:Message[]; logs:Log[]; approvals:Approval[]; reports:Report[]; usage:Record<string,Partial<Record<AgentId,number>>>; dailyLimit:number; reads:ReadEvent[]; demo:boolean;modelProfile?:ModelProfile}
 export const uid = () => crypto.randomUUID();
