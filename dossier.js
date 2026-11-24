@@ -87,7 +87,7 @@
     const counter = $("#filterStatus");
     function apply() {
       let shown = 0;
-      $("[data-dossier-card]", cardsHost).forEach((card) => {
+      $$("[data-dossier-card]", cardsHost).forEach((card) => {
         const okStatus = status.value === "all" || card.dataset.status === status.value;
         const okSector = !sector.value || (card.dataset.sectors || "").split("|").includes(sector.value);
         const okFollow = !followedOnly.value || followed().includes(card.dataset.dossierCard);
@@ -106,11 +106,35 @@
       $$("[data-filter-status]").forEach((c) => { c.classList.toggle("is-on", c === chip); c.setAttribute("aria-pressed", String(c === chip)); });
       apply();
     }));
-    $$("[data-filter-sector]").forEach((chip) => chip.addEventListener("click", () => {
+    $(".index-body .filters")?.addEventListener("click", event => {
+      const chip = event.target instanceof Element ? event.target.closest("[data-filter-sector]") : null;
+      if (!chip) return;
       sector.value = sector.value === chip.dataset.filterSector ? "" : chip.dataset.filterSector;
       $$("[data-filter-sector]").forEach((c) => { c.classList.toggle("is-on", c.dataset.filterSector === sector.value); c.setAttribute("aria-pressed", String(c.dataset.filterSector === sector.value)); });
       apply();
-    }));
+    });
+    document.addEventListener("wrldline:dossiers-updated", () => {
+      const rows = $$("[data-dossier-card]", cardsHost);
+      const tags = new Set(rows.flatMap(card => (card.dataset.sectors || "").split("|").filter(Boolean)));
+      const filters = $(".index-body .filters");
+      const existing = new Set($$("[data-filter-sector]").map(chip => chip.dataset.filterSector));
+      for (const tag of tags) {
+        if (!filters || existing.has(tag)) continue;
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "chip";
+        button.dataset.filterSector = tag;
+        button.setAttribute("aria-pressed", "false");
+        button.textContent = tag;
+        filters.appendChild(button);
+      }
+      const totals = [rows.length, rows.filter(card => card.dataset.status === "active").length,
+        rows.reduce((count, card) => count + (Number(card.dataset.sourceCount) || 0), 0)];
+      ["#dossierTotal", "#dossierActive", "#dossierSourceTotal"].forEach((id, i) => {
+        const node = $(id); if (node) node.textContent = String(totals[i]);
+      });
+      apply();
+    });
     search?.addEventListener("input", () => {
       query.value = search.value.trim().toLowerCase();
       apply();

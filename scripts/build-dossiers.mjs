@@ -343,7 +343,7 @@ ${renderHeader(activeNav)}
 <main id="main">${body}</main>
 ${renderFooter()}
 ${detail ? `<script src="/event-desk.js?v=20261122-event" defer></script>
-<script src="/dossier.js?v=20261122-event" defer></script>` : `<script src="/dossier.js?v=20261119-1" defer></script>${livePublications ? '\n<script src="/editorial-publications.js?v=20261123-catchup" defer></script>' : ''}`}
+<script src="/dossier.js?v=20261122-event" defer></script>` : `<script src="/dossier.js?v=${livePublications ? "20261124-live-sync" : "20261119-1"}" defer></script>${livePublications ? '\n<script src="/editorial-publications.js?v=20261124-live-sync" defer></script>' : ''}`}
 </body>
 </html>`;
 }
@@ -546,7 +546,7 @@ function renderIndex(list, now) {
   const sectors = [...new Set(list.flatMap((d) => d.sectors))];
   const cards = list.map((d) => {
     const status = STATUS[d.status];
-    return `<article class="card" data-dossier-card="${attr(d.slug)}" data-status="${attr(d.status)}" data-sectors="${attr(d.sectors.join("|"))}" data-search="${attr([d.title, d.summary, d.keywords.join(" "), d.sectors.join(" "), d.location].join(" "))}">
+    return `<article class="card" data-dossier-card="${attr(d.slug)}" data-source-count="${d.sources.length}" data-status="${attr(d.status)}" data-sectors="${attr(d.sectors.join("|"))}" data-search="${attr([d.title, d.summary, d.keywords.join(" "), d.sectors.join(" "), d.location].join(" "))}">
       <div class="card-top"><span class="status status-${attr(d.status)}"><span class="dot" aria-hidden="true"></span>${esc(status.label)}</span><span class="muted">${esc(arabicDate(d.updatedAt))}</span></div>
       <h2><a href="/dossier/${attr(d.slug)}.html">${esc(d.title)}</a></h2>
       <p>${esc(d.summary)}</p>
@@ -560,7 +560,7 @@ function renderIndex(list, now) {
   <span class="kicker">LIVE EVENT DOSSIERS</span>
   <h1>ملفات الأحداث الحية</h1>
   <p class="lead">كل ملف يجمع ما حدث، وما تغيّر، وميزان الروايات، والسياق، والأثر على الخليج، وما نراقبه تالياً — بمصادر مؤرخة وحالة تحقق واضحة.</p>
-  <div class="index-stats"><div><b>${list.length}</b><span>ملفات منشورة</span></div><div><b>${active}</b><span>ملف نشط</span></div><div><b>${list.reduce((n, d) => n + d.sources.length, 0)}</b><span>مصدراً موثقاً</span></div></div>
+  <div class="index-stats"><div><b id="dossierTotal">${list.length}</b><span>ملفات منشورة</span></div><div><b id="dossierActive">${active}</b><span>ملف نشط</span></div><div><b id="dossierSourceTotal">${list.reduce((n, d) => n + d.sources.length, 0)}</b><span>مصدراً موثقاً</span></div></div>
   ${renderSuiteNav("/dossier/")}
 </div></section>
 <section class="wrap index-body">
