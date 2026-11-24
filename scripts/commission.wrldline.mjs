@@ -151,6 +151,10 @@ async function smoke(){
     await new Promise(resolve=>setTimeout(resolve,3000));
   }
   console.log('Verified an authenticated CEO session on the custom domain.');
+  const sources=await get(`${base}/api/office/sources/status`,{headers});
+  const intake=await sources.json().catch(()=>null);
+  if(!sources.ok||intake?.eligibleGroups<2||!Number.isFinite(intake?.observed))die(`Live source intake did not find two eligible publisher groups (HTTP ${sources.status}, observed ${intake?.observed??0}, groups ${intake?.eligibleGroups??0}).`);
+  console.log(`Live source intake verified: ${intake.observed} candidates; ${intake.eligibleGroups} eligible publisher groups.`);
   if(!expected.MODEL_FAST){console.log('No provider profile was commissioned.');return;}
   let allVerified=true;
   for(const tier of tiers){

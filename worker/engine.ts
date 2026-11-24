@@ -114,7 +114,7 @@ async function finalEdit(e:Env,o:Office,w:Workflow,b:Brief,i:number,feedback:str
   const text=await ask(e,o,'sara',`Return JSON object {title,summary,body:[short paragraphs]} in Arabic only, with ${scope} total words in summary and body. Never copy source sentences or introduce any new fact, quote, date or context unless it is in the independently checked claim list. If there is not enough evidence to reach the length naturally, return null, do not pad.`,data,deep?4500:breaking?1200:2700);
   const result=editorialSchema.safeParse(parseJson(text));
   if(!result.success||!editorialFormat(result.data,breaking,deep))return null;
-  const reviewed=z.object({passed:z.boolean()}).safeParse(parseJson(await ask(e,o,'layla','Independently verify revised copy against ONLY the approved brief and evidence. Reject any added fact, implied conclusion, stale event presented as new, unattributed near-copy, or mismatch. Return only JSON {passed:boolean}.',{...data,copy:result.data},120)));
+  const reviewed=z.object({passed:z.boolean()}).safeParse(parseJson(await ask(e,o,'layla','Independently verify revised copy against ONLY the approved brief and evidence. Reject any added fact, implied conclusion, stale event presented as new, unattributed near-copy, or mismatch. Return only JSON {passed:boolean}.',{...data,copy:result.data},450)));
   return reviewed.success&&reviewed.data.passed?result.data:null;
 }
 function articleFor(o:Office,w:Workflow,i:number) {
@@ -155,7 +155,9 @@ async function execute(e:Env,o:Office,w:Workflow,t:Task) {
         if(w.checks.length<w.briefs.length){t.status='Queued';t.output=`Fact check ${w.checks.length}/${w.briefs.length}`;break;}
       }
       o.tasks.filter(x=>t.dependencies.includes(x.id)).forEach(x=>x.status='Done');
-      t.output=good(w).length ? `اجتازت التدقيق ${good(w).length} مادة. `+(w.checks||[]).filter(c=>c.state!=='passed').flatMap(c=>c.reasons).join(' ') : `لم يتأكد بعد. ${(w.checks||[]).flatMap(c=>c.reasons).join(' ')||'لا توجد مواد ذات أدلة كافية.'}`;
+      const groups=new Set((w.sources||[]).filter(s=>!s.untrusted).map(s=>s.group)).size;
+      const detail=!(w.sources||[]).length?'لم تصل أي مواد حديثة من خلاصات المصادر. أعد الطلب لاحقًا.':groups<2?'وصلت مواد من أقل من جهتين مستقلتين. أعد الطلب لاحقًا أو جرّب موضوعًا آخر.':'وصلت مواد من أكثر من جهة، لكن لم تتوفر أدلة متطابقة وكافية لمادة في هذا الطلب. جرّب موضوعًا أضيق أو طلب عدد أقل.';
+      t.output=good(w).length ? `اجتازت التدقيق ${good(w).length} مادة. `+(w.checks||[]).filter(c=>c.state!=='passed').flatMap(c=>c.reasons).join(' ') : `لم يتأكد بعد. ${(w.checks||[]).flatMap(c=>c.reasons).join(' ')||detail}`;
       if(!good(w).length)t.status='Blocked';
       break;
     }
@@ -247,7 +249,7 @@ export async function step(e:Env,o:Office):Promise<boolean>{
   if(t.output&&!ready(o,t)&&(['reply','ideas','analytics','image','check'].includes(t.kind)||t.kind==='stage'&&t.status==='Blocked'))say(o,w.channel,t.owner,t.output);
   const open=o.tasks.some(x=>x.workflowId===w.id&&['Queued','In Progress','Waiting for Fact Check'].includes(x.status));
   if(!open&&!w.summarySent){w.summarySent=true;const a=o.articles.filter(a=>a.workflowId===w.id&&a.status==='review').length;
-    if(w.intent!=='direct')say(o,w.channel,'omar',`انتهى العمل على الطلب. ${a?`${a} مسودة جاهزة لقرارك.`:t.status==='Blocked'?`توقف المسار: ${t.output}`:t.output||'يمكنك مراجعة سجل المهام.'}`);}
+    if(w.intent!=='direct')say(o,w.channel,'omar',a?`اكتمل العمل: ${a} مسودة جاهزة لقرارك.`:t.status==='Blocked'?`توقف المسار دون نشر: ${t.output}`:`انتهى العمل على الطلب. ${t.output||'يمكنك مراجعة سجل المهام.'}`);}
   return true;
 }
 

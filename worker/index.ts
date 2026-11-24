@@ -120,6 +120,12 @@ const snapshot=async(e:Env,actor:string)=>{
   return {...state,modelProfile:modelProfile(e,state),providers:Object.fromEntries(providers.map(p=>[p,!state.demo&&!!apiKey(e,p)])),analytics:metrics(state,views)};
 };
 app.get('/api/office/state',async c=>c.json(await snapshot(c.env,c.get('actor'))));
+app.get('/api/office/sources/status',async c=>{
+  const demo=mode(c.env),sources=demo?[]:await gather(c.env);
+  const groups:Record<string,number>={};
+  for(const s of sources){if(!s.untrusted)groups[s.group]=(groups[s.group]||0)+1;}
+  return c.json({demo,observed:sources.length,eligibleGroups:Object.keys(groups).length,groups});
+});
 app.post('/api/office/orders',async c=>{
   const data=await body(c,z.object({text:z.string().trim().min(1).max(3800),channel}));
   const actor=c.get('actor');await mutate(c.env,actor,o=>order(c.env,o,data.text,data.channel));return c.json(await snapshot(c.env,actor),201);

@@ -76,14 +76,54 @@ function mkSource(raw:string,title:string,text:string,date:string):Source|undefi
   return {id:uid(),url:u.href,publisher:publisher.publisher,group:publisher.group,title:clean(title).slice(0,250),text:excerpt,publishedAt:new Date(d).toISOString(),observedAt:iso(),untrusted:syndicated};
 }
 const list = (x:any):any[] => Array.isArray(x)?x:x?[x]:[];
+const xmlText=(x:any):string=>typeof x==='string'?x:typeof x==='number'?String(x):x&&typeof x['#text']==='string'?x['#text']:'';
+const decodeXml=(s:string)=>s.replace(/&(?:#x([a-f0-9]+)|#([0-9]+)|amp|lt|gt|quot|apos);/gi,(token,hex,dec)=>{
+  if(hex||dec){const n=Number.parseInt(hex||dec,hex?16:10);return n>0&&n<=0x10ffff&&!(n>=0xd800&&n<=0xdfff)?String.fromCodePoint(n):'';}
+  return ({'&amp;':'&','&lt;':'<','&gt;':'>','&quot;':'"','&apos;':"'"} as Record<string,string>)[token.toLowerCase()]??token;
+});
+export function parseFeed(xml:string,root:string,group:string):Source[]{
+  if(!/^\s*(?:<\?xml[^>]*\?>\s*)?<(?:rss|feed|rdf:RDF)\b/i.test(xml.replace(/^\uFEFF/,'')))return [];
+  const doc=new XMLParser({processEntities:false,ignoreAttributes:false,parseTagValue:false}).parse(xml);
+  return list(doc.rss?.channel?.item??doc['rdf:RDF']?.item??doc.feed?.entry).slice(0,18).flatMap(x=>{
+    const atomLink=list(x.link).find(l=>l?.['@_href']&&(!l['@_rel']||l['@_rel']==='alternate'));
+    const link=decodeXml(atomLink?.['@_href']??xmlText(x.link)??'');
+    if(!link)return [];
+    let article:URL|null;try{article=safeUrl(new URL(link,root).href);}catch{return [];}
+    if(!article||siteFor(article.href)?.group!==group)return [];
+    const excerpt=[x.description,x.summary,x['content:encoded'],x.content].map(v=>clean(decodeXml(xmlText(v)))).sort((a,b)=>b.length-a.length)[0]||'';
+    const out=mkSource(article.href,decodeXml(xmlText(x.title)),excerpt,xmlText(x.pubDate||x['dc:date']||x.published||x.updated));
+    return out&&out.text.length>=18?[out]:[];
+  });
+}
+async function readFeed(start:string,group:string):Promise<Source[]>{
+  let url=new URL(start);
+  const allowed=new Set([url.hostname,...trustedSources.filter(p=>p.group===group&&p.rss).map(p=>new URL(p.rss).hostname)]);
+  const signal=limitTime(9500);
+  for(let n=0;n<4;n++){
+    const r=await fetch(url.href,{redirect:'manual',signal,headers:{accept:'application/rss+xml, application/atom+xml, application/xml, text/xml, */*','user-agent':'WRLDLINE-Newsroom/1.0 (+https://al-ghaib.us.ci/)'}});
+    if(r.status>=300&&r.status<400){
+      const target=r.headers.get('location');
+      const next=target?safeUrl(new URL(target,url).href):null;
+      if(!next||!allowed.has(next.hostname))return [];
+      url=next;continue;
+    }
+    if(!r.ok)return [];
+    return parseFeed((await r.text()).slice(0,768000),url.href,group);
+  }
+  return [];
+}
+const balanced=(rows:Source[],limit:number)=>{
+  const groups=new Map<string,Source[]>();
+  for(const row of [...rows].sort((a,b)=>Date.parse(b.publishedAt)-Date.parse(a.publishedAt))){
+    if(!groups.has(row.group))groups.set(row.group,[]);
+    groups.get(row.group)!.push(row);
+  }
+  const results:Source[]=[];
+  while(results.length<limit&&[...groups.values()].some(r=>r.length))for(const group of groups.values()){const row=group.shift();if(row&&results.length<limit)results.push(row);}
+  return results;
+};
 export async function gather(e:Env,query?:string):Promise<Source[]> {
-  const feeds=await Promise.allSettled(trustedSources.filter(x=>x.rss).map(async p=>{
-    const r=await fetch(p.rss,{redirect:'error',signal:limitTime(),headers:{accept:'application/rss+xml, application/xml, text/xml'}});
-    if(!r.ok) return [];
-    const xml=(await r.text()).slice(0,256000);
-    const doc=new XMLParser({processEntities:false,ignoreAttributes:false}).parse(xml);
-    return list(doc.rss?.channel?.item??doc['rdf:RDF']?.item??doc.feed?.entry).slice(0,8).map(x=>mkSource(String(x.link?.['@_href']??x.link??''),String(x.title??''),String(x.description??x.summary??''),String(x.pubDate??x['dc:date']??x.published??x.updated??''))).filter(Boolean) as Source[];
-  }));
+  const feeds=await Promise.allSettled(trustedSources.filter(x=>x.rss).map(p=>readFeed(p.rss,p.group)));
   const found=feeds.flatMap(f=>f.status==='fulfilled'?f.value:[]);
   if(e.BRAVE_SEARCH_API_KEY&&query){
     const u=new URL('https://api.search.brave.com/res/v1/news/search');u.searchParams.set('q',query.slice(0,350));u.searchParams.set('count','15');u.searchParams.set('freshness','pw');
@@ -92,18 +132,21 @@ export async function gather(e:Env,query?:string):Promise<Source[]> {
         for(const v of j.results??[]){const source=mkSource(v.url,v.title,v.description,v.page_age??'');if(source) found.unshift(source);}}
     } catch { /* RSS remains available; absence never passes the gate. */ }
   }
-  const cutoff=Date.now()-7*864e5;
-  return [...new Map(found.filter(s=>Date.parse(s.publishedAt)>cutoff).map(v=>[v.url,v])).values()].slice(0,28);
+  const now=Date.now();
+  return balanced([...new Map(found.filter(s=>Date.parse(s.publishedAt)>now-7*864e5&&Date.parse(s.publishedAt)<now+300000).map(v=>[v.url,v])).values()],36);
 }
 export async function research(e:Env,state:Office,order:string,limits:Record<string,number>,candidates?:Source[]):Promise<{briefs:Brief[];sources:Source[]}> {
   const data=await gather(e,candidates?.length?candidates.map(s=>s.title).join('؛ '):order);
-  const sources=[...new Map([...(candidates||[]),...data].map(x=>[x.url,x])).values()].slice(0,22).map(x=>({...x,text:x.text.slice(0,390)}));
-  if(sources.length<2) return {briefs:[],sources};
+  const pool=balanced(data.filter(s=>!s.untrusted),24);
+  const sources=[...new Map([...(candidates||[]),...pool].map(x=>[x.url,x])).values()].slice(0,24).map(x=>({...x,text:x.text.slice(0,620)}));
+  if(new Set(sources.filter(s=>!s.untrusted).map(s=>s.group)).size<2) return {briefs:[],sources};
   let briefs:Brief[]=[];
   for(const [topic,count] of Object.entries(limits)) {
     if(!count) continue;
-    const raw=await ask(e,state,'khalid',`Research up to ${count} distinct stories for requested topic ${topic}. Return ONLY a JSON array. Items: {headline,topic,eventDate:"YYYY-MM-DD",claims:[{text,evidence:[{sourceId,quote}]}],developing:[],conflict:false}. Do not use memory as evidence. Include the event date in an evidence-supported claim. Fewer results or [] if evidence is missing. If selected stories are listed, do not propose other stories.`,{order,sources,selected:candidates?.map(s=>s.title)},2300);
-    briefs.push(...z.array(BriefSchema).max(12).parse(parseJson(raw)).filter(b=>b.topic===topic).slice(0,count));
+    const pack=sources.map(({id,title,text,publishedAt,group,url})=>({id,title,text,publishedAt,group,url}));
+    const raw=await ask(e,state,'khalid',`Research up to ${count} distinct stories for requested topic ${topic}. Return ONLY a JSON array. Items: {headline,topic,eventDate:"YYYY-MM-DD",claims:[{text,evidence:[{sourceId,quote}]}],developing:[],conflict:false}. First match the same event across different publisher groups. Claims and headlines must be Arabic, but evidence quotes must be exact substrings in their original language, never translated. Verify the actual event date from the excerpts; a feed timestamp alone is not the event date. Return fewer results or [] if evidence is missing. If selected stories are listed, do not propose other stories.`,{order,sources:pack,selected:candidates?.map(s=>s.title)},2300);
+    const rows=z.array(z.unknown()).max(12).parse(parseJson(raw));
+    briefs.push(...rows.flatMap(row=>{const p=BriefSchema.safeParse(row);return p.success&&p.data.topic===topic?[p.data]:[];}).slice(0,count));
   }
   briefs=briefs.filter((b,i)=>briefs.findIndex(x=>norm(x.headline)===norm(b.headline))===i);
   return {briefs,sources};

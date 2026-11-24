@@ -3,12 +3,38 @@ import assert from 'node:assert/strict';
 import {dayKey,fresh,iso,uid} from '../shared/schema';
 import worker,{app,mountedRequest} from '../worker';
 import {demoSeed} from '../worker/demo';
-import {ask,listModels,type Env} from '../worker/integrations';
+import {ask,gather,listModels,parseFeed,type Env} from '../worker/integrations';
 
 const demo:Env={APP_MODE:'demo'};
 const live:Env={APP_MODE:'live',SUPABASE_URL:'https://db.example.com',SUPABASE_PUBLISHABLE_KEY:'fixture-public',SUPABASE_SERVICE_ROLE_KEY:'fixture-db-secret',CEO_USER_ID:uid(),SITE_PUBLIC_URL:'https://al-ghaib.us.ci'};
 const profile={provider:'groq',fast:'new/fast',editor:'new/editor',checker:'new/checker'} as const;
 const json=(x:unknown)=>Response.json(x);
+test('feed parsing accepts RSS, RDF and Atom with real dates and rejects cross-publisher rows',()=>{
+  const now=new Date();
+  const [rss]=parseFeed(`<rss><channel><item><title>عنوان &amp; تفاصيل</title><link>https://www.bbc.com/arabic/articles/a?campaign=1&amp;x=2</link><pubDate>${now.toUTCString()}</pubDate><description><![CDATA[<p>مقتطف من الخلاصة الأصلية يشرح ما حدث.</p>]]></description></item><item><title>Redirect</title><link>https://example.com/fake</link><pubDate>${now.toUTCString()}</pubDate><description>Untrusted outside publisher content</description></item></channel></rss>`,'https://feeds.bbci.co.uk/arabic/rss.xml','bbc');
+  assert.equal(rss.title,'عنوان & تفاصيل');assert.equal(rss.url,'https://www.bbc.com/arabic/articles/a');
+  assert.equal(rss.text,'مقتطف من الخلاصة الأصلية يشرح ما حدث.');
+  const rdf=parseFeed(`<rdf:RDF><item><title>تقرير</title><link>https://www.dw.com/ar/a</link><dc:date>${now.toISOString()}</dc:date><description>مقتطف لديه أكثر من ثمانية عشر حرفًا.</description></item></rdf:RDF>`,'https://rss.dw.com/rdf/rss-ar-all','dw');
+  assert.equal(rdf.length,1);
+  const atom=parseFeed(`<feed><entry><title type="text">عنوان</title><link rel="self" href="https://example.com/metadata"/><link rel="alternate" href="https://www.aljazeera.com/news/a"/><published>${now.toISOString()}</published><summary type="html">&lt;p&gt;An independently published source excerpt.&lt;/p&gt;</summary></entry></feed>`,'https://www.aljazeera.com/xml/rss/all.xml','aljazeera');
+  assert.equal(atom[0]?.text,'An independently published source excerpt.');
+});
+test('live feeds follow same-host redirects, never fetch an outside redirect, and exclude stale rows',async t=>{
+  const now=new Date(),before=new Date(now.valueOf()-9*864e5);
+  const rss=(host:string,date:Date)=>`<rss><channel><item><title>عنوان تقرير تجريبي</title><description>مقتطف منشور في الخلاصة مع تفاصيل كافية.</description><link>https://${host}/report</link><pubDate>${date.toUTCString()}</pubDate></item></channel></rss>`;
+  t.mock.method(globalThis,'fetch',async(raw:string,opts:RequestInit)=>{
+    const u=new URL(raw);
+    assert.notEqual(u.hostname,'outside.example');
+    assert.equal(opts.redirect,'manual');
+    if(u.hostname==='www.aljazeera.net'&&u.pathname==='/aljazeerarss')return new Response(null,{status:302,headers:{location:'/rss/live'}});
+    if(u.hostname==='www.aljazeera.net')return new Response(rss(u.hostname,now));
+    if(u.hostname==='feeds.bbci.co.uk')return new Response(rss('www.bbc.com',before));
+    if(u.hostname==='www.france24.com')return new Response(null,{status:302,headers:{location:'https://outside.example/feed'}});
+    return new Response(null,{status:403});
+  });
+  const results=await gather(live);
+  assert.deepEqual(results.map(s=>s.group),['aljazeera']);
+});
 
 test('password login accepts pasted email and keeps the password exactly as entered',async t=>{
   const sent:{email:string;password:string}[]=[];
