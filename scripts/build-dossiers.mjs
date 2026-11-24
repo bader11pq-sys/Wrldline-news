@@ -309,7 +309,7 @@ function renderFooter() {
 </footer>`;
 }
 
-function pageShell({ title, description, canonical, body, jsonLd, extraHead = "", bodyClass = "", activeNav = "/dossier/", detail = false }) {
+function pageShell({ title, description, canonical, body, jsonLd, extraHead = "", bodyClass = "", activeNav = "/dossier/", detail = false, livePublications = false }) {
   return `<!doctype html>
 <html lang="ar" dir="rtl" data-theme="light">
 <head>
@@ -343,7 +343,7 @@ ${renderHeader(activeNav)}
 <main id="main">${body}</main>
 ${renderFooter()}
 ${detail ? `<script src="/event-desk.js?v=20261122-event" defer></script>
-<script src="/dossier.js?v=20261122-event" defer></script>` : '<script src="/dossier.js?v=20261119-1" defer></script>'}
+<script src="/dossier.js?v=20261122-event" defer></script>` : `<script src="/dossier.js?v=20261119-1" defer></script>${livePublications ? '\n<script src="/editorial-publications.js?v=20261123-catchup" defer></script>' : ''}`}
 </body>
 </html>`;
 }
@@ -607,6 +607,7 @@ function renderIndex(list, now) {
     body,
     jsonLd,
     bodyClass: "dossier-index",
+    livePublications: true,
   });
 }
 
@@ -789,7 +790,7 @@ function renderWatchlist(list, items, now) {
     numberOfItems: items.length,
     itemListElement: items.map((i, index) => ({ "@type": "ListItem", position: index + 1, name: i.what, url: `${ORIGIN}${i.url}` })),
   }).replace(/</g, "\\u003c");
-  return pageShell({ title: "ما نراقبه تالياً | WRLDLINE", description: "مؤشرات ومواعيد وقرارات من ملفات الأحداث الحية، مع تمييز المواعيد المؤكدة عن التقديرية.", canonical, body, jsonLd, bodyClass: "dossier-index dossier-suite", activeNav: "/dossier/watchlist.html" });
+  return pageShell({ title: "ما نراقبه تالياً | WRLDLINE", description: "مؤشرات ومواعيد وقرارات من ملفات الأحداث الحية، مع تمييز المواعيد المؤكدة عن التقديرية.", canonical, body, jsonLd, bodyClass: "dossier-index dossier-suite", activeNav: "/dossier/watchlist.html", livePublications: true });
 }
 
 function renderClaims(list, items, now) {
