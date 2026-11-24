@@ -85,11 +85,18 @@
     return /\b(?:promo(?:tional)?|bonus|coupon|referral|discount) code\b|\b(?:betting|casino|sportsbook) promo\b|(?:^| )(?:كود|رمز) (?:ال)?(?:خصم|ترويجي)(?: |$)/.test(title);
   }
 
-  function dedupe(articles) {
+  function dedupe(articles, exclude = []) {
     const ids = new Set(), titles = new Set(), urls = new Set();
+    const titleKey = article => normalize(article.title || article.originalTitle);
+    const urlKey = article => String(article.sourceURL || "").split("#")[0].replace(/\/$/, "");
+    for (const article of exclude) {
+      ids.add(article.id);
+      titles.add(titleKey(article));
+      urls.add(urlKey(article));
+    }
     return [...articles].sort((a,b) => compareDates(a,b,"newest")).filter(article => {
-      const key = normalize(article.title || article.originalTitle);
-      const url = String(article.sourceURL || "").split("#")[0].replace(/\/$/, "");
+      const key = titleKey(article);
+      const url = urlKey(article);
       if (ids.has(article.id) || (key && titles.has(key)) || (url && urls.has(url))) return false;
       ids.add(article.id);
       if (key) titles.add(key);

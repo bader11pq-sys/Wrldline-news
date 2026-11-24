@@ -107,7 +107,7 @@
     const counts = NR.categoryCounts(articles);
     $$("[data-room-count]").forEach(el => {
       const n = counts.get(el.dataset.roomCount) || 0;
-      el.textContent = n ? n + " خبر" : "—";
+      el.textContent = n ? n + " خبر" : "";
     });
   }
 
@@ -134,17 +134,21 @@
     }).join("");
   }
 
-  function renderBalance(articles) {
+  function renderBalance(articles, feedStatus) {
     const host = $("#balancePreview");
     if (!host) return;
+    if (!articles.length) {
+      const english = window.wrldlineLang === "en";
+      const title = feedStatus === "error" ? (english ? "The story sample is unavailable" : "تعذر تحميل عينة الأخبار")
+        : (english ? "No story sample to compare yet" : "لا توجد عينة أخبار للمقارنة بعد");
+      host.innerHTML = '<div class="wl-frame-card"><div class="wl-frame-head"><strong>' + title + '</strong></div><p>' +
+        (english ? "The comparison needs headlines from more than one publisher." : "تحتاج المقارنة إلى عناوين من أكثر من ناشر.") + '</p></div>';
+      return;
+    }
     const clusters = NR.clusterArticles(articles, { minSources: 2, maxAgeH: 72 });
-    const sourceCount = new Set(articles.map(a => NR.sourceName(a))).size;
-    const s1 = $("#balanceSources"), s2 = $("#balanceClusters");
-    if (s1) s1.textContent = sourceCount || "—";
-    if (s2) s2.textContent = clusters.length || "—";
+    const sourceCount = new Set(articles.map(a => a.raw?.source_name || a.source_name || a.raw?.source_domain || a.source_domain).filter(Boolean)).size;
     if (!clusters.length) {
-      host.innerHTML = '<div class="wl-frame-card"><div class="wl-frame-head"><strong>لا توجد روايات متعددة كافية الآن</strong><span>تحديث مباشر</span></div><p style="font-size:11.5px;color:var(--muted);line-height:1.8">عندما تتوفر عناوين متعددة للحدث نفسه من مصادر مختلفة، سنعرض هنا المقارنة. لا نلفّق التوازن؛ نعرض ما هو موجود.</p></div>' +
-        '<div class="wl-balance-side"><div class="wl-balance-stat"><b>' + (sourceCount || "—") + '</b><span>أسماء مصادر مختلفة</span><small>ضمن العينة المعروضة</small></div><div class="wl-balance-stat"><b>0</b><span>حدث متعدد الروايات</span><small>بانتظار تغطيات كافية للمقارنة</small></div></div>';
+      host.innerHTML = '<div class="wl-frame-card"><div class="wl-frame-head"><strong>لا توجد تغطيات كافية للحدث نفسه في العينة</strong></div><p>نقارن العناوين المتشابهة من ناشرين مختلفين، ولا تعني النتيجة عدم وجود تغطيات أخرى.</p></div>';
       return;
     }
     const c = clusters[0];
@@ -248,24 +252,40 @@
       host.innerHTML = '<div class="dossier-strip-loading">تعذر تحميل الملفات الآن. <a href="dossier/">افتح صفحة الملفات</a>.</div>';
     }
   }
-  function boot() {
-    void renderDossiers();
-    renderContext([]);
-    renderBalance([]);
-    renderMirror([]);
-    renderShortsPreview([]);
+  const extras = $("#homeExtras");
+  let latestArticles = [], latestFeedStatus = "loading";
+  let extrasStarted = false;
+  function renderExtraPreviews() {
+    renderContext(latestArticles);
+    renderBalance(latestArticles, latestFeedStatus);
+    renderMirror(latestArticles);
+    renderShortsPreview(latestArticles);
+  }
+  function loadExtraScript(src) {
+    const script = document.createElement("script");
+    script.src = src;
+    script.async = true;
+    document.head.append(script);
+  }
+  function openExtras() {
+    if (extras && !extras.open) return;
+    renderExtraPreviews();
+    if (extrasStarted) return;
+    extrasStarted = true;
     renderPromises();
     renderExplainers();
+    if (!extras) { void renderDossiers(); return; }
+    loadExtraScript("watch-strip.js?v=20261119-2");
+    // Merge the live publications after the static fallback is in the grid.
+    void renderDossiers().then(() => loadExtraScript("editorial-publications.js?v=20261123-rights"));
   }
-
-  boot();
+  extras?.addEventListener("toggle", openExtras);
+  openExtras();
 
   document.addEventListener("wrldline:news", e => {
-    const articles = e.detail?.articles || [];
-    renderRooms(articles);
-    renderShortsPreview(articles);
-    renderContext(articles);
-    renderBalance(articles);
-    renderMirror(articles);
+    latestArticles = e.detail?.articles || [];
+    latestFeedStatus = e.detail?.feedStatus || "ready";
+    renderRooms(latestArticles);
+    if (!extras || extras.open) renderExtraPreviews();
   });
 })();

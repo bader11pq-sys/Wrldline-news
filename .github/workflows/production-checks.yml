@@ -37,10 +37,14 @@ jobs:
           for i in {1..30}; do curl --fail --silent http://127.0.0.1:4173/ >/dev/null && break; sleep 1; done
           python tests/reliability-browser.py
           python tests/newsroom-edition-browser.py
+          python tests/editorial-standards-browser.py
           python tests/event-desk-browser.py
           python tests/world-monitor-browser.py
           python tests/reading-paths-browser.py
           python tests/shorts-browser.py
+          python tests/rights-desk-browser.py
+          python tests/premium-reading-browser.py
+          python tests/site-editor-browser.py
   source-freshness:
     # Opt-in prevents missing secrets and duplicate pg_cron scheduling from being
     # silently treated as working monitors. Only protected trusted branches get secrets.

@@ -1,17 +1,82 @@
 import Stripe from "https://esm.sh/stripe@17.7.0?target=deno";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-const stripe=new Stripe(Deno.env.get("STRIPE_SECRET_KEY")!,{apiVersion:"2025-02-24.acacia"});
-const cryptoProvider=Stripe.createSubtleCryptoProvider();
-Deno.serve(async req=>{if(req.method!=="POST")return new Response("Method not allowed",{status:405});const signature=req.headers.get("Stripe-Signature");if(!signature)return new Response("Missing signature",{status:400});
-try{const raw=await req.text();const event=await stripe.webhooks.constructEventAsync(raw,signature,Deno.env.get("STRIPE_WEBHOOK_SECRET")!,undefined,cryptoProvider);const db=createClient(Deno.env.get("SUPABASE_URL")!,Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
-const sync=async(subscription:Stripe.Subscription,customerId:string,userId?:string)=>{const resolvedUser=userId||subscription.metadata.supabase_user_id;if(!resolvedUser)throw new Error("Subscription missing Supabase user metadata");const item=subscription.items.data[0];const active=["active","trialing"].includes(subscription.status);await db.from("subscriptions").upsert({user_id:resolvedUser,stripe_customer_id:customerId,stripe_subscription_id:subscription.id,stripe_price_id:item?.price.id||null,plan:active?"plus":"free",status:subscription.status,current_period_end:subscription.current_period_end?new Date(subscription.current_period_end*1000).toISOString():null,cancel_at_period_end:subscription.cancel_at_period_end,updated_at:new Date().toISOString()},{onConflict:"user_id"}).throwOnError();};
-switch(event.type){
-case "checkout.session.completed":case "checkout.session.async_payment_succeeded":{const s=event.data.object as Stripe.Checkout.Session;if(s.mode==="subscription"&&typeof s.subscription==="string"){const sub=await stripe.subscriptions.retrieve(s.subscription);await sync(sub,String(s.customer),s.client_reference_id||s.metadata?.supabase_user_id||undefined);}break;}
-case "customer.subscription.created":case "customer.subscription.updated":case "customer.subscription.deleted":{const s=event.data.object as Stripe.Subscription;await sync(s,String(s.customer));break;}
-case "invoice.paid":case "invoice.payment_failed":{const invoice=event.data.object as Stripe.Invoice;const subscriptionId=typeof invoice.subscription==="string"?invoice.subscription:null;if(subscriptionId){const sub=await stripe.subscriptions.retrieve(subscriptionId);await sync(sub,String(invoice.customer));}break;}
-case "charge.dispute.created":case "charge.refunded":case "radar.early_fraud_warning.created":{const obj=event.data.object as {id?:string;customer?:string};console.warn("WRLDLINE billing risk event requires review",event.type,obj.id||"unknown",obj.customer||"unknown");break;}
-default:break;
-}
-return new Response(JSON.stringify({received:true}),{headers:{"Content-Type":"application/json"}});
-}catch(error){console.error("stripe webhook:",error);return new Response("Webhook signature or processing error",{status:400});}
+import {
+  allowedPriceIds,
+  customerId,
+  HANDLED_CHECKOUT_EVENTS,
+  HANDLED_INVOICE_EVENTS,
+  HANDLED_SUBSCRIPTION_EVENTS,
+  resolveUser,
+  RISK_EVENTS,
+  rpcArgs,
+  statusForError,
+} from "./logic.ts";
+
+const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY")!, { apiVersion: "2025-02-24.acacia" });
+const cryptoProvider = Stripe.createSubtleCryptoProvider();
+const json = (body: unknown, status = 200) =>
+  new Response(JSON.stringify(body), { status, headers: { "Content-Type": "application/json" } });
+
+Deno.serve(async (req) => {
+  if (req.method !== "POST") return new Response("Method not allowed", { status: 405 });
+  const signature = req.headers.get("Stripe-Signature");
+  if (!signature) return new Response("Missing signature", { status: 400 });
+
+  // Stage 1: authenticity. A failure here is the caller's fault (400).
+  let event: Stripe.Event;
+  try {
+    const raw = await req.text();
+    event = await stripe.webhooks.constructEventAsync(
+      raw, signature, Deno.env.get("STRIPE_WEBHOOK_SECRET")!, 300, cryptoProvider,
+    );
+  } catch (error) {
+    console.error("stripe webhook signature:", String(error).slice(0, 200));
+    return new Response("Invalid signature", { status: statusForError("signature") });
+  }
+
+  // Stage 2: processing. Failures return 500 so Stripe retries; the ledger makes retries idempotent.
+  try {
+    const db = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
+    const allowed = allowedPriceIds((name) => Deno.env.get(name));
+
+    const apply = async (subscriptionId: string, hintedUserId?: string | null) => {
+      // Always use Stripe's canonical, current subscription state rather than the event snapshot.
+      const sub = await stripe.subscriptions.retrieve(subscriptionId);
+      const cid = customerId(sub.customer);
+      let bound: string | null = null;
+      if (cid) {
+        const { data, error } = await db.from("subscriptions").select("user_id").eq("stripe_customer_id", cid).maybeSingle();
+        if (error) throw error;
+        bound = data?.user_id ?? null;
+      }
+      const { userId, conflict } = resolveUser(bound, hintedUserId || sub.metadata?.supabase_user_id || null);
+      if (conflict) console.warn("stripe webhook: metadata user differs from bound customer user", event.id);
+      const { data, error } = await db.rpc("apply_stripe_subscription_event", rpcArgs(event, sub as never, userId, allowed));
+      if (error) throw error;
+      if (typeof data === "string" && data.startsWith("rejected")) console.warn("stripe webhook rejected", event.id, data);
+      return data as string;
+    };
+
+    let outcome = "ignored";
+    if (HANDLED_CHECKOUT_EVENTS.has(event.type)) {
+      const s = event.data.object as Stripe.Checkout.Session;
+      if (s.mode === "subscription" && typeof s.subscription === "string") {
+        outcome = await apply(s.subscription, s.client_reference_id || s.metadata?.supabase_user_id || null);
+      }
+    } else if (HANDLED_SUBSCRIPTION_EVENTS.has(event.type)) {
+      outcome = await apply((event.data.object as Stripe.Subscription).id);
+    } else if (HANDLED_INVOICE_EVENTS.has(event.type)) {
+      const invoice = event.data.object as Stripe.Invoice;
+      const subscriptionId = typeof invoice.subscription === "string" ? invoice.subscription : null;
+      if (subscriptionId) outcome = await apply(subscriptionId);
+    } else if (RISK_EVENTS.has(event.type)) {
+      const obj = event.data.object as { id?: string };
+      console.warn("WRLDLINE billing risk event requires review", event.type, obj.id || "unknown");
+      outcome = "risk_logged";
+    }
+    return json({ received: true, outcome });
+  } catch (error) {
+    console.error("stripe webhook processing:", String(error).slice(0, 300));
+    return new Response("Webhook processing failed", { status: statusForError("processing") });
+  }
 });

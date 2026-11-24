@@ -2,6 +2,10 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url><loc>https://al-ghaib.us.ci/</loc></url>
   <url><loc>https://al-ghaib.us.ci/news/</loc></url>
+  <url><loc>https://al-ghaib.us.ci/section/politics</loc></url>
+  <url><loc>https://al-ghaib.us.ci/section/economy</loc></url>
+  <url><loc>https://al-ghaib.us.ci/section/world</loc></url>
+  <url><loc>https://al-ghaib.us.ci/section/rights</loc></url>
   <url><loc>https://al-ghaib.us.ci/originals/</loc></url>
   <url><loc>https://al-ghaib.us.ci/originals/saudi-ports-2025.html</loc></url>
   <url><loc>https://al-ghaib.us.ci/topics.html</loc></url>
@@ -9,6 +13,9 @@
   <url><loc>https://al-ghaib.us.ci/markets.html</loc></url>
   <url><loc>https://al-ghaib.us.ci/map.html</loc></url>
   <url><loc>https://al-ghaib.us.ci/context.html</loc></url>
+  <url><loc>https://al-ghaib.us.ci/analysis.html</loc></url>
+  <url><loc>https://al-ghaib.us.ci/rights.html</loc></url>
+  <url><loc>https://al-ghaib.us.ci/sections.html</loc></url>
   <url><loc>https://al-ghaib.us.ci/balance.html</loc></url>
   <url><loc>https://al-ghaib.us.ci/impact.html</loc></url>
   <url><loc>https://al-ghaib.us.ci/mirror.html</loc></url>
@@ -23,12 +30,14 @@
   <url><loc>https://al-ghaib.us.ci/promises.html</loc></url>
   <url><loc>https://al-ghaib.us.ci/sources.html</loc></url>
   <url><loc>https://al-ghaib.us.ci/about.html</loc></url>
+  <url><loc>https://al-ghaib.us.ci/about-en.html</loc></url>
   <url><loc>https://al-ghaib.us.ci/advertise.html</loc></url>
   <url><loc>https://al-ghaib.us.ci/intelligence.html</loc></url>
   <url><loc>https://al-ghaib.us.ci/contact.html</loc></url>
   <url><loc>https://al-ghaib.us.ci/privacy.html</loc></url>
   <url><loc>https://al-ghaib.us.ci/terms.html</loc></url>
   <url><loc>https://al-ghaib.us.ci/corrections.html</loc></url>
+  <url><loc>https://al-ghaib.us.ci/corrections-en.html</loc></url>
   <url><loc>https://al-ghaib.us.ci/newsletter.html</loc></url>
   <!-- DOSSIERS:START -->
   <url><loc>https://al-ghaib.us.ci/dossier/</loc></url>
@@ -41,4 +50,10 @@
   <url><loc>https://al-ghaib.us.ci/dossier/opec-plus-december-2026.html</loc></url>
   <url><loc>https://al-ghaib.us.ci/dossier/qatarenergy-lng-2026.html</loc></url>
   <!-- DOSSIERS:END -->
+  <!-- RIGHTS CASES:START -->
+  <url><loc>https://al-ghaib.us.ci/rights-cases/</loc></url>
+  <url><loc>https://al-ghaib.us.ci/rights-cases/jordan-expression.html</loc><lastmod>2026-11-23</lastmod></url>
+  <url><loc>https://al-ghaib.us.ci/rights-cases/qatar-wages.html</loc><lastmod>2026-11-23</lastmod></url>
+  <url><loc>https://al-ghaib.us.ci/rights-cases/mena-digital-privacy.html</loc><lastmod>2026-11-23</lastmod></url>
+  <!-- RIGHTS CASES:END -->
 </urlset>

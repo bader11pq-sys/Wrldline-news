@@ -3,13 +3,22 @@
   "use strict";
   const article = document.querySelector("[data-public-article]");
   if (!article) return;
-  const heading = article.querySelector("h1"), summary = article.querySelector(".public-news-summary");
+  const heading = article.querySelector("h1"), lead = article.querySelector("[data-reading-lead]");
+  const summary = article.querySelector("[data-reading-body]") || article.querySelector(".public-news-summary");
   const canonical = document.querySelector('link[rel="canonical"]')?.href;
   if (!heading || !summary || !canonical || new URL(canonical).origin !== "https://al-ghaib.us.ci") return;
   const sourceLang = document.documentElement.lang, originalTitle = heading.textContent;
-  const originalText = [...summary.querySelectorAll(":scope > p")].map(p => p.textContent).join("\n\n");
+  let originalText;
+  try {
+    originalText = JSON.parse(document.querySelector('script[type="application/ld+json"]')?.textContent || "{}").articleBody;
+  } catch { /* Fall back to the visible server markup. */ }
+  if (typeof originalText !== "string") originalText = [lead, summary].filter(Boolean).flatMap(el =>
+    [...el.querySelectorAll(":scope > :is(p,h3), :scope > ul > li")].map(row =>
+      (row.tagName === "H3" ? "### " : row.tagName === "LI" ? "• " : "") + row.textContent)
+  ).join("\n");
   const editorial = /^WRLDLINE(?: NEWS)?$/i.test((article.dataset.shareSource || "").trim());
-  const disclosure = article.querySelector(":scope > .public-news-disclosure");
+  const disclosure = article.querySelector(".public-news-disclosure");
+  const missingLead = article.querySelector("[data-reading-missing]");
   const trust = document.getElementById("articleTrust");
   if (trust) trust.dataset.editionView = "";
   const tools = document.createElement("div"), choices = document.createElement("div"), size = document.createElement("button");
@@ -28,28 +37,50 @@
     try { localStorage.setItem("wrldline:article-large-text", large ? "1" : "0"); } catch {}
   });
   tools.append(choices, size);
-  (article.querySelector(".public-news-image") || summary).before(tools);
+  summary.before(tools);
   const text = (ar, en) => lang === "en" ? en : ar;
   const shareButton = document.getElementById("publicNewsShare"), copyButton = document.getElementById("publicNewsCopy");
   const newsStatus = document.getElementById("publicNewsStatus");
   const permalink = article.querySelector(".public-news-actions a");
-  const trail = document.querySelector(".public-news-breadcrumb"), kicker = article.querySelector(".public-news-kicker");
-  const country = kicker?.textContent?.split(" · ")[1]?.trim() || "";
+  const actions = permalink?.parentElement;
+  const id = new URL(canonical).pathname.match(/^\/news\/([0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12})$/i)?.[1];
+  const report = id && actions ? document.createElement("a") : null;
+  if (report) {
+    report.dataset.articleCorrection = "";
+    actions.append(report);
+  }
+  const trail = document.querySelector(".public-news-breadcrumb"), kicker = article.querySelector("[data-kicker-label]");
+  const country = kicker?.dataset.kickerCountry || "";
   const chrome = [
     [".skip-link", "تجاوز إلى المحتوى", "Skip to content"],
     [".public-news-header .wl-account", "حسابي", "My account"],
-    [".public-news-nav a[href='/']", "غرفة الأخبار", "Newsroom"],
-    [".public-news-nav a[href^='/news/'], .public-news-breadcrumb a", "الأخبار المنشورة", "Published news"],
+    [".public-news-nav a[href='/'], .public-news-nav a[href='/?lang=en']", "غرفة الأخبار", "Newsroom"],
+    [".public-news-nav a[href^='/news/'], .public-news-breadcrumb a[href^='/news/']", "الأخبار المنشورة", "Published news"],
+    [".public-news-nav a[href='/sections.html']", "الأقسام", "Sections"],
+    [".public-news-nav a[href='/analysis.html']", "الفهم والتحليل", "Analysis"],
     [".public-news-nav a[href='/sources.html']", "المصادر", "Sources"],
-    [".public-news-nav a[href='/about.html']", "عن ورلدلاين", "About"],
-    [".public-news-footer a[href='/about.html']", "السياسة التحريرية", "Editorial policy"],
-    [".public-news-footer a[href='/corrections.html']", "التصحيحات", "Corrections"],
-    [".public-news-correction h2", "تصحيح منشور", "Published correction"],
-    ["article > .public-news-source h2", "المصدر الأصلي", "Original source"],
-    ["article > .public-news-source a", "قراءة الخبر لدى المصدر الأصلي ↗", "Read at the original source ↗"],
+    [".public-news-correction :is(h2,h3)", "تصحيح منشور", "Published correction"],
+    ["[data-reader-step=event] > h2", "ماذا حدث؟", "What happened?"],
+    ["[data-reader-step=known] > h2", "ماذا نعرف؟", "What do we know?"],
+    ["[data-reader-step=source] > h2", "ما المصدر؟", "What is the source?"],
+    ["[data-reader-step=impact] > h2", "لماذا يهم؟", "Why does it matter?"],
+    ["[data-reader-step=watch] > h2", "ما الذي نراقبه تالياً؟", "What to watch next?"],
+    ["[data-reader-step=details] > h2", "تفاصيل إضافية ومراجع", "Further details and references"],
+    ["[data-reading-missing]", "لا يتوفر ملخص منشور هنا. راجع المصدر أدناه.", "No published summary is available here. See the source below."],
+    ["[data-source-missing]", "رابط المصدر الأصلي غير متوفر.", "The original source link is unavailable."],
+    ["[data-primary-source=false] > a", "قراءة الخبر لدى المصدر الأصلي ↗", "Read at the original source ↗"],
+    ["[data-primary-source=true] > a", "فتح المصدر الأولي ↗", "Open the primary source ↗"],
+    ["[data-server-trust=confirmed] strong", "تأكيد تحريري بشري مسجل", "Human editorial confirmation recorded"],
+    ["[data-server-trust=disputed] strong", "الخبر محل خلاف. راجع الأدلة والمصدر.", "Disputed. Consult the evidence and source."],
+    ["[data-server-trust=unconfirmed] strong", "لم يُثبت تأكيد بشري في هذه الصفحة", "Human confirmation not established on this page"],
+    ["[data-trust-note]", "وسم العاجل وتحليل الذكاء الاصطناعي وأعداد المصادر وحدها ليست تحققاً بشرياً.", "Breaking labels, AI analysis and source counts alone are not human verification."],
+    ["[data-translation-review=reviewed]", "مراجعة بشرية للترجمة مسجلة.", "Human translation review recorded."],
+    ["[data-translation-review=unconfirmed]", "لم تُثبت مراجعة بشرية للترجمة.", "Human translation review is not established."],
+    ["[data-ai-reading]", "قراءة مساعدة بالذكاء الاصطناعي", "AI-assisted reading"],
+    ["[data-ai-notice]", "سياق مساعد بالذكاء الاصطناعي مستند إلى نص الخبر المتاح؛ لا يُعد تحققاً بشرياً أو تنبؤاً أو نصيحة مالية شخصية.", "AI-assisted context based on the available article text. It is not human verification, a prediction, or personal financial advice."],
+    [".pn-reading-evidence > summary", "سجل التحقق وروابط الأدلة", "Verification record and references"],
     ["#publicNewsShare", "مشاركة الخبر", "Share story"],
     ["#publicNewsCopy", "نسخ رابط الخبر", "Copy article link"],
-    [".public-news-actions a", "الرابط الدائم للخبر", "Permanent article link"]
   ];
   const prefixes = [
     ["تاريخ النشر: ", "Published: "], ["الكاتب: ", "By: "], ["المصدر الأصلي: ", "Original source: "]
@@ -66,7 +97,25 @@
     for (const [selector, ar, en] of chrome) {
       document.querySelectorAll(selector).forEach(el => { el.textContent = text(ar, en); });
     }
-    for (const el of document.querySelectorAll(".public-news-nav a[href^='/news/'], .public-news-breadcrumb a")) el.href = "/news/?lang=" + lang;
+    if (permalink) permalink.textContent = text("الرابط الدائم للخبر", "Permanent article link");
+    if (report) {
+      report.textContent = text("أبلغ عن خطأ", "Report an error");
+      report.href = "/contact.html?" + new URLSearchParams({ topic: "correction", article: id.toLowerCase(), lang }) + "#form";
+    }
+    for (const [selector, stem, ar, en] of [
+      [".public-news-nav", "about", "عن ورلدلاين", "About"],
+      [".public-news-footer", "about", "السياسة التحريرية", "Editorial policy"],
+      [".public-news-footer", "corrections", "التصحيحات", "Corrections"]
+    ]) {
+      const link = document.querySelector(selector + ' a[href^="/' + stem + '"]');
+      if (link) { link.textContent = text(ar, en); link.href = "/" + stem + text("", "-en") + ".html"; }
+    }
+    for (const el of document.querySelectorAll(".public-news-nav a[href^='/news/'], .public-news-breadcrumb a[href^='/news/']")) el.href = "/news/?lang=" + lang;
+    for (const el of document.querySelectorAll(".public-news-nav a[href^='/section/'], .public-news-breadcrumb a[href^='/section/']")) {
+      const url = new URL(el.href);
+      if (lang === "en") url.searchParams.set("lang", lang); else url.searchParams.delete("lang");
+      el.href = url.pathname + url.search;
+    }
     const category = window.WRLDLINE_TAXONOMY?.categoryName(article.dataset.category, lang);
     if (category) {
       const countryCode = window.WLEditorial?.eventCountryCode({event_country: country});
@@ -84,11 +133,6 @@
       [".public-news-breadcrumb", "مسار الصفحة", "Breadcrumb"],
       [".public-news-social", "مشاركة عبر الشبكات", "Share on social networks"]
     ]) document.querySelector(selector)?.setAttribute("aria-label", text(ar, en));
-    const sourceParagraphs = article.querySelectorAll(":scope > .public-news-source p");
-    const missing = sourceParagraphs[sourceParagraphs.length - 1];
-    if (missing && !article.querySelector(":scope > .public-news-source a")) {
-      missing.textContent = text("رابط المصدر الأصلي غير متوفر.", "The original source link is unavailable.");
-    }
     if (newsStatus) newsStatus.textContent = "";
     control?.setUI(lang);
     if (displayed) view(displayed);
@@ -96,6 +140,7 @@
   localize();
   function view(version) {
     displayed = version;
+    if (missingLead) missingLead.hidden = !!version.body?.trim();
     if (disclosure) disclosure.textContent = version.editorialEdition
       ? text("هذه نسخة تحريرية راجعها محرر بشري.", "This editorial edition has been reviewed by a human editor.")
       : editorial && version.complete
@@ -117,9 +162,9 @@
       social[2].href = "https://t.me/share/url?url=" + url + "&text=" + title;
     }
   }
-  const prose = import("/reader-prose.js?v=20261122-longread1");
+  const prose = import("/reader-prose.js?v=20261123-reading-order");
   const body = import("/public-article-body.js?v=20261122-longread2");
-  const editions = import("/article-editions.js?v=20261122-bilingual");
+  const editions = import("/article-editions.js?v=20261123-reading-order");
   void Promise.all([import("/taxonomy.js"), import("/editorial-display.js?v=20261122-metadata")]).then(localize).catch(() => {});
   Promise.all([prose, body, editions]).then(() => {
     const api = window.WLArticleEditions, explicit = api.requested(location.href);
@@ -128,7 +173,7 @@
     localize();
     if (api.locale(sourceLang) !== lang) document.dispatchEvent(new CustomEvent("wrldline:language", { detail: { lang } }));
     control = api.mount({
-      host: summary, tools: choices, heading, id: article.dataset.articleId, title: originalTitle, body: originalText,
+      host: summary, lead, tools: choices, heading, id: article.dataset.articleId, title: originalTitle, body: originalText,
       lang: article.dataset.sourceLanguage || sourceLang, uiLang: lang, preferred,
       editorial, clip: window.WLPublicArticleBody.mayBeClipped(originalText, true), onView: view,
       onSelect(next) {

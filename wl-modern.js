@@ -4,7 +4,7 @@
  if(window.__wlModern)return;window.__wlModern=true;
  const t=(ar,e)=>document.documentElement.lang==='en'?e:ar;
  const path=location.pathname.replace(/\/index\.html$/,'/');
- const isHome=path==='/'||path==='';
+ const isHome=document.body.classList.contains('wl-home')||path==='/'||path==='';
  const ico={
   home:'<path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/>',
   live:'<circle cx="12" cy="12" r="3"/><path d="M6.3 6.3a8 8 0 000 11.4M17.7 6.3a8 8 0 010 11.4"/>',
@@ -14,32 +14,20 @@
  };
  const svg=k=>'<svg viewBox="0 0 24 24" aria-hidden="true">'+ico[k]+'</svg>';
  const sections=()=>[
-  [t('الأخبار','News'),[
-   ['index.html',t('الرئيسية','Home'),t('أهم ما يحدث الآن','Top stories now')],
+  [t('الأقسام التحريرية','Editorial sections'),[
+   ['sections.html',t('دليل الأقسام الستة','Six editorial priorities'),t('اعرض كل مسارات التغطية','Browse the coverage guide · Arabic')],
+   ['/section/politics',t('السياسة والعلاقات الدولية','Politics & international affairs'),t('القرارات والدبلوماسية','Decisions and diplomacy')],
+   ['/section/rights',t('الحقوق والحريات','Rights & freedoms'),t('الحقوق المدنية والعدالة','Civil rights and justice')],
+   ['/section/economy',t('الاقتصاد والطاقة والتجارة','Economy, energy & trade'),t('الطاقة والأسعار والشحن','Energy, prices and shipping')],
+   ['sections.html#people-society',t('المجتمع والثقافة والشباب','Society, culture & youth'),t('التعليم وفرص العمل','Education and opportunity · Arabic')],
+   ['sections.html#world',t('الخليج والعالم العربي','The Gulf & Arab world'),t('مختارات من التغطية الإقليمية','Selected regional coverage · Arabic')],
+   ['sections.html#tech-science',t('التقنية والعلوم','Technology & science'),t('البحث والبنية الرقمية','Research and digital infrastructure · Arabic')]]],
+  [t('الموجزات والأرشيف','Briefings & archive'),[
    ['/news/',t('الأرشيف','Archive'),t('كل الأخبار المنشورة','All published news')],
    ['daily-briefing.html',t('ملخص اليوم','Daily briefing'),t('أهم ما حدث باختصار','What mattered today')],
-   ['shorts.html','Shorts',t('موجز عمودي سريع','Quick vertical feed')],
-   ['context.html',t('ملفات الأحداث','Event dossiers'),t('السياق الكامل للقصص الكبرى','Full context of big stories')],
-   ['markets.html',t('الأسواق','Markets'),t('الطاقة والعملات والمؤشرات','Energy, FX and indices')]]],
+   ['shorts.html','Shorts',t('موجز عمودي سريع','Quick vertical feed')]]],
   [t('الفهم والتحليل','Analysis'),[
-   ['balance.html',t('ميزان الروايات','Narrative balance'),t('قارن التغطيات','Compare coverage')],
-   ['impact.html',t('أطلس التأثير','Impact atlas'),t('الأثر على المنطقة','Regional impact')],
-   ['explainers.html',t('افهمها في دقيقة','Explainers'),t('شرح مبسّط','Simple explainers')],
-   ['promises.html',t('ذاكرة الوعود','Promise tracker'),t('القرارات والتعهدات','Decisions & pledges')],
-   ['mirror.html',t('مرآة التاريخ','History mirror'),t('الحدث وسياقه التاريخي','Events in context')],
-   ['intelligence.html',t('ورلدلاين إنتليجنس','Intelligence'),t('ما تغيّر وما وراءه','What changed and why')]]],
-  [t('استكشف','Explore'),[
-   ['map.html',t('مرصد العالم','World map'),t('التغطية جغرافياً','Coverage by place')],
-   ['topics.html',t('الموضوعات','Topics'),t('حسب اهتمامك','By interest')],
-   ['tags.html',t('الوسوم','Tags'),t('أخبار كل وسم','News by tag')],
-   ['history.html',t('الموسوعة التاريخية','History'),t('أحداث وشخصيات','Events & people')],
-   ['sources.html',t('دليل المصادر','Sources'),t('الناشرون ومصادرنا','Our publishers')],
-   ['newsletter.html',t('النشرة البريدية','Newsletter'),t('الأخبار في بريدك','News in your inbox')]]],
-  [t('عن ورلدلاين','About'),[
-   ['about.html',t('من نحن','About us'),t('رسالتنا ومنهجنا','Mission & method')],
-   ['corrections.html',t('التصحيحات','Corrections'),t('الشفافية في الأخطاء','Transparent fixes')],
-   ['contact.html',t('تواصل معنا','Contact'),t('راسل غرفة الأخبار','Reach the newsroom')],
-   ['account.html',t('حسابي','My account'),t('التفضيلات والمحفوظات','Preferences & saved')]]]
+   ['analysis.html',t('مكتب الفهم والتحليل','Analysis desk'),t('مسارات قراءة وملفات وأدوات متخصصة','Reading paths, dossiers and specialist tools · Arabic')]]]
  ];
  const href=h=>/^(\/|#|https?:)/.test(h)?h:'/'+h;
 
@@ -47,12 +35,14 @@
  const header=document.querySelector('header.wl-header,header');
  const primary=[...document.querySelectorAll('.wl-nav-scroll a')];
  if(header&&primary.length){
-  const bar=document.createElement('nav');bar.className='wlm-chips';bar.setAttribute('aria-label',t('تنقل سريع بين الأقسام','Quick sections'));
+  const bar=document.createElement('nav');bar.className='wlm-chips';bar.dataset.languageManaged='';bar.setAttribute('aria-label',t('تنقل سريع بين الأقسام','Quick sections'));
   const inner=document.createElement('div');inner.className='wlm-chips-in';
+  const labelOf=a=>a.querySelector(`:scope > span[lang="${document.documentElement.lang}"]`)?.textContent.trim() ?? a.textContent.trim();
   primary.forEach(a=>{
    const c=document.createElement('a');c.className='wlm-chip';c.href=a.getAttribute('href');
-   if(a.classList.contains('wl-nav-link--live')){c.classList.add('wlm-chip--live');c.innerHTML='<i aria-hidden="true"></i>';c.append(a.textContent.trim());}
-   else c.textContent=a.textContent.trim();
+   if(a.hreflang)c.hreflang=a.hreflang;
+   if(a.classList.contains('wl-nav-link--live')){c.classList.add('wlm-chip--live');c.innerHTML='<i aria-hidden="true"></i>';c.append(labelOf(a));}
+   else c.textContent=labelOf(a);
    if(a.dataset.category){
     c.dataset.readerCategory=a.dataset.category;
     c.addEventListener('click',e=>{
@@ -62,27 +52,29 @@
    }
    inner.appendChild(c);
   });
-  const all=document.createElement('button');all.type='button';all.className='wlm-chip';all.textContent=t('كل الأقسام','All sections');all.setAttribute('aria-haspopup','dialog');all.addEventListener('click',openSheet);inner.appendChild(all);
+  const all=primary.some(a=>a.getAttribute('href')==='sections.html')?null:document.createElement('button');
+  if(all){all.type='button';all.className='wlm-chip';all.setAttribute('aria-haspopup','dialog');all.addEventListener('click',openSheet);inner.appendChild(all);}
   bar.appendChild(inner);header.after(bar);
   const syncChips=()=>{
    bar.setAttribute('aria-label',t('تنقل سريع بين الأقسام','Quick sections'));
    primary.forEach((a,i)=>{
-    const chip=inner.children[i];const label=a.textContent.trim();
+    const chip=inner.children[i];const label=labelOf(a);
     if(chip.lastChild?.nodeType===Node.TEXT_NODE)chip.lastChild.nodeValue=label;
     const current=a.getAttribute('aria-current');
     chip.classList.toggle('is-active',!!current);
     if(current)chip.setAttribute('aria-current',current);else chip.removeAttribute('aria-current');
    });
-   all.textContent=t('كل الأقسام','All sections');
+   if(all)all.textContent=t('كل الأقسام','All sections');
   };
   syncChips();document.addEventListener('wrldline:category',syncChips);document.addEventListener('wrldline:language',syncChips);
  }
 
  // 2) All-sections sheet
- const sheet=document.createElement('dialog');sheet.className='wlm-sheet';sheet.id='wlmSections';sheet.setAttribute('aria-labelledby','wlmSectionsTitle');
+ const sheet=document.createElement('dialog');sheet.className='wlm-sheet';sheet.dataset.languageManaged='';sheet.id='wlmSections';sheet.setAttribute('aria-labelledby','wlmSectionsTitle');
  function renderSections(){
+  const hrefFor=h=>/^(?:\/news\/$|\/section\/)/.test(h)&&document.documentElement.lang==='en'?h+'?lang=en':href(h);
   sheet.innerHTML='<div class="wlm-sheet-panel"><div class="wlm-sheet-head"><h2 id="wlmSectionsTitle">'+t('كل الأقسام','All sections')+'</h2><button class="wlm-close" type="button" data-close autofocus aria-label="'+t('إغلاق','Close')+'">×</button></div>'+
-   sections().map(([g,items])=>'<section><h3 class="wlm-group">'+g+'</h3><ul class="wlm-grid">'+items.map(([h,n,d])=>'<li><a class="wlm-item" href="'+href(h)+'"><strong>'+n+'</strong><small>'+d+'</small></a></li>').join('')+'</ul></section>').join('')+'</div>';
+   sections().map(([g,items])=>'<section><h3 class="wlm-group">'+g+'</h3><ul class="wlm-grid">'+items.map(([h,n,d])=>'<li><a class="wlm-item" href="'+hrefFor(h)+'"><strong>'+n+'</strong><small>'+d+'</small></a></li>').join('')+'</ul></section>').join('')+'</div>';
  }
  renderSections();
  document.body.appendChild(sheet);
@@ -98,7 +90,7 @@
  matchMedia('(max-width: 900px)').addEventListener('change',event=>{if(!event.matches)closeSheet();});
 
  // 3) Mobile bottom tab bar
- const tab=document.createElement('nav');tab.className='wlm-tabbar';
+ const tab=document.createElement('nav');tab.className='wlm-tabbar';tab.dataset.languageManaged='';
  const items=[
   {k:'home',l:['الرئيسية','Home'],h:'/',active:isHome},
   {k:'live',l:['عاجل','Breaking'],h:isHome?'#breakingSection':'/#breakingSection',cls:'wlm-tab--live'},

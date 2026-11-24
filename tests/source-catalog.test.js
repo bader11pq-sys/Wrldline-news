@@ -37,8 +37,9 @@ test("breaking RSS collection Edge Function and CLI are explicitly disabled", ()
   assert.doesNotMatch(breakingCli, /news\.google\.com\/rss|fetch\(/i);
 });
 
-test("breaking ticker retains the dedicated-source predicate for legacy content only", () => {
+test("legacy source predicate stays in Telegram handling, not the public breaking desk", () => {
   assert.ok(publicScript.includes("function isDedicatedBreakingSource(name)"));
-  assert.ok(publicScript.includes("if(!isDedicatedBreakingSource(a.raw?.source_name||a.src))return false;"));
+  assert.match(publicScript, /!isTelegramArticle\(a\.raw\)\|\|\(a\.isBreaking===true&&isDedicatedBreakingSource/);
+  assert.doesNotMatch(publicScript.slice(publicScript.indexOf("function breakingItems"),publicScript.indexOf("function publicArticleURL")),/isDedicatedBreakingSource/);
   assert.equal(publicScript.includes("isBreakingSource"), false);
 });

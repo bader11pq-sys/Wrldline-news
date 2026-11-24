@@ -143,7 +143,7 @@
     try {
       if (path.endsWith("/watchlist.html")) mountWatchlist(await fetchRows("watchlist", 1));
       else if (path === "/dossier/" || path === "/dossier/index.html") mountDossiers(await fetchRows("dossier", 12));
-      else if (path === "/" || path.endsWith("/index.html")) mountDossiers(await fetchRows("dossier", 8));
+      else if ($("#dossierStripGrid")) mountDossiers(await fetchRows("dossier", 8));
     } catch (e) { console.warn("WRLDLINE editorial publications:", e); }
   }
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init); else init();

@@ -3,6 +3,7 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs/promises');
 const path = require('node:path');
 const vm = require('node:vm');
+const reader = require('../reader-prose.js');
 const ROOT = path.resolve(__dirname, '..');
 const NOW = new Date('2026-11-15T04:00:00.000Z');
 const ORIGIN = 'https://al-ghaib.us.ci';
@@ -25,6 +26,10 @@ function fixture(records = [article()], overrides = {}) {
     if (name === 'public_news_article') return json(eligible().filter(a => a.id === args.p_id).slice(0, 1));
     if (name === 'public_news_article_intelligence') return json(eligible().filter(a => a.id === args.p_id).slice(0, 1).map(a => ({ id: a.id, ai_summary: a.ai_summary || null, ai_reader_impact: a.ai_reader_impact || null, ai_watch_next: a.ai_watch_next || null })));
     if (name === 'public_news_recent') return json(eligible().filter(a => Date.parse(a.published_at) <= Date.parse(args.p_before) && (!args.p_since || Date.parse(a.published_at) >= Date.parse(args.p_since))).sort((a, b) => b.published_at.localeCompare(a.published_at) || a.id.localeCompare(b.id)).slice(args.p_offset, args.p_offset + args.p_limit));
+    // Narrow archive projection: lane filter plus the database's publication order.
+    if (name === 'public_news_list') return json(eligible().filter(a => args.p_lane === 'all' || a.audience_lane === args.p_lane).filter(a => !args.p_before || Date.parse(a.published_at) <= Date.parse(args.p_before)).sort((a, b) => b.published_at.localeCompare(a.published_at) || a.id.localeCompare(b.id)).slice(args.p_offset, args.p_offset + args.p_limit).map(a => ({ id: a.id, title: a.title, summary: a.summary, image_url: a.image_url || null, lang: a.lang, category: a.category, source_name: a.source_name, source_url: a.source_url, url: a.url || null, published_at: a.published_at, content_type: a.content_type || null, audience_lane: a.audience_lane || null })));
+    if (name === 'public_news_sitemap_recent') return json(eligible().filter(a => Date.parse(a.published_at) >= NOW.getTime() - args.p_hours * 3600000).sort((a, b) => b.published_at.localeCompare(a.published_at) || a.id.localeCompare(b.id)).slice(0, args.p_limit).map(a => ({ id: a.id, title: a.title, lang: a.lang, published_at: a.published_at })));
+    if (name === 'public_related_articles') return json(eligible().filter(a => a.id !== args.p_id && a.category === (eligible().find(x => x.id === args.p_id) || {}).category).slice(0, args.p_limit).map(a => ({ id: a.id, title: a.title, published_at: a.published_at, category: a.category, source_name: a.source_name, audience_lane: a.audience_lane || null })));
     if (name === 'public_news_sitemap_index') return json(boundaries().filter(p => !args.p_page || p.page === args.p_page).slice(args.p_offset, args.p_offset + 1000));
     if (name === 'public_news_sitemap') return json(sorted().filter(a => !args.p_after || a.id > args.p_after).slice(0, 1000).map(a => ({ id: a.id, published_at: a.published_at, corrected_at: a.corrected_at || null })));
     throw new Error('Unexpected RPC: ' + name);
@@ -47,7 +52,9 @@ test('initial HTML contains published summary, reader impact context, canonical 
   assert.ok(html.includes(a.ai_summary));
   assert.ok(html.includes(a.ai_reader_impact));
   assert.ok(html.includes(a.ai_watch_next));
-  assert.ok(html.includes("وش يعني لك؟"));
+  assert.ok(html.includes("لماذا يهم؟"));
+  assert.deepEqual([...html.matchAll(/data-reader-step="([^"]+)"/g)].map(match => match[1]),
+    ['event', 'known', 'source', 'impact', 'watch', 'details']);
   assert.ok(html.includes("https://wa.me/?text="));
   assert.ok(html.includes("https://twitter.com/intent/tweet?text="));
   assert.ok(html.includes("https://t.me/share/url?url="));
@@ -65,10 +72,12 @@ test('initial HTML contains published summary, reader impact context, canonical 
   assert.deepEqual(ld.author, [{ '@type': 'Person', name: 'Real Reporter' }]);
   assert.equal(ld.articleBody, a.summary);
   assert.equal(response.headers.get('cache-control'), 'no-store');
-  assert.equal(f.calls.length, 2);
+  // article + reader context + related reading; the trust RPC is opt-in.
+  assert.equal(f.calls.length, 3);
   assert.equal(f.calls[0].options.headers.apikey, ENV.SUPABASE_ANON_KEY);
   assert.equal(f.calls[1].name, 'public_news_article_intelligence');
   assert.deepEqual(f.calls[1].args, { p_id: a.id });
+  assert.equal(f.calls[2].name, 'public_related_articles');
   assert.equal(f.calls[0].options.headers.Authorization, undefined);
   assert.equal(f.calls[0].options.headers.Cookie, undefined);
 });
@@ -81,7 +90,39 @@ test('missing or unavailable reader-context RPC never blocks the attributed publ
   assert.equal(response.status, 200);
   assert.ok(html.includes(a.summary));
   assert.ok(html.includes(a.source_url));
-  assert.ok(!html.includes("وش يعني لك؟"));
+  assert.doesNotMatch(html, /data-reader-step="(?:impact|watch)"/);
+});
+
+test('reader split agrees across server and browser and retains structured copy without duplication', async () => {
+  const { splitLead } = await modulePromise;
+  const structured = '### نطاق التغطية\r\n• خبر أول.\r\n• معلومة ثانية.\r\n\r\nهذه تفاصيل إضافية.';
+  const long = `${'كلمة '.repeat(44)}توقّف هنا. ${'تفاصيل '.repeat(80)}`;
+  for (const value of ['', 'First line\nSecond line', '## Heading only', structured, long, '• One\n• Two']) {
+    const result = splitLead(value);
+    assert.deepEqual(result, reader.splitLead(value));
+    const normalize = text => text.trim().replace(/\s+/g, ' ');
+    assert.equal(normalize(`${result.lead} ${result.details}`), normalize(value));
+  }
+  const a = article(102, { summary: structured, language: 'ar' });
+  const html = await (await get(await workerFor(fixture([a])), '/news/' + a.id)).text();
+  assert.match(html, /data-reading-lead><h3 dir="auto">نطاق التغطية<\/h3><ul><li dir="auto">خبر أول\.<\/li><\/ul>/);
+  assert.match(html, /data-reading-body><ul><li dir="auto">معلومة ثانية\.<\/li><\/ul><p dir="auto">هذه تفاصيل إضافية\.<\/p>/);
+  const visible = html.replace(/<script\b[\s\S]*?<\/script>|<[^>]+>/g, '');
+  assert.equal(visible.split('خبر أول.').length - 1, 1);
+  assert.equal(visible.split('معلومة ثانية.').length - 1, 1);
+  const archive = await (await get(await workerFor(fixture([a])), '/news/')).text();
+  assert.match(archive, /class="pn-card-summary"[^>]*>نطاق التغطية خبر أول\. معلومة ثانية\./);
+});
+
+test('empty article data renders honest English fallbacks without invented impact or a source link', async () => {
+  const a = article(103, { lang: 'en', title: 'An attributed item', summary: null, source_name: null, source_url: null });
+  const html = await (await get(await workerFor(fixture([a])), '/news/' + a.id)).text();
+  assert.deepEqual([...html.matchAll(/data-reader-step="([^"]+)"/g)].map(match => match[1]),
+    ['event', 'known', 'source', 'details']);
+  assert.match(html, /<h2>What happened\?<\/h2>/);
+  assert.match(html, /<p data-reading-missing>No published summary/);
+  assert.match(html, /<p data-source-missing>The original source link is unavailable/);
+  assert.doesNotMatch(html, /data-reader-step="source"[^>]*><h2>[^<]*<\/h2><a/);
 });
 
 test('unknown/malformed UUID and unpublished, future, undated or missing records are true noindex 404s', async () => {
@@ -115,7 +156,10 @@ test('no author or image is invented; original publication and valid correction 
   const a = article(1, { author: null, image_url: null, received_at: NOW.toISOString(), correction_note: 'تصحيح منشور', corrected_at: '2026-11-15T03:59:30Z', lang: 'en' });
   const html = await (await get(await workerFor(fixture([a])), '/news/' + a.id)).text(), ld = schema(html);
   assert.equal(ld.datePublished, a.published_at); assert.equal(ld.dateModified, '2026-11-15T03:59:30.000Z');
-  assert.ok(!Object.hasOwn(ld, 'author')); assert.ok(!Object.hasOwn(ld, 'image'));
+  // An aggregated summary has no invented Person author; the desk that selected
+  // and attributed it is named as an Organization instead.
+  assert.deepEqual(ld.author, [{ '@type': 'Organization', name: 'WRLDLINE NEWS editorial desk' }]);
+  assert.ok(!Object.hasOwn(ld, 'image'));
   assert.match(html, /<html lang="en" dir="ltr"/); assert.match(html, /Published correction/); assert.match(html, /name="twitter:card" content="summary"/);
 });
 
@@ -144,7 +188,8 @@ test('Google News sitemap is bounded to 1000 entries in the original-publication
   const f = fixture(rows), r = await get(await workerFor(f), '/news-sitemap.xml'), xml = await r.text();
   assert.equal(r.status, 200); assert.equal(urls(xml).length, 1000); assert.match(xml, /<news:publication_date>/);
   assert.ok(!xml.includes(id(9000))); assert.ok(!xml.includes(id(9001)));
-  assert.equal(f.calls[0].args.p_limit, 1000); assert.equal(f.calls[0].args.p_since, '2026-11-13T04:00:00.000Z');
+  assert.equal(f.calls[0].name, 'public_news_sitemap_recent');
+  assert.equal(f.calls[0].args.p_limit, 1000); assert.equal(f.calls[0].args.p_hours, 48);
 });
 
 test('empty news window returns valid empty urlset', async () => {
@@ -260,7 +305,7 @@ test('English archive keeps original titles and passes language to article links
 test('analytics hooks and server-visible uncertainty exist without trusting legacy confirmed/AI fields', async () => {
   const a = article(1, { verification: 'confirmed', ai_confidence: 1 }), html = await (await get(await workerFor(fixture([a])), '/news/' + a.id)).text();
   assert.match(html, /src="\/analytics-config\.js/); assert.match(html, /src="\/analytics\.js/);
-  assert.match(html, /data-audience-article data-article-id=/); assert.match(html, /data-category="world"/); assert.match(html, /data-trust-ssr="1"/);
+  assert.match(html, /data-audience-article data-article-id=/); assert.match(html, /data-category="world"/); assert.match(html, /data-server-trust="unconfirmed"/);
   assert.match(html, /لم يُثبت تأكيد بشري/); assert.doesNotMatch(html, /<strong>تأكيد تحريري بشري مسجل/);
 });
 
@@ -287,4 +332,32 @@ test('public RPC uses Worker-compatible manual redirects and never follows a 3xx
   assert.equal(f.calls[0].options.redirect, 'manual');
   assert.equal(new URL(f.calls[0].url).origin, ENV.SUPABASE_URL);
   assert.ok(!(await response.text()).includes('other.example'));
+});
+
+test('an uncategorized story does not claim a section it cannot link to', async () => {
+  const { renderArticle } = await modulePromise;
+  const html = await renderArticle(article(7, { category: 'uncategorized', source_name: 'WRLDLINE NEWS', content_type: 'original' }), NOW).text();
+  const schema = JSON.parse(html.match(/<script[^>]*application\/ld\+json[^>]*>([\s\S]*?)<\/script>/)[1]);
+  assert.equal(schema.articleSection, undefined, 'a database placeholder must not reach structured data');
+  assert.ok(!/الأرشيف\s*\/\s*</.test(html), 'the breadcrumb must not end in a dangling separator');
+  assert.match(html, /<nav class="public-news-breadcrumb"[^>]*><a href="\/news\/">/);
+});
+
+test('a real category still names its section in Arabic', async () => {
+  const { renderArticle } = await modulePromise;
+  const html = await renderArticle(article(8, { category: 'economy' }), NOW).text();
+  const schema = JSON.parse(html.match(/<script[^>]*application\/ld\+json[^>]*>([\s\S]*?)<\/script>/)[1]);
+  assert.equal(schema.articleSection, 'اقتصاد');
+  assert.match(html, /href="\/section\/economy"/);
+});
+
+test('a guessed section slug redirects to the section that covers it', async () => {
+  const worker = await workerFor(fixture());
+  for (const [slug, target] of [['energy', 'economy'], ['defence', 'security'], ['technology', 'tech'], ['human-rights', 'rights']]) {
+    const res = await get(worker, `/section/${slug}`, { headers: { Accept: 'text/html' } });
+    assert.equal(res.status, 308, `${slug} should redirect`);
+    assert.equal(res.headers.get('Location'), `${ORIGIN}/section/${target}`);
+  }
+  const unknown = await get(worker, '/section/astrology', { headers: { Accept: 'text/html' } });
+  assert.equal(unknown.status, 404, 'an unknown slug is still a 404');
 });

@@ -6,7 +6,7 @@ const path = require("node:path");
 
 const read = (file) => fs.readFileSync(path.join(__dirname, "..", file), "utf8");
 
-test("homepage primary navigation follows the core reader journey", () => {
+test("homepage keeps the three lead desks, directory and analysis in primary navigation", () => {
   const html = read("index.html");
   const primaryStart = html.indexOf('<div class="wl-nav-scroll">');
   const primaryEnd = html.indexOf("</div>", primaryStart);
@@ -20,22 +20,30 @@ test("homepage primary navigation follows the core reader journey", () => {
   const primaryLinks = [...primary.matchAll(/<a\b[^>]*href="([^"]+)"/g)].map(match => match[1]);
   assert.deepEqual(primaryLinks, [
     "index.html",
-    "/dossier/",
-    "#newsSection",
-    "#newsSection",
-    "/news/",
-    "#breakingSection",
-    "map.html"
+    "/section/politics",
+    "rights.html",
+    "/section/economy",
+    "sections.html",
+    "analysis.html"
   ]);
 
-  for (const route of [
-    "context.html", "balance.html", "impact.html", "mirror.html", "history.html",
-    "map.html", "sources.html", "daily-briefing.html", "shorts.html",
-    "topics.html", "tags.html", "promises.html", "explainers.html"
-  ]) {
-    assert.ok(more.includes('href="' + route + '"'), route + " remains reachable from More");
+  assert.deepEqual([...more.matchAll(/<a\b[^>]*href="([^"]+)"/g)].map(match => match[1]),
+    ["#breakingSection", "/news/", "shorts.html", "topics.html"]);
+  assert.match(html, /<span lang="ar">المزيد<\/span><span lang="en">More<\/span>/);
+  assert.match(html, /href="analysis\.html#tools"/);
+  assert.doesNotMatch(html, /class="wl-desk-grid"|id="promisesPreview"|id="explainersRail"/);
+});
+
+test("specialist tools are reachable from one hub and not repeated in mobile navigation", () => {
+  const mobile = read("wl-modern.js");
+  const hub = read("analysis.html").split('id="tools"')[1];
+  for (const route of ["context.html", "balance.html", "impact.html", "mirror.html", "map.html",
+    "markets.html", "sources.html", "history.html", "promises.html", "explainers.html", "dossier/watchlist.html"]) {
+    assert.ok(hub.includes(`href="${route}"`), route);
+    assert.ok(!mobile.includes(`['${route}'`), route);
   }
-  assert.equal((more.match(/href="shorts\.html"/g) || []).length, 1, "Shorts is not duplicated in More");
+  assert.match(mobile, /Six editorial priorities/);
+  assert.match(mobile, /\['analysis\.html'/);
 });
 
 test("More menu stays usable on narrow screens and can scroll", () => {
@@ -59,4 +67,5 @@ test("narrative balance labels source names as coverage indicators, not proof of
   assert.doesNotMatch(js, /مصادر مستقلة/);
   assert.match(js, /أسماء مصادر مختلفة/);
   assert.match(js, /تعدد الأسماء وحده لا يثبت استقلال المصادر أو صحة الرواية/);
+  assert.doesNotMatch(read("index.html"), /مصادر مستقلة في العينة/);
 });
