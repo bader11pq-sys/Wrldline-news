@@ -46,7 +46,7 @@ async function authorize(req: Request) {
   return response.ok && (await response.json())===true;
 }
 async function health() {
-  const body=await newsdataRequest("latest",{size:"10",category:"sports",language:"en"});
+  const body=await newsdataRequest("latest",{size:"10",category:"politics,business,world,technology",language:"ar,en",removeduplicate:"1"});
   const results=Array.isArray(body.results)?body.results:[];
   const dates=results.map((x:any)=>Date.parse(x.pubDate||"")).filter((x:number)=>Number.isFinite(x));
   const newest=dates.length?Math.max(...dates):null;
