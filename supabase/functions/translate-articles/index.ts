@@ -10,7 +10,7 @@ async function firecrawlArticleText(article: any, apiKey: string | null, db: any
  try { parsed = new URL(article.url); } catch { return null; }
  if (parsed.protocol !== "https:" || !parsed.hostname || parsed.hostname === "localhost" ||
      parsed.hostname.endsWith(".local") || parsed.hostname.endsWith(".internal") ||
-     /^\\d{1,3}(\\.\\d{1,3}){3}$/.test(parsed.hostname) ||
+     /^\d{1,3}(\.\d{1,3}){3}$/.test(parsed.hostname) || parsed.hostname.includes(":") || !parsed.hostname.includes(".") ||
      parsed.hostname === "api.supabase.com" || parsed.hostname.endsWith(".supabase.co")) return null;
  try {
   const { data: cached, error: cacheError } = await db.from("article_content_cache")
