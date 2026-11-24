@@ -13,6 +13,7 @@ edition_spec = importlib.util.spec_from_file_location(
 edition = importlib.util.module_from_spec(edition_spec)
 edition_spec.loader.exec_module(edition)
 BASE = edition.SITE.rstrip("/")
+PUBLISHED_RIGHTS_CASES = 6
 
 
 async def home(browser, width):
@@ -80,7 +81,7 @@ async def dossiers(browser, width):
     page.on("request", lambda req: requests.append(req.url))
     await page.goto(f"{BASE}/rights-cases/index.html")
     cards = page.locator(".hn-card:visible")
-    await expect(cards).to_have_count(3)
+    await expect(cards).to_have_count(PUBLISHED_RIGHTS_CASES)
     await page.get_by_role("searchbox").fill("الاردن")
     await expect(cards).to_have_count(2)
     await page.get_by_label("الموضوع").select_option(label="الخصوصية الرقمية")
@@ -91,7 +92,7 @@ async def dossiers(browser, width):
     reset = page.get_by_role("button", name="مسح البحث")
     await (reset.tap() if width < 700 else reset.click())
     await expect(page.get_by_role("searchbox")).to_be_focused()
-    await expect(cards).to_have_count(3)
+    await expect(cards).to_have_count(PUBLISHED_RIGHTS_CASES)
     assert await page.evaluate("document.documentElement.scrollWidth === innerWidth")
 
     await page.locator('.hn-card a[href="jordan-expression.html"]').click()
@@ -124,7 +125,7 @@ async def main():
         context = await browser.new_context(java_script_enabled=False, viewport={"width": 320, "height": 740})
         page = await context.new_page()
         await page.goto(f"{BASE}/rights-cases/index.html")
-        await expect(page.locator(".hn-card:visible")).to_have_count(3)
+        await expect(page.locator(".hn-card:visible")).to_have_count(PUBLISHED_RIGHTS_CASES)
         await expect(page.locator(".hn-filter")).to_be_hidden()
         await page.locator('.hn-card a[href="jordan-expression.html"]').click()
         await page.get_by_role("navigation", name="داخل الملف").get_by_role("link", name="الأدلة").click()
