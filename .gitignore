@@ -1,0 +1,12 @@
+node_modules/
+dist/
+.wrangler/
+.dev.vars
+.env
+.live.secrets.json
+.live.env
+*.sqlite
+*.sqlite-*
+coverage/
+.release-state/
+release-service/.env
