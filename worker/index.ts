@@ -18,16 +18,45 @@ app.onError((err,c)=>{if(err instanceof OfficeError)return c.json({error:err.mes
 app.use('/api/*',async(c,next)=>{await next();c.header('Cache-Control','no-store');c.header('X-Content-Type-Options','nosniff');c.header('Referrer-Policy','no-referrer');});
 app.use('/api/*',bodyLimit({maxSize:22000,onError:c=>c.json({error:'Request body too large.'},413)}));
 app.get('/api/health',c=>c.json({ok:true,demo:mode(c.env),ai:!mode(c.env)&&providers.some(p=>!!apiKey(c.env,p)),releases:!mode(c.env)&&!!c.env.RELEASE_SERVICE_URL,images:!mode(c.env)&&!!c.env.IMAGE_API_KEY,site:safeUrl(c.env.SITE_PUBLIC_URL||'https://al-ghaib.us.ci')?.origin}));
+const emailAddress=z.string().max(320).transform(value=>value.replace(/^[\s\u200e\u200f\u061c\u202a-\u202e\u2066-\u2069]+|[\s\u200e\u200f\u061c\u202a-\u202e\u2066-\u2069]+$/gu,'').toLowerCase()).pipe(z.email().max(254));
 app.post('/api/session',async c=>{
   if(mode(c.env)){const token=uid();demoNew(token);return c.json({token,demo:true});}
   assertLive(c.env);
   if(c.env.LOGIN_LIMIT&&!(await c.env.LOGIN_LIMIT.limit({key:c.req.header('CF-Connecting-IP')||'unknown'})).success)throw new OfficeError('محاولات دخول كثيرة. أعد المحاولة بعد دقيقة.',429);
-  const input=await body(c,z.object({email:z.email().max(200),password:z.string().min(1).max(200)}));
+  const parsed=z.object({email:emailAddress,password:z.string().min(1).max(1024)}).safeParse(await c.req.json().catch(()=>null));
+  if(!parsed.success)throw new OfficeError('تحقق من صيغة البريد الإلكتروني وأدخل كلمة المرور. إذا لم تعيّن كلمة مرور، اختر استعادة كلمة المرور.',422);
+  const input=parsed.data;
   const result=await fetch(`${c.env.SUPABASE_URL}/auth/v1/token?grant_type=password`,{method:'POST',headers:{apikey:c.env.SUPABASE_PUBLISHABLE_KEY!,'content-type':'application/json'},body:JSON.stringify(input),signal:limitTime()});
-  if(!result.ok)throw new OfficeError('Login failed.',401);
+  if(result.status===429)throw new OfficeError('محاولات دخول كثيرة. انتظر قليلًا ثم أعد المحاولة.',429);
+  if(result.status>=500)throw new OfficeError('خدمة تسجيل الدخول غير متاحة مؤقتًا. أعد المحاولة بعد قليل.',503);
+  if(!result.ok)throw new OfficeError('البريد الإلكتروني أو كلمة المرور غير صحيحة. إذا كان هذا أول دخول لك، اختر استعادة كلمة المرور.',401);
   const data=await result.json() as {access_token:string;user:{id:string}};
-  if(data.user.id!==c.env.CEO_USER_ID)throw new OfficeError('CEO access only.',403);
+  if(data.user?.id!==c.env.CEO_USER_ID||!data.access_token)throw new OfficeError('هذا الحساب لا يملك صلاحية الدخول إلى مكتب رئيس التحرير.',403);
   return c.json({token:data.access_token,demo:false});
+});
+app.post('/api/session/recover',async c=>{
+  if(mode(c.env))throw new OfficeError('استعادة كلمة المرور غير متاحة في النسخة التجريبية.',404);
+  assertLive(c.env);
+  if(c.req.header('Sec-Fetch-Site')==='cross-site')throw new OfficeError('افتح صفحة المكتب لطلب استعادة كلمة المرور.',403);
+  if(c.env.LOGIN_LIMIT&&!(await c.env.LOGIN_LIMIT.limit({key:`recovery:${c.req.header('CF-Connecting-IP')||'unknown'}`})).success)throw new OfficeError('طلبات استعادة كثيرة. انتظر قليلًا ثم أعد المحاولة.',429);
+  const parsed=z.object({email:emailAddress}).safeParse(await c.req.json().catch(()=>null));
+  if(!parsed.success)throw new OfficeError('أدخل بريدًا إلكترونيًا صحيحًا لاستعادة كلمة المرور.',422);
+  const root=c.env.SUPABASE_URL!, service=c.env.SUPABASE_SERVICE_ROLE_KEY!;
+  const owner=await fetch(`${root}/auth/v1/admin/users/${encodeURIComponent(c.env.CEO_USER_ID!)}`,{headers:{apikey:service,authorization:`Bearer ${service}`},signal:limitTime()});
+  if(!owner.ok)throw new OfficeError('خدمة استعادة كلمة المرور غير متاحة مؤقتًا. أعد المحاولة لاحقًا.',503);
+  const account=await owner.json() as {email?:string;user?:{email?:string}};
+  const email=account.email??account.user?.email;
+  if(!email)throw new OfficeError('خدمة استعادة كلمة المرور غير متاحة مؤقتًا. أعد المحاولة لاحقًا.',503);
+  if(email.toLowerCase()===parsed.data.email){
+    const site=safeUrl(c.env.SITE_PUBLIC_URL||'https://al-ghaib.us.ci');
+    if(!site)throw new SetupError('رابط استعادة كلمة المرور غير مهيأ.');
+    const recover=new URL(`${root}/auth/v1/recover`);
+    recover.searchParams.set('redirect_to',new URL('/admin.html',site.origin).href);
+    const sent=await fetch(recover,{method:'POST',headers:{apikey:c.env.SUPABASE_PUBLISHABLE_KEY!,'content-type':'application/json'},body:JSON.stringify(parsed.data),signal:limitTime()});
+    if(sent.status===429)throw new OfficeError('تم طلب رابط مؤخرًا. افحص بريدك أو انتظر قليلًا قبل إعادة الطلب.',429);
+    if(!sent.ok)throw new OfficeError('تعذر طلب رابط الاستعادة الآن. أعد المحاولة لاحقًا.',503);
+  }
+  return c.json({ok:true});
 });
 const publicData=(a:Article)=>({id:a.id,status:'published',title:a.title,topic:a.topic,summary:a.summary,body:a.body,facts:a.brief.claims.map(c=>c.text),developing:a.brief.developing,eventDate:a.brief.eventDate,publishedAt:a.publishedAt,author:'سارة',factChecker:'ليلى',demo:a.demo,breaking:a.breaking,image:a.selectedImage!==undefined&&a.images?.[a.selectedImage]?.url?`/public/articles/${a.id}/cover`:null,sources:a.sources.map(s=>({url:s.url,title:s.title,publisher:s.publisher,publishedAt:s.publishedAt}))});
 const isPublic=(a:Article|undefined):a is Article=>!!a&&a.status==='published'&&a.demo===false&&a.check.state==='passed'&&!!a.publishedAt;

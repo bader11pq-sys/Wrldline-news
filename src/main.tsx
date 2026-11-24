@@ -70,12 +70,23 @@ function News(){const [list,setList]=useState<PublicArticle[]>([]),[choice,setCh
 function App(){
   const [page,go]=useRoute(),[health,setHealth]=useState<Health>(),[token,setToken]=useState(''),[data,setData]=useState<Snapshot>(),[err,setErr]=useState(''),[busy,setBusy]=useState(false);
   const [selected,setSelected]=useState<AgentId>('omar'),[text,setText]=useState(''),[mode,setMode]=useState<'2d'|'3d'>('2d'),[menu,setMenu]=useState(false),[preview,setPreview]=useState<{type:'article'|'release'|'task';id:string}>(),[reject,setReject]=useState(false),[feedback,setFeedback]=useState(''),[now,setNow]=useState(new Date()),[filter,setFilter]=useState('All'),[limit,setLimit]=useState('60000'),[picks,setPicks]=useState<string[]>([]);
-  const [email,setEmail]=useState(''),[password,setPassword]=useState(''),[listening,setListening]=useState(false);
+  const [recovering,setRecovering]=useState(false),[loginNotice,setLoginNotice]=useState(''),[listening,setListening]=useState(false);
   const [cover,setCover]=useState<number>();
   const [assign,setAssign]=useState(false);
   const sendBox=useRef<HTMLTextAreaElement>(null),intervalBusy=useRef(false),chatEnd=useRef<HTMLDivElement>(null);
   const fail=(error:unknown)=>{const e=error as Error&{status?:number};setErr(e.message);if(e.status===401){setToken('');setData(undefined);}};
   const sign=async (auth?:{email:string;password:string})=>{const r=await request<{token:string}>('/session',undefined,'POST',auth??{});setToken(r.token);const s=await request<Snapshot>('/office/state',r.token);setData(s);setLimit(String(s.dailyLimit));};
+  const submitLogin=async(e:FormEvent<HTMLFormElement>)=>{
+    e.preventDefault();if(busy)return;
+    const form=new FormData(e.currentTarget),email=String(form.get('email')??'');
+    const password=String(form.get('password')??'');setBusy(true);setErr('');setLoginNotice('');
+    try{
+      if(recovering){
+        await request('/session/recover',undefined,'POST',{email});
+        setLoginNotice('إذا كان هذا بريد حساب رئيس التحرير، سيصلك رابط لتعيين كلمة المرور. افحص الوارد والرسائل غير المرغوب فيها، ثم ارجع إلى المكتب.');
+      }else await sign({email,password});
+    }catch(e){fail(e);}finally{setBusy(false);}
+  };
   useEffect(()=>{let live=true;request<Health>('/health').then(async h=>{if(!live)return;setHealth(h);if(h.demo)await sign();}).catch(fail);return()=>{live=false;};},[]);
   useEffect(()=>{const timer=setInterval(()=>setNow(new Date()),15000);return()=>clearInterval(timer);},[]);
   const hasWork=!!data?.tasks.some(t=>active(t));
@@ -122,7 +133,18 @@ function App(){
   const morning=data?.reports.find(x=>x.type==='morning'&&x.day===dayKey(now)),evening=data?.reports.find(x=>x.type==='evening'&&x.day===dayKey(now));
   if(page==='news')return <News/>;
   const heading=page==='desk'?['غرفة الأخبار','مكتب التحرير والإنتاج']:page==='office'?['مخطط المكتب','اختر مكتباً لفتح محادثة الموظف.']:page==='dashboard'?['لوحة القيادة','مؤشرات اليوم وملخصات الوردية.']:page==='tasks'?['لوحة المهام','تابع كل تكليف ومراحل العمل.']:page==='approvals'?['قرارات النشر','لا تُنشر مادة قبل قرارك.']:page==='meeting'?['غرفة الاجتماع','ناقش النشرة المقبلة مع الفريق.']:page==='activity'?['سجل العمل','كل إجراء مسجّل بتوقيت الرياض.']:['إعدادات المكتب','إدارة الاتصال والاستخدام.'];
-  if(!data)return <div className="login-screen" dir="rtl"><section className="login-card"><div className="login-mark"><Mark/></div><p className="eyebrow" dir="ltr">WORLDLINE NEWS · AI OFFICE</p><h1>{health&&!health.demo?'دخول رئيس التحرير':'جارٍ فتح غرفة الأخبار'}</h1><p>{health&&!health.demo?'الدخول متاح لحساب رئيس التحرير المعتمد فقط.':'جارٍ الاتصال بمساحة التحرير.'}</p>{err&&<p role="alert" className="error">{err}</p>}{health&&!health.demo&&<><form onSubmit={async e=>{e.preventDefault();setBusy(true);try{await sign({email,password});setPassword('');}catch(e){fail(e);}finally{setBusy(false);}}}><label>البريد الإلكتروني<input type="email" dir="ltr" autoComplete="username" required value={email} onChange={e=>setEmail(e.target.value)}/></label><label>كلمة المرور<input type="password" dir="ltr" autoComplete="current-password" required value={password} onChange={e=>setPassword(e.target.value)}/></label><button className="primary" disabled={busy}>تسجيل الدخول <ArrowLeft size={16}/></button></form>{health.site&&<a href={`${health.site}/admin.html`} style={{textDecoration:'underline'}}>أول دخول أو نسيت كلمة المرور؟ افتح صفحة الاستعادة</a>}</>}{err&&health?.demo&&<button className="soft" onClick={()=>void sign().catch(fail)}>إعادة المحاولة</button>}</section></div>;
+  if(!data)return <div className="login-screen" dir="rtl"><section className="login-card">
+    <div className="login-mark"><Mark/></div><p className="eyebrow" dir="ltr">WORLDLINE NEWS · AI OFFICE</p>
+    <h1>{health&&!health.demo?(recovering?'استعادة كلمة المرور':'دخول رئيس التحرير'):'جارٍ فتح غرفة الأخبار'}</h1>
+    <p>{health&&!health.demo?(recovering?'أدخل بريد حساب رئيس التحرير لتعيين كلمة مرور جديدة.':'الدخول متاح لحساب رئيس التحرير المعتمد فقط.'):'جارٍ الاتصال بمساحة التحرير.'}</p>
+    {err&&<p role="alert" className="error">{err}</p>}{loginNotice&&<p role="status">{loginNotice}</p>}
+    {health&&!health.demo&&<form onSubmit={submitLogin} aria-busy={busy}>
+      <label>البريد الإلكتروني<input name="email" type="text" inputMode="email" dir="ltr" autoComplete="username" autoCapitalize="none" spellCheck={false} maxLength={320} required/></label>
+      {!recovering&&<label>كلمة المرور<input name="password" type="password" dir="ltr" autoComplete="current-password" maxLength={1024} required/></label>}
+      <button type="submit" className="primary" disabled={busy}>{busy?'جارٍ التحقق…':recovering?'إرسال رابط الاستعادة':'تسجيل الدخول'} <ArrowLeft size={16}/></button>
+      <button type="button" className="soft" disabled={busy} onClick={()=>{setRecovering(!recovering);setErr('');setLoginNotice('');}}>{recovering?'العودة لتسجيل الدخول':'أول دخول أو نسيت كلمة المرور؟'}</button>
+    </form>}{err&&health?.demo&&<button className="soft" onClick={()=>void sign().catch(fail)}>إعادة المحاولة</button>}
+  </section></div>;
   const approvalRows=(compact=false)=><>{pending.map(a=><button key={a.id} className="approval-row" onClick={()=>open('article',a.id)}><span className={cx('a-icon',a.topic==='اقتصاد'&&'econ')}><FileText size={17}/></span><span className="approval-copy"><strong dir="rtl" lang="ar">{a.title}</strong><small>{a.topic} · {a.demo?'مسودة تجريبية':'اجتازت التحقق'} </small></span><ChevronRight className="rtl-arrow" size={15}/></button>)}{releases.map(t=><button key={t.id} className="approval-row" onClick={()=>open('release',t.id)}><span className="a-icon"><Layers3 size={17}/></span><span className="approval-copy"><strong>تغيير تجريبي للموقع</strong><small>{data?.demo?'محاكاة':'معاينة اجتازت الاختبارات'}</small></span><ChevronRight className="rtl-arrow" size={15}/></button>)}{!stats.waiting&&<Empty>{compact?'لا قرارات معلقة.':'لا توجد مسودات أو تغييرات للموقع بانتظار قرارك.'}</Empty>}</>;
   const chat=<section className="panel chat-panel" dir="rtl"><header className="panel-heading"><div className="chat-profile">{channel==='meeting'?<span className="a-icon"><Users size={18}/></span>:<Avatar id={selected}/>}<div><h3>{channel==='meeting'?'محادثة الاجتماع':`محادثة مع ${names[selected]}`}</h3><span><Dot status={channel==='meeting'?'In meeting':status[selected]}/>{channel==='meeting'?'محادثة جماعية':roles[selected]}</span></div></div><button className="icon-btn" title="قراءة آخر رد" aria-label="قراءة آخر رد" disabled={!msg.some(m=>m.author!=='ceo')} onClick={()=>{const last=msg.findLast(m=>m.author!=='ceo');if(last)say(last.text);}}><Volume2 size={17}/></button></header>
     <div className="messages" aria-live="polite">{msg.length?msg.map(m=><div className={cx('message',m.author==='ceo'&&'yours')} key={m.id}><small>{m.author==='ceo'?'أنت':names[m.author]} · {time(m.createdAt)}</small><div dir={rtl(m.text)?'rtl':'ltr'}>{m.text}</div></div>):<Empty>ابدأ محادثة خاصة أو أرسل تكليفاً لهذا الموظف.</Empty>}<div ref={chatEnd}/></div>

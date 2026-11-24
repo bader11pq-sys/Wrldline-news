@@ -103,6 +103,18 @@ async function smoke(){
   if(!index.ok||!(await index.text()).includes('assets/'))die('Mounted office HTML missing.');
   const denied=await get(`${base}/api/office/state`);
   if(denied.status!==401)die('Private endpoint did not reject an anonymous request.');
+  const loginPost={method:'POST',headers:{'content-type':'application/json'}};
+  for(let attempt=0;attempt<6;attempt++){
+    const malformed=await get(`${base}/api/session`,{...loginPost,body:JSON.stringify({email:'not-an-email',password:'fixture'})});
+    if(malformed.status===422&&((await malformed.json()).error||'').includes('صيغة البريد'))break;
+    if(attempt===5)die('Expected the new sign-in validation on the live site after propagation.');
+    await new Promise(resolve=>setTimeout(resolve,3500));
+  }
+  const padded=await get(`${base}/api/session`,{...loginPost,body:JSON.stringify({email:' \u200Foffice-smoke@example.invalid ',password:'incorrect-probe-password'})});
+  if(padded.status!==401)die(`Padded email did not reach the live password provider (HTTP ${padded.status}).`);
+  const dryRecover=await get(`${base}/api/session/recover`,{...loginPost,body:JSON.stringify({email:'office-smoke@example.invalid'})});
+  if(!dryRecover.ok||!(await dryRecover.json()).ok)die('Live recovery failed to handle an ineligible address without sending email.');
+  console.log('Verified login email normalization and private recovery endpoint without sending an email.');
   let feed, feedStatus;
   for(let attempt=0;attempt<12;attempt++){
     const response=await get(`${base}/api/public/articles`);

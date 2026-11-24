@@ -10,6 +10,48 @@ const live:Env={APP_MODE:'live',SUPABASE_URL:'https://db.example.com',SUPABASE_P
 const profile={provider:'groq',fast:'new/fast',editor:'new/editor',checker:'new/checker'} as const;
 const json=(x:unknown)=>Response.json(x);
 
+test('password login accepts pasted email and keeps the password exactly as entered',async t=>{
+  const sent:{email:string;password:string}[]=[];
+  t.mock.method(globalThis,'fetch',async(url:string,init:RequestInit)=>{
+    assert.match(url,/\/auth\/v1\/token\?grant_type=password$/);
+    sent.push(JSON.parse(String(init.body)));
+    return json({access_token:'fixture-token',user:{id:live.CEO_USER_ID}});
+  });
+  const sign=(email:string,password:string)=>app.request('/api/session',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({email,password})},live);
+  const result=await sign(' \u200fEDITOR@EXAMPLE.COM\u200e ', ' كلمة السر ');
+  assert.equal(result.status,200);
+  assert.deepEqual(await result.json(),{token:'fixture-token',demo:false});
+  assert.deepEqual(sent,[{email:'editor@example.com',password:' كلمة السر '}]);
+  const invalid=await sign('not-an-email','password');
+  assert.equal(invalid.status,422);
+  assert.match((await invalid.json() as {error:string}).error,/صيغة البريد/);
+  assert.equal(sent.length,1);
+});
+
+test('recovery only requests mail for the CEO and uses the first-party redirect',async t=>{
+  let mailed=0;
+  t.mock.method(globalThis,'fetch',async(raw:string|URL,init:RequestInit)=>{
+    const url=new URL(raw);
+    if(url.pathname.startsWith('/auth/v1/admin/users/')){
+      assert.equal(url.pathname,`/auth/v1/admin/users/${live.CEO_USER_ID}`);
+      assert.equal(new Headers(init.headers).get('apikey'),live.SUPABASE_SERVICE_ROLE_KEY);
+      return json({email:'editor@example.com'});
+    }
+    assert.equal(url.pathname,'/auth/v1/recover');
+    assert.equal(url.searchParams.get('redirect_to'),'https://al-ghaib.us.ci/admin.html');
+    assert.equal(new Headers(init.headers).get('apikey'),live.SUPABASE_PUBLISHABLE_KEY);
+    assert.deepEqual(JSON.parse(String(init.body)),{email:'editor@example.com'});
+    mailed++;return json({});
+  });
+  const recover=(email:string)=>app.request('/api/session/recover',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({email})},live);
+  const other=await recover('other@example.com');
+  assert.equal(mailed,0);
+  const ceo=await recover(' EDITOR@EXAMPLE.COM ');
+  assert.equal(mailed,1);
+  assert.equal(other.status,200);assert.equal(ceo.status,200);
+  assert.deepEqual(await other.json(),await ceo.json());
+});
+
 test('mounted newsroom retains method, query, and body; chat does not commission a task',async()=>{
   const token=((await (await app.request('/api/session',{method:'POST'},demo)).json()) as {token:string}).token;
   const baseline=await (await app.request('/api/office/state',{headers:{authorization:`Bearer ${token}`}},demo)).json() as ReturnType<typeof fresh>;
