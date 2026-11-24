@@ -13,6 +13,7 @@ This change is limited to the Worldline News Office Worker and its employee/task
 - Changed `GET /api/office/sources/status` to a read-only status response. It no longer calls source gathering.
 - Removed source gathering from morning reports. Reports no longer collect headlines.
 - Preserved the sole source-gathering call inside Khalid's research execution path. It is reachable only through a manually assigned office task advanced by an explicit office action.
+- Changed manual assignments addressed to Khalid to create a research-only task, rather than classifying them as a breaking-news workflow.
 - Changed Khalid's role to Researcher & Source Analyst and removed RSS/news API tools from his static role metadata.
 - Corrected Sara's static role label to Arabic Copy Editor.
 - Changed AI prompt resolution to read `system_prompt` from `wrldline_office_employees` at runtime.
@@ -28,6 +29,7 @@ This change is limited to the Worldline News Office Worker and its employee/task
 - Static inspection of the deployed Worker confirms exactly one `await gather(...)` call remains, inside `research(...)`.
 - The sources status endpoint no longer calls `gather`.
 - The scheduled handler is a no-op.
+- Explicitly addressing Khalid routes to a research-only task.
 - Supabase shows all eight employees present; Khalid's role/prompt are updated and Sara's role remains Arabic Copy Editor.
 - The previously false-completed Khalid task is Blocked and has zero sources.
 
