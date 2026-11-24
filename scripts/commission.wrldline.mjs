@@ -73,9 +73,15 @@ async function smoke(){
   if(!index.ok||!(await index.text()).includes('assets/'))die('Mounted office HTML missing.');
   const denied=await get(`${base}/api/office/state`);
   if(denied.status!==401)die('Private endpoint did not reject an anonymous request.');
-  const response=await get(`${base}/api/public/articles`);
-  const feed=await response.json();
-  if(!response.ok||feed.demo!==false||!Array.isArray(feed.articles))die('Supabase publication feed is not healthy.');
+  let feed, feedStatus;
+  for(let attempt=0;attempt<12;attempt++){
+    const response=await get(`${base}/api/public/articles`);
+    feedStatus=response.status;
+    feed=await response.json().catch(()=>null);
+    if(response.ok&&feed?.demo===false&&Array.isArray(feed.articles))break;
+    if(attempt<11)await new Promise(resolve=>setTimeout(resolve,3000));
+    else die(`Supabase publication feed is not healthy after deployment propagation (HTTP ${feedStatus}).`);
+  }
   console.log(`Live public feed is healthy: ${feed.articles.length} published items; protected office rejects anonymous requests.`);
   const bootstrap=join(dir,'worldline-office-bootstrap.json');
   let session;
