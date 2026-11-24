@@ -1,7 +1,7 @@
 import {Canvas,useFrame,useThree} from '@react-three/fiber';
-import {Html,OrbitControls} from '@react-three/drei';
-import {useEffect,useRef} from 'react';
-import type {Group,OrthographicCamera} from 'three';
+import {OrbitControls} from '@react-three/drei';
+import {useEffect,useRef,type RefObject} from 'react';
+import {Vector3,type Group,type OrthographicCamera} from 'three';
 import {agents} from '../shared/agents';
 import type {AgentId} from '../shared/schema';
 import {desks,type TeamStatus} from './Floor';
@@ -27,7 +27,6 @@ function Avatar({id,x,z,status,selected,onSelect}:{id:AgentId;x:number;z:number;
       <group ref={arm} position={[.235,.79,0]}><Box p={[0,-.15,0]} s={[.13,.32,.14]} c={a.color}/></group>
       <Box p={[-.235,.64,0]} s={[.13,.32,.14]} c={a.color}/>
     </group>
-    <Html center position={[0,1.61,.62]} zIndexRange={[8,1]}><button className={`avatar-label ${selected?'selected':''}`} onClick={onSelect}>{a.name}<small>{status}</small></button></Html>
   </group>;
 }
 function ContextLoss({fallback}:{fallback:()=>void}){
@@ -40,10 +39,25 @@ function FitCamera(){
   useEffect(()=>{const c=camera as OrthographicCamera;c.zoom=Math.max(15,Math.min(38,size.width/15.8,size.height/10.2));c.updateProjectionMatrix();},[camera,size.width,size.height]);
   return null;
 }
+const labelPoints=[...desks.map(({id,x,y})=>({id,x:(x-360)/44,y:1.61,z:(y-202)/45+.62})),{id:'reception',x:-1.95,y:1.45,z:2.45}];
+function ProjectLabels({refs}:{refs:RefObject<Record<string,HTMLElement|null>>}){
+  const point=useRef(new Vector3());
+  useFrame(({camera,size})=>{
+    for(const d of labelPoints){
+      const el=refs.current[d.id];if(!el)continue;
+      const p=point.current.set(d.x,d.y,d.z).project(camera);
+      el.style.visibility=p.z>=-1&&p.z<=1?'visible':'hidden';
+      el.style.left=`${(p.x+1)*size.width/2}px`;el.style.top=`${(1-p.y)*size.height/2}px`;
+      el.style.zIndex=String(Math.round((1-p.z)*10));
+    }
+  });
+  return null;
+}
 export default function Office3D({selected,status,onSelect,fallback}:{selected:AgentId;status:TeamStatus;onSelect:(id:AgentId)=>void;fallback:()=>void}){
+  const labels=useRef<Record<string,HTMLElement|null>>({});
   return <div className="office-3d"><Canvas orthographic camera={{position:[9,12,13],zoom:36,near:.1,far:60}} dpr={[1,1.4]} gl={{antialias:true,alpha:false,powerPreference:'low-power'}}>
     <color attach="background" args={['#e6ebdf']}/><ambientLight intensity={2}/><directionalLight position={[4,12,6]} intensity={2}/>
-    <ContextLoss fallback={fallback}/><FitCamera/>
+    <ContextLoss fallback={fallback}/><FitCamera/><ProjectLabels refs={labels}/>
     <OrbitControls target={[0,.1,0]} minZoom={15} maxZoom={70} maxPolarAngle={Math.PI*.44} enableDamping enablePan={false}/>
     <Box p={[0,-.24,0]} s={[13.5,.45,8.2]} c="#a7a391"/><Box p={[0,-.045,0]} s={[13.35,.12,8.05]} c="#dacbb0"/>
     <Box p={[-4.72,.017,-2.12]} s={[3.4,.034,3.46]} c="#b5bd9c"/>
@@ -58,7 +72,7 @@ export default function Office3D({selected,status,onSelect,fallback}:{selected:A
     <mesh position={[-4.38,.29,2.47]}><cylinderGeometry args={[.14,.29,.57,10]}/><meshStandardMaterial color="#8b7154"/></mesh>
     {Array.from({length:7},(_,i)=>{const a=i*2*Math.PI/7;return <Box key={i} p={[-4.38+Math.cos(a)*1.08,.27,2.47+Math.sin(a)*1.08]} s={[.36,.55,.34]} c="#6c785c"/>;})}
     {[[-6.18,-3.5],[6.16,-3.55],[6.15,3.53],[-6.15,3.52],[1.66,3.35],[-2.88,-.2]].map(([x,z])=><Plant key={`${x}-${z}`} x={x} z={z}/>)}
-    <Html position={[-1.95,1.45,2.45]} center zIndexRange={[8,1]}><div className="avatar-label">Worldline News</div></Html>
     {desks.map(({id,x,y})=><Avatar key={id} id={id} x={(x-360)/44} z={(y-202)/45} status={status[id]} selected={selected===id} onSelect={()=>onSelect(id)}/>)}
-  </Canvas></div>;
+  </Canvas><div className="label-layer"><span className="avatar-label reception" ref={el=>{labels.current.reception=el;}}>Worldline News</span>
+  {desks.map(({id})=><button key={id} ref={el=>{labels.current[id]=el;}} className={`avatar-label ${selected===id?'selected':''}`} onClick={()=>onSelect(id)}>{agents[id].name}<small>{status[id]}</small></button>)}</div></div>;
 }

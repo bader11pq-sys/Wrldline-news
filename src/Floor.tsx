@@ -56,7 +56,7 @@ export default function Floor({selected,status,onSelect}:{selected:AgentId;statu
       </g>;
     })}
     </g>
-    <g className="room-label"><text x="89" y="85">CEO OFFICE</text><text x="274" y="56">NEWSROOM</text><text x="119" y="350">MEETING ROOM</text><text x="315" y="321">RECEPTION</text><text x="487" y="355">DEVELOPER STUDIO</text></g>
+    <g className="room-label"><text x="89" y="78">CEO OFFICE</text><text x="274" y="56">NEWSROOM</text><text x="119" y="350">MEETING ROOM</text><text x="315" y="321">RECEPTION</text><text x="487" y="355">DEVELOPER STUDIO</text></g>
     <path d="M343 385h18m-14 4h10" stroke="#7c8e78" strokeWidth="1" opacity=".7"/>
     <text x="353" y="406" textAnchor="middle" className="blueprint">WORLDLINE • FLOOR 01</text>
     <g transform="translate(678 349)" opacity=".8"><path d="M0 15V-3m-4 5L0-3l4 5" stroke="#6f806b" fill="none"/><text x="0" y="-8" textAnchor="middle" className="blueprint">N</text></g>
