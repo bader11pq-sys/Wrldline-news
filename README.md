@@ -1,6 +1,6 @@
 # Worldline News AI Office
 
-An Arabic editorial workflow with an English operations interface, eight specialized agents, a CEO-only publication gate, and two interchangeable office views. The private office and public Arabic news reader serve different data. Demo decisions never appear on the public reader.
+غرفة تحرير عربية بثمانية اختصاصات، ومحادثات منفصلة عن التكليفات، ولوحة اعتماد خاصة برئيس التحرير. هذه الحزمة تتضمن الكود وبيئة تجريبية بلا مفاتيح؛ ولا تنشر البيئة التجريبية أية مواد على الموقع.
 
 ## Project layout
 
@@ -8,6 +8,7 @@ An Arabic editorial workflow with an English operations interface, eight special
 worldline-news/
 ├── src/
 │   ├── main.tsx             # Office, dashboards, chat, decisions, and public reader
+│   ├── Newsdesk.tsx         # Arabic shift desk, staff directory, and model setup
 │   ├── Floor.tsx            # Interactive 2D newsroom floor plan
 │   ├── Office3D.tsx         # Lazy-loaded React Three Fiber scene
 │   └── style.css            # Responsive visual system and Arabic typography
@@ -52,6 +53,13 @@ npm run dev
 ```
 
 Open [the local Vite office](http://localhost:5173). The Node server listens on port `8787`; Vite proxies `/api` to it. The Node demo keeps isolated sessions in memory. Reloading the UI opens a new demo session; restarting the server discards all demo data.
+
+## ربط نماذج الذكاء الاصطناعي
+
+1. أنشئ مفتاحاً من لوحة [Groq](https://console.groq.com/keys) أو [OpenRouter](https://openrouter.ai/settings/keys). احتفظ به في `Settings → Variables and Secrets` للـ Worker، تحت الاسم `GROQ_API_KEY` أو `OPENROUTER_API_KEY`. لا تضعه في GitHub أو واجهة الموقع أو المحادثة.
+2. افتح **الإعدادات والنماذج** في المكتب واختر المزوّد، ثم **جلب قائمة النماذج**. اختر نموذجاً اقتصادياً للمهام اليومية، ونموذجاً للتحرير النهائي عند سارة، ونموذجاً للتحقق المستقل عند ليلى. يحفظ المكتب أسماء النماذج والمزوّد فقط؛ المفتاح يبقى في الخادم.
+3. اضغط **حفظ التوزيع** ثم **اختبار الاتصال** لكل دور. يتأكد الاختبار من استجابة النموذج من دون إرفاق محادثات أو مسودات. اختبار المزود الحي قد يستهلك قدراً صغيراً من الرصيد؛ في الوضع التجريبي لا يخرج أي طلب. حد الاستخدام في المكتب محسوب بالرموز، وليس بالدولار.
+4. اضغط على بطاقة أي موظف. اختر **محادثة** للاستفسار، أو **تكليف** لتسجيل مهمة في سجل الوردية. في غرفة الاجتماع تستطيع توجيه السؤال لشخص معيّن بكتابة اسمه مثل `@ليلى`.
 
 ### Try the main workflows
 
@@ -111,7 +119,7 @@ The release protocol accepts `POST /release` with `{operation, requestId, order,
 
 ### Maintain the newsroom
 
-- **Models:** Change the three tier defaults in `shared/agents.ts` or override individual tiers with environment variables. Apply rate and billing limits in the provider account. Failed calls conservatively retain their token reservation when the provider doesn't report usage.
+- **Models:** Manage the default tiers in **الإعدادات والنماذج**. Before the first save, the environment controls the defaults. Apply rate and billing limits in the provider account. Failed calls conservatively retain their token reservation when the provider doesn't report usage.
 - **Sources:** Edit `shared/sources.ts` with the publisher, domain, genuine ownership/independence group, and feed URL, then redeploy. Confirm a feed's provenance and licensing first. Undated items and likely wire copies do not count as independent evidence.
 - **Employees:** To extend the product later, add an ID to `AgentId`, a distinct config entry to `shared/agents.ts`, and the station in `src/Floor.tsx`. Register the worker capability in `worker/engine.ts` and test it. A prompt or UI label alone does not grant backend abilities.
 - **Operating limits:** The release adapter is optional and needs the target site and hosting credentials. Initial production commissioning still needs provider checks, retention policy, observability, backups, recovery drills, abuse controls, and a real editorial sign-off. The leased state and full-document database projection are designed for one newsroom owner at moderate volume, not large multi-tenant workloads.
@@ -123,11 +131,13 @@ The release protocol accepts `POST /release` with `{operation, requestId, order,
 | `GET /api/health`, `POST /api/session` | Connection status and CEO/demo session |
 | `GET /api/office/state` | Snapshot, usage, tasks, and aggregated analytics |
 | `POST /api/office/orders`, `POST /api/office/advance` | Submit a chat order and run the next eligible task |
+| `POST /api/office/chat` | Discuss an issue with a named employee without creating work |
+| `GET /api/office/models/:provider`, `PUT /api/office/models`, `POST /api/office/models/test` | Discover, save and test model routing |
 | `POST /api/office/approvals` | CEO approve/reject single or batch; one optional cover selection |
 | `PATCH /api/office/settings` | Set the daily token budget |
 | `POST /api/office/reports`, `POST /api/office/picks` | Generate a report and assign selected stories |
 | `GET /api/office/images/:workflow/:file` | Read authenticated private image drafts |
-| `GET /api/public/articles`, `GET /api/public/articles/:id/cover` | Approved live news and selected cover |
+| `GET /api/public/articles`, `GET /api/public/articles/:id`, `GET /api/public/articles/:id/cover` | Approved live news, individual article and selected cover |
 | `POST /api/public/articles/:id/view` | Record a page view of a published article |
 
 ## Checks

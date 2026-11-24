@@ -71,6 +71,20 @@ export async function order(e:Env,o:Office,text:string,channel:Channel,selection
   if(intent!=='direct') say(o,channel,'omar',`الخطة جاهزة${intent==='edition'?` (${plan['سياسة']} سياسة، ${plan['اقتصاد']} اقتصاد، ${plan['متنوع']} متنوع)` :''}. هذه أوقات الاستحقاق بتوقيت الرياض:\n${planText}\nلن يُنشر شيء من دون موافقتك.`);
   log(o,'Plan created','omar',text);
 }
+export const chatPrompts:Record<AgentId,string>={omar:'أساعدك على ترتيب الأولويات وتحديد من يستلم كل قصة. إذا رغبت بالتنفيذ، حوّل الرسالة إلى تكليف.',sara:'أرسل العنوان أو الفقرة التي تريد مناقشتها. سأوضح أين يمكن تبسيطها دون تغيير الوقائع.',khalid:'أرسل رابط الخبر أو المنطقة والوقت. سأوضح ما يلزم جمعه قبل بدء التغطية.',layla:'أرسل الادعاء والمصدر وتاريخه. أحتاج مصدرين مستقلين قبل وصفه بالمؤكد.',adam:'أرسل الملخص والجمهور المقصود لأقترح طريقة عرضه دون مبالغة.',noura:'أرسل رابط الصفحة، الجهاز والخطوات التي تكرر المشكلة. يبقى العمل الفعلي في بيئة التجربة.',faisal:'أرسل موضوع التغطية وأبعاد الصورة. أفضل رسماً تحريرياً واضحاً بدلاً من صورة توهم بأنها من الحدث.',mariam:'أستطيع مناقشة القراءات الفعلية المتاحة. المشاهدات لا تعني عدد القراء الفريدين.'};
+export async function discuss(e:Env,o:Office,text:string,channel:Channel){
+  const mention=text.match(/@([a-z]+|[\u0600-\u06ff]+)/i)?.[1]?.toLowerCase();
+  const requested=agentIds.find(id=>id===mention||agents[id].ar===mention);
+  const employee=requested??(channel==='meeting'?'omar':channel);
+  const destination=channel==='meeting'?channel:employee;
+  say(o,destination,'ceo',text);
+  let reply=chatPrompts[employee];
+  if(!o.demo){
+    try {reply=await ask(e,o,employee,'Private discussion only; reply in clear Arabic, offer practical guidance from the supplied data, do not start tasks, do not claim work was executed. If evidence is insufficient say so.',{text,ownTasks:o.tasks.filter(s=>s.owner===employee).slice(-3).map(s=>({title:s.title,status:s.status})),analytics:employee==='mariam'?metrics(o):undefined},430);}
+    catch(err){reply=err instanceof Error?`تعذّرت الإجابة الآن: ${err.message}`:'تعذّرت الإجابة الآن.';}
+  }else reply=`${reply}\nهذه محادثة تجريبية ولا تبدأ عملاً تلقائياً.`;
+  say(o,destination,employee,reply);log(o,'Private discussion',''+employee,agents[employee].ar);
+}
 
 export type ViewCount={articleId:string;hour:number;count:number};
 export function metrics(o:Office,aggregated:ViewCount[]=[]){
