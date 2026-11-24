@@ -4,6 +4,7 @@ import {dayKey,iso,uid,type AgentId,type Article,type Brief,type Channel,type Ed
 import {fixtures,mockImages} from './demo';
 import {checkBrief} from './factcheck';
 import {ask,BudgetError,gather,imageOptions,parseJson,PendingRelease,releaseRequest,research,type Env} from './integrations';
+import {officeResource} from './database';
 
 export class OfficeError extends Error {constructor(message:string,public status=400){super(message);}}
 export const log=(o:Office,action:string,actor:string,details:string)=>o.logs.push({id:uid(),action,actor,details,createdAt:iso()});
@@ -206,7 +207,7 @@ async function execute(e:Env,o:Office,w:Workflow,t:Task) {
       break;
     }
     case 'analytics': {
-      const rows:ViewCount[]=demo?[]:await (await fetch(`${e.SUPABASE_URL}/rest/v1/rpc/office_views`,{method:'POST',headers:{apikey:e.SUPABASE_SERVICE_ROLE_KEY!,authorization:`Bearer ${e.SUPABASE_SERVICE_ROLE_KEY!}`,'content-type':'application/json'},body:JSON.stringify({p_user:e.CEO_USER_ID}),signal:AbortSignal.timeout(10000)})).json();
+      const rows:ViewCount[]=demo?[]:await (await fetch(`${e.SUPABASE_URL}/rest/v1/rpc/${officeResource(e,'office_views')}`,{method:'POST',headers:{apikey:e.SUPABASE_SERVICE_ROLE_KEY!,authorization:`Bearer ${e.SUPABASE_SERVICE_ROLE_KEY!}`,'content-type':'application/json'},body:JSON.stringify({p_user:e.CEO_USER_ID}),signal:AbortSignal.timeout(10000)})).json();
       const m=metrics(o,rows);t.output=demo?`المكتب التدريبي: ${m.reads} مشاهدة مسجلة. لا تمثل المشاهدات زواراً فريدين.`:await ask(e,o,'mariam','Summarize measured readership over 30 days with one concrete recommendation and limitations.',m);break;
     }
     case 'reply':{

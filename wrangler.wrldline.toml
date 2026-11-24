@@ -1,0 +1,23 @@
+name = "worldline-news-office"
+account_id = "dd2f9ff1959d7f3cc9dbd1a433017be4"
+main = "worker/index.ts"
+compatibility_date = "2026-03-01"
+workers_dev = true
+
+[assets]
+directory = "./dist"
+binding = "ASSETS"
+run_worker_first = ["/api/*", "/ai-office", "/ai-office/*"]
+
+[vars]
+APP_MODE = "live"
+OFFICE_DB_NAMESPACE = "wrldline_office"
+SITE_PUBLIC_URL = "https://al-ghaib.us.ci"
+
+[triggers]
+crons = ["0 5 * * *", "0 18 * * *", "* * * * *"]
+
+[[ratelimits]]
+name = "LOGIN_LIMIT"
+namespace_id = "1046"
+simple = { limit = 12, period = 60 }

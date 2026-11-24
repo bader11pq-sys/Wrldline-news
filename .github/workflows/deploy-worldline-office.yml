@@ -1,0 +1,51 @@
+name: Deploy isolated Worldline newsroom
+on:
+  push:
+    branches: [worldline-office-worker]
+permissions:
+  contents: read
+concurrency:
+  group: worldline-office-worker
+  cancel-in-progress: false
+jobs:
+  deploy:
+    if: github.repository == 'bader11pq-sys/Wrldline-news' && github.ref == 'refs/heads/worldline-office-worker'
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Build and verify release before using credentials
+        run: npm ci --no-fund --no-audit && npm test && npm run build
+      - name: Select existing credentials and provision isolated owner
+        run: node scripts/commission.wrldline.mjs prepare
+        env:
+          WF_SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          WF_SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          WF_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.WORLDLINE_OFFICE_PUBLISHABLE_KEY }}
+          WF_CEO_EMAIL: ${{ secrets.WORLDLINE_OFFICE_CEO_EMAIL }}
+          WF_CLOUDFLARE_KEY: ${{ secrets.CLOUDFLARE_API_KEY }}
+          WF_CLOUDFLARE_EMAIL: ${{ secrets.WORLDLINE_OFFICE_CF_EMAIL }}
+          WF_GROQ_KEY: ${{ secrets.GROQ_API_KEY }}
+          WF_OPENROUTER_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          WF_IMAGE_KEY: ${{ secrets.OPENAI_API_KEY }}
+      - name: Deploy only the new isolated Worker
+        run: |
+          set -euo pipefail
+          npx wrangler deploy --config wrangler.wrldline.toml --keep-vars
+          npx wrangler secret bulk "$RUNNER_TEMP/worldline-office-secrets.json" --config wrangler.wrldline.toml
+      - name: Verify live database, authentication and model routing
+        run: node scripts/commission.wrldline.mjs smoke
+        env:
+          WF_SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          WF_SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          WF_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.WORLDLINE_OFFICE_PUBLISHABLE_KEY }}
+          WF_CEO_EMAIL: ${{ secrets.WORLDLINE_OFFICE_CEO_EMAIL }}
+      - name: Remove runner-only credential files
+        if: always()
+        run: rm -f "$RUNNER_TEMP/worldline-office-secrets.json" "$RUNNER_TEMP/worldline-office-bootstrap.json"

@@ -6,6 +6,7 @@ import {dayKey,uid,type Article} from '../shared/schema';
 import {decide,discuss,log,metrics,OfficeError,order,ready,reports,step,type ViewCount} from './engine';
 import {apiKey,ask,gather,listModels,limitTime,mode,modelProfile,safeUrl,SetupError,type Env} from './integrations';
 import {assertLive,demoNew,load,mutate,supa} from './store';
+import {officeBucket,officeResource} from './database';
 
 const app=new Hono<{Bindings:Env;Variables:{actor:string}}>();
 const id=z.uuid();
@@ -20,6 +21,7 @@ app.get('/api/health',c=>c.json({ok:true,demo:mode(c.env),ai:!mode(c.env)&&!!(ap
 app.post('/api/session',async c=>{
   if(mode(c.env)){const token=uid();demoNew(token);return c.json({token,demo:true});}
   assertLive(c.env);
+  if(c.env.LOGIN_LIMIT&&!(await c.env.LOGIN_LIMIT.limit({key:c.req.header('CF-Connecting-IP')||'unknown'})).success)throw new OfficeError('محاولات دخول كثيرة. أعد المحاولة بعد دقيقة.',429);
   const input=await body(c,z.object({email:z.email().max(200),password:z.string().min(1).max(200)}));
   const result=await fetch(`${c.env.SUPABASE_URL}/auth/v1/token?grant_type=password`,{method:'POST',headers:{apikey:c.env.SUPABASE_PUBLISHABLE_KEY!,'content-type':'application/json'},body:JSON.stringify(input),signal:limitTime()});
   if(!result.ok)throw new OfficeError('Login failed.',401);
@@ -38,21 +40,21 @@ app.use('/api/public/articles/*',async(c,next)=>{
 });
 app.get('/api/public/articles', async c=>{
   if(mode(c.env))return c.json({articles:[],demo:true});
-  const rows=await (await supa(c.env,`/rest/v1/articles?user_id=eq.${encodeURIComponent(c.env.CEO_USER_ID!)}&status=eq.published&order=published_at.desc&select=payload&limit=100`)).json() as {payload:Article}[];
+  const rows=await (await supa(c.env,`/rest/v1/${officeResource(c.env,'articles')}?user_id=eq.${encodeURIComponent(c.env.CEO_USER_ID!)}&status=eq.published&order=published_at.desc&select=payload&limit=100`)).json() as {payload:Article}[];
   return c.json({articles:rows.map(r=>r.payload).filter(isPublic).map(publicData),demo:false});
 });
 app.get('/api/public/articles/:id',async c=>{
   const target=id.safeParse(c.req.param('id'));if(!target.success||mode(c.env))throw new OfficeError('Article not found.',404);
-  const rows=await (await supa(c.env,`/rest/v1/articles?id=eq.${target.data}&user_id=eq.${encodeURIComponent(c.env.CEO_USER_ID!)}&status=eq.published&select=payload&limit=1`)).json() as {payload:Article}[];
+  const rows=await (await supa(c.env,`/rest/v1/${officeResource(c.env,'articles')}?id=eq.${target.data}&user_id=eq.${encodeURIComponent(c.env.CEO_USER_ID!)}&status=eq.published&select=payload&limit=1`)).json() as {payload:Article}[];
   if(!isPublic(rows[0]?.payload)||rows[0].payload.id!==target.data)throw new OfficeError('Article not found.',404);
   return c.json({article:publicData(rows[0].payload),demo:false});
 });
 app.get('/api/public/articles/:id/cover',async c=>{
   const target=id.safeParse(c.req.param('id'));if(!target.success||mode(c.env))throw new OfficeError('Image not found.',404);
-  const rows=await (await supa(c.env,`/rest/v1/articles?id=eq.${target.data}&user_id=eq.${encodeURIComponent(c.env.CEO_USER_ID!)}&status=eq.published&select=payload&limit=1`)).json() as {payload:Article}[];
+  const rows=await (await supa(c.env,`/rest/v1/${officeResource(c.env,'articles')}?id=eq.${target.data}&user_id=eq.${encodeURIComponent(c.env.CEO_USER_ID!)}&status=eq.published&select=payload&limit=1`)).json() as {payload:Article}[];
   const a=rows[0]?.payload,p=a?.selectedImage===undefined?undefined:a.images?.[a.selectedImage]?.url;
   if(!isPublic(a)||a.id!==target.data||!p||!/^[a-f0-9-]{36}\/[0-2]-[a-f0-9-]{36}\.webp$/.test(p))throw new OfficeError('Image not found.',404);
-  const r=await supa(c.env,`/storage/v1/object/authenticated/office-images/${p}`);
+  const r=await supa(c.env,`/storage/v1/object/authenticated/${officeBucket(c.env)}/${p}`);
   return new Response(r.body,{headers:{'content-type':'image/webp'}});
 });
 const viewLast=new Map<string,number>();
@@ -64,7 +66,7 @@ app.post('/api/public/articles/:id/view',async c=>{
   if((viewLast.get(key)||0)>time-30000)return c.json({ok:true});
   if(viewLast.size>5000)viewLast.delete(viewLast.keys().next().value!);
   viewLast.set(key,time);
-  await supa(c.env,'/rest/v1/rpc/office_record_view',{method:'POST',body:JSON.stringify({p_article:target.data})});
+  await supa(c.env,`/rest/v1/rpc/${officeResource(c.env,'office_record_view')}`,{method:'POST',body:JSON.stringify({p_article:target.data})});
   return c.json({ok:true});
 });
 app.use('/api/office/*',async(c,next)=>{
@@ -85,7 +87,7 @@ app.use('/api/office/*',async(c,next)=>{
 });
 const snapshot=async(e:Env,actor:string)=>{
   const state=await load(e,actor);
-  const views:ViewCount[]=state.demo||!state.articles.some(a=>a.status==='published')?[]:await (await supa(e,'/rest/v1/rpc/office_views',{method:'POST',body:JSON.stringify({p_user:actor})})).json();
+  const views:ViewCount[]=state.demo||!state.articles.some(a=>a.status==='published')?[]:await (await supa(e,`/rest/v1/rpc/${officeResource(e,'office_views')}`,{method:'POST',body:JSON.stringify({p_user:actor})})).json();
   return {...state,modelProfile:modelProfile(e,state),providers:{openrouter:!state.demo&&!!apiKey(e,'openrouter'),groq:!state.demo&&!!apiKey(e,'groq')},analytics:metrics(state,views)};
 };
 app.get('/api/office/state',async c=>c.json(await snapshot(c.env,c.get('actor'))));
@@ -161,7 +163,7 @@ app.get('/api/office/images/:workflow/:file',async c=>{
   if(!id.safeParse(workflow).success||!/^[0-2]-[a-f0-9-]{36}\.webp$/.test(file)||mode(c.env))throw new OfficeError('Image not found.',404);
   const state=await load(c.env,c.get('actor'));
   if(!state.workflows.some(w=>w.id===workflow&&[...(w.images||[]),...Object.values(w.imagesByStory||{}).flat()].some(i=>i.url===`${workflow}/${file}`)))throw new OfficeError('Image not found.',404);
-  const r=await supa(c.env,`/storage/v1/object/authenticated/office-images/${workflow}/${file}`);
+  const r=await supa(c.env,`/storage/v1/object/authenticated/${officeBucket(c.env)}/${workflow}/${file}`);
   return new Response(r.body,{headers:{'content-type':'image/webp'}});
 });
 app.get('*',c=>c.env.ASSETS?c.env.ASSETS.fetch(c.req.raw):c.notFound());

@@ -3,6 +3,7 @@ import {fresh,uid,type Office} from '../shared/schema';
 import {demoSeed} from './demo';
 import {OfficeError} from './engine';
 import {limitTime,mode,type Env} from './integrations';
+import {officeResource} from './database';
 
 const demos=new Map<string,Office>(), locked=new Set<string>();
 const initial=(e:Env)=>fresh(false,Number(e.DAILY_TOKEN_LIMIT)||60000);
@@ -16,7 +17,7 @@ export async function supa(e:Env,path:string,init:RequestInit={}){
   if(!r.ok)throw new OfficeError(`Supabase request failed (HTTP ${r.status}).`,502);
   return r;
 }
-async function rpc(e:Env,name:string,body:Record<string,unknown>){return (await supa(e,`/rest/v1/rpc/${name}`,{method:'POST',body:JSON.stringify(body)})).json();}
+async function rpc(e:Env,name:string,body:Record<string,unknown>){return (await supa(e,`/rest/v1/rpc/${officeResource(e,name)}`,{method:'POST',body:JSON.stringify(body)})).json();}
 export function demoNew(key:string){
   if(!demos.has(key)&&demos.size>=500)demos.delete(demos.keys().next().value!);
   if(!demos.has(key))demos.set(key,demoSeed());
@@ -24,7 +25,7 @@ export function demoNew(key:string){
 }
 export async function load(e:Env,actor:string):Promise<Office> {
   if(mode(e))return structuredClone(demoNew(actor));
-  const result=await (await supa(e,`/rest/v1/office_state?id=eq.${encodeURIComponent(actor)}&select=document`)).json() as {document:Office}[];
+  const result=await (await supa(e,`/rest/v1/${officeResource(e,'office_state')}?id=eq.${encodeURIComponent(actor)}&select=document`)).json() as {document:Office}[];
   return result[0]?.document?.tasks?result[0].document:initial(e);
 }
 export async function mutate<T>(e:Env,actor:string,fn:(o:Office)=>Promise<T>|T):Promise<T>{

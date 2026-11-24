@@ -5,6 +5,7 @@ import {PGlite} from '@electric-sql/pglite';
 import {agents,agentIds} from '../shared/agents';
 import {uid,fresh} from '../shared/schema';
 import {demoSeed} from '../worker/demo';
+import {officeResource} from '../worker/database';
 test('Supabase migration: schemas, leases, RLS, atomic approvals, public views',async()=>{
   const db=new PGlite();try{
     await db.exec(`create role anon; create role authenticated; create role service_role; create schema auth; create table auth.users(id uuid primary key);
@@ -30,5 +31,23 @@ test('Supabase migration: schemas, leases, RLS, atomic approvals, public views',
     assert.equal(row.views.length,1);assert.equal(row.views[0].count,1);
     assert.ok((await db.query(`select not has_function_privilege('anon','public.office_save(uuid,uuid,jsonb,jsonb)','EXECUTE') as safe`)).rows[0]);
     assert.deepEqual((await db.query(`select has_function_privilege('anon','public.office_save(uuid,uuid,jsonb,jsonb)','EXECUTE') as allowed`)).rows[0],{allowed:false});
+  }finally{await db.close();}
+});
+
+test('namespaced migration does not touch original news tables and keeps the office private',async()=>{
+  const {execFileSync}=await import('node:child_process');
+  const sql=execFileSync(process.execPath,['scripts/shared-supabase.mjs'],{encoding:'utf8'});
+  const db=new PGlite();try{
+    await db.exec(`create role anon; create role authenticated; create role service_role; create schema auth; create table auth.users(id uuid primary key);
+      create schema storage; create table storage.buckets(id text primary key,name text,public boolean,file_size_limit int,allowed_mime_types text[]);
+      create table public.articles(id int, published_at timestamptz, status text); insert into public.articles values(42,now(),'published');`);
+    await db.exec(sql);
+    const ns={OFFICE_DB_NAMESPACE:'wrldline_office'},articleTable=officeResource(ns,'articles'),claim=officeResource(ns,'office_claim');
+    assert.deepEqual((await db.query('select id from public.articles')).rows,[{id:42}]);
+    assert.deepEqual((await db.query(`select relrowsecurity from pg_class where oid='public.${articleTable}'::regclass`)).rows,[{relrowsecurity:true}]);
+    assert.deepEqual((await db.query(`select has_table_privilege('anon','public.${articleTable}','SELECT') as can_read,has_function_privilege('authenticated','public.${claim}(uuid,uuid)','EXECUTE') as can_claim`)).rows,[{can_read:false,can_claim:false}]);
+    const actor=uid();
+    await db.query('insert into auth.users values ($1)',[actor]);await db.query('insert into public.wrldline_office_users values ($1,$2,$3)',[actor,'ceo','Test CEO']);
+    assert.deepEqual((await db.query(`select public.${claim}($1,$2) as doc`,[actor,uid()])).rows,[{doc:{}}]);
   }finally{await db.close();}
 });

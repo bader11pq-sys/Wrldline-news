@@ -3,9 +3,11 @@ import {z} from 'zod';
 import {agents, models} from '../shared/agents';
 import {trustedSources} from '../shared/sources';
 import {dayKey,iso,uid,type AgentId,type Brief,type ImageOption,type ModelProfile,type Office,type ProviderId,type Source} from '../shared/schema';
+import {officeBucket} from './database';
 
 export interface Env {
   APP_MODE?:string; SUPABASE_URL?:string; SUPABASE_PUBLISHABLE_KEY?:string; SUPABASE_SERVICE_ROLE_KEY?:string; CEO_USER_ID?:string;
+  OFFICE_DB_NAMESPACE?:string; LOGIN_LIMIT?:{limit(x:{key:string}):Promise<{success:boolean}>};
   AI_PROVIDER?:'openrouter'|'groq'; OPENROUTER_API_KEY?:string; GROQ_API_KEY?:string; MODEL_FAST?:string; MODEL_EDITOR?:string; MODEL_CHECKER?:string;
   BRAVE_SEARCH_API_KEY?:string; IMAGE_API_KEY?:string; IMAGE_MODEL?:string; RELEASE_SERVICE_URL?:string; RELEASE_SERVICE_TOKEN?:string; RELEASE_DEPLOY_TOKEN?:string;
   DAILY_TOKEN_LIMIT?:string; AUTO_BREAKING?:string; SITE_PUBLIC_URL?:string; ASSETS?:{fetch(request:Request):Promise<Response>};
@@ -111,7 +113,7 @@ export async function imageOptions(e:Env,workflowId:string,context:string):Promi
     const j=await r.json() as {data?:{b64_json?:string}[]}; const b=j.data?.[0]?.b64_json;
     if(!b) throw new Error('Image provider returned no image.');
     const path=`${workflowId}/${i}-${uid()}.webp`,headers={apikey:e.SUPABASE_SERVICE_ROLE_KEY!,authorization:`Bearer ${e.SUPABASE_SERVICE_ROLE_KEY!}`};
-    const stored=await fetch(`${e.SUPABASE_URL}/storage/v1/object/office-images/${path}`,{method:'POST',headers:{...headers,'content-type':'image/webp'},body:Uint8Array.from(atob(b),c=>c.charCodeAt(0)),signal:limitTime()});
+    const stored=await fetch(`${e.SUPABASE_URL}/storage/v1/object/${officeBucket(e)}/${path}`,{method:'POST',headers:{...headers,'content-type':'image/webp'},body:Uint8Array.from(atob(b),c=>c.charCodeAt(0)),signal:limitTime()});
     if(!stored.ok) throw new Error('Could not store generated image.');
     return {label,url:path};
   }));
