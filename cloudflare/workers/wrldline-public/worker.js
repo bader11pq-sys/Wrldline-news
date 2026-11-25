@@ -291,9 +291,15 @@ export function renderArticle(article, now, trust = null, related = []) {
   /** @type {Record<string, unknown>} */
   const schema = {
     "@context": "https://schema.org", "@type": "NewsArticle", "@id": `${canonical}#article`,
-    url: canonical, mainEntityOfPage: canonical, headline: title, description, inLanguage: lang,
+    url: canonical, mainEntityOfPage: { "@type": "WebPage", "@id": `${canonical}#webpage` },
+    headline: title, description, inLanguage: lang,
     datePublished: article.published_at,
-    publisher: { "@type": "Organization", name: "WRLDLINE NEWS", url: PUBLIC_ORIGIN, logo: { "@type": "ImageObject", url: `${PUBLIC_ORIGIN}/assets/brand/wrldline-symbol.png` } }
+    isAccessibleForFree: true,
+    publisher: {
+      "@type": "Organization", name: "WRLDLINE NEWS", url: PUBLIC_ORIGIN,
+      // Google needs the publisher mark to be a real, sized image, not just a URL.
+      logo: { "@type": "ImageObject", url: `${PUBLIC_ORIGIN}/assets/brand/wrldline-symbol.png`, width: 499, height: 233 }
+    }
   };
   if (summary) schema.articleBody = summary;
   if (image) schema.image = [image];
@@ -303,9 +309,18 @@ export function renderArticle(article, now, trust = null, related = []) {
     ? by.map(name => ({ "@type": "Person", name }))
     : [{ "@type": "Organization", name: isOriginal ? "WRLDLINE NEWS" : "WRLDLINE NEWS editorial desk" }];
   const updated = modified(article, now);
-  if (updated !== article.published_at) schema.dateModified = updated;
+  // dateModified is required for article rich results; an untouched story simply
+  // reports its publication time rather than omitting the field.
+  schema.dateModified = updated;
   if (original.url && !isOriginal) schema.isBasedOn = original.url;
   if (sectionLabel) schema.articleSection = sectionLabel;
+  const country = text(article.country, 120);
+  const keywords = [sectionLabel, country].filter(Boolean);
+  if (keywords.length) schema.keywords = keywords.join(", ");
+  const trail = [{ "@type": "ListItem", position: 1, name: l.en ? "Home" : "الرئيسية", item: `${PUBLIC_ORIGIN}/` }];
+  if (section && sectionLabel) trail.push({ "@type": "ListItem", position: 2, name: sectionLabel, item: `${PUBLIC_ORIGIN}/section/${section.slug}` });
+  trail.push({ "@type": "ListItem", position: trail.length + 1, name: title, item: canonical });
+  schema.breadcrumb = { "@type": "BreadcrumbList", itemListElement: trail };
   const correction = text(article.correction_note, 4000);
   const { lead, details } = splitLead(summary);
   const readingSummary = text(article.ai_summary, 1200), impact = text(article.ai_reader_impact, 900), watch = text(article.ai_watch_next, 900);
