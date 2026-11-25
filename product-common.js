@@ -75,6 +75,19 @@
     return rpc("public_home_news_recent_v4", { p_limit: Math.min(1000, limit || 300), p_lane: "all" }, options);
   }
 
+  const TRUST = { ar: { confirmed: "مؤكد", unconfirmed: "تقرير متطور · غير مؤكد", disputed: "متنازع عليه" }, en: { confirmed: "Confirmed", unconfirmed: "Developing report · unconfirmed", disputed: "Disputed" } };
+  /** Compact article row shared by country pages and the map. Uses only DOM builders. */
+  function articleItem(a, lang, extra) {
+    const dirAttrs = a.titleLang ? { lang: a.titleLang, dir: a.titleLang === "ar" ? "rtl" : "ltr" } : {};
+    return h("li", { class: "wp-item" },
+      h("div", { class: "wp-meta" },
+        h("span", { class: "wp-badge " + (a.trust === "confirmed" ? "confirmed" : a.trust === "disputed" ? "disputed" : "developing"), text: TRUST[lang][a.trust] || TRUST[lang].unconfirmed }),
+        a.source ? h("span", { text: a.source }) : null,
+        a.published ? h("time", { datetime: new Date(a.published).toISOString(), text: dateFormat(a.published, lang, { dateStyle: "medium" }) }) : null,
+        extra || null),
+      h("a", Object.assign({ href: "/news/" + encodeURIComponent(a.id) }, dirAttrs), a.title));
+  }
+
   function getClient() {
     if (typeof window === "undefined" || !window.supabase || !window.supabase.createClient) return null;
     if (window.WRLDLINE_AUTH && window.WRLDLINE_AUTH.client) return window.WRLDLINE_AUTH.client;
@@ -88,5 +101,5 @@
     try { const s = window.localStorage; s.getItem("wl:probe"); return s; } catch { return null; }
   }
 
-  return Object.freeze({ SUPABASE_URL, PUBLISHABLE_KEY, currentLang, h, safeUrl, pick, numberFormat, compact, dateFormat, rpc, publicNews, getClient, safeStorage });
+  return Object.freeze({ SUPABASE_URL, PUBLISHABLE_KEY, currentLang, h, safeUrl, pick, numberFormat, compact, dateFormat, rpc, publicNews, articleItem, TRUST, getClient, safeStorage });
 });
