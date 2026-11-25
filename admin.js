@@ -292,6 +292,7 @@ async function setArticleStatus(id,status){
  if(status==="published"){const visibility=await checkPublicationVisibility(id);if(visibility.ok)announcePublication(id);else message(visibility.message);$("publishFeedback").scrollIntoView({block:"nearest"});}
  message(t("تم تحديث حالة الخبر إلى ","Story status updated to ")+editorialLabel(status)+".");void loadArticles();
 }
+window.WLAdminOpenArticle=id=>typeof id==="string"&&/^[0-9a-f-]{36}$/i.test(id)?editArticle({id}):Promise.resolve(false);
 async function editArticle(ref,restoring=false){
  const form=$("articleForm");
  if(form.inert||editionEditor?.saving()||(!restoring&&(workspace?.isDirty()||editionEditor?.isDirty())&&!confirm("هل تريد إغلاق النص الحالي وفتح مقال آخر؟")))return false;

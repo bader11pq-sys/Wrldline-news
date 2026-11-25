@@ -34,3 +34,24 @@ body.editor-focused{overflow:hidden}
 .translation-reading{margin-block:8px;padding:0 12px;border:1px solid var(--line);border-radius:8px}
 .translation-reading summary{min-height:44px;padding-block:8px;cursor:pointer;color:var(--gold)}
 .translation-reading p{max-height:36vh;overflow:auto;white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.85}
+/* newsroom desk */
+.desk-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:12px 0}
+.desk-card{background:#0f1b2d;border:1px solid var(--line);border-radius:10px;padding:10px;display:grid;gap:4px}
+.desk-card-label{font-size:12px;color:var(--muted)}.desk-card-value{font-size:24px}
+.desk-bars{display:flex;align-items:flex-end;gap:3px;block-size:70px;margin:8px 0;max-inline-size:100%;overflow:hidden}
+.desk-bar{flex:0 1 16px;min-inline-size:3px;background:var(--gold);border-radius:2px 2px 0 0;min-block-size:2px}
+.desk-filters{display:flex;flex-wrap:wrap;gap:10px;align-items:end;margin:8px 0}
+.desk-filters label{display:grid;gap:4px;font-size:12px;color:var(--muted)}
+.desk-filters input,.desk-filters select{max-inline-size:100%}
+.desk-list,.desk-notes{list-style:none;margin:0;padding:0;display:grid;gap:10px}
+.desk-row{border:1px solid var(--line);border-radius:10px;padding:10px;display:grid;gap:8px}
+.desk-row-main{display:grid;gap:6px;min-width:0;overflow-wrap:anywhere}
+.desk-meta{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:12px}
+.desk-badge{padding:2px 8px;border-radius:999px;background:#263b56;font-size:12px}
+.desk-badge.warn,.desk-badge.tr-disputed{background:#6b2a30}.desk-badge.tr-confirmed,.desk-badge.st-published{background:#1d5a4a}
+.desk-row-actions{display:flex;flex-wrap:wrap;gap:8px}
+.desk-note-form{display:grid;gap:8px;margin-top:8px}
+.desk-pager{display:flex;gap:12px;align-items:center;margin-top:10px}
+.desk-table-wrap{overflow-x:auto;max-inline-size:100%}.desk-table{width:100%;border-collapse:collapse;font-size:13px}
+.desk-table th,.desk-table td{padding:6px 8px;border-block-end:1px solid var(--line);text-align:start}
+.sr-only{position:absolute;inline-size:1px;block-size:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
