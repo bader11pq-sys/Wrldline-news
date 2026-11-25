@@ -39,3 +39,20 @@
   showLinkedItem();
   container.hidden = false;
 })();
+
+/* Latest rights news beside the case files: reads the public /section/rights page. */
+(() => {
+  const box = document.getElementById("rightsNews"), list = document.getElementById("rightsNewsList");
+  if (!box || !list) return;
+  fetch("/section/rights", { credentials: "omit" }).then(r => r.ok ? r.text() : "").then(html => {
+    if (!html) return;
+    const doc = new DOMParser().parseFromString(html, "text/html");
+    const cards = [...doc.querySelectorAll(".pn-card h2 a")].slice(0, 6);
+    if (!cards.length) return;
+    for (const a of cards) {
+      const li = document.createElement("li"), link = document.createElement("a");
+      link.href = a.getAttribute("href"); link.textContent = a.textContent.trim(); li.append(link); list.append(li);
+    }
+    box.hidden = false;
+  }).catch(() => {});
+})();
