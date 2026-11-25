@@ -1,7 +1,7 @@
 /* WRLDLINE public summary SSR. Module Worker; no service-role key or user sessions. */
 /** @typedef {Record<string, unknown> & {id: string, published_at: string}} PublicArticle */
-/** @typedef {{title: string, description: string, body: string, canonical?: string, lang?: string, image?: string, schema?: Record<string, unknown> | null, noindex?: boolean, enhance?: boolean, currentPath?: string}} PageOptions */
-/** @typedef {{SUPABASE_URL?: string, SUPABASE_ANON_KEY?: string, PUBLIC_TRUST_ENABLED?: string}} WorkerEnv */
+/** @typedef {{title: string, description: string, body: string, canonical?: string, alternatesFor?: string, lang?: string, image?: string, schema?: Record<string, unknown> | null, noindex?: boolean, enhance?: boolean, currentPath?: string}} PageOptions */
+/** @typedef {{SUPABASE_URL?: string, SUPABASE_ANON_KEY?: string, PUBLIC_TRUST_ENABLED?: string, ENVIRONMENT?: string, GIT_COMMIT?: string, DEPLOYED_AT?: string, WORKER_SERVICE?: string}} WorkerEnv */
 export const PUBLIC_ORIGIN = "https://al-ghaib.us.ci";
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const XML_HEAD = '<?xml version="1.0" encoding="UTF-8"?>';
@@ -191,22 +191,38 @@ function trustSummary(article, record, lang, now) {
   return `<div data-server-trust="${key}"><p><strong>${status}</strong></p><p data-trust-note>${note}</p>${translation}</div>`;
 }
 
+/* Arabic and English editions of the same Worker page. Only pages that actually
+   render an English edition declare alternates: section pages and the news
+   index. Article pages are Arabic-only by design (any query string on an
+   article URL is 308-redirected to the clean canonical), so declaring an
+   English alternate there would advertise a URL that redirects straight back —
+   worse for search engines than declaring nothing. */
+/** @param {string} target canonical path, optionally with a query string */
+function alternates(target) {
+  const base = target.split("?")[0];
+  const query = target.includes("?") ? target.slice(target.indexOf("?")) : "";
+  const en = `${base}${query ? `${query}&lang=en` : "?lang=en"}`;
+  return `<link rel="alternate" hreflang="ar" href="${escapeHTML(base + query)}">`
+    + `<link rel="alternate" hreflang="en" href="${escapeHTML(en)}">`
+    + `<link rel="alternate" hreflang="x-default" href="${escapeHTML(base + query)}">`;
+}
+
 /** @param {PageOptions} options */
-function shell({ title, description, canonical, lang = "ar", image = "", body, schema = null, noindex = false, enhance = false, currentPath = "" }) {
+function shell({ title, description, canonical, alternatesFor = "", lang = "ar", image = "", body, schema = null, noindex = false, enhance = false, currentPath = "" }) {
   const l = labels(lang), direction = l.en ? "ltr" : "rtl";
   // Nonce permits JSON-LD, while executable scripts must be same-origin files.
   const nonce = schema ? crypto.randomUUID().replace(/-/g, "") : "";
   const head = `<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#0d1a2b"><title>${escapeHTML(title)}</title>
 <meta name="description" content="${escapeHTML(description)}"><meta name="robots" content="${noindex ? "noindex,nofollow" : "index,follow,max-image-preview:large"}">
-${canonical ? `<link rel="canonical" href="${escapeHTML(canonical)}">` : ""}
+${canonical ? `<link rel="canonical" href="${escapeHTML(canonical)}">` : ""}${!noindex && alternatesFor ? alternates(alternatesFor) : ""}
 <meta property="og:type" content="${schema ? "article" : "website"}"><meta property="og:site_name" content="WRLDLINE NEWS">
 <meta property="og:locale" content="${l.en ? "en_US" : "ar_SA"}"><meta property="og:title" content="${escapeHTML(title)}"><meta property="og:description" content="${escapeHTML(description)}">
 ${canonical ? `<meta property="og:url" content="${escapeHTML(canonical)}">` : ""}
 ${image ? `<meta property="og:image" content="${escapeHTML(image)}"><meta name="twitter:image" content="${escapeHTML(image)}">` : ""}
 <meta name="twitter:card" content="${image ? "summary_large_image" : "summary"}"><meta name="twitter:title" content="${escapeHTML(title)}"><meta name="twitter:description" content="${escapeHTML(description)}">
 ${schema ? `<meta property="article:published_time" content="${escapeHTML(schema.datePublished)}"><script nonce="${nonce}" type="application/ld+json">${jsonLD(schema)}</script>` : ""}
-<link rel="icon" href="/favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="/wrld.css?v=20261123-gate1"><link rel="stylesheet" href="/public-news.css?v=20261123-reading-order">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="/wrld.css?v=20261123-gate1"><link rel="stylesheet" href="/public-news.css?v=20261123-reading-order"><link rel="stylesheet" href="/quality.css?v=quality-1">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Noto+Kufi+Arabic:wght@500;700&family=Manrope:wght@500;700;800&display=swap" rel="stylesheet">
 <link rel="alternate" type="application/rss+xml" title="WRLDLINE NEWS RSS" href="${PUBLIC_ORIGIN}/rss.xml"><link rel="alternate" type="application/atom+xml" title="WRLDLINE NEWS Atom" href="${PUBLIC_ORIGIN}/atom.xml">
@@ -235,7 +251,7 @@ function htmlResponse(options, status = 200) {
     // Keep article pages out of other sites' window references and cross-origin reads.
     "Cross-Origin-Opener-Policy": "same-origin",
     "Cross-Origin-Resource-Policy": "same-origin",
-    "Content-Security-Policy": `default-src 'self'; script-src 'self'${nonce ? ` 'nonce-${nonce}'` : ""}; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' https: http: data: blob:; connect-src 'self' https://vmaxbnogmmfyrcucapnq.supabase.co; object-src 'none'; base-uri 'none'; frame-ancestors 'self'; form-action 'self'`,
+    "Content-Security-Policy": `default-src 'self'; script-src 'self' https://static.cloudflareinsights.com${nonce ? ` 'nonce-${nonce}'` : ""}; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' https: http: data: blob:; connect-src 'self' https://vmaxbnogmmfyrcucapnq.supabase.co https://cloudflareinsights.com; object-src 'none'; base-uri 'none'; frame-ancestors 'self'; form-action 'self'`,
     ...(status !== 200 ? { "X-Robots-Tag": "noindex, nofollow" } : {}),
     ...(status === 503 ? { "Retry-After": "60" } : {})
   } });
@@ -417,7 +433,7 @@ function renderIndex(articles, page, lang, lane, now) {
 <ul class="public-news-list pn-card-list">${shown.map(a => feedItem(a, lang, now)).join("")}</ul>
 ${!shown.length ? `<p class="public-news-summary">${l.en ? "No published news on this page." : "لا توجد أخبار منشورة في هذه الصفحة."}</p>` : ""}
 <nav class="public-news-paging" aria-label="${l.en ? "News pages" : "صفحات الأخبار"}">${page > 1 ? `<a href="${escapeHTML(pageURL(page - 1, lang, lane))}">${l.en ? "Previous page" : "الصفحة السابقة"}</a>` : "<span></span>"}${articles.length > 50 ? `<a href="${escapeHTML(pageURL(page + 1, lang, lane))}">${l.en ? "Next page" : "الصفحة التالية"}</a>` : ""}</nav>`;
-  return htmlResponse({ title: `${l.news}${page > 1 ? ` · ${page}` : ""} | WRLDLINE NEWS`, description, canonical, body, lang, currentPath: "/news/" });
+  return htmlResponse({ title: `${l.news}${page > 1 ? ` · ${page}` : ""} | WRLDLINE NEWS`, description, canonical, alternatesFor: `${PUBLIC_ORIGIN}${pageURL(page, "ar", lane)}`, body, lang, currentPath: "/news/" });
 }
 
 /** @param {Record<string, unknown>} section @param {PublicArticle[]} articles @param {string} lang @param {Date} now */
@@ -432,7 +448,7 @@ function renderSection(section, articles, lang, now) {
 ${!articles.length ? `<p class="public-news-summary">${l.emptySection}</p>` : ""}
 ${section.slug === "rights" ? `<section class="pn-rights-files" aria-labelledby="rightsFilesHeading"><h2 id="rightsFilesHeading">${l.en ? "Rights files and library" : "ملفات ومكتبة الحقوق والحريات"}</h2><p>${l.en ? "Reference case files and the rights guide sit with the news in one place." : "الملفات المرجعية ودليل الحقوق مع أخبار الحقوق في مكان واحد."}</p><nav class="pn-tabs"><a href="/rights-cases/index.html">${l.en ? "Case files" : "ملفات القضايا"}</a><a href="/rights.html#rightsGuides">${l.en ? "Rights guide" : "دليل الحقوق"}</a><a href="/rights.html">${l.en ? "Rights desk" : "مكتب الحقوق والحريات"}</a></nav></section>` : ""}
 <nav class="public-news-paging" aria-label="${l.more}"><a href="/news/">${l.news}</a><a href="/">${l.home}</a></nav>`;
-  return htmlResponse({ title: `${title} | WRLDLINE NEWS`, description, canonical, body, lang, currentPath: `/section/${section.slug}` });
+  return htmlResponse({ title: `${title} | WRLDLINE NEWS`, description, canonical, alternatesFor: canonical, body, lang, currentPath: `/section/${section.slug}` });
 }
 
 /** @param {PublicArticle[]} articles @param {Date} now */
@@ -451,12 +467,67 @@ function atom(articles, now) {
   return xmlResponse(`<feed xmlns="http://www.w3.org/2005/Atom"><id>${PUBLIC_ORIGIN}/atom.xml</id><title>WRLDLINE NEWS</title><subtitle>ملخصات الأخبار المنشورة</subtitle><updated>${latest}</updated><author><name>WRLDLINE NEWS</name><uri>${PUBLIC_ORIGIN}</uri></author><link href="${PUBLIC_ORIGIN}/atom.xml" rel="self" type="application/atom+xml"/><link href="${PUBLIC_ORIGIN}/news/" rel="alternate"/>${articles.map(a => { const s = source(a), by = authors(a.author); return `<entry><id>${articleURL(a.id)}</id><title type="text">${escapeHTML(text(a.title, 1000))}</title><link href="${articleURL(a.id)}" rel="alternate"/><published>${a.published_at}</published><updated>${modified(a, now)}</updated><summary type="text">${escapeHTML(text(a.summary))}</summary>${by.map(name => `<author><name>${escapeHTML(name)}</name></author>`).join("")}${s.name ? `<contributor><name>${escapeHTML(s.name)}</name></contributor>` : ""}${s.url ? `<link href="${escapeHTML(s.url)}" rel="related" title="Original source"/>` : ""}</entry>`; }).join("")}</feed>`, "application/atom+xml");
 }
 
+/* Routes this Worker owns on the production host. Every other path is proxied
+   to the origin (GitHub Pages) untouched, so the Worker can never shadow a
+   static page — see tests/deploy-config.test.js. */
+export const OWNED_ROUTES = [
+  "/news",
+  "/news/*",
+  "/section/*",
+  "/news-sitemap.xml*",
+  "/article-sitemap*",
+  "/rss.xml*",
+  "/atom.xml*",
+  "/__version"
+];
+
+/* The deployment identity is injected by the deploy workflow as plain vars
+   (`--var GIT_COMMIT:<sha> --var DEPLOYED_AT:<iso>`). Nothing is guessed: an
+   unconfigured deploy reports "unknown" instead of borrowing a commit it was
+   not built from. */
+/** @param {WorkerEnv} env @param {Date} [now] */
+export function deploymentInfo(env = {}, now = new Date()) {
+  const rawCommit = text(env.GIT_COMMIT, 64).toLowerCase();
+  const commit = /^[0-9a-f]{7,40}$/.test(rawCommit) ? rawCommit : "unknown";
+  const deployedAt = iso(env.DEPLOYED_AT) || "unknown";
+  const environment = text(env.ENVIRONMENT, 40).toLowerCase() || "unknown";
+  return {
+    service: text(env.WORKER_SERVICE, 80) || "wrldline-public",
+    environment,
+    commit,
+    deployed_at: deployedAt,
+    reported_at: now.toISOString(),
+    routes: OWNED_ROUTES.slice()
+  };
+}
+
+/** @param {Request} request @param {WorkerEnv} env */
+function versionResponse(request, env) {
+  const info = deploymentInfo(env);
+  const headers = {
+    "Content-Type": "application/json; charset=utf-8",
+    "Cache-Control": "no-store",
+    "X-Robots-Tag": "noindex",
+    "X-Wrldline-Commit": info.commit,
+    "X-Wrldline-Environment": info.environment,
+    "X-Content-Type-Options": "nosniff",
+    "Access-Control-Allow-Origin": "*"
+  };
+  return new Response(request.method === "HEAD" ? null : JSON.stringify(info, null, 2), { status: 200, headers });
+}
+
 /** @param {{fetchImpl?: typeof fetch, now?: () => Date}} [options] */
 export function createWorker({ fetchImpl = globalThis.fetch.bind(globalThis), now = () => new Date() } = {}) {
   return {
   /** @param {Request} request @param {WorkerEnv} env */
   async fetch(request, env) {
     const url = new URL(request.url), path = url.pathname;
+    // Version reporting is answered from configuration only: no database call,
+    // no cache, no session, so it stays truthful even during a backend outage.
+    if (path === "/__version" || path === "/__version.json") {
+      if (!["GET", "HEAD"].includes(request.method)) return new Response("Method not allowed", { status: 405, headers: { Allow: "GET, HEAD", "Cache-Control": "no-store" } });
+      return versionResponse(request, env);
+    }
     const owned = path === "/news" || path.startsWith("/news/") || path.startsWith("/section/") || path.startsWith("/news-sitemap.xml") || path.startsWith("/article-sitemap") || path.startsWith("/rss.xml") || path.startsWith("/atom.xml");
     // Defensive origin preservation if an overbroad Cloudflare route is accidentally installed.
     if (!owned) return fetchImpl(request);
@@ -470,6 +541,9 @@ export function createWorker({ fetchImpl = globalThis.fetch.bind(globalThis), no
     const finish = /** @param {Response} response */ response => {
       const headers = new Headers(response.headers);
       headers.set("Server-Timing", [`wrldline;dur=${Date.now() - startedAt}`, ...rpcTimings].join(", "));
+      // Every generated page names the bundle that produced it, so a reader (or
+      // a support ticket) can prove which deploy is live.
+      headers.set("X-Wrldline-Commit", deploymentInfo(env).commit);
       return new Response(request.method === "HEAD" ? null : response.body, { status: response.status, headers });
     };
     const clock = now(), deadline = Date.now() + 20000;

@@ -1,20 +1,76 @@
 {
+  // WRLDLINE public summary Worker.
+  //
+  // Ownership contract: this Worker exists only for routes that GitHub Pages
+  // cannot generate (article pages, section pages, feeds, sitemaps) plus the
+  // /__version reporting endpoint. Every other path on the host is proxied to
+  // the Pages origin untouched, and no route below may be a catch-all. The
+  // contract is enforced by tests/deploy-config.test.js before any deploy.
   "name": "wrldline-public",
   "main": "worker.js",
   "compatibility_date": "2026-11-15",
   "workers_dev": false,
+  "observability": {
+    "enabled": true
+  },
   "vars": {
     "SUPABASE_URL": "https://vmaxbnogmmfyrcucapnq.supabase.co",
     "SUPABASE_ANON_KEY": "sb_publishable_D3c88u75_LcEN460Y3Jcpw__EfqUnBx",
-    "PUBLIC_TRUST_ENABLED": "true"
+    "PUBLIC_TRUST_ENABLED": "true",
+    "ENVIRONMENT": "production",
+    "WORKER_SERVICE": "wrldline-public"
   },
   "routes": [
-    {"pattern": "al-ghaib.us.ci/news", "zone_name": "al-ghaib.us.ci"},
-    {"pattern": "al-ghaib.us.ci/news/*", "zone_name": "al-ghaib.us.ci"},
-    {"pattern": "al-ghaib.us.ci/section/*", "zone_name": "al-ghaib.us.ci"},
-    {"pattern": "al-ghaib.us.ci/news-sitemap.xml*", "zone_name": "al-ghaib.us.ci"},
-    {"pattern": "al-ghaib.us.ci/article-sitemap*", "zone_name": "al-ghaib.us.ci"},
-    {"pattern": "al-ghaib.us.ci/rss.xml*", "zone_name": "al-ghaib.us.ci"},
-    {"pattern": "al-ghaib.us.ci/atom.xml*", "zone_name": "al-ghaib.us.ci"}
-  ]
+    { "pattern": "al-ghaib.us.ci/news", "zone_name": "al-ghaib.us.ci" },
+    { "pattern": "al-ghaib.us.ci/news/*", "zone_name": "al-ghaib.us.ci" },
+    { "pattern": "al-ghaib.us.ci/section/*", "zone_name": "al-ghaib.us.ci" },
+    { "pattern": "al-ghaib.us.ci/news-sitemap.xml*", "zone_name": "al-ghaib.us.ci" },
+    { "pattern": "al-ghaib.us.ci/article-sitemap*", "zone_name": "al-ghaib.us.ci" },
+    { "pattern": "al-ghaib.us.ci/rss.xml*", "zone_name": "al-ghaib.us.ci" },
+    { "pattern": "al-ghaib.us.ci/atom.xml*", "zone_name": "al-ghaib.us.ci" },
+    { "pattern": "al-ghaib.us.ci/__version", "zone_name": "al-ghaib.us.ci" }
+  ],
+  "env": {
+    // Preview is a separate Worker on its own workers.dev hostname. It has no
+    // custom-domain route, so it cannot receive production traffic even if it
+    // is broken, and it cannot overwrite the production script.
+    "preview": {
+      "name": "wrldline-public-preview",
+      "workers_dev": true,
+      "vars": {
+        "SUPABASE_URL": "https://vmaxbnogmmfyrcucapnq.supabase.co",
+        "SUPABASE_ANON_KEY": "sb_publishable_D3c88u75_LcEN460Y3Jcpw__EfqUnBx",
+        "PUBLIC_TRUST_ENABLED": "true",
+        "ENVIRONMENT": "preview",
+        "WORKER_SERVICE": "wrldline-public-preview"
+      },
+      "routes": []
+    },
+    // Production is the only environment with zone routes. Promotion into it is
+    // gated by the `production-worker` GitHub environment (required reviewers).
+    "production": {
+      "name": "wrldline-public",
+      "workers_dev": false,
+      "observability": {
+        "enabled": true
+      },
+      "vars": {
+        "SUPABASE_URL": "https://vmaxbnogmmfyrcucapnq.supabase.co",
+        "SUPABASE_ANON_KEY": "sb_publishable_D3c88u75_LcEN460Y3Jcpw__EfqUnBx",
+        "PUBLIC_TRUST_ENABLED": "true",
+        "ENVIRONMENT": "production",
+        "WORKER_SERVICE": "wrldline-public"
+      },
+      "routes": [
+        { "pattern": "al-ghaib.us.ci/news", "zone_name": "al-ghaib.us.ci" },
+        { "pattern": "al-ghaib.us.ci/news/*", "zone_name": "al-ghaib.us.ci" },
+        { "pattern": "al-ghaib.us.ci/section/*", "zone_name": "al-ghaib.us.ci" },
+        { "pattern": "al-ghaib.us.ci/news-sitemap.xml*", "zone_name": "al-ghaib.us.ci" },
+        { "pattern": "al-ghaib.us.ci/article-sitemap*", "zone_name": "al-ghaib.us.ci" },
+        { "pattern": "al-ghaib.us.ci/rss.xml*", "zone_name": "al-ghaib.us.ci" },
+        { "pattern": "al-ghaib.us.ci/atom.xml*", "zone_name": "al-ghaib.us.ci" },
+        { "pattern": "al-ghaib.us.ci/__version", "zone_name": "al-ghaib.us.ci" }
+      ]
+    }
+  }
 }

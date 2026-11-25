@@ -1,0 +1,124 @@
+name: Staging migrations (Supabase)
+
+# Rehearses the three pending editorial migrations on a staging Supabase project.
+#
+# This workflow cannot touch production, by construction:
+#   * it reads STAGING_DB_URL / STAGING_SUPABASE_URL / STAGING_ANON_KEY secrets
+#   * scripts/staging-migrations.sh refuses any URL containing the production
+#     project ref
+#   * nothing in this file mentions the production project
+#
+# Phases are separate runs so evidence exists for each step:
+#   baseline  -> prove staging does not yet have the objects
+#   up        -> apply the three migrations
+#   verify    -> RLS, editor permissions, feed functions, reading history,
+#                consent and clear-history behaviour
+#   roundtrip -> roll back, then re-apply, proving both scripts and idempotency
+#   down      -> leave staging clean
+
+on:
+  workflow_dispatch:
+    inputs:
+      phase:
+        description: 'Which phase to run'
+        type: choice
+        required: true
+        default: baseline
+        options: [baseline, up, verify, roundtrip, down]
+      acknowledge_staging:
+        description: 'Type STAGING to confirm this targets the staging project only'
+        type: string
+        required: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: staging-migrations
+  cancel-in-progress: false
+
+jobs:
+  run:
+    name: Supabase staging — ${{ inputs.phase }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    if: inputs.acknowledge_staging == 'STAGING'
+    environment: supabase-staging
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: '22.23.0'
+
+      - name: Confirm the target is staging, not production
+        env:
+          STAGING_URL: ${{ secrets.STAGING_SUPABASE_URL }}
+          STAGING_DB_URL: ${{ secrets.STAGING_DB_URL }}
+        run: |
+          set -euo pipefail
+          [ -n "$STAGING_URL" ] || { echo "::error::STAGING_SUPABASE_URL secret is missing"; exit 1; }
+          case "$STAGING_DB_URL" in
+            *vmaxbnogmmfyrcucapnq*) echo "::error::STAGING_DB_URL refers to the production project"; exit 1 ;;
+          esac
+          echo "staging host: ${STAGING_URL#https://}"
+
+      - name: Baseline probe (objects must be absent)
+        if: inputs.phase == 'baseline'
+        env:
+          SUPABASE_URL: ${{ secrets.STAGING_SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.STAGING_ANON_KEY }}
+        run: node scripts/probe-backend.mjs --expect=absent | tee /tmp/probe-baseline.txt
+
+      - name: Apply migrations
+        if: inputs.phase == 'up'
+        env:
+          STAGING_DB_URL: ${{ secrets.STAGING_DB_URL }}
+        run: scripts/staging-migrations.sh --phase up --confirm | tee /tmp/migrate-up.txt
+
+      - name: Verify objects, RLS and access rules
+        if: inputs.phase == 'verify'
+        env:
+          SUPABASE_URL: ${{ secrets.STAGING_SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.STAGING_ANON_KEY }}
+        run: node scripts/probe-backend.mjs --expect=applied | tee /tmp/probe-applied.txt
+
+      - name: Rollback and re-apply
+        if: inputs.phase == 'roundtrip'
+        env:
+          STAGING_DB_URL: ${{ secrets.STAGING_DB_URL }}
+        run: |
+          set -euo pipefail
+          if scripts/staging-migrations.sh --phase roundtrip --confirm 2>&1 | tee /tmp/roundtrip.txt; then
+            echo "roundtrip: OK"
+          else
+            echo "::error::rollback or re-application failed — see artifact"
+            exit 1
+          fi
+
+      - name: Roll back staging to a clean state
+        if: inputs.phase == 'down'
+        env:
+          STAGING_DB_URL: ${{ secrets.STAGING_DB_URL }}
+        run: scripts/staging-migrations.sh --phase down --confirm | tee /tmp/migrate-down.txt
+
+      - name: Job summary
+        if: always()
+        run: |
+          {
+            echo "## Supabase staging — ${{ inputs.phase }}"
+            echo ""
+            for file in /tmp/probe-baseline.txt /tmp/migrate-up.txt /tmp/probe-applied.txt /tmp/roundtrip.txt /tmp/migrate-down.txt; do
+              [ -f "$file" ] && { echo "### $(basename "$file")"; echo '```'; tail -40 "$file"; echo '```'; }
+            done
+            echo ""
+            echo "Production was not contacted by this workflow."
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: always()
+        with:
+          name: staging-${{ inputs.phase }}-${{ github.run_id }}
+          path: /tmp/*.txt
+          retention-days: 60
