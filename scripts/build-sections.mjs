@@ -23,7 +23,7 @@ const editorialAttr = item => {
 const bi = (ar, en, tag = "span") => `<${tag} lang="ar">${ar}</${tag}><${tag} lang="en">${en}</${tag}>`;
 
 function link(item, className = "") {
-  return `<a class="${className}" href="${esc(item.href)}"${editorialAttr(item)} data-section-link>${bi(esc(item.ar), esc(item.en))}</a>`;
+  return `<a class="${className}" href="${esc(item.href)}"${editorialAttr(item)} data-language-managed data-section-link>${bi(esc(item.ar), esc(item.en))}</a>`;
 }
 
 function newsCard(section, index) {
@@ -47,15 +47,15 @@ function knowledgeGroup(group) {
 
 
 const nav = registry.pick(registry.PRIMARY_NAV)
-  .map(item => `<a href="${esc(item.href)}"${item.key === "sections" ? ' aria-current="page"' : ""}>${bi(esc(item.ar), esc(item.en))}</a>`).join("");
+  .map(item => `<a href="${esc(item.href)}"${item.key === "sections" ? ' aria-current="page"' : ""} data-language-managed>${bi(esc(item.ar), esc(item.en))}</a>`).join("");
 
 const groupSection = (group, headingId) => `<section class="sec-group-block" aria-labelledby="${headingId}" id="${esc(group.key)}">
   <div class="sec-section-head"><h2 id="${headingId}">${bi(esc(group.ar), esc(group.en))}</h2><p>${bi(esc(group.arIntro), esc(group.enIntro))}</p></div>
-  <ul class="sec-links sec-links--wide">${group.items.map(item => `<li><a class="sec-link" href="${esc(item.href)}"${editorialAttr(item)} data-section-link>${bi(esc(item.ar), esc(item.en))}</a><span>${bi(esc(item.arNote), esc(item.enNote))}</span></li>`).join("")}</ul>
+  <ul class="sec-links sec-links--wide">${group.items.map(item => `<li><a class="sec-link" href="${esc(item.href)}"${editorialAttr(item)} data-language-managed data-section-link>${bi(esc(item.ar), esc(item.en))}</a><span>${bi(esc(item.arNote), esc(item.enNote))}</span></li>`).join("")}</ul>
 </section>`;
 
 const footerNav = registry.SITE_GROUP.items
-  .map(item => `<a href="${esc(item.href)}"${editorialAttr(item)}>${bi(esc(item.ar), esc(item.en))}</a>`).join("");
+  .map(item => `<a href="${esc(item.href)}"${editorialAttr(item)} data-language-managed>${bi(esc(item.ar), esc(item.en))}</a>`).join("");
 
 const html = `<!doctype html>
 <html lang="ar" dir="rtl">
@@ -133,7 +133,7 @@ const staticNav = registry.pick(registry.PRIMARY_NAV)
   .map(item => `<a href="${hrefFor(item)}" class="wl-nav-link" data-section-link>${bi(esc(item.ar), esc(item.en))}</a>`).join("");
 const staticMore = registry.pick(registry.MORE_MENU)
   .map(item => `<a href="${hrefFor(item)}"><span class="wl-more-icon"><svg aria-hidden="true"><use href="#i-${item.key === "daily-briefing" ? "sun" : item.key === "history" ? "book" : item.key === "map" ? "map" : item.key === "markets" ? "chart" : item.key === "shorts" ? "layers" : item.key === "for-you" ? "user" : item.key === "context-room" ? "compass" : "spark"}"/></svg></span><span>${bi(esc(item.ar), esc(item.en))}<small>${bi(esc(item.arNote), esc(item.enNote))}</small></span></a>`).join("");
-const staticFooter = registry.FOOTER_COLUMNS.map(column => `<div class="footer-col"><h3>${bi(esc(column.ar), esc(column.en))}</h3>${registry.pick(column.items).map(item => `<a href="${esc(item.href)}"${editorialAttr(item)}>${bi(esc(item.ar), esc(item.en))}</a>`).join("")}</div>`).join("");
+const staticFooter = registry.FOOTER_COLUMNS.map(column => `<div class="footer-col"><h3>${bi(esc(column.ar), esc(column.en))}</h3>${registry.pick(column.items).map(item => `<a href="${esc(item.href)}"${editorialAttr(item)} data-language-managed>${bi(esc(item.ar), esc(item.en))}</a>`).join("")}</div>`).join("");
 
 const indexPath = join(root, "index.html");
 let indexHtml = readFileSync(indexPath, "utf8");
