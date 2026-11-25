@@ -1,6 +1,13 @@
 name: Worldline Design Discovery
 
 on:
+  push:
+    branches: [main]
+    paths:
+      - "design-agent/**"
+      - "scripts/design-agent/**"
+      - "tests/test_design_agent_*.py"
+      - ".github/workflows/design-discovery.yml"
   workflow_dispatch:
     inputs:
       source_limit:
