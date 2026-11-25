@@ -7,4 +7,5 @@
 - 2026-11-25: PR #111 source diagnosis (pause artefacts vs defects), admin-only detail, manual reachability probe. Ingestion remains paused; nothing scheduled.
 - 2026-11-25: PR #112 HTML-sink scanner and review; PR #113 JSON-LD on 30 static pages.
 - 2026-11-26: Task 9 PR1 personalised feed (for-you.html, feed-model.js, migration + rollback, 15 model tests, 7 DB tests, AR/EN x desktop/mobile browser test). History is opt-in and server-wiped on consent withdrawal.
+- 2026-11-25: PR #114 merged (a7cc83e) and published by Pages (build succeeded; for-you.html, for-you.js, feed-model.js return HTTP 200 on al-ghaib.us.ci). Its migration 20261126010000 is NOT applied to production: category/country follows and saved articles work as before; topic/interest server sync and opt-in reading history need the migration (staging first). The Production Readiness workflow was already red before #114 because tests/newsroom-edition-browser.py expected an Arabic label on the English home; fixed in a follow-up PR.
 - Pending: country profiles, country profiles, economic dashboards, map and editorial tools (backlog P2), Lighthouse/axe CI, hreflang, staging rollout of migration.
