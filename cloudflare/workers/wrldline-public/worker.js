@@ -212,7 +212,7 @@ ${schema ? `<meta property="article:published_time" content="${escapeHTML(schema
 <link rel="alternate" type="application/rss+xml" title="WRLDLINE NEWS RSS" href="${PUBLIC_ORIGIN}/rss.xml"><link rel="alternate" type="application/atom+xml" title="WRLDLINE NEWS Atom" href="${PUBLIC_ORIGIN}/atom.xml">
 ${!noindex ? '<script src="/analytics-config.js?v=20261115-1" defer></script><script src="/analytics.js?v=20261115-1" defer></script>' : ""}
 ${!noindex ? '<script src="/site-editor.js?v=20261123-live-breaking" defer></script>' : ""}
-${enhance ? '<link rel="stylesheet" href="/article-trust.css?v=20261115-1"><script src="/share.js?v=20261115-canonical" defer></script><script src="/public-news.js?v=20261123-reading-order" defer></script><script src="/article-trust.js?v=20261115-1" defer></script>' : ""}`;
+${enhance ? '<link rel="stylesheet" href="/article-trust.css?v=20261125-upd"><script src="/share.js?v=20261115-canonical" defer></script><script src="/public-news.js?v=20261123-reading-order" defer></script><script src="/article-trust.js?v=20261125-upd" defer></script>' : ""}`;
   const html = `<!doctype html><html lang="${escapeHTML(lang)}" dir="${direction}" data-theme="dark"><head>${head}</head><body class="wl-public-news">
 <a class="skip-link" href="#mainContent">${l.en ? "Skip to content" : "تجاوز إلى المحتوى"}</a>
 <header class="wl-header public-news-header"><div class="wl-container wl-masthead"><a class="wl-brand" href="/" aria-label="WRLDLINE NEWS"><span class="wl-brand-mark" aria-hidden="true">W</span><span class="wl-brand-copy"><strong>WRLDLINE</strong><small>GLOBAL NEWS NETWORK</small></span></a><a class="wl-account" href="/account.html">${l.en ? "My account" : "حسابي"}</a></div>

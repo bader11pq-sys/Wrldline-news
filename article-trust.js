@@ -1,6 +1,11 @@
 /* WRLDLINE: public editorial context. No SDK/session or table-wide reads. */
 (function (scope) {
   "use strict";
+  if (scope.document && !scope.document.getElementById("storyUpdatesScript") && scope.document.querySelector("[data-public-article]")) {
+    const loader = scope.document.createElement("script");
+    loader.id = "storyUpdatesScript"; loader.src = "/story-updates.js?v=20261125-1"; loader.defer = true;
+    scope.document.head.append(loader);
+  }
   const PROJECT_URL = "https://vmaxbnogmmfyrcucapnq.supabase.co";
   const PUBLIC_KEY = "sb_publishable_D3c88u75_LcEN460Y3Jcpw__EfqUnBx";
   const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
