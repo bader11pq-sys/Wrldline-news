@@ -136,11 +136,12 @@ async def main():
         await expect(page.locator("#qatar-wages details[open] .rd-sources a").first).to_be_visible()
         assert await page.evaluate("document.documentElement.scrollWidth <= innerWidth")
         await page.locator(".rd-nav a[href='sections.html']").click()
-        await expect(page.locator(".hn-desk")).to_have_count(6)
-        for slug in ["politics", "economy", "world", "rights", "society", "health", "culture", "tech", "science"]:
-            await expect(page.locator(f'.hn-desk a[href="/section/{slug}"]')).to_be_visible()
+        # The generated directory shows the six registry desks and their subsections.
+        await expect(page.locator(".sec-card")).to_have_count(6)
+        for slug in ["politics", "economy", "rights", "tech", "society", "environment"]:
+            await expect(page.locator(f'.sec-card a[href="/section/{slug}"]')).to_be_visible()
         assert await page.evaluate("document.documentElement.scrollWidth <= innerWidth")
-        await page.locator(".hn-desk a[href='rights-cases/index.html']").click()
+        await page.locator(".sec-card a[href='rights-cases/index.html']").click()
         await expect(page.locator("#files .hn-card")).to_have_count(6)
         await expect(page.locator("#labels .hn-badge")).to_have_count(6)
         await page.locator(".hn-card a[href='qatar-wages.html']").click()
