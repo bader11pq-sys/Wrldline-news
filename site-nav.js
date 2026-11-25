@@ -66,11 +66,11 @@
 
   function primaryLink(item) {
     const active = isActive(item);
-    return `<a class="wl-nav-link${active ? " is-active" : ""}" href="${esc(hrefOf(item))}"${editorialAttr(item)} data-language-managed${active ? ' aria-current="page"' : ""}>${bi(item.ar, item.en)}</a>`;
+    return `<a class="wl-nav-link${active ? " is-active" : ""}" href="${esc(hrefOf(item))}"${editorialAttr(item)}${active ? ' aria-current="page"' : ""}>${bi(item.ar, item.en)}</a>`;
   }
 
   function moreLink(item) {
-    return `<a href="${esc(hrefOf(item))}"${editorialAttr(item)} data-language-managed><span class="wl-more-icon">${icon(item.key)}</span><span>${bi(item.ar, item.en)}</span></a>`;
+    return `<a href="${esc(hrefOf(item))}"${editorialAttr(item)}><span class="wl-more-icon">${icon(item.key)}</span><span>${bi(item.ar, item.en)}</span></a>`;
   }
 
   function drawerSectionHeading(ar, en) {
@@ -79,7 +79,7 @@
 
   function drawerLink(item, nested) {
     const active = isActive(item);
-    return `<a class="wl-drawer-link${nested ? " is-sub" : ""}${active ? " is-active" : ""}" href="${esc(hrefOf(item))}"${editorialAttr(item)} data-language-managed${active ? ' aria-current="page"' : ""}>${bi(item.ar, item.en)}</a>`;
+    return `<a class="wl-drawer-link${nested ? " is-sub" : ""}${active ? " is-active" : ""}" href="${esc(hrefOf(item))}"${editorialAttr(item)}${active ? ' aria-current="page"' : ""}>${bi(item.ar, item.en)}</a>`;
   }
 
   function drawerHTML() {
@@ -107,11 +107,11 @@
       <div class="wl-drawer-body">
         <section class="wl-drawer-block">
           <div class="wl-drawer-list">
-            <a class="wl-drawer-link" href="${hrefOf(registry.item("home"))}" data-language-managed>${bi(registry.item("home").ar, registry.item("home").en)}</a>
+            <a class="wl-drawer-link" href="${hrefOf(registry.item("home"))}">${bi(registry.item("home").ar, registry.item("home").en)}</a>
           </div>
           ${drawerSectionHeading("الأقسام الإخبارية", "News sections")}
           <div class="wl-drawer-desks">${desks}</div>
-          <a class="wl-drawer-directory" href="sections.html" data-language-managed>${bi("دليل الأقسام الكامل", "Open the full sections directory")}</a>
+          <a class="wl-drawer-directory" href="sections.html">${bi("دليل الأقسام الكامل", "Open the full sections directory")}</a>
         </section>
         ${knowledge}
         ${group(registry.TOOL_GROUP)}
@@ -125,7 +125,7 @@
     return registry.FOOTER_COLUMNS.map(column =>
       `<div class="footer-col"><h3>${bi(column.ar, column.en)}</h3>${column.items.map(key => {
         const entry = registry.item(key);
-        return `<a href="${esc(hrefOf(entry))}"${editorialAttr(entry)} data-language-managed>${bi(entry.ar, entry.en)}</a>`;
+        return `<a href="${esc(hrefOf(entry))}"${editorialAttr(entry)}>${bi(entry.ar, entry.en)}</a>`;
       }).join("")}</div>`
     ).join("");
   }
