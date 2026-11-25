@@ -49,6 +49,7 @@ jobs:
           python tests/site-editor-browser.py
           python tests/country-browser.py
           python tests/economy-browser.py
+          python tests/touch-targets-browser.py
   source-freshness:
     # Opt-in prevents missing secrets and duplicate pg_cron scheduling from being
     # silently treated as working monitors. Only protected trusted branches get secrets.
