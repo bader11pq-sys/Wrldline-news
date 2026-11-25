@@ -93,3 +93,4 @@ h1,h2,h3{text-wrap:balance}
   .rd-section-head{padding-block:.68rem .8rem}
   .rd-files{gap:.52rem}
 }
+.rd-news-list{list-style:none;margin:0;padding:0;display:grid;gap:.1rem}.rd-news-list a{display:block;padding:.75rem 0;border-block-end:1px solid currentColor;border-color:color-mix(in srgb,currentColor 18%,transparent);font-weight:700;text-decoration:none}.rd-news-list a:hover{text-decoration:underline}

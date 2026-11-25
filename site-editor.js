@@ -15,7 +15,7 @@
   const button = (text, attrs = {}) => node("button", text, { type: "button", ...attrs });
   const option = (value, ar, en) => [value, ar, en];
   const sections = [
-    ["politics","سياسة","Politics"],["economy","اقتصاد","Economy"],["security","أمن ودفاع","Security"],
+    ["politics","سياسة","Politics"],["rights","الحقوق والحريات","Rights & freedoms"],["economy","اقتصاد","Economy"],["security","أمن ودفاع","Security"],
     ["world","حول العالم","World"],["sports","رياضة","Sports"],["tech","تقنية","Technology"],
     ["culture","ثقافة","Culture"],["health","صحة","Health"],["science","علوم","Science"],
     ["environment","بيئة","Environment"],["society","مجتمع","Society"],["uncategorized","غير مصنّف","Uncategorized"]
