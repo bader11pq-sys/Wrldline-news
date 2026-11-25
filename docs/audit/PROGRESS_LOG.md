@@ -6,4 +6,5 @@
 - 2026-11-25: PR #109 fixes healthcheck cron auth (root cause: Bearer with opaque sb_secret key; now apikey header + DB-verified secret; fail-closed). 8 tests.
 - 2026-11-25: PR #111 source diagnosis (pause artefacts vs defects), admin-only detail, manual reachability probe. Ingestion remains paused; nothing scheduled.
 - 2026-11-25: PR #112 HTML-sink scanner and review; PR #113 JSON-LD on 30 static pages.
-- Pending: personalised feed, country profiles, economic dashboards, map and editorial tools (backlog P2), Lighthouse/axe CI, hreflang, staging rollout of migration.
+- 2026-11-26: Task 9 PR1 personalised feed (for-you.html, feed-model.js, migration + rollback, 15 model tests, 7 DB tests, AR/EN x desktop/mobile browser test). History is opt-in and server-wiped on consent withdrawal.
+- Pending: country profiles, country profiles, economic dashboards, map and editorial tools (backlog P2), Lighthouse/axe CI, hreflang, staging rollout of migration.

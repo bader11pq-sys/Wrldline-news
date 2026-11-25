@@ -28,6 +28,7 @@
   copy.ar.sections = "الأقسام";
   copy.en.sections = "Sections";
   copy.ar.briefing = "ملخص اليوم";
+  copy.ar.forYou = "لك"; copy.en.forYou = "For you";
   copy.en.briefing = "Daily briefing";
   const t = (key) => copy[lang][key] || copy.ar[key];
   const other = lang === "ar" ? "en" : "ar";
@@ -72,6 +73,7 @@
       <a class="wl-nav-link" href="index.html">${t("navHome")}</a>
       <a class="wl-nav-link" href="sections.html" hreflang="ar">${t("sections")}</a>
       <a class="wl-nav-link" href="analysis.html" hreflang="ar">${t("analysis")}</a>
+      <a class="wl-nav-link" href="for-you.html">${t("forYou")}</a>
       <a class="wl-nav-link" href="daily-briefing.html">${t("briefing")}</a>
       <a class="wl-nav-link" href="/news/?lang=${lang}">${lang === "ar" ? "الأرشيف" : "Archive"}</a>
     </div></nav></div>

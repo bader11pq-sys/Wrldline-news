@@ -85,7 +85,8 @@
     const key=eventType(value), english=language(locale)==="en";
     return key?types[key][english?1:0]:(english?"Unspecified event type":"نوع الحدث غير محدد");
   }
-  const api=Object.freeze({codeOf,iso3Of,countryName,eventCountry,eventCountryCode,eventType,eventTypeLabel});
+  const iso3List=()=>[...alpha2.keys()];
+  const api=Object.freeze({iso3List,codeOf,iso3Of,countryName,eventCountry,eventCountryCode,eventType,eventTypeLabel});
   if(typeof module==="object"&&module.exports)module.exports=api;
   else root.WLEditorial=api;
 })(typeof window==="undefined"?globalThis:window);
