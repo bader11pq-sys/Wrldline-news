@@ -15,7 +15,7 @@
 <style>
 :root{font-family:"IBM Plex Sans Arabic",sans-serif;color-scheme:dark;--bg:#0b1421;--panel:#142238;--line:#2b3d55;--text:#f2f5f9;--muted:#a9b6c7;--gold:#d5ad69;--red:#c64a52}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);padding:24px;line-height:1.7}.wrap{max-width:920px;margin:auto}.panel{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:24px;margin-bottom:18px}h1,h2{margin:0 0 12px}h1{font-size:24px}h2{font-size:18px}.muted,small{color:var(--muted)}label{display:block;font-weight:600;margin:12px 0 5px}input,textarea,select{width:100%;padding:11px;border:1px solid var(--line);border-radius:9px;background:#0d1929;color:var(--text);font:inherit}textarea{min-height:130px;resize:vertical}.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.btn{border:0;border-radius:9px;padding:11px 18px;background:var(--gold);color:#172234;font:700 14px inherit;cursor:pointer;margin-top:14px}.btn.secondary{background:#263b56;color:#fff}.btn.danger{background:var(--red);color:white}.row{display:flex;justify-content:space-between;align-items:center;gap:12px}.item{padding:14px 0;border-top:1px solid var(--line)}.item strong{display:block}.item small{display:block}.status{padding:10px;border-radius:9px;background:#0d1929;color:var(--muted);margin-top:12px}.hidden{display:none!important}.actions{display:flex;gap:8px;flex-wrap:wrap}.actions .btn{margin-top:8px}.notice{border-inline-start:3px solid var(--gold);padding:10px 14px;background:#1a2a40;color:#d9e2ed;font-size:13px;margin:16px 0}@media(max-width:600px){body{padding:12px}.panel{padding:17px}.grid{grid-template-columns:1fr}.row{align-items:flex-start;flex-direction:column}}
 </style>  <link rel="stylesheet" href="site-enhancements.css">
-<link rel="stylesheet" href="editor-workspace.css?v=20261125-perf">
+<link rel="stylesheet" href="editor-workspace.css?v=20261126-desk">
 <link rel="stylesheet" href="editorial-assist.css?v=20261125-1">
   <link rel="stylesheet" href="/quality.css?v=quality-1">
 </head>
@@ -27,10 +27,11 @@
 <section class="panel hidden" id="accessPanel"><h2>الحساب غير مخوّل للتحرير</h2><p class="muted">يلزم منح حساب المحرر دوراً موثوقاً من Supabase Dashboard عبر Authentication → Users → المستخدم → Raw App Metadata وإضافة <code>{"role":"admin"}</code>، ثم تسجيل الخروج والدخول مجدداً. لا تستخدم User Metadata لهذا الغرض.</p></section>
 <section class="panel hidden" id="editorPanel"><div class="row"><div><h2>إدارة الأخبار</h2><small id="userLabel"></small></div><button class="btn secondary" id="logoutButton">تسجيل الخروج</button></div>
 <div class="notice" id="siteEditorGuide" hidden>للعمل اليومي، اكتب أو حرّر مباشرة من <a href="/">واجهة الموقع</a>. احتفظ بهذه اللوحة للمراجعة المتقدمة، ومراقبة المصادر، وتحليلات الجمهور.</div>
-<nav class="editor-jumps" id="editorJumps" aria-label="أقسام لوحة التحرير"><a href="#articleComposer">الكتابة</a><a href="#articleSearch">غرفة المراجعة</a><a href="#translationReviewList">الترجمات</a><a href="#opsDashboardPanel">المراقبة</a><a href="#editorialTrustPanel">المصداقية</a><a id="office-launcher" href="/ai-office/" rel="noopener">مكتب الذكاء الاصطناعي ↗</a></nav>
+<nav class="editor-jumps" id="editorJumps" aria-label="أقسام لوحة التحرير"><a href="#newsroomDesk">مكتب التحرير</a><a href="#articleComposer">الكتابة</a><a href="#articleSearch">غرفة المراجعة</a><a href="#translationReviewList">الترجمات</a><a href="#opsDashboardPanel">المراقبة</a><a href="#editorialTrustPanel">المصداقية</a><a id="office-launcher" href="/ai-office/" rel="noopener">مكتب الذكاء الاصطناعي ↗</a></nav>
 <div class="notice">تخضع عمليات النشر والتعديل والحذف لسياسات Row Level Security في Supabase. لا تمنح صلاحيات الكتابة للمستخدمين المجهولين.</div>
 <section class="panel"><div class="row"><h2>حداثة الأخبار حسب المصدر</h2><button class="btn" type="button" id="sourceFreshnessRefresh">فحص المصادر</button></div><p class="muted">فحص محمي مجدول كل 15 دقيقة، مستقل عن نجاح طوابير النقل. لا يعني «دون خبر جديد» تعطل المصدر.</p><div id="sourceFreshnessStatus" class="status" role="status" aria-live="polite">تظهر النتائج بعد دخول المدير.</div><div id="sourceFreshnessCounts" class="grid"></div></section>
 <script src="source-monitor.js?v=20261115" defer></script>
+<section class="panel" id="newsroomDesk" aria-labelledby="deskTitle" hidden></section>
 <section class="panel" id="opsDashboardPanel">
  <div class="row"><div><h2>مركز المراقبة التشغيلية</h2><small class="muted">مؤشرات حية من قواعد البيانات وسجلات دورات التشغيل — تحديث تلقائي كل دقيقة</small></div><div class="actions"><span id="opsUpdatedAt" class="muted">لم يتم الفحص بعد</span><button class="btn" type="button" id="opsRefreshButton">تحديث الآن</button></div></div>
  <div id="opsStatus" class="status" role="status" aria-live="polite">جارٍ الاتصال بمركز المراقبة...</div>
@@ -172,6 +173,8 @@
 <script src="editorial-display.js?v=20261122-metadata" defer></script><script src="reader-prose.js?v=20261122-longread1" defer></script><script src="editor-workspace.js?v=20261125-perf" defer></script>
 <script src="editorial-assist.js?v=20261125-1" defer></script><script src="article-editions.js?v=20261122-bilingual" defer></script><script src="editor-editions.js?v=20261122-bilingual" defer></script><script src="editorial-draft-review.js?v=20261124-human-gate" defer></script><script src="admin.js?v=20261125-editorial" defer onerror="document.getElementById('status').textContent='تعذر تحميل كود لوحة التحرير. أعد تحميل الصفحة أو افتحها في Safari دون مانع محتوى.';"></script><script src="language.js?v=20261122-bilingual" defer></script>
 <script src="share.js?v=20261113-4" defer></script><script src="admin-updates.js?v=20261125-1" defer></script>
+<script src="newsroom-desk-model.js?v=20261126-1" defer></script>
+<script src="newsroom-desk.js?v=20261126-1" defer></script>
   <script src="office-connection.js" defer></script>
   <script src="site-enhancements.js?v=20261122-reader" defer></script>
 </body></html>
