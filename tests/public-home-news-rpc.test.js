@@ -17,7 +17,10 @@ test("homepage and newsroom use the restricted public feed RPC", () => {
 
   assert.match(homepage, /const PUBLIC_NEWS_RPC = [^\n]+\/rest\/v1\/rpc\/public_home_news_recent_v3/);
   assert.match(homepage, /async function getPublicNewsRows\(params, \{ url=PUBLIC_NEWS_RPC[^]*?fetch\(url,\{method:"POST"/);
-  assert.match(fetchNews, /mainRows=await getPublicNewsRows\(params\)/);
+  // The first load may adopt the read started during head parsing, but the fallback and every
+  // later load must still go through getPublicNewsRows.
+  assert.match(fetchNews, /mainRows=await \(early\?early\.promise:getPublicNewsRows\(params\)\)/);
+  assert.match(fetchNews, /mainRows=await getPublicNewsRows\(params,\{timeout:3000\}\)/);
   assert.doesNotMatch(homepage, /\/rest\/v1\/articles/);
   assert.match(newsroom, /\/rest\/v1\/rpc\/public_home_news_recent/);
   assert.doesNotMatch(newsroom, /\/rest\/v1\/articles/);
