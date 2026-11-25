@@ -29,6 +29,33 @@
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Manrope:wght@500;700;800&display=swap" media="print" onload="this.media='all'">
   <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Manrope:wght@500;700;800&display=swap"></noscript>
   <link rel="manifest" href="manifest.json">
+  <script>
+  /* Start the main news read during head parsing. The RPC's time-to-first-byte is ~0.8 s and the
+     request previously waited for script.js to parse and boot (~0.6 s), so the largest card painted
+     about 1.4 s later than it needed to. script.js adopts this exact response for its first render;
+     if it fails, script.js retries through its normal path and nothing changes for the reader. */
+  window.__wlEarlyFeed = (function () {
+    try {
+      var before = new Date().toISOString();
+      var request = fetch("https://vmaxbnogmmfyrcucapnq.supabase.co/rest/v1/rpc/public_home_news_recent_v3", {
+        method: "POST",
+        headers: { apikey: "sb_publishable_D3c88u75_LcEN460Y3Jcpw__EfqUnBx", "Content-Type": "application/json", Accept: "application/json" },
+        body: JSON.stringify({ p_limit: 24, p_before: before, p_since: null, p_offset: 0, p_newsdata_only: false }),
+        signal: AbortSignal.timeout(9000)
+      }).then(function (response) {
+        if (!response.ok) throw new Error("HTTP " + response.status);
+        return response.json();
+      }).then(function (rows) {
+        if (!Array.isArray(rows)) throw new Error("invalid response");
+        return rows;
+      });
+      request.catch(function () {});
+      return { promise: request, before: before, limit: 24, claimed: false };
+    } catch (error) {
+      return null;
+    }
+  })();
+  </script>
   <link rel="stylesheet" href="home.bundle.css?v=20261123-editorial-priorities">
   <script type="application/ld+json">
 {
@@ -250,7 +277,7 @@
             <button id="clearEditionFilters" type="button" hidden>مسح التصفية</button>
             <p id="lastUpdated">بانتظار التحديث</p>
           </div>
-          <div id="newsGrid" class="news-grid" aria-busy="true"></div>
+          <div id="newsGrid" class="news-grid" aria-busy="true"><div class="skeleton-card" aria-hidden="true"><div class="sk-img skeleton"></div><div class="sk-body"><div class="sk-line sk-line--sm skeleton"></div><div class="sk-line sk-line--lg skeleton"></div><div class="sk-line sk-line--md skeleton"></div></div></div><div class="skeleton-card" aria-hidden="true"><div class="sk-img skeleton"></div><div class="sk-body"><div class="sk-line sk-line--sm skeleton"></div><div class="sk-line sk-line--lg skeleton"></div><div class="sk-line sk-line--md skeleton"></div></div></div><div class="skeleton-card" aria-hidden="true"><div class="sk-img skeleton"></div><div class="sk-body"><div class="sk-line sk-line--sm skeleton"></div><div class="sk-line sk-line--lg skeleton"></div><div class="sk-line sk-line--md skeleton"></div></div></div><div class="skeleton-card" aria-hidden="true"><div class="sk-img skeleton"></div><div class="sk-body"><div class="sk-line sk-line--sm skeleton"></div><div class="sk-line sk-line--lg skeleton"></div><div class="sk-line sk-line--md skeleton"></div></div></div><div class="skeleton-card" aria-hidden="true"><div class="sk-img skeleton"></div><div class="sk-body"><div class="sk-line sk-line--sm skeleton"></div><div class="sk-line sk-line--lg skeleton"></div><div class="sk-line sk-line--md skeleton"></div></div></div><div class="skeleton-card" aria-hidden="true"><div class="sk-img skeleton"></div><div class="sk-body"><div class="sk-line sk-line--sm skeleton"></div><div class="sk-line sk-line--lg skeleton"></div><div class="sk-line sk-line--md skeleton"></div></div></div></div>
           <aside class="reader-start" id="newsStarter" aria-labelledby="newsStarterTitle" data-language-managed>
             <h3 id="newsStarterTitle"><span lang="ar">ملفات مختارة للقراءة</span><span lang="en">Selected reading</span></h3>
             <p><span lang="ar">تغطيات مرجعية يمكنك قراءتها حتى قبل وصول أحدث الأخبار.</span><span lang="en">Background reading available before the latest stories arrive.</span></p>
@@ -619,7 +646,7 @@
   <script src="article-editions.js?v=20261123-reading-order" defer></script>
   <script src="/event-desk.js?v=20261123-reader-start" defer></script>
   <script src="site-editor.js?v=20261125-perf-gate" defer></script>
-  <script src="script.js?v=20261123-editorial-priorities" defer></script>
+  <script src="script.js?v=20261125-early-feed" defer></script>
   <script src="newsroom-data.js?v=20261114-1" defer></script>
   <script src="newsroom.js?v=20261120-feedfast1" defer></script>
   <script src="home.js?v=20261123-reader-start" defer></script>

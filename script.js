@@ -396,7 +396,11 @@ async function fetchNews(manual=false,quiet=false){
  if(!manual&&(state.offset>MAIN_FEED_LIMIT||document.querySelector("dialog[open]")||document.activeElement.closest("#newsGrid,#heroLayout,.wl-feed-controls,#categoryChips,#missedNewsSection,#breakingSection,#exclusiveSection,#popularStoriesSection")))return;
  state.loading=true;
  const firstLoad=!state.before;
- const now=new Date().toISOString();
+ // Adopt the read started during head parsing (index.html) instead of waiting for this script to
+ // boot and issuing a second, identical request. Its timestamp is reused so paging stays consistent.
+ const early=firstLoad&&window.__wlEarlyFeed&&!window.__wlEarlyFeed.claimed&&window.__wlEarlyFeed.limit===MAIN_FEED_LIMIT?window.__wlEarlyFeed:null;
+ if(early)early.claimed=true;
+ const now=early?early.before:new Date().toISOString();
  const retryControl=document.activeElement?.closest("#newsGrid [data-reader-action=retry]");
  retryControl?.setAttribute("aria-disabled","true");
  document.getElementById("newsGrid").setAttribute("aria-busy","true");
@@ -406,7 +410,7 @@ async function fetchNews(manual=false,quiet=false){
  try{
   const params={p_limit:MAIN_FEED_LIMIT,p_before:now,p_since:null,p_offset:0,p_newsdata_only:false};
   let mainRows;
-  try{mainRows=await getPublicNewsRows(params);}
+  try{mainRows=await (early?early.promise:getPublicNewsRows(params));}
   catch(error){
    if(navigator.onLine===false)throw error;
    mainRows=await getPublicNewsRows(params,{timeout:3000});
