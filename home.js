@@ -7,52 +7,10 @@
   const $ = (s, r = document) => r.querySelector(s);
   const $$ = (s, r = document) => [...r.querySelectorAll(s)];
 
-  /* ---------- Navigation ---------- */
-  const moreButton = $("#moreButton");
-  const moreMenu = $("#moreMenu");
-  const navWrap = $("#mainNav");
-  const menuButton = $("#menuButton");
-  const mobileNav = matchMedia("(max-width: 760px)");
-
-  function closeNav() {
-    navWrap?.classList.remove("is-open", "mobile-open");
-    menuButton?.setAttribute("aria-expanded", "false");
-  }
-
-  function closeMore() {
-    if (!moreMenu) return;
-    moreMenu.classList.remove("is-open");
-    moreButton?.setAttribute("aria-expanded", "false");
-  }
-  moreButton?.addEventListener("click", e => {
-    e.stopPropagation();
-    const open = moreMenu.classList.toggle("is-open");
-    moreButton.setAttribute("aria-expanded", String(open));
-  });
-  document.addEventListener("click", e => {
-    if (moreMenu && !moreMenu.contains(e.target) && !moreButton?.contains(e.target)) closeMore();
-    if (navWrap?.classList.contains("mobile-open") && !navWrap.contains(e.target) && !menuButton?.contains(e.target)) closeNav();
-  });
-  menuButton?.addEventListener("click", () => {
-    const open = navWrap.classList.toggle("is-open");
-    navWrap.classList.toggle("mobile-open", open);
-    menuButton.setAttribute("aria-expanded", String(open));
-    if (open) navWrap.querySelector("a")?.focus();
-  });
-  navWrap?.addEventListener("click", e => {
-    if (e.target.closest("a")) {
-      closeMore();
-      navWrap.classList.remove("is-open", "mobile-open");
-      menuButton?.setAttribute("aria-expanded", "false");
-    }
-  });
-  document.addEventListener("keydown", e => {
-    if (e.key !== "Escape" || document.querySelector("dialog[open]")) return;
-    if (moreMenu?.classList.contains("is-open")) { closeMore(); moreButton?.focus(); }
-    else if (navWrap?.classList.contains("mobile-open")) { closeNav(); menuButton?.focus(); }
-  });
-  mobileNav.addEventListener("change", () => { closeMore(); closeNav(); });
-
+  /* ---------- Navigation ----------
+   * The primary bar, the More menu and the hamburger drawer are painted and
+   * wired by site-nav.js from site-sections.js. Nothing here may keep its own
+   * copy of the section list. */
   /* ---------- Reading progress & header state ---------- */
   const progress = $("#readProgress");
   const header = $("#siteHeader");

@@ -72,12 +72,17 @@ test("Arabic and English hierarchies are rendered from the same markup", () => {
 
 test("navigation exposes the Daily Briefing and Historical Encyclopedia on every shell page", () => {
   const shell = read("site-shell.js");
-  assert.match(shell, /href="daily-briefing\.html">\$\{t\("briefing"\)\}/);
-  assert.match(shell, /href="history\.html">\$\{t\("history"\)\}/);
+  assert.match(shell, /data-nav="primary"/);
+  assert.match(shell, /data-nav="more"/);
+  assert.match(shell, /data-nav="footer"/);
+  assert.doesNotMatch(shell, /<a href="\/section\//, "site-shell.js keeps no hardcoded section links");
   const index = read("index.html");
   assert.match(index, /href="daily-briefing\.html"/);
   assert.match(index, /href="history\.html"/);
   assert.match(index, /href="sections\.html"/);
+  const drawer = read("site-nav.js");
+  assert.match(drawer, /MORE_MENU/);
+  assert.match(drawer, /PRIMARY_NAV/);
 });
 
 test("all twelve section pages are in the sitemap", async () => {

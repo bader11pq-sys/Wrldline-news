@@ -57,6 +57,9 @@
 <symbol id="i-compare" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h7v12H4zM13 6h7v12h-7z"/></symbol>
 <symbol id="i-clock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
 <symbol id="i-globe" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3.5 3 14.5 0 18-3-3.5-3-14.5 0-18z"/></symbol>
+<symbol id="i-compass" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="m15.5 8.5-2 5-5 2 2-5z"/></symbol>
+<symbol id="i-layers" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3 9 5-9 5-9-5z"/><path d="m3 13 9 5 9-5"/></symbol>
+<symbol id="i-chart" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M4 20V6M10 20v-7M16 20v-4M22 20H2"/></symbol>
 <symbol id="i-close" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="m6 6 12 12M18 6 6 18"/></symbol>
 </defs></svg>`;
 
@@ -65,25 +68,21 @@
     <div class="wl-masthead">
       <a class="wl-brand" href="index.html"><span class="wl-brand-mark"><img src="/assets/brand/wrldline-symbol.png" alt="" width="44" height="34"></span><span class="wl-brand-copy"><strong>WRLDLINE</strong><small>GLOBAL NEWS NETWORK</small></span></a>
       <div class="wl-head-actions">
-        <button class="wl-icon-btn wl-mobile-menu" id="menuButton" type="button" aria-label="${t("menu")}" aria-expanded="false" aria-controls="mainNav"><svg aria-hidden="true"><use href="#i-menu"/></svg></button>
+        <button class="wl-icon-btn wl-mobile-menu" id="menuButton" type="button" aria-label="${t("menu")}" aria-expanded="false" data-wl-drawer-open aria-controls="siteDrawer"><svg aria-hidden="true"><use href="#i-menu"/></svg></button>
         <a class="wl-icon-btn" href="index.html" aria-label="${t("home")}"><svg aria-hidden="true"><use href="#i-home"/></svg></a>
         <a class="wl-icon-btn" href="history.html" aria-label="${t("encyclopedia")}"><svg aria-hidden="true"><use href="#i-book"/></svg></a>
         <button class="wl-icon-btn" id="themeButton" type="button" aria-label="${t("theme")}"><svg aria-hidden="true"><use href="#i-moon"/></svg></button>
         <a class="wl-account" href="index.html#account"><svg aria-hidden="true"><use href="#i-user"/></svg> ${t("account")}</a>
       </div>
     </div>
-    <div class="wl-nav-wrap" id="mainNav"><nav class="wl-nav" aria-label="${t("sections")}"><div class="wl-nav-scroll">
-      <a class="wl-nav-link" href="index.html">${t("navHome")}</a>
-      <a class="wl-nav-link" href="sections.html" hreflang="ar">${t("sections")}</a>
-      <a class="wl-nav-link" href="daily-briefing.html">${t("briefing")}</a>
-      <a class="wl-nav-link" href="history.html">${t("history")}</a>
-      <a class="wl-nav-link" href="analysis.html" hreflang="ar">${t("analysis")}</a>
-      <a class="wl-nav-link" href="for-you.html">${t("forYou")}</a>
-      <a class="wl-nav-link" href="countries.html">${t("countries")}</a>
-      <a class="wl-nav-link" href="economy.html">${t("economy")}</a>
-      <a class="wl-nav-link" href="news-map.html">${t("newsmap")}</a>
-      <a class="wl-nav-link" href="/news/?lang=${lang}">${lang === "ar" ? "الأرشيف" : "Archive"}</a>
-    </div></nav></div>
+    <div class="wl-nav-wrap" id="mainNav">
+      <nav class="wl-nav" aria-label="${t("sections")}"><div class="wl-nav-scroll" data-nav="primary"></div>
+        <div class="wl-nav-more">
+          <button class="wl-more-btn" id="moreButton" type="button" aria-expanded="false" aria-controls="moreMenu">${t("more") || (lang === "ar" ? "المزيد" : "More")} <svg aria-hidden="true"><use href="#i-chevron"/></svg></button>
+          <div class="wl-more-menu" id="moreMenu" data-nav="more"></div>
+        </div>
+      </nav>
+    </div>
   </div>
   <div class="hx-read-progress"><i id="readProgress"></i></div>
 </header>`;
@@ -92,10 +91,7 @@
   <div class="wl-container">
     <div class="footer-main">
       <div><a class="wl-brand footer-brand" href="index.html"><img class="footer-logo" src="/assets/brand/wrldline-logo-main.jpg" alt="WRLDLINE NEWS" width="420" height="145"></a><p class="footer-about">${t("about")}</p></div>
-      <div class="footer-col"><h2>${t("newsrooms")}</h2><a href="index.html">${t("navHome")}</a><a href="dossier/">${t("dossiers")}</a><a href="dossier/watchlist.html">${t("watchlist")}</a><a href="context.html">${t("context")}</a><a href="balance.html">${t("balance")}</a><a href="impact.html">${t("impact")}</a></div>
-      <div class="footer-col"><h2>${t("knowledge")}</h2><a href="daily-briefing.html">${t("briefing")}</a><a href="history.html">${t("history")}</a><a href="mirror.html">${t("mirror")}</a><a href="explainers.html">${t("explainers")}</a><a href="promises.html">${t("promises")}</a></div>
-      <div class="footer-col"><h2>${t("encyclopediaCol")}</h2><a href="history-explore.html">${t("atlas")}</a><a href="history-compare.html">${t("compare")}</a><a href="history-library.html">${t("library")}</a><a href="about.html">${t("aboutLink")}</a></div>
-      <div class="footer-col"><h2>${lang === "ar" ? "تابع الأخبار" : "Follow news"}</h2><a href="/news/">${lang === "ar" ? "كل الأخبار العامة" : "Public news"}</a><a href="sections.html">${t("sections")}</a><a href="tags.html">${t("tags")}</a><a href="/newsletter.html">${lang === "ar" ? "النشرة البريدية" : "Newsletter"}</a><a href="intelligence.html">${lang === "ar" ? "أعمال ومؤسسات" : "Business & institutions"}</a><a href="advertise.html">${t("advertise")}</a><a href="/rss.xml">RSS</a><a href="/atom.xml">Atom</a><button type="button" data-analytics-settings>${lang === "ar" ? "إعدادات الخصوصية" : "Privacy settings"}</button></div>
+      <div class="footer-cols" data-nav="footer"></div>
     </div>
     <div class="footer-bottom"><span>${t("copyright")}</span><span>${t("editorial")}</span></div>
   </div>
@@ -105,12 +101,9 @@
   const h = document.getElementById("siteHeader"); if (h) h.outerHTML = header;
   const f = document.getElementById("siteFooter"); if (f) f.outerHTML = footer;
 
-  const page = location.pathname.split("/").pop() || "index.html";
-  const analysisPages = new Set(["history.html", "history-explore.html", "history-dossier.html", "history-compare.html", "history-library.html", "context.html", "balance.html", "impact.html", "promises.html", "mirror.html", "explainers.html", "reading.html"]);
-  const active = analysisPages.has(page) ? "analysis.html" : page;
-  document.querySelectorAll(".wl-nav-link").forEach(a => {
-    if (a.getAttribute("href") === active) { a.classList.add("is-active"); a.setAttribute("aria-current", active === page ? "page" : "location"); }
-  });
+  /* Paint every navigation surface from the single registry. */
+  if (window.WLSiteNav) window.WLSiteNav.render();
+
   const bar = document.querySelector(".wl-head-actions");
   if (bar && !document.querySelector('script[src*="language.js"]')) {
     const link = document.createElement("a");

@@ -13,22 +13,9 @@
   user:'<circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/>'
  };
  const svg=k=>'<svg viewBox="0 0 24 24" aria-hidden="true">'+ico[k]+'</svg>';
- const sections=()=>[
-  [t('الأقسام التحريرية','Editorial sections'),[
-   ['sections.html',t('دليل الأقسام الستة','Six editorial priorities'),t('اعرض كل مسارات التغطية','Browse the coverage guide · Arabic')],
-   ['/section/politics',t('السياسة والعلاقات الدولية','Politics & international affairs'),t('القرارات والدبلوماسية','Decisions and diplomacy')],
-   ['/section/rights',t('الحقوق والحريات','Rights & freedoms'),t('الحقوق المدنية والعدالة','Civil rights and justice')],
-   ['/section/economy',t('الاقتصاد والطاقة والتجارة','Economy, energy & trade'),t('الطاقة والأسعار والشحن','Energy, prices and shipping')],
-   ['sections.html#people-society',t('المجتمع والثقافة والشباب','Society, culture & youth'),t('التعليم وفرص العمل','Education and opportunity · Arabic')],
-   ['sections.html#world',t('الخليج والعالم العربي','The Gulf & Arab world'),t('مختارات من التغطية الإقليمية','Selected regional coverage · Arabic')],
-   ['sections.html#tech-science',t('التقنية والعلوم','Technology & science'),t('البحث والبنية الرقمية','Research and digital infrastructure · Arabic')]]],
-  [t('الموجزات والأرشيف','Briefings & archive'),[
-   ['/news/',t('الأرشيف','Archive'),t('كل الأخبار المنشورة','All published news')],
-   ['daily-briefing.html',t('ملخص اليوم','Daily briefing'),t('أهم ما حدث باختصار','What mattered today')],
-   ['shorts.html','Shorts',t('موجز عمودي سريع','Quick vertical feed')]]],
-  [t('الفهم والتحليل','Analysis'),[
-   ['analysis.html',t('مكتب الفهم والتحليل','Analysis desk'),t('مسارات قراءة وملفات وأدوات متخصصة','Reading paths, dossiers and specialist tools · Arabic')]]]
- ];
+ /* The complete hierarchy comes from site-sections.js through site-nav.js.
+  * This file keeps no section list of its own. */
+ const openSheet=()=>{ if(window.WLSiteNav) window.WLSiteNav.open(); };
  const href=h=>/^(\/|#|https?:)/.test(h)?h:'/'+h;
 
  // 1) Section chips (mobile): mirror the primary nav so sections are one tap away
@@ -69,32 +56,14 @@
   syncChips();document.addEventListener('wrldline:category',syncChips);document.addEventListener('wrldline:language',syncChips);
  }
 
- // 2) All-sections sheet
- const sheet=document.createElement('dialog');sheet.className='wlm-sheet';sheet.dataset.languageManaged='';sheet.id='wlmSections';sheet.setAttribute('aria-labelledby','wlmSectionsTitle');
- function renderSections(){
-  const hrefFor=h=>/^(?:\/news\/$|\/section\/)/.test(h)&&document.documentElement.lang==='en'?h+'?lang=en':href(h);
-  sheet.innerHTML='<div class="wlm-sheet-panel"><div class="wlm-sheet-head"><h2 id="wlmSectionsTitle">'+t('كل الأقسام','All sections')+'</h2><button class="wlm-close" type="button" data-close autofocus aria-label="'+t('إغلاق','Close')+'">×</button></div>'+
-   sections().map(([g,items])=>'<section><h3 class="wlm-group">'+g+'</h3><ul class="wlm-grid">'+items.map(([h,n,d])=>'<li><a class="wlm-item" href="'+hrefFor(h)+'"><strong>'+n+'</strong><small>'+d+'</small></a></li>').join('')+'</ul></section>').join('')+'</div>';
- }
- renderSections();
- document.body.appendChild(sheet);
- let lastFocus=null;
- function openSheet(){if(sheet.open)return;lastFocus=document.activeElement;sheet.showModal();document.body.classList.add('wlm-sheet-open');}
- function closeSheet(){if(sheet.open)sheet.close();}
- sheet.addEventListener('click',e=>{if(e.target===sheet||e.target.closest('[data-close]'))closeSheet();});
- sheet.addEventListener('close',()=>{
-  document.body.classList.remove('wlm-sheet-open');
-  if(lastFocus?.isConnected&&lastFocus.getClientRects().length)lastFocus.focus({preventScroll:true});
-  else document.querySelector('#searchButton, .wl-brand')?.focus({preventScroll:true});
- });
- matchMedia('(max-width: 900px)').addEventListener('change',event=>{if(!event.matches)closeSheet();});
+ // 2) The all-sections sheet is the shared registry drawer (site-nav.js).
 
  // 3) Mobile bottom tab bar
  const tab=document.createElement('nav');tab.className='wlm-tabbar';tab.dataset.languageManaged='';
  const items=[
   {k:'home',l:['الرئيسية','Home'],h:'/',active:isHome},
   {k:'live',l:['عاجل','Breaking'],h:isHome?'#breakingSection':'/#breakingSection',cls:'wlm-tab--live'},
-  {k:'grid',l:['الأقسام','Sections'],btn:openSheet,dialog:'wlmSections'},
+  {k:'grid',l:['الأقسام','Sections'],btn:openSheet,dialog:'siteDrawer'},
   {k:'search',l:['بحث','Search'],btn:()=>{const s=document.getElementById('searchButton');if(s)s.click();else location.href='/news/';},dialog:document.getElementById('searchOverlay')?.id},
   {k:'user',l:['حسابي','Account'],h:'/account.html',active:/account\.html$/.test(path)}
  ];
@@ -109,7 +78,6 @@
  const syncTab=()=>{
   tab.setAttribute('aria-label',t('التنقل الرئيسي','Main navigation'));
   items.forEach((item,i)=>{tab.children[i].querySelector('span').textContent=t(...item.l);});
-  renderSections();
  };
  tab.setAttribute('aria-label',t('التنقل الرئيسي','Main navigation'));
  document.addEventListener('wrldline:language',syncTab);

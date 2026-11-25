@@ -6,11 +6,12 @@ const read = (name) => fs.readFileSync(new URL(name, new URL("../", import.meta.
 const story = "/originals/saudi-ports-2025.html";
 const dossier = "/dossier/opec-plus-december-2026.html";
 
-test("coverage priorities link to a dossier, the first original and the watchlist", () => {
+test("the sections directory links to a dossier, the originals desk and the watchlist", () => {
   const focus = read("sections.html");
-  for (const target of ["/originals/", story, `${dossier}#reader-brief`, "/dossier/watchlist.html"]) {
+  for (const target of ["originals/index.html", "dossier/index.html", "dossier/watchlist.html"]) {
     assert.ok(focus.includes(`href="${target}"`), target);
   }
+  assert.ok(read("originals/index.html").includes(`href="${story}"`), "the first original is linked from its hub");
   assert.match(read("analysis.html"), /href="dossier\/watchlist\.html"/);
   for (const href of [story, "/originals/"]) {
     assert.ok(read("sitemap.xml").includes(`<loc>https://al-ghaib.us.ci${href}</loc>`));

@@ -6,34 +6,28 @@ const path = require("node:path");
 
 const read = (file) => fs.readFileSync(path.join(__dirname, "..", file), "utf8");
 
-test("homepage keeps the three lead desks, directory and analysis in primary navigation", () => {
+const registry = require(path.join(__dirname, "..", "site-sections.js"));
+
+const hrefsIn = markup => [...markup.matchAll(/<a\b[^>]*href="([^"]+)"/g)].map(match => match[1]);
+
+test("the homepage paints the primary bar from the section registry", () => {
   const html = read("index.html");
-  const primaryStart = html.indexOf('<div class="wl-nav-scroll">');
-  const primaryEnd = html.indexOf("</div>", primaryStart);
-  const menuStart = html.indexOf('<div class="wl-more-menu" id="moreMenu">');
-  const menuEnd = html.indexOf("\n          </div>\n        </div>", menuStart);
-  const primary = html.slice(primaryStart, primaryEnd);
-  const more = html.slice(menuStart, menuEnd);
-  assert.ok(primaryStart >= 0 && primaryEnd > primaryStart, "primary navigation exists");
-  assert.ok(menuStart >= 0 && menuEnd > menuStart, "More menu exists");
-
-  const primaryLinks = [...primary.matchAll(/<a\b[^>]*href="([^"]+)"/g)].map(match => match[1]);
-  assert.deepEqual(primaryLinks, [
-    "index.html",
-    "/section/politics",
-    "rights.html",
-    "/section/economy",
-    "/section/tech",
-    "/section/world",
-    "shorts.html",
-    "sections.html"
-  ]);
-
-  assert.deepEqual([...more.matchAll(/<a\b[^>]*href="([^"]+)"/g)].map(match => match[1]),
-    ["#breakingSection", "/news/", "office-edition.html", "shorts.html", "daily-briefing.html", "history.html", "analysis.html", "sections.html#knowledge-sections"]);
+  const primary = html.match(/<div class="wl-nav-scroll" data-nav="primary">([\s\S]*?)<\/div>/)?.[1] || "";
+  assert.ok(primary, "primary navigation container exists");
+  assert.deepEqual(hrefsIn(primary), registry.pick(registry.PRIMARY_NAV).map(item => item.href));
+  for (const item of registry.pick(registry.PRIMARY_NAV)) {
+    assert.ok(primary.includes(`lang="en">${item.en.replace(/&/g, "&amp;")}<`), item.en);
+  }
   assert.match(html, /<span lang="ar">المزيد<\/span><span lang="en">More<\/span>/);
-  assert.match(html, /href="analysis\.html#tools"/);
-  assert.doesNotMatch(html, /class="wl-desk-grid"|id="promisesPreview"|id="explainersRail"/);
+});
+
+test("the More menu adds features without repeating the sections directory", () => {
+  const html = read("index.html");
+  const more = html.match(/<div class="wl-more-menu" id="moreMenu" data-nav="more">([\s\S]*?)<\/div>/)?.[1] || "";
+  assert.ok(more, "More menu container exists");
+  assert.deepEqual(hrefsIn(more), registry.pick(registry.MORE_MENU).map(item => item.href));
+  assert.ok(!hrefsIn(more).includes("sections.html"), "the directory stays in the primary bar, not the More menu");
+  assert.ok(!hrefsIn(more).some(href => href.includes("sections.html#")), "no fragment shortcuts to the directory");
 });
 
 test("specialist tools are reachable from one hub and not repeated in mobile navigation", () => {
@@ -44,8 +38,8 @@ test("specialist tools are reachable from one hub and not repeated in mobile nav
     assert.ok(hub.includes(`href="${route}"`), route);
     assert.ok(!mobile.includes(`['${route}'`), route);
   }
-  assert.match(mobile, /Six editorial priorities/);
-  assert.match(mobile, /\['analysis\.html'/);
+  assert.doesNotMatch(mobile, /sections=\(\)=>\[/, "wl-modern.js keeps no section list of its own");
+  assert.match(mobile, /WLSiteNav\.open\(\)/);
 });
 
 test("More menu stays usable on narrow screens and can scroll", () => {
@@ -57,11 +51,12 @@ test("More menu stays usable on narrow screens and can scroll", () => {
   assert.match(css, /\.wl-nav-wrap\.is-open \.wl-more-menu/);
 });
 
-test("navigation links close both the More menu and mobile navigation", () => {
-  const js = read("home.js");
-  const handler = js.match(/navWrap\?\.addEventListener\("click", e => \{([\s\S]*?)\n  \}\);/)?.[1] || "";
-  assert.match(handler, /closeMore\(\)/);
-  assert.match(handler, /navWrap\.classList\.remove\("is-open", "mobile-open"\)/);
+test("navigation links close both the More menu and the drawer", () => {
+  const js = read("site-nav.js");
+  assert.match(js, /menu\.classList\.remove\("is-open"\)/);
+  assert.match(js, /menu\.addEventListener\("click", event => \{ if \(event\.target\.closest\("a"\)\) close\(\); \}\)/);
+  assert.match(js, /function closeDrawer\(\)/);
+  assert.match(js, /if \(event\.target\.closest\("a"\)\) closeDrawer\(\)/);
 });
 
 test("narrative balance labels source names as coverage indicators, not proof of independence", () => {

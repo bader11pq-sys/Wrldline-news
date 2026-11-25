@@ -4,7 +4,7 @@
  * the language switch is progressive enhancement.
  */
 import { createRequire } from "node:module";
-import { writeFileSync } from "node:fs";
+import { readFileSync, writeFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 
@@ -39,39 +39,16 @@ function knowledgeGroup(group) {
 }
 
 
-// The six coverage priorities that predate the registry stay on this page as a
-// supplementary reading path; they are not separate desks and keep their anchors.
-function priorities() {
-  const desk = (id, num, ar, en, note, links) => `<section class="hn-desk" id="${id}"><span aria-hidden="true">${num}</span><div>
-    <h2>${ar}</h2><p class="sec-priority-en" lang="en">${en}</p><p>${note}</p>
-    <nav aria-label="${ar}">${links}</nav>
-  </div></section>`;
-  const a = (href, ar, en) => `<a href="${href}">${bi(ar, en)}</a>`;
-  return `<section class="sec-priorities" id="coverage-priorities" aria-labelledby="coverage-priorities-heading">
-  <div class="sec-section-head"><h2 id="coverage-priorities-heading">${bi("أولويات التغطية", "Coverage priorities")}</h2>
-    <p>${bi("ستة مسارات تحريرية تخدم الصحيفة منذ إطلاقها، مرتبطة بأقسامها الرئيسية. وجودها هنا لا يعني أنها أقسام مستقلة.", "Six editorial priorities the paper has followed since launch, each tied to its main desk. Their presence here does not make them separate desks.")}</p></div>
-  <div class="hn-desks">
-    ${desk("politics-economy", "01", "السياسة والعلاقات الدولية", "Politics and international relations", "قرارات الحكومات والانتخابات والدبلوماسية، وما تعنيه التطورات الدولية للمنطقة.", a("/section/politics", "أخبار السياسة", "Politics news") + a("/section/world", "أخبار العالم", "World news") + a("/section/security", "الأمن والدفاع", "Security and defence"))}
-    ${desk("rights", "02", "الحقوق والحريات", "Rights and freedoms", "الحريات المدنية والسياسية والعدالة والقانون. نفرّق بين النص القانوني وتطبيقه، وبين الاتهام والحكم.", '<span id="justice-law" aria-hidden="true"></span>' + a("/section/rights", "أخبار الحقوق والحريات", "Rights news") + a("rights.html", "مكتب الحقوق والحريات", "Rights desk") + a("rights-cases/index.html", "ملفات القضايا", "Case files"))}
-    ${desk("economy", "03", "الاقتصاد والطاقة والتجارة", "Economy, energy and trade", "النفط والغاز والشحن والأسعار والعمل. نتابع أثر القرارات الاقتصادية على كلفة المعيشة والتجارة.", a("/section/economy", "أخبار الاقتصاد", "Economy news") + a("/dossier/opec-plus-december-2026.html#reader-brief", "ملف أوبك+", "OPEC+ dossier") + a("/originals/saudi-ports-2025.html", "تحليل الموانئ السعودية", "Saudi ports analysis"))}
-    ${desk("people-society", "04", "المجتمع والثقافة والشؤون الشبابية", "Society, culture and youth", "التعليم والعمل والصحة والثقافة، وكيف تؤثر هذه القضايا في فرص الشباب وحياتهم اليومية.", a("/section/society", "أخبار المجتمع", "Society news") + a("/section/culture", "الثقافة", "Culture") + a("/section/health", "الصحة", "Health") + a("/section/sports", "الرياضة", "Sport"))}
-    ${desk("world", "05", "الخليج والعالم العربي", "The Gulf and the Arab world", "مختارات من تغطية المنطقة، من القرارات التي تمسّ سكانها إلى أثر الأحداث الإقليمية على بلدانها.", a("index.html?country=SAU#newsSection", "أخبار السعودية", "Saudi news") + a("dossier/bab-al-mandab-2026.html", "ملف باب المندب", "Bab al-Mandab dossier") + a("rights-cases/jordan-expression.html", "ملف حرية التعبير في الأردن", "Jordan expression case") + a("/dossier/watchlist.html", "متابعة التطورات الإقليمية", "Regional watchlist"))}
-    ${desk("tech-science", "06", "التقنية والعلوم وتأثيرها على المنطقة", "Technology, science and the region", "البحث العلمي والذكاء الاصطناعي والبنية الرقمية، مع توضيح ما تثبته النتائج وما تعنيه للمنطقة.", a("/section/tech", "أخبار التقنية", "Tech news") + a("/section/science", "أخبار العلوم", "Science news") + a("context.html#ai-governance", "خلفية: حوكمة الذكاء الاصطناعي", "Background: AI governance"))}
-  </div>
-  <div class="hn-note sec-note"><span id="investigations" aria-hidden="true"></span><span id="rights-knowledge" aria-hidden="true"></span>
-    <h3>${bi("التحقيقات والتوثيق والمعرفة الحقوقية", "Investigations, documentation and rights knowledge")}</h3>
-    <p>${bi("تخدم هذه المسارات أكثر من قسم.", "These paths serve more than one desk.")} <a href="/originals/">${bi("إنتاج الصحيفة الأصلي", "Original journalism")}</a> · <a href="analysis.html">${bi("مكتب الفهم والتحليل", "Analysis desk")}</a> · <a href="rights.html#rightsGuides">${bi("الأدلة الحقوقية المبسّطة", "Plain-language rights guides")}</a></p>
-  </div>
-</section>`;
-}
+const nav = registry.pick(registry.PRIMARY_NAV)
+  .map(item => `<a href="${esc(item.href)}"${item.key === "sections" ? ' aria-current="page"' : ""}>${bi(esc(item.ar), esc(item.en))}</a>`).join("");
 
-const nav = [
-  ["index.html#newsSection", "الأخبار", "News"],
-  ["sections.html", "الأقسام", "Sections"],
-  ["daily-briefing.html", "الملخص اليومي", "Daily Briefing"],
-  ["history.html", "الموسوعة التاريخية", "Historical Encyclopedia"],
-  ["analysis.html", "الفهم والتحليل", "Analysis"]
-].map(([href, ar, en]) => `<a href="${href}"${href === "sections.html" ? ' aria-current="page"' : ""}>${bi(ar, en)}</a>`).join("");
+const groupSection = (group, headingId) => `<section class="sec-group-block" aria-labelledby="${headingId}" id="${esc(group.key)}">
+  <div class="sec-section-head"><h2 id="${headingId}">${bi(esc(group.ar), esc(group.en))}</h2><p>${bi(esc(group.arIntro), esc(group.enIntro))}</p></div>
+  <ul class="sec-links sec-links--wide">${group.items.map(item => `<li><a class="sec-link" href="${esc(item.href)}" data-section-link>${bi(esc(item.ar), esc(item.en))}</a><span>${bi(esc(item.arNote), esc(item.enNote))}</span></li>`).join("")}</ul>
+</section>`;
+
+const footerNav = registry.SITE_GROUP.items
+  .map(item => `<a href="${esc(item.href)}">${bi(esc(item.ar), esc(item.en))}</a>`).join("");
 
 const html = `<!doctype html>
 <html lang="ar" dir="rtl">
@@ -104,6 +81,8 @@ const html = `<!doctype html>
       <nav class="sec-jump" aria-label="Jump">
         <a href="#news-sections">${bi("الأقسام الإخبارية", "News sections")}</a>
         <a href="#knowledge-sections">${bi("المعرفة والتحليل", "Knowledge & analysis")}</a>
+        <a href="#tools">${bi("البيانات والخرائط", "Data & maps")}</a>
+        <a href="#services">${bi("خدمات القارئ", "Reader services")}</a>
         <a href="news/">${bi("أرشيف الأخبار", "News archive")}</a>
       </nav>
     </header>
@@ -114,7 +93,6 @@ const html = `<!doctype html>
       <div class="sec-grid">${registry.NEWS_SECTIONS.map(newsCard).join("\n")}</div>
     </section>
 
-    ${priorities()}
 
     <section aria-labelledby="knowledge-sections-heading" id="knowledge-sections">
       <div class="sec-section-head"><h2 id="knowledge-sections-heading">${bi("المعرفة والتحليل", "Knowledge & analysis")}</h2>
@@ -122,12 +100,16 @@ const html = `<!doctype html>
       <div class="sec-groups">${registry.KNOWLEDGE_GROUPS.map(knowledgeGroup).join("\n")}</div>
     </section>
 
+    ${groupSection(registry.TOOL_GROUP, "tools-heading")}
+    ${groupSection(registry.SERVICE_GROUP, "services-heading")}
+    ${groupSection(registry.SITE_GROUP, "site-heading")}
+
     <section class="sec-note" aria-labelledby="sec-note-heading">
       <h2 id="sec-note-heading">${bi("كيف تُبنى هذه الخريطة؟", "How this map is built")}</h2>
       <p>${bi("مصدر واحد لخريطة الأقسام يغذّي هذه الصفحة وشريط التنقّل وصفحات الأقسام، لذا تظهر الشجرة نفسها بالعربية والإنجليزية. تُحوَّل الروابط القديمة مثل /section/energy و/section/ai إلى القسم الذي يغطيها بدل أن تصبح أقساماً مكرّرة.", "A single section registry feeds this page, the navigation and the section pages, so the same tree appears in Arabic and English. Legacy links such as /section/energy and /section/ai redirect to the desk that covers them instead of becoming duplicate sections.")}</p>
     </section>
   </main>
-  <footer class="sec-footer"><div class="sec-wrap"><span lang="en" dir="ltr">WRLDLINE News</span><nav aria-label="Policies"><a href="about.html">${bi("عن الموقع", "About")}</a><a href="corrections.html">${bi("التصحيحات", "Corrections")}</a><a href="privacy.html">${bi("الخصوصية", "Privacy")}</a><a href="contact.html">${bi("التواصل", "Contact")}</a></nav></div></footer>
+  <footer class="sec-footer"><div class="sec-wrap"><span lang="en" dir="ltr">WRLDLINE News</span><nav aria-label="Policies">${footerNav}</nav></div></footer>
   <script src="language.js?v=20261126-sections" defer></script>
   <script src="sections.js?v=20261126-1" defer></script>
 </body>
@@ -136,3 +118,39 @@ const html = `<!doctype html>
 
 writeFileSync(join(root, "sections.html"), html);
 console.log("sections.html written:", html.length, "bytes");
+
+/* The homepage ships the same navigation server-side so it works before (and
+ * without) JavaScript. site-nav.js repaints the identical hrefs at runtime. */
+const hrefFor = item => esc(item.href);
+const staticNav = registry.pick(registry.PRIMARY_NAV)
+  .map(item => `<a href="${hrefFor(item)}" class="wl-nav-link" data-section-link>${bi(esc(item.ar), esc(item.en))}</a>`).join("");
+const staticMore = registry.pick(registry.MORE_MENU)
+  .map(item => `<a href="${hrefFor(item)}"><span class="wl-more-icon"><svg aria-hidden="true"><use href="#i-${item.key === "daily-briefing" ? "sun" : item.key === "history" ? "book" : item.key === "map" ? "map" : item.key === "markets" ? "chart" : item.key === "shorts" ? "layers" : item.key === "for-you" ? "user" : item.key === "context-room" ? "compass" : "spark"}"/></svg></span><span>${bi(esc(item.ar), esc(item.en))}<small>${bi(esc(item.arNote), esc(item.enNote))}</small></span></a>`).join("");
+const staticFooter = registry.FOOTER_COLUMNS.map(column => `<div class="footer-col"><h3>${bi(esc(column.ar), esc(column.en))}</h3>${registry.pick(column.items).map(item => `<a href="${esc(item.href)}">${bi(esc(item.ar), esc(item.en))}</a>`).join("")}</div>`).join("");
+
+const indexPath = join(root, "index.html");
+let indexHtml = readFileSync(indexPath, "utf8");
+const inject = (html, marker, inner) => {
+  const pattern = new RegExp(`(<!--registry:${marker}-->)[\\s\\S]*?(<!--/registry:${marker}-->)`);
+  if (!pattern.test(html)) throw new Error(`index.html is missing the registry:${marker} marker`);
+  return html.replace(pattern, `$1${inner}$2`);
+};
+indexHtml = inject(inject(inject(indexHtml, "primary", staticNav), "more", staticMore), "footer", staticFooter);
+writeFileSync(indexPath, indexHtml);
+console.log("index.html navigation prerendered");
+
+/* The public worker renders its own HTML, so it cannot read the browser
+ * registry at runtime. Export the same registry data as a generated module:
+ * one source of truth, checked for freshness by tests/site-navigation.test.cjs. */
+const workerData = {
+  version: registry.VERSION,
+  routes: registry.SECTION_ROUTES,
+  primary: registry.pick(registry.PRIMARY_NAV),
+  more: registry.pick(registry.MORE_MENU),
+  footer: registry.FOOTER_COLUMNS
+};
+writeFileSync(
+  join(root, "cloudflare/workers/wrldline-public/sections.generated.js"),
+  `/* GENERATED FILE - do not edit. Source: site-sections.js (${registry.VERSION}).\n * Regenerate with: node scripts/build-sections.mjs */\nexport const SECTION_ROUTES = ${JSON.stringify(workerData.routes, null, 2)};\nexport const PRIMARY_NAV = ${JSON.stringify(workerData.primary, null, 2)};\nexport const MORE_MENU = ${JSON.stringify(workerData.more, null, 2)};\nexport const FOOTER_COLUMNS = ${JSON.stringify(workerData.footer, null, 2)};\nexport const REGISTRY_VERSION = ${JSON.stringify(workerData.version)};\n`
+);
+console.log("worker registry module written");

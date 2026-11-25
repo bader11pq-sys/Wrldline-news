@@ -7,11 +7,11 @@ const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs/promises');
 const path = require('node:path');
+const { loadWorkerModule } = require('./helpers/load-worker.mjs');
 
 const ROOT = path.resolve(__dirname, '..');
 const SHA = 'a'.repeat(40);
-const modulePromise = fs.readFile(path.join(ROOT, 'cloudflare/workers/wrldline-public/worker.js'), 'utf8')
-  .then(code => import('data:text/javascript;base64,' + Buffer.from(code).toString('base64')));
+const modulePromise = loadWorkerModule(path.join(ROOT, 'cloudflare/workers/wrldline-public'));
 
 function harness(env) {
   const calls = [];

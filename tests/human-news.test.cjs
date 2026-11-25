@@ -77,21 +77,20 @@ test("source URLs must be HTTPS and free of credentials", () => {
   }
 });
 
-test("the six priorities appear in order and link to existing content", () => {
+test("the six desks appear in order and link to existing content", () => {
   const sections = read("sections.html");
-  assert.deepEqual([...sections.matchAll(/<section class="hn-desk"[^>]*>[\s\S]*?<h2>([^<]+)<\/h2>/g)].map(match => match[1]), [
-    "السياسة والعلاقات الدولية", "الحقوق والحريات", "الاقتصاد والطاقة والتجارة",
-    "المجتمع والثقافة والشؤون الشبابية", "الخليج والعالم العربي", "التقنية والعلوم وتأثيرها على المنطقة"
-  ]);
+  const registry = require(resolve(root, "site-sections.js"));
+  assert.deepEqual([...sections.matchAll(/<article class="sec-card" id="desk-[^"]+">[\s\S]*?<h2><a class="sec-title"[^>]*><span lang="ar">([^<]+)<\/span>/g)].map(match => match[1]),
+    registry.NEWS_SECTIONS.map(section => section.ar));
   const homepage = read("index.html");
   assert.match(homepage, /الأخبار من أجل الإنسان/);
-  assert.match(homepage, /class="wl-nav-link wl-nav-sections" href="sections\.html"/);
+  assert.match(homepage, /<div class="wl-nav-scroll" data-nav="primary">[\s\S]*href="sections\.html"/);
   assert.doesNotMatch(sections, /<iframe\b/i);
   for (const [, src] of sections.matchAll(/<script\b[^>]*src="([^"]+)"/gi)) {
     assert.ok(existsSync(resolve(root, src.split("?")[0])), `Missing script ${src}`);
   }
-  assert.match(sections, /href="index\.html\?country=SAU#newsSection"/);
-  for (const id of ["justice-law", "investigations", "rights-knowledge"]) assert.ok(sections.includes(`id="${id}"`));
+  assert.match(sections, /href="countries\.html"/, "country browsing is still one click from the directory");
+  for (const id of ["news-sections", "knowledge-sections", "tools", "services"]) assert.ok(sections.includes(`id="${id}"`), id);
   for (const [, link] of sections.matchAll(/href="([^"#][^"]*)"/g)) {
     if (link.startsWith("https://")) continue;
     const path = link.split(/[?#]/)[0].replace(/^\/+/, "");

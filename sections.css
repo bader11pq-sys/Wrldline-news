@@ -82,3 +82,9 @@ html[lang="en"] .sections-page [lang="ar"]{display:none}
 .sec-priorities .hn-desk nav a{text-decoration:underline;text-underline-offset:3px}
 .sec-priorities .hn-note{font-size:14px;margin-top:18px}
 @media(max-width:640px){.sec-priorities{padding:18px}}
+
+/* Registry groups: data tools, reader services, about & policies */
+.sec-group-block{padding-block:30px;border-top:1px solid var(--line)}
+.sec-group-block .sec-section-head{margin-bottom:14px}
+.sec-links--wide{grid-template-columns:repeat(auto-fit,minmax(240px,1fr))}
+@media (max-width:560px){.sec-links--wide{grid-template-columns:1fr}}

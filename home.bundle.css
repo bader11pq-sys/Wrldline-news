@@ -849,6 +849,63 @@ body.modal-open{overflow:hidden}
 }
 .wl-head-actions .wl-edition-link{width:auto;min-width:0;min-height:36px;padding-inline:9px;font-size:12px;white-space:nowrap}
 
+/* ==========================================================================
+   Registry-driven navigation (site-nav.js + site-sections.js)
+   One hierarchy, four surfaces: primary bar, More menu, drawer, footer.
+   ========================================================================== */
+[data-nav] [lang="en"],.wl-drawer [lang="en"]{display:none}
+html[lang="en"] [data-nav] [lang="ar"],html[lang="en"] .wl-drawer [lang="ar"]{display:none}
+html[lang="en"] [data-nav] [lang="en"],html[lang="en"] .wl-drawer [lang="en"]{display:inline}
+.wl-nav-link,.wl-more-menu a,.footer-col a,.wl-drawer a{text-decoration:none}
+
+.footer-cols{display:contents}
+/* Footer: five registry columns beside the masthead block. */
+.footer-main{grid-template-columns:1.2fr repeat(5,minmax(0,1fr))}
+.footer-col h3{font-size:11px;color:#fff;letter-spacing:.06em;margin-bottom:10px;font-family:var(--font-body);font-weight:700}
+.footer-col a{display:block;font-size:11px;color:#aebccd;padding:4px 0;line-height:1.5}
+
+/* Drawer */
+.wl-drawer{position:fixed;inset:0;margin:0;padding:0;width:100%;height:100%;max-width:none;max-height:none;border:0;background:transparent;color:inherit}
+.wl-drawer:not([open]){display:none}
+.wl-drawer::backdrop{background:rgba(6,16,26,.55)}
+.wl-drawer-panel{position:absolute;inset-block:0;inset-inline-start:0;display:flex;flex-direction:column;width:min(440px,100%);height:100%;background:var(--surface);border-inline-end:1px solid var(--line);box-shadow:var(--shadow-lg)}
+.wl-drawer-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px 18px;border-bottom:1px solid var(--line);flex:none}
+.wl-drawer-head h2{margin:0;font-family:var(--font-display);font-size:16px;font-weight:700;color:var(--ink)}
+.wl-drawer-close{width:40px;height:40px;border-radius:10px;border:1px solid var(--line);background:var(--surface);color:var(--ink-2);display:grid;place-items:center;cursor:pointer;flex:none}
+.wl-drawer-close svg{width:18px;height:18px}
+.wl-drawer-body{overflow-y:auto;overscroll-behavior:contain;padding:6px 10px 28px;flex:1;-webkit-overflow-scrolling:touch}
+.wl-drawer-block{padding:10px 6px;border-bottom:1px solid var(--line)}
+.wl-drawer-block:last-child{border-bottom:0}
+.wl-drawer-group{margin:6px 4px 8px;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:700}
+.wl-drawer-list{display:grid;gap:1px}
+.wl-drawer-link{display:flex;align-items:center;min-height:42px;padding:9px 10px;border-radius:9px;font-size:13.5px;font-weight:600;color:var(--ink-2)}
+.wl-drawer-link:hover,.wl-drawer-link.is-active{background:var(--surface-2);color:var(--ink)}
+.wl-drawer-link.is-active{color:var(--gold-strong)}
+.wl-drawer-link.is-sub{font-weight:500;font-size:13px;color:var(--ink-2);padding-inline-start:18px}
+.wl-drawer-desks{display:grid;gap:2px}
+.wl-drawer-desk{border-radius:10px}
+.wl-drawer-desk>summary{display:flex;align-items:center;justify-content:space-between;min-height:44px;padding:10px 10px;border-radius:10px;font-size:14px;font-weight:700;color:var(--ink);cursor:pointer;list-style:none}
+.wl-drawer-desk>summary::-webkit-details-marker{display:none}
+.wl-drawer-desk>summary::after{content:"⌄";color:var(--muted);font-size:14px;transition:transform .18s}
+.wl-drawer-desk[open]>summary::after{transform:rotate(180deg)}
+.wl-drawer-desk>summary:hover{background:var(--surface-2)}
+.wl-drawer-sub{display:grid;gap:1px;padding:2px 0 6px}
+.wl-drawer-directory{display:inline-flex;align-items:center;min-height:40px;margin:6px 4px 0;font-size:12.5px;font-weight:700;color:var(--gold-strong)}
+body.wl-drawer-open{overflow:hidden}
+
+/* The old collapsible nav row is gone: the hamburger opens the drawer. */
+@media (max-width:760px){
+  .wl-nav-wrap.mobile-open,.wl-nav-wrap.is-open{display:none}
+}
+@media (max-width:1100px){
+  .footer-main{grid-template-columns:1.4fr repeat(3,minmax(0,1fr))}
+  .footer-main .footer-col:last-child{display:block}
+}
+@media (max-width:640px){
+  .footer-main{grid-template-columns:1fr 1fr}
+  .wl-drawer-panel{width:100%}
+}
+
 /* site-enhancements.css */
 /* WRLDLINE 2026 — cross-site product polish */
 :root{--wl-focus:var(--gold,#a97f35);--wl-glass:color-mix(in srgb,var(--surface,#fff) 86%,transparent)}

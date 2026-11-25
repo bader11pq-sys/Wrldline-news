@@ -158,7 +158,7 @@
 
   <header class="wl-header" id="siteHeader">
     <div class="wl-container wl-masthead">
-      <button class="wl-icon-btn wl-mobile-menu" id="menuButton" aria-label="فتح القائمة" aria-expanded="false" aria-controls="mainNav"><svg aria-hidden="true"><use href="#i-menu"/></svg></button>
+      <button class="wl-icon-btn wl-mobile-menu" id="menuButton" aria-label="فتح كل الأقسام" aria-expanded="false" data-wl-drawer-open aria-controls="siteDrawer"><svg aria-hidden="true"><use href="#i-menu"/></svg></button>
       <a class="wl-brand" href="index.html">
         <span class="wl-brand-mark" aria-hidden="true"><img src="/assets/brand/wrldline-symbol-small.webp" alt="" width="44" height="34"></span>
         <span class="wl-brand-copy"><strong>WRLDLINE</strong><small>NEWS</small></span>
@@ -175,28 +175,10 @@
     </div>
     <div class="wl-nav-wrap" id="mainNav">
       <nav class="wl-container wl-nav" aria-label="الأقسام الرئيسية">
-        <div class="wl-nav-scroll">
-          <a class="wl-nav-link nav-link is-active" href="index.html" data-category="all" aria-current="page">الرئيسية</a>
-          <a class="wl-nav-link nav-link" href="/section/politics">سياسة</a>
-          <a class="wl-nav-link wl-nav-rights" href="rights.html" hreflang="ar" data-language-managed><span lang="ar">الحقوق والحريات</span><span lang="en">Rights &amp; freedoms</span></a>
-          <a class="wl-nav-link nav-link" href="/section/economy">اقتصاد</a>
-          <a class="wl-nav-link nav-link" href="/section/tech">تقنية</a>
-          <a class="wl-nav-link nav-link" href="/section/world">عالم</a>
-          <a class="wl-nav-link" href="shorts.html" hreflang="ar" data-language-managed><span lang="ar">ريلز</span><span lang="en">Reels</span></a>
-          <a class="wl-nav-link wl-nav-sections" href="sections.html" hreflang="ar" data-language-managed><span lang="ar">الأقسام</span><span lang="en">Sections</span></a>
-        </div>
+        <div class="wl-nav-scroll" data-nav="primary"><!--registry:primary--><a href="index.html" class="wl-nav-link" data-section-link><span lang="ar">الرئيسية</span><span lang="en">Home</span></a><a href="/section/politics" class="wl-nav-link" data-section-link><span lang="ar">السياسة والعالم</span><span lang="en">Politics &amp; World</span></a><a href="/section/economy" class="wl-nav-link" data-section-link><span lang="ar">الاقتصاد والطاقة</span><span lang="en">Economy &amp; Energy</span></a><a href="/section/rights" class="wl-nav-link" data-section-link><span lang="ar">الحقوق والحريات</span><span lang="en">Rights &amp; Freedoms</span></a><a href="/section/tech" class="wl-nav-link" data-section-link><span lang="ar">التقنية والعلوم</span><span lang="en">Technology &amp; Science</span></a><a href="/section/society" class="wl-nav-link" data-section-link><span lang="ar">المجتمع والثقافة والرياضة</span><span lang="en">Society, Culture &amp; Sport</span></a><a href="/section/environment" class="wl-nav-link" data-section-link><span lang="ar">البيئة والمناخ</span><span lang="en">Environment &amp; Climate</span></a><a href="sections.html" class="wl-nav-link" data-section-link><span lang="ar">الأقسام</span><span lang="en">Sections</span></a><!--/registry:primary--></div>
         <div class="wl-nav-more">
         <button class="wl-more-btn" id="moreButton" type="button" aria-expanded="false" aria-controls="moreMenu" data-language-managed><span lang="ar">المزيد</span><span lang="en">More</span> <svg aria-hidden="true"><use href="#i-chevron"/></svg></button>
-          <div class="wl-more-menu" id="moreMenu">
-            <a href="#breakingSection"><span class="wl-more-icon"><svg aria-hidden="true"><use href="#i-bolt"/></svg></span><span>عاجل</span></a>
-            <a href="/news/"><span class="wl-more-icon"><svg aria-hidden="true"><use href="#i-book"/></svg></span><span>الأرشيف</span></a>
-            <a href="office-edition.html"><span class="wl-more-icon"><svg aria-hidden="true"><use href="#i-layers"/></svg></span><span>نشرة غرفة الأخبار</span></a>
-            <a href="shorts.html"><span class="wl-more-icon"><svg aria-hidden="true"><use href="#i-layers"/></svg></span><span>WRLDLINE Shorts<small>موجز عمودي سريع</small></span></a>
-            <a href="daily-briefing.html"><span class="wl-more-icon"><svg aria-hidden="true"><use href="#i-sun"/></svg></span><span>الملخص اليومي</span></a>
-            <a href="history.html"><span class="wl-more-icon"><svg aria-hidden="true"><use href="#i-book"/></svg></span><span>الموسوعة التاريخية</span></a>
-            <a href="analysis.html"><span class="wl-more-icon"><svg aria-hidden="true"><use href="#i-book"/></svg></span><span>الفهم والتحليل</span></a>
-            <a href="sections.html#knowledge-sections"><span class="wl-more-icon"><svg aria-hidden="true"><use href="#i-compass"/></svg></span><span>كل الأقسام</span></a>
-          </div>
+          <div class="wl-more-menu" id="moreMenu" data-nav="more"><!--registry:more--><a href="daily-briefing.html"><span class="wl-more-icon"><svg aria-hidden="true"><use href="#i-sun"/></svg></span><span><span lang="ar">الملخص اليومي</span><span lang="en">Daily Briefing</span><small><span lang="ar">ما حدث وما يعنيه، في قراءة واحدة.</span><span lang="en">What happened and why it matters, in one read.</span></small></span></a><a href="history.html"><span class="wl-more-icon"><svg aria-hidden="true"><use href="#i-book"/></svg></span><span><span lang="ar">الموسوعة التاريخية</span><span lang="en">Historical Encyclopedia</span><small><span lang="ar">الدول والعصور والفصول والمصادر.</span><span lang="en">Countries, eras, chapters and sources.</span></small></span></a><a href="analysis.html"><span class="wl-more-icon"><svg aria-hidden="true"><use href="#i-spark"/></svg></span><span><span lang="ar">مكتب الفهم والتحليل</span><span lang="en">Analysis desk</span><small><span lang="ar">بوابة التحليل والسياق والأدوات.</span><span lang="en">The gateway to analysis, context and tools.</span></small></span></a><a href="context.html"><span class="wl-more-icon"><svg aria-hidden="true"><use href="#i-compass"/></svg></span><span><span lang="ar">غرفة السياق</span><span lang="en">Context room</span><small><span lang="ar">خلفيات ومراجع لكل قضية.</span><span lang="en">Background and references for each issue.</span></small></span></a><a href="map.html"><span class="wl-more-icon"><svg aria-hidden="true"><use href="#i-map"/></svg></span><span><span lang="ar">مرصد العالم</span><span lang="en">World monitor</span><small><span lang="ar">خريطة تفاعلية للأحداث والمخاطر.</span><span lang="en">An interactive map of events and risk signals.</span></small></span></a><a href="markets.html"><span class="wl-more-icon"><svg aria-hidden="true"><use href="#i-chart"/></svg></span><span><span lang="ar">الأسواق العالمية</span><span lang="en">World markets</span><small><span lang="ar">مؤشرات وأسعار محدّثة مع مصدرها.</span><span lang="en">Live indices and prices with their source.</span></small></span></a><a href="shorts.html"><span class="wl-more-icon"><svg aria-hidden="true"><use href="#i-layers"/></svg></span><span><span lang="ar">ريلز WRLDLINE</span><span lang="en">WRLDLINE Shorts</span><small><span lang="ar">موجز عمودي سريع.</span><span lang="en">Short vertical briefings.</span></small></span></a><a href="for-you.html"><span class="wl-more-icon"><svg aria-hidden="true"><use href="#i-user"/></svg></span><span><span lang="ar">صفحتك الشخصية</span><span lang="en">For you</span><small><span lang="ar">تغطية مرتّبة حسب ما تقرأ.</span><span lang="en">Coverage ordered by what you read.</span></small></span></a><!--/registry:more--></div>
         </div>
         <span class="wl-progress" id="readProgress" aria-hidden="true"></span>
       </nav>
@@ -593,18 +575,7 @@
           <a class="wl-brand footer-brand" href="index.html"><img class="footer-logo" src="/assets/brand/wrldline-logo-main.jpg" alt="WRLDLINE NEWS" width="420" height="145" loading="lazy" decoding="async"></a>
           <p class="footer-about" data-language-managed><span lang="ar">الأخبار من أجل الإنسان. منصة إعلامية عربية مستقلة للأخبار والتحقيقات والتوثيق والتوعية بالحقوق والحريات.</span><span lang="en">News for people. Independent Arab journalism, investigations, documentation, and rights education.</span></p>
         </div>
-        <div class="footer-col">
-          <h3>غرف الأخبار</h3>
-          <a href="index.html">الرئيسية</a><a href="sections.html">أقسام الصحيفة</a><a href="rights.html" hreflang="ar" data-language-managed><span lang="ar">الحقوق والحريات</span><span lang="en">Rights &amp; freedoms</span></a><a href="/news/">الأرشيف</a><a href="#breakingSection">العاجل</a>
-        </div>
-        <div class="footer-col">
-          <h3>المعرفة</h3>
-          <a href="analysis.html">الفهم والتحليل</a><a href="originals/index.html">من تحرير WRLDLINE</a><a href="sources.html">دليل المصادر</a>
-        </div>
-        <div class="footer-col">
-          <h3>الموقع</h3>
-          <a href="about.html" data-editorial-page="about">المعايير التحريرية</a><a href="sections.html">الأقسام</a><a href="tags.html">الوسوم</a><a href="advertise.html">للمعلنين</a><a href="contact.html">التواصل</a><a href="privacy.html">الخصوصية</a><a href="terms.html">الشروط</a><a href="corrections.html" data-editorial-page="corrections">التصحيحات</a><a href="newsletter.html">النشرة</a>
-        </div>
+        <div class="footer-cols" data-nav="footer"><!--registry:footer--><div class="footer-col"><h3><span lang="ar">الأقسام الإخبارية</span><span lang="en">News sections</span></h3><a href="/section/politics"><span lang="ar">السياسة والعالم</span><span lang="en">Politics &amp; World</span></a><a href="/section/economy"><span lang="ar">الاقتصاد والطاقة</span><span lang="en">Economy &amp; Energy</span></a><a href="/section/rights"><span lang="ar">الحقوق والحريات</span><span lang="en">Rights &amp; Freedoms</span></a><a href="/section/tech"><span lang="ar">التقنية والعلوم</span><span lang="en">Technology &amp; Science</span></a><a href="/section/society"><span lang="ar">المجتمع والثقافة والرياضة</span><span lang="en">Society, Culture &amp; Sport</span></a><a href="/section/environment"><span lang="ar">البيئة والمناخ</span><span lang="en">Environment &amp; Climate</span></a></div><div class="footer-col"><h3><span lang="ar">المعرفة والتحليل</span><span lang="en">Knowledge &amp; analysis</span></h3><a href="daily-briefing.html"><span lang="ar">الملخص اليومي</span><span lang="en">Daily Briefing</span></a><a href="history.html"><span lang="ar">الموسوعة التاريخية</span><span lang="en">Historical Encyclopedia</span></a><a href="analysis.html"><span lang="ar">مكتب الفهم والتحليل</span><span lang="en">Analysis desk</span></a><a href="context.html"><span lang="ar">غرفة السياق</span><span lang="en">Context room</span></a><a href="explainers.html"><span lang="ar">افهمها في دقيقة</span><span lang="en">Explained in a minute</span></a><a href="reading.html"><span lang="ar">مسارات القراءة</span><span lang="en">Reading paths</span></a></div><div class="footer-col"><h3><span lang="ar">الأدوات والبيانات</span><span lang="en">Tools &amp; data</span></h3><a href="map.html"><span lang="ar">مرصد العالم</span><span lang="en">World monitor</span></a><a href="news-map.html"><span lang="ar">خريطة تغطية الأخبار</span><span lang="en">News coverage map</span></a><a href="countries.html"><span lang="ar">الدول والملفات القطرية</span><span lang="en">Countries &amp; profiles</span></a><a href="markets.html"><span lang="ar">الأسواق العالمية</span><span lang="en">World markets</span></a><a href="sources.html"><span lang="ar">دليل المصادر</span><span lang="en">Source directory</span></a><a href="tags.html"><span lang="ar">الوسوم</span><span lang="en">Tags</span></a></div><div class="footer-col"><h3><span lang="ar">خدمات القارئ</span><span lang="en">Reader services</span></h3><a href="for-you.html"><span lang="ar">صفحتك الشخصية</span><span lang="en">For you</span></a><a href="index.html?saved=1"><span lang="ar">المحفوظات</span><span lang="en">Saved articles</span></a><a href="account.html#preferencesSection"><span lang="ar">الأقسام والدول المتابعة والتنبيهات</span><span lang="en">Followed sections, countries &amp; alerts</span></a><a href="account.html"><span lang="ar">الحساب والاشتراك</span><span lang="en">Account &amp; subscription</span></a><a href="newsletter.html"><span lang="ar">النشرة البريدية</span><span lang="en">Newsletter</span></a></div><div class="footer-col"><h3><span lang="ar">عن الموقع</span><span lang="en">About</span></h3><a href="about.html"><span lang="ar">المعايير التحريرية</span><span lang="en">Editorial standards</span></a><a href="corrections.html"><span lang="ar">التصحيحات وحق الرد</span><span lang="en">Corrections &amp; right of reply</span></a><a href="contact.html"><span lang="ar">التواصل</span><span lang="en">Contact</span></a><a href="advertise.html"><span lang="ar">الإعلان والرعاية</span><span lang="en">Advertising &amp; sponsorship</span></a><a href="privacy.html"><span lang="ar">الخصوصية</span><span lang="en">Privacy</span></a><a href="terms.html"><span lang="ar">شروط الاستخدام</span><span lang="en">Terms</span></a></div><!--/registry:footer--></div>
       </div>
       <div id="homePrivacyControls"></div>
       <div class="footer-bottom">
@@ -653,6 +624,8 @@
   <script src="script.js?v=20261125-early-feed" defer></script>
   <script src="newsroom-data.js?v=20261114-1" defer></script>
   <script src="newsroom.js?v=20261120-feedfast1" defer></script>
+  <script src="site-sections.js?v=nav-3" defer></script>
+  <script src="site-nav.js?v=nav-3" defer></script>
   <script src="home.js?v=20261123-reader-start" defer></script>
   <script src="newsroom-edition.js?v=20261123-reader-start" defer></script>
   <script src="intelligence.js?v=20261114-1" defer></script>

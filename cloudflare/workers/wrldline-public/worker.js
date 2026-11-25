@@ -1,4 +1,5 @@
 /* WRLDLINE public summary SSR. Module Worker; no service-role key or user sessions. */
+import { SECTION_ROUTES, PRIMARY_NAV as REGISTRY_PRIMARY_NAV } from "./sections.generated.js";
 /** @typedef {Record<string, unknown> & {id: string, published_at: string}} PublicArticle */
 /** @typedef {{title: string, description: string, body: string, canonical?: string, alternatesFor?: string, lang?: string, image?: string, schema?: Record<string, unknown> | null, noindex?: boolean, enhance?: boolean, currentPath?: string}} PageOptions */
 /** @typedef {{SUPABASE_URL?: string, SUPABASE_ANON_KEY?: string, PUBLIC_TRUST_ENABLED?: string, ENVIRONMENT?: string, GIT_COMMIT?: string, DEPLOYED_AT?: string, WORKER_SERVICE?: string}} WorkerEnv */
@@ -18,25 +19,35 @@ const SECTION_ALIASES = new Map([
   ["freedoms", "rights"], ["human-rights", "rights"], ["justice", "rights"],
   ["education", "society"]
 ]);
-/* Editorial sections. A section page is a real, indexable page with an
-   introduction, the latest published stories, and a clear statement of what the
-   desk covers. `key` must match public.articles.category. */
-export const SECTIONS = [
-  { slug: "politics", key: "politics", ar: "سياسة", en: "Politics", parent: null, intro: "القرار السياسي والعلاقات الدولية والانتخابات، وما يعنيه كل ذلك للخليج والعالم العربي.", introEn: "Political decisions, diplomacy, elections, and what they mean for the Gulf and the Arab world." },
-  { slug: "economy", key: "economy", ar: "اقتصاد", en: "Economy", parent: null, intro: "الطاقة والتجارة والشحن والأسواق والتضخم والموازنات، بأرقام منسوبة إلى مصادرها.", introEn: "Energy, trade, shipping, markets, inflation and budgets, with every figure attributed to its source." },
-  { slug: "world", key: "world", ar: "حول العالم", en: "World", parent: "politics", intro: "التطورات الدولية التي تمسّ المنطقة أو تقدّم مقارنة مفيدة للقارئ العربي.", introEn: "International developments that affect the region or offer a useful comparison for the Arab reader." },
-  { slug: "security", key: "security", ar: "أمن ودفاع", en: "Security & defence", parent: "politics", intro: "النزاعات والعمليات العسكرية والاتفاقيات الأمنية، مع فصل ما تحقق عمّا لم يتحقق.", introEn: "Conflicts, military operations and security agreements, separating what is established from what is not." },
-  { slug: "society", key: "society", ar: "مجتمع", en: "Society", parent: null, intro: "التعليم والصحة والعمل والسكن والخدمات، ومن يصل إليها ومن يُستبعد منها.", introEn: "Education, health, work, housing and public services: who reaches them and who is left out." },
-  { slug: "environment", key: "environment", ar: "بيئة", en: "Environment", parent: null, intro: "المناخ والطاقة النظيفة والمياه والكربون، وأثر السياسات البيئية على الاقتصاد الخليجي.", introEn: "Climate, clean energy, water and carbon, and how environmental policy lands on Gulf economies." },
-  { slug: "tech", key: "tech", ar: "تقنية", en: "Technology", parent: null, intro: "التقنية والذكاء الاصطناعي والبنية الرقمية، وتأثيرها على المنطقة والأفراد.", introEn: "Technology, AI and digital infrastructure, and their effect on the region and its people." },
-  { slug: "culture", key: "culture", ar: "ثقافة", en: "Culture", parent: "society", intro: "الثقافة والمجتمع والهوية، بعيداً عن أخبار المشاهير.", introEn: "Culture, society and identity, away from celebrity coverage." },
-  { slug: "science", key: "science", ar: "علوم", en: "Science", parent: "tech", intro: "العلوم والبحث والصحة العامة بلغة مفهومة ودون مبالغة.", introEn: "Science, research and public health in plain language, without exaggeration." },
-  { slug: "health", key: "health", ar: "صحة", en: "Health", parent: "society", intro: "الصحة العامة والسياسات الصحية وحق الوصول إلى الرعاية.", introEn: "Public health, health policy and the right to access care." },
-  { slug: "sports", key: "sports", ar: "رياضة", en: "Sport", parent: "society", intro: "المنافسات والفرق والأحداث الرياضية، بوصفها شأناً عاماً لا صفحة نتائج فقط.", introEn: "Competitions, teams and sporting events as public affairs, not just a results page." },
-  { slug: "rights", key: "rights", ar: "الحقوق والحريات", en: "Rights & freedoms", parent: null, intro: "الحريات المدنية والسياسية والعدالة والقانون، مع فصل الاتهام عن الحكم.", introEn: "Civil and political freedoms, justice and the law, keeping accusation separate from verdict." }
-];
+/* Editorial sections. Generated from site-sections.js by
+   scripts/build-sections.mjs, so the worker cannot drift from the navigation
+   registry: one hierarchy, one set of labels, one set of parents. `key` must
+   match public.articles.category. */
+export const SECTIONS = SECTION_ROUTES;
 const SECTION_BY_SLUG = new Map(SECTIONS.map(section => [section.slug, section]));
 const SECTION_BY_KEY = new Map(SECTIONS.map(section => [section.key, section]));
+
+/* Renders the public news bar from the same registry the client-side
+   navigation uses. Static pages get a leading slash; the language edition is
+   carried as ?lang=en so the bar never points at a different page set. */
+function registryNav(l, currentPath) {
+  const withLang = href => {
+    let out = href === "index.html" ? "/" : href.startsWith("/") ? href : `/${href}`;
+    if (l.en) out += out.includes("?") ? "&lang=en" : "?lang=en";
+    return out;
+  };
+  const newsHref = withLang("/news");
+  const items = [
+    REGISTRY_PRIMARY_NAV.find(item => item.key === "home"),
+    { href: "/news", ar: "الأرشيف", en: "Archive" },
+    ...REGISTRY_PRIMARY_NAV.filter(item => item.key !== "home")
+  ].filter(Boolean);
+  return items.map(item => {
+    const href = item.href === "/news" ? newsHref : withLang(item.href);
+    const current = currentPath && (currentPath === href.replace(/\?lang=en$/, "") || currentPath === href) ? ' aria-current="page"' : "";
+    return `<a href="${escapeHTML(href)}"${current}>${escapeHTML(l.en ? item.en : item.ar)}</a>`;
+  }).join("");
+}
 
 const ARCHIVE_LANES = {
   all: { ar: "كل الأخبار", en: "All published", note: "عربي ودولي مختار", noteEn: "Arabic and vetted international" },
@@ -233,7 +244,7 @@ ${enhance ? '<link rel="stylesheet" href="/article-trust.css?v=20261125-upd"><sc
   const html = `<!doctype html><html lang="${escapeHTML(lang)}" dir="${direction}" data-theme="dark"><head>${head}</head><body class="wl-public-news">
 <a class="skip-link" href="#mainContent">${l.en ? "Skip to content" : "تجاوز إلى المحتوى"}</a>
 <header class="wl-header public-news-header"><div class="wl-container wl-masthead"><a class="wl-brand" href="/" aria-label="WRLDLINE NEWS"><span class="wl-brand-mark" aria-hidden="true">W</span><span class="wl-brand-copy"><strong>WRLDLINE</strong><small>GLOBAL NEWS NETWORK</small></span></a><a class="wl-account" href="/account.html">${l.en ? "My account" : "حسابي"}</a></div>
-<nav class="wl-container public-news-nav" aria-label="${l.en ? "News navigation" : "تصفح الأخبار"}"><a href="/${l.en ? "?lang=en" : ""}">${l.home}</a><a href="/news/${l.en ? "?lang=en" : ""}"${currentPath === "/news/" ? ' aria-current="page"' : ""}>${l.news}</a><a href="/section/politics">${l.en ? "Politics" : "سياسة"}</a><a href="/section/rights">${l.en ? "Rights & freedoms" : "الحقوق والحريات"}</a><a href="/section/economy">${l.en ? "Economy" : "اقتصاد"}</a><a href="/shorts.html" hreflang="ar">${l.en ? "Reels" : "ريلز"}</a><a href="/sections.html" hreflang="ar">${l.en ? "Explore" : "استكشف"}</a></nav></header>
+<nav class="wl-container public-news-nav" aria-label="${l.en ? "News navigation" : "تصفح الأخبار"}">${registryNav(l, currentPath)}</nav></header>
 <main class="public-news-main" id="mainContent">${body}</main>
 <footer class="public-news-footer"><div class="wl-container"><p class="pn-gate-note">${l.gate}</p>WRLDLINE NEWS · <a href="/about.html">${l.en ? "Editorial policy" : "السياسة التحريرية"}</a> · <a href="/corrections.html">${l.en ? "Corrections" : "التصحيحات"}</a> · <a href="/rss.xml">RSS</a> · <a href="/atom.xml">Atom</a></div></footer></body></html>`;
   return { html, nonce };

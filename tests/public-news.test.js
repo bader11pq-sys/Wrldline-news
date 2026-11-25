@@ -2,14 +2,14 @@ const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs/promises');
 const path = require('node:path');
+const { loadWorkerModule } = require('./helpers/load-worker.mjs');
 const vm = require('node:vm');
 const reader = require('../reader-prose.js');
 const ROOT = path.resolve(__dirname, '..');
 const NOW = new Date('2026-11-15T04:00:00.000Z');
 const ORIGIN = 'https://al-ghaib.us.ci';
 const ENV = { SUPABASE_URL: 'https://fixture.supabase.co', SUPABASE_ANON_KEY: 'sb_publishable_fixture' };
-const modulePromise = fs.readFile(path.join(ROOT, 'cloudflare/workers/wrldline-public/worker.js'), 'utf8')
-  .then(code => import('data:text/javascript;base64,' + Buffer.from(code).toString('base64')));
+const modulePromise = loadWorkerModule(path.join(ROOT, 'cloudflare/workers/wrldline-public'));
 const id = n => '00000000-0000-4000-8000-' + n.toString(16).padStart(12, '0');
 const article = (n = 1, extra = {}) => ({ id: id(n), title: 'خبر منشور ' + n, summary: 'ملخص منشور قصير مع تفاصيل مسندة إلى المصدر.', author: null, lang: 'ar', category: 'world', country: 'العالم', source_name: 'Fixture News', source_url: 'https://source.example/story/' + n, published_at: new Date(NOW.getTime() - n * 60000).toISOString(), is_breaking: false, verification: 'unconfirmed', editorial_status: 'published', ...extra });
 function json(data, status = 200) { return new Response(JSON.stringify(data), { status, headers: { 'Content-Type': 'application/json' } }); }
@@ -362,7 +362,9 @@ test('a real category still names its section in Arabic', async () => {
   const { renderArticle } = await modulePromise;
   const html = await renderArticle(article(8, { category: 'economy' }), NOW).text();
   const schema = JSON.parse(html.match(/<script[^>]*application\/ld\+json[^>]*>([\s\S]*?)<\/script>/)[1]);
-  assert.equal(schema.articleSection, 'اقتصاد');
+  // The label comes from site-sections.js via sections.generated.js, so the
+  // section page and the navigation use the same editorial name.
+  assert.equal(schema.articleSection, 'الاقتصاد والطاقة');
   assert.match(html, /href="\/section\/economy"/);
 });
 
