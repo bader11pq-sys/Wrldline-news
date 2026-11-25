@@ -7,8 +7,8 @@
   const originalLanguage = $("originalArticleLanguage");
   const composer = $("articleComposer");
   const MAX = 1000000, SECTION = 24000, FIELD = 36000;
-  let timer, key, restore, dirty = false;
-  let parts = [""], current = 0;
+  let timer, saveTimer, key, restore, dirty = false;
+  let parts = [""], current = 0, partWords = [], partChars = [];
   const storageKey = user => "wrldline:working-draft:" + user;
   $("editorJumps").after(composer);
   const draftOption = document.createElement("option");
@@ -18,6 +18,12 @@
   function getBody() {
     parts[current] = body.value;
     return parts.join("");
+  }
+  const countWords = value => (String(value || "").match(/\S+/gu) || []).length;
+  function measureCurrent() {
+    parts[current] = body.value;
+    partWords[current] = countWords(body.value);
+    partChars[current] = body.value.length;
   }
   function splitParts(text) {
     const sections = [];
@@ -49,6 +55,8 @@
   }
   function setBody(value, position = 0) {
     parts = splitParts(String(value ?? "").replace(/\r\n?/g, "\n"));
+    partWords = parts.map(countWords);
+    partChars = parts.map(part => part.length);
     current = 0;
     while (current + 1 < parts.length && position > parts[current].length) position -= parts[current++].length;
     body.value = parts[current];
@@ -64,17 +72,20 @@
     body.focus();
   }
   function updateCount() {
-    const pattern = /\S+/gu;
-    const text = getBody();
-    let words = 0;
-    while (pattern.exec(text)) words++;
-    $("composeCount").textContent = `${numeric(text.length)} / ${numeric(MAX)} حرف · ${numeric(words)} كلمة`;
+    measureCurrent();
+    const chars = partChars.reduce((sum, n) => sum + n, 0);
+    const words = partWords.reduce((sum, n) => sum + n, 0);
+    $("composeCount").textContent = `${numeric(chars)} / ${numeric(MAX)} حرف · ${numeric(words)} كلمة`;
     syncParts();
   }
   function persist() {
     if (!key || !dirty) return;
     const text = getBody();
     if (!title.value.trim() && !text.trim()) return;
+    if (text.length > 400000) {
+      $("workingDraftStatus").textContent = "النص أطول من أن يُحفظ تلقائيًا في المتصفح. احفظ مسودة خاصة من زر الحفظ.";
+      return;
+    }
     try {
       localStorage.setItem(key, JSON.stringify({ id: $("articleId").value, title: title.value, body: text, language: originalLanguage?.value }));
       $("workingDraftStatus").textContent = "حُفظ العنوان والنص على هذا الجهاز.";
@@ -85,14 +96,16 @@
   function changed() {
     dirty = true;
     $("workingDraftStatus").textContent = "تغييرات غير محفوظة…";
-    clearTimeout(timer);
+    clearTimeout(timer); clearTimeout(saveTimer);
+    // Counting only the visible part keeps typing responsive on long articles.
     timer = setTimeout(() => {
-      updateCount(); persist();
+      updateCount();
       if (!$("composePreview").hidden) preview(true, false);
-    }, 500);
+    }, 250);
+    saveTimer = setTimeout(persist, 1200);
   }
   function markClean() {
-    clearTimeout(timer);
+    clearTimeout(timer);clearTimeout(saveTimer);
     dirty = false;
     fileStatus("");
     updateCount();
@@ -152,6 +165,7 @@
     const full = getBody();
     if (full.length >= MAX) return;
     parts.push(full && !full.endsWith("\n") && full.length + 2 <= MAX ? "\n\n" : "");
+    partWords.push(0); partChars.push(0);
     selectPart(parts.length - 1);
     body.setSelectionRange(body.value.length, body.value.length);
     changed();
