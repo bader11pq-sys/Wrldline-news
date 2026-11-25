@@ -64,7 +64,7 @@ async def main():
                 # the shared registry drawer, which is the only all-sections sheet.
                 chips = page.locator(".wlm-chips")
                 await expect(chips.locator('a[href="/section/rights"]')).to_have_text("Rights & Freedoms")
-                await expect(chips.locator('a[href="/section/politics"]')).to_have_text("Politics")
+                await expect(chips.locator('a[href="/section/politics"]')).to_have_text("Politics & World")
                 await expect(chips.locator('a[href="sections.html"]')).to_have_count(1)
                 sections_tab = page.locator('.wlm-tab[aria-controls="siteDrawer"]')
                 await sections_tab.click()
