@@ -82,7 +82,7 @@
     if (!key || !dirty) return;
     const text = getBody();
     if (!title.value.trim() && !text.trim()) return;
-    if (text.length > 400000) {
+    if (text.length > 1000000) {
       $("workingDraftStatus").textContent = "النص أطول من أن يُحفظ تلقائيًا في المتصفح. احفظ مسودة خاصة من زر الحفظ.";
       return;
     }

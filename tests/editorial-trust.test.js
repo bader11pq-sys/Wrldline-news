@@ -126,6 +126,8 @@ test("all current browser article and embedded translation projections fit safe 
  const sql=read("supabase/migrations/20261115030000_editorial_trust.sql");
  const lists=[...sql.matchAll(/allowed:=array\[([\s\S]*?)\];/g)].map(m=>new Set([...m[1].matchAll(/'([^']+)'/g)].map(x=>x[1])));
  assert.equal(lists.length,2);const [articles,translations]=lists;
+ const gateGrant=read("supabase/migrations/20261125160000_editor_identity_gate.sql").match(/grant select \(([^)]+)\) on table public\.articles to authenticated/);
+ assert.ok(gateGrant,"gate columns are granted to editors");for(const column of gateGrant[1].split(","))articles.add(column.trim());
  const check=(projection,label)=>{
   assert.doesNotMatch(projection,/\*/);
   projection=projection.replace(/article_translations\(([^)]+)\)/g,(_,cols)=>{for(const column of cols.split(","))assert.ok(translations.has(column.trim()),label+" translation "+column);return "";});
