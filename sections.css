@@ -1,7 +1,7 @@
 /* WRLDLINE sections directory. Logical properties keep RTL and LTR identical. */
 :root{
   --sec-bg:#f7f4ec;--sec-surface:#fffdf7;--sec-ink:#151a21;--sec-muted:#5d6570;
-  --sec-line:#d9d2c3;--sec-gold:#9a6b1f;--sec-deep:#101b2d;
+  --sec-line:#d9d2c3;--sec-gold:#7a5316;--sec-deep:#101b2d;
 }
 *{box-sizing:border-box}
 html{scroll-behavior:smooth}
