@@ -189,10 +189,10 @@
     const pick = ["paris-15", "sdgs", "ai-act", "saudi-vision"].map(id => data.promises.find(p => p.id === id)).filter(Boolean);
     host.innerHTML = pick.map(p => {
       const [label, cls] = NR.statusMeta(p.status);
-      return '<a class="wl-promise wl-promise--' + p.status + '" href="promises.html#' + p.id + '">' +
+      return '<a class="wl-promise wl-promise--' + NR.escapeHTML(p.status) + '" href="promises.html#' + encodeURIComponent(p.id) + '">' +
         '<div class="wl-promise-top"><span class="wl-status ' + cls + '">' + label + '</span><span class="wl-promise-meta" style="border:0;padding:0;margin:0">' + NR.escapeHTML(p.area) + "</span></div>" +
         "<h3>" + NR.escapeHTML(p.promise) + "</h3>" +
-        '<div class="wl-progress-bar"><i style="width:' + p.progress + '%"></i></div>' +
+        '<div class="wl-progress-bar"><i style="width:' + (Math.max(0, Math.min(100, Number(p.progress) || 0))) + '%"></i></div>' +
         '<div class="wl-promise-meta"><span>' + NR.escapeHTML(p.who) + "</span><span>الموعد: " + NR.escapeHTML(p.due) + "</span></div>" +
       "</a>";
     }).join("");
