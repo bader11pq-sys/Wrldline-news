@@ -20,6 +20,10 @@
     "SL.UEM.TOTL.ZS": { group: "economy", unit: "pct", ar: "البطالة (% من القوى العاملة، تقدير منظمة العمل الدولية)", en: "Unemployment (% of labor force, ILO estimate)" },
     "NE.TRD.GNFS.ZS": { group: "economy", unit: "pct", ar: "التجارة (% من الناتج المحلي)", en: "Trade (% of GDP)" },
     "PA.NUS.FCRF": { group: "economy", unit: "lcu", ar: "سعر الصرف الرسمي (عملة محلية لكل دولار، متوسط الفترة)", en: "Official exchange rate (LCU per US$, period average)" },
+    "BN.CAB.XOKA.GD.ZS": { group: "dashboard", unit: "pct", ar: "رصيد الحساب الجاري (% من الناتج المحلي)", en: "Current account balance (% of GDP)" },
+    "BX.KLT.DINV.WD.GD.ZS": { group: "dashboard", unit: "pct", ar: "صافي تدفقات الاستثمار الأجنبي المباشر (% من الناتج المحلي)", en: "FDI net inflows (% of GDP)" },
+    "GC.DOD.TOTL.GD.ZS": { group: "dashboard", unit: "pct", ar: "دين الحكومة المركزية (% من الناتج المحلي)", en: "Central government debt (% of GDP)" },
+    "NY.GNP.PCAP.PP.CD": { group: "dashboard", unit: "intl", ar: "نصيب الفرد من الدخل القومي (تعادل القوة الشرائية، دولار دولي)", en: "GNI per capita, PPP (current international $)" },
     "AG.SRF.TOTL.K2": { group: "geography", unit: "num", ar: "المساحة الإجمالية (كم²)", en: "Surface area (sq. km)" },
     "SP.POP.TOTL": { group: "society", unit: "num", ar: "عدد السكان", en: "Population, total" },
     "SP.POP.GROW": { group: "society", unit: "pct", ar: "نمو السكان (سنوي)", en: "Population growth (annual %)" },
@@ -33,7 +37,7 @@
     "GOV_WGI_RL.EST": { group: "politics", unit: "score", ar: "سيادة القانون (مؤشر الحوكمة، من -2.5 إلى +2.5 تقريباً)", en: "Rule of law (governance estimate, about -2.5 to +2.5)" },
     "GOV_WGI_VA.EST": { group: "politics", unit: "score", ar: "الصوت والمساءلة (مؤشر الحوكمة، من -2.5 إلى +2.5 تقريباً)", en: "Voice and accountability (governance estimate, about -2.5 to +2.5)" }
   };
-  const GROUPS = ["economy", "politics", "society", "science", "geography"];
+  const GROUPS = ["economy", "politics", "society", "science", "geography", "dashboard"];
 
   function indicatorsIn(group) { return Object.keys(INDICATORS).filter((id) => INDICATORS[id].group === group); }
   function isCountryCode(code) { return /^[A-Za-z]{3}$/.test(String(code || "")); }
@@ -95,6 +99,7 @@
     const nf = (o) => new Intl.NumberFormat(loc, o).format(value);
     switch (unit) {
       case "usd": return Math.abs(value) >= 1e6 ? "US$ " + nf({ notation: "compact", maximumFractionDigits: 2 }) : "US$ " + nf({ maximumFractionDigits: 0 });
+      case "intl": return "Int$ " + nf({ maximumFractionDigits: 0 });
       case "pct": return nf({ maximumFractionDigits: 1 }) + "%";
       case "years": return nf({ maximumFractionDigits: 1 });
       case "num": return Math.abs(value) >= 1e6 ? nf({ notation: "compact", maximumFractionDigits: 2 }) : nf({ maximumFractionDigits: 0 });
@@ -141,6 +146,22 @@
     } finally { if (timer) clearTimeout(timer); }
   }
 
+  /** Several countries for one indicator. The API rejects the whole request when one code is unknown, so
+   * a failed combined request is retried per country and failures are reported instead of hidden. */
+  async function fetchIndicatorMulti(options, env) {
+    const list = [...new Set([].concat(options.countries || []).map((c) => String(c).toUpperCase()))];
+    const combined = await fetchIndicator(Object.assign({}, options, { countries: list }), env);
+    if (combined.ok || list.length < 2 || combined.error === "invalid_request") return Object.assign({ failed: combined.ok ? [] : list }, combined);
+    const parts = await Promise.all(list.map((c) => fetchIndicator(Object.assign({}, options, { countries: [c] }), env)));
+    const okParts = parts.filter((r) => r.ok);
+    return {
+      ok: okParts.length > 0, rows: okParts.flatMap((r) => r.rows),
+      lastUpdated: okParts.map((r) => r.lastUpdated).filter(Boolean).sort().pop() || null,
+      fetchedAt: okParts.map((r) => r.fetchedAt).filter(Boolean).sort().pop() || null,
+      failed: list.filter((c, i) => !parts[i].ok), source: SOURCE, indicator: options.indicator, error: okParts.length ? null : combined.error
+    };
+  }
+
   async function fetchCountry(iso3, env) {
     const e = Object.assign({ fetch: typeof fetch === "function" ? fetch : null, storage: null, now: Date.now() }, env || {});
     const key = "wl:wb:" + countryUrl(iso3), hit = cacheGet(e.storage, key, e.now);
@@ -157,5 +178,5 @@
   }
 
   return Object.freeze({ BASE, SOURCE, INDICATORS, GROUPS, indicatorsIn, buildUrl, countryUrl, parseIndicator, parseCountry,
-    series, latest, change, formatValue, fetchIndicator, fetchCountry });
+    series, latest, change, formatValue, fetchIndicator, fetchIndicatorMulti, fetchCountry });
 });

@@ -88,3 +88,16 @@ fieldset.wp-card legend{font:700 .95rem var(--font-display);color:var(--ink);pad
 .wp-page{min-inline-size:0}.wp-page>*{min-inline-size:0;max-inline-size:100%}
 .wp-chart{margin:0}
 .wp-dl dd{justify-self:start;text-align:start}
+
+/* economy dashboard */
+.wp-controls{margin-block-end:16px}
+.wp-chips{display:flex;flex-wrap:wrap;gap:8px;list-style:none;margin:0 0 12px;padding:0}
+.wp-chip.is-on{padding-inline-end:4px}
+.wp-chip-link{color:inherit;text-decoration:none}
+.wp-chip-x{border:0;background:rgba(255,255,255,.2);color:inherit;border-radius:50%;inline-size:26px;block-size:26px;cursor:pointer;font-size:1rem;line-height:1}
+.wp-chip-x:disabled{opacity:.4;cursor:not-allowed}.wp-chip-x:focus-visible{outline:3px solid var(--blue);outline-offset:1px}
+.wp-year{font-size:.78rem;color:var(--muted)}
+.wp-table th,.wp-table td{padding:8px 10px;text-align:start;border-block-end:1px solid var(--line);vertical-align:top}
+.wp-table thead th{font-size:.8rem;color:var(--muted);white-space:nowrap}
+.wp-table-wrap{overflow-x:auto;max-inline-size:100%}
+.wp-market-group{margin-block-end:14px}

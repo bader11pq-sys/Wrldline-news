@@ -72,6 +72,7 @@ def run():
                     check(page.locator("#overview p[lang=en]").count() == 1, "translated summary is tagged English")
                     check(page.locator("#overview dd[lang=en]").count() >= 1, "english values")
                 check(no_horizontal_overflow(page), "profile overflow " + tag)
+                check(not re.search(r"(^|\s)(null|undefined)(\s|$)", page.locator("#cApp").inner_text()), "no stray null text")
                 # follow stored locally for anonymous visitors
                 page.locator("#followBtn").click()
                 check(page.evaluate("JSON.parse(localStorage.getItem('wl:follows:v1')).country") == ["SAU"], "follow stored")
