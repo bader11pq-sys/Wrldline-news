@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { classifyError, parseRetryAfter, backoffMs, extractJson, CircuitBreaker, orderProviders,
-  estimateCostUsd, runWithFallback, ERROR_KINDS as K } from "../supabase/functions/_shared/ai-router.mjs";
+  estimateCostUsd, runWithFallback, redact, statusFromError, ERROR_KINDS as K } from "../supabase/functions/_shared/ai-router.mjs";
 
 test("classifies provider errors", () => {
   assert.equal(classifyError(401), K.AUTH);
@@ -56,4 +56,46 @@ test("retries transient errors then succeeds; invalid output falls through; tota
   const bad = await runWithFallback({ providers: [{ name: "p" }], task: "t", request: {}, sleep: async () => {},
     call: async () => ({ ok: true, text: "garbage" }) });
   assert.equal(bad.ok, false); assert.equal(bad.attempts[0].kind, K.INVALID_OUTPUT);
+});
+
+test("extractJson matches production parser behaviours", () => {
+  assert.deepEqual(extractJson('<think>{"x":0}</think>{"title":"a,}","n":1,}'), { title: "a,}", n: 1 });
+  assert.deepEqual(extractJson('{"t":"line\nbreak"}'), { t: "line\nbreak" });
+  assert.deepEqual(extractJson('{"a":{"b":"}"}} trailing'), { a: { b: "}" } });
+  assert.equal(extractJson("[1,2]"), null);
+  assert.equal(extractJson(undefined), null);
+});
+test("redact removes credentials", () => {
+  const r = redact('Authorization: Bearer abcdefghijklmnop1234 api_key="ZZZZZZZZZZZZ" gsk_abcdefghijklmnopqrstu');
+  assert.ok(!/abcdefghijklmnop1234|ZZZZZZZZZZZZ|gsk_abcdefghij/.test(r), r);
+});
+test("status inference and DeepL 456", () => {
+  assert.equal(statusFromError(new Error("Groq API 429: slow")), 429);
+  assert.equal(statusFromError({ status: 503 }), 503);
+  assert.equal(statusFromError("boom"), 0);
+  assert.equal(classifyError(456), K.QUOTA);
+});
+test("persists cooldown via callback and honours custom cooldown", async () => {
+  const cds = [];
+  const out = await runWithFallback({ providers: [{ name: "a" }, { name: "b" }], task: "t", request: {}, sleep: async () => {},
+    cooldownFor: (p, kind) => (p.name === "a" ? 5000 : null), onCooldown: (n, ms, kind) => cds.push([n, ms, kind]),
+    call: async (p) => p.name === "a" ? { ok: false, status: 500, error: "x" } : { ok: true, json: { ok: 1 } } });
+  assert.equal(out.provider, "b"); assert.deepEqual(cds[0].slice(0, 2), ["a", 5000]);
+});
+test("telemetry errors never break routing and attempts hold no secrets", async () => {
+  const out = await runWithFallback({ providers: [{ name: "a" }], task: "t", request: {}, onUsage: () => { throw new Error("db down"); },
+    call: async () => ({ ok: true, json: { v: 1 } }) });
+  assert.equal(out.ok, true);
+  const f = await runWithFallback({ providers: [{ name: "a" }], task: "t", request: {}, maxRetries: 0,
+    call: async () => ({ ok: false, status: 401, error: "bad Bearer sk-abcdefghijklmnopqrstuvwxyz" }) });
+  assert.ok(!JSON.stringify(f).includes("abcdefghijklmnopqrstuvwxyz"));
+});
+test("deadline stops retry sleeping", async () => {
+  let t = 0, calls = 0;
+  const out = await runWithFallback({ providers: [{ name: "a" }], task: "t", request: {}, deadlineMs: 100, now: () => t,
+    sleep: async (ms) => { t += ms; }, random: () => 1, call: async () => { calls++; t += 60; return { ok: false, status: 503 }; } });
+  assert.equal(out.ok, false); assert.ok(calls <= 2);
+});
+test("stable order for equal priority", () => {
+  assert.deepEqual(orderProviders([{ name: "x" }, { name: "y" }, { name: "z" }], "t").map((p) => p.name), ["x", "y", "z"]);
 });
