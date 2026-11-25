@@ -92,12 +92,20 @@ for (const [route, label] of ROUTES) {
 
 const changed = rows.filter(r => !r.same);
 
+// Markdown table cells must not be able to break the table or the code span.
+const cell = (value, limit = LIMIT * 4) => String(value)
+  .replace(/\\/g, '\\\\')
+  .replace(/\|/g, '\\|')
+  .replace(/`/g, "'")
+  .replace(/\r?\n/g, ' ')
+  .slice(0, limit);
+
 if (MARKDOWN) {
   console.log('| Route | Left | Right | Same output | Note |');
   console.log('| --- | --- | --- | --- | --- |');
   for (const r of rows) {
-    const note = (r.difference || '').slice(0, LIMIT * 4).replace(/\|/g, '\\|');
-    console.log(`| \`${r.route}\` | ${r.left.status} | ${r.right.status} | ${r.same ? 'yes' : '**no**'} | ${note || '—'} |`);
+    const note = cell(r.difference || '');
+    console.log(`| ${cell(r.route, 60)} | ${r.left.status} | ${r.right.status} | ${r.same ? 'yes' : '**no**'} | ${note || '—'} |`);
   }
   console.log(`\n${changed.length} of ${rows.length} routes differ.`);
 } else {
