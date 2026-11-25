@@ -17,7 +17,7 @@ import urllib.parse
 import urllib.request
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_DIR = ROOT / "artifacts" / "design-discovery"
 PROMPT = """You are a senior editorial product designer auditing public news-site screenshots.
 Analyze the supplied desktop and mobile screenshots as design references for Worldline News.
