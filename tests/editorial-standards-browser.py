@@ -101,7 +101,8 @@ async def test_handoff(browser):
     await p.get_by_role("button", name="Decline or withdraw").click()
     await p.goto(f"{SITE}/?lang=en")
     await expect(p.locator('a[data-editorial-page="about"]')).to_have_attribute("href", "/about-en.html")
-    await expect(p.locator('a[data-editorial-page="about"]')).to_have_text("Editorial standards")
+    # Registry links carry both languages; the English span is the visible label on /?lang=en.
+    await expect(p.locator('a[data-editorial-page="about"] span[lang="en"]')).to_have_text("Editorial standards")
     await p.locator("#newsGrid .reader-story-link").first.click()
     await expect(p.locator("#articleModal h1")).to_have_text(TITLE)
     await p.get_by_role("link", name="Report an error", exact=True).click()
