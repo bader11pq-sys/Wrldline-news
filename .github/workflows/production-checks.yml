@@ -51,6 +51,7 @@ jobs:
           python tests/economy-browser.py
           python tests/news-map-browser.py
           python tests/touch-targets-browser.py
+          python tests/accessibility-browser.py
           python tests/newsroom-desk-browser.py
   source-freshness:
     # Opt-in prevents missing secrets and duplicate pg_cron scheduling from being

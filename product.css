@@ -31,9 +31,9 @@
 .wp-badge.developing{background:var(--gold-soft);color:var(--gold-strong)}
 .wp-articles{display:grid;gap:12px;grid-template-columns:repeat(auto-fill,minmax(min(320px,100%),1fr))}
 .wp-article{display:flex;flex-direction:column;gap:8px}
-.wp-article h3{font:700 1.02rem/1.5 var(--font-display);margin:0}
+.wp-article h2,.wp-article h3{font:700 1.02rem/1.5 var(--font-display);margin:0}
 .wp-article a{color:inherit;text-decoration:none}
-.wp-article a:hover h3{text-decoration:underline}
+.wp-article a:hover h2,.wp-article a:hover h3{text-decoration:underline}
 .wp-meta{display:flex;flex-wrap:wrap;gap:6px 10px;font-size:.8rem;color:var(--muted)}
 .wp-reasons{display:flex;flex-wrap:wrap;gap:6px;margin:0;padding:0;list-style:none}
 .wp-reasons li{font-size:.76rem;background:var(--blue-soft);color:var(--blue);border-radius:999px;padding:2px 9px}
