@@ -68,3 +68,23 @@ test("every indicator has both languages, a known group and a unit", () => {
     assert.ok(d.ar && d.en, id); assert.ok(WB.GROUPS.includes(d.group), id); assert.ok(d.unit, id);
   }
 });
+
+test("fetchIndicatorMulti falls back per country when one code breaks the combined request", async () => {
+  const urls = [];
+  const fetchImpl = async (url) => {
+    urls.push(url);
+    if (url.includes("SAU;ZZZ")) return { ok: true, json: async () => [{ message: [{ id: "120" }] }] };
+    if (url.includes("/ZZZ/")) return { ok: true, json: async () => [{ message: [{ id: "120" }] }] };
+    return { ok: true, json: async () => gdp };
+  };
+  const r = await WB.fetchIndicatorMulti({ countries: ["SAU", "ZZZ"], indicator: "NY.GDP.MKTP.KD.ZG", from: 2021, to: 2025 }, { fetch: fetchImpl });
+  assert.equal(r.ok, true);
+  assert.deepEqual(r.failed, ["ZZZ"]);
+  assert.ok(r.rows.some((x) => x.iso3 === "SAU"));
+  assert.equal(urls.length, 3);
+  const none = await WB.fetchIndicatorMulti({ countries: ["ZZZ", "YYY"], indicator: "NY.GDP.MKTP.KD.ZG", from: 2021, to: 2025 }, { fetch: async () => ({ ok: true, json: async () => [{ message: [] }] }) });
+  assert.equal(none.ok, false); assert.deepEqual(none.failed, ["ZZZ", "YYY"]);
+});
+test("PPP income is labelled as international dollars, not US dollars", () => {
+  assert.equal(WB.formatValue(74400, "intl", "en"), "Int$ 74,400");
+});
