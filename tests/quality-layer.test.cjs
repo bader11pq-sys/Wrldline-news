@@ -58,3 +58,15 @@ test("the quality layer generator is in sync with the pages", async () => {
     assert.strictEqual(applyToHtml(html), html, `${file}: run node scripts/apply-quality-css.mjs`);
   }
 });
+
+test("the dossier generator emits the same quality link", () => {
+  const template = read("scripts/build-dossiers.mjs");
+  assert.ok(
+    template.includes(`  <link rel="stylesheet" href="/quality.css?v=quality-1">`),
+    "scripts/build-dossiers.mjs must emit the quality.css link or regeneration deletes it",
+  );
+  const dir = path.join(ROOT, "dossier");
+  for (const file of fs.readdirSync(dir).filter((f) => f.endsWith(".html"))) {
+    assert.ok(read(`dossier/${file}`).includes("quality.css"), `dossier/${file}: missing quality.css link`);
+  }
+});
