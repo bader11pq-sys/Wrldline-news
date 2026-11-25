@@ -261,7 +261,7 @@ async def main():
         await expect(page.locator("#connectionLabel")).to_have_text("News feed loaded")
         await expect(page.locator("#lastUpdated")).to_contain_text("Latest story in the feed:")
         await expect(page.locator("#lastUpdated")).to_contain_text("Last successful load:")
-        await expect(page.locator(".wl-nav-scroll a[href='sections.html']")).to_have_text("All sections", use_inner_text=True)
+        await expect(page.locator(".wl-nav-scroll a[href='sections.html']")).to_have_text("Explore", use_inner_text=True)
         await expect(page.locator(".wl-nav-scroll a[href='analysis.html']")).to_have_text("Analysis")
         await expect(page.locator("#moreButton")).to_have_text("More", use_inner_text=True)
         await expect(page.get_by_role("button", name="Load older news")).to_be_enabled()
