@@ -29,7 +29,7 @@ For AI analysis, set `GEMINI_API_KEY` and/or `GROQ_API_KEY` in your local enviro
 
 ## Automation and secrets
 
-The `Worldline Design Discovery` workflow:
+The `Worldline Design Discovery` workflow uses the current Node 24-compatible `actions/upload-artifact@v7.0.2` pin and:
 - Runs weekly on Monday at 04:23 UTC.
 - Can be started manually from GitHub Actions.
 - Runs when the design-agent catalog, scripts, tests, or workflow itself changes on `main`.
