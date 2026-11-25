@@ -71,6 +71,21 @@ test('initial HTML contains published summary, reader impact context, canonical 
   assert.equal(ld.image[0], a.image_url);
   assert.deepEqual(ld.author, [{ '@type': 'Person', name: 'Real Reporter' }]);
   assert.equal(ld.articleBody, a.summary);
+  assert.equal(ld.isAccessibleForFree, true);
+  assert.equal(ld.dateModified, a.published_at);
+  assert.equal(ld.mainEntityOfPage['@type'], 'WebPage');
+  assert.equal(ld.mainEntityOfPage['@id'], ORIGIN + '/news/' + a.id + '#webpage');
+  assert.equal(ld.publisher.logo.width, 499);
+  assert.equal(ld.publisher.logo.height, 233);
+  assert.ok(ld.breadcrumb, 'article needs a breadcrumb list');
+  assert.equal(ld.breadcrumb['@type'], 'BreadcrumbList');
+  const trail = ld.breadcrumb.itemListElement;
+  assert.equal(trail[0].item, ORIGIN + '/');
+  assert.equal(trail.at(-1).item, ORIGIN + '/news/' + a.id);
+  assert.equal(trail.at(-1).name, a.title);
+  assert.deepEqual([...trail].map(item => item.position), trail.map((_, index) => index + 1));
+  assert.equal(typeof ld.keywords, 'string');
+  assert.ok(ld.keywords.includes('حول العالم'), 'keywords should carry the section label');
   assert.equal(response.headers.get('cache-control'), 'no-store');
   // article + reader context + related reading; the trust RPC is opt-in.
   assert.equal(f.calls.length, 3);
