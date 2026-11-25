@@ -40,6 +40,14 @@
   function detailBody(content, sourceRows) {
     const body = el("div", null, "editorial-dossier-body");
     addList(body, "حقائق أساسية", content.facts, x => (x.label ? x.label + ": " : "") + (x.value || ""));
+    if (Array.isArray(content.parties) && content.parties.length) {
+      const section = el("section"); section.appendChild(el("h4", "الأطراف ومصالحها"));
+      content.parties.forEach(x => {
+        section.appendChild(el("h5", x.name || "طرف"));
+        section.appendChild(el("p", x.role || ""));
+      });
+      body.appendChild(section);
+    }
     if (Array.isArray(content.timeline) && content.timeline.length) {
       const section = el("section"); section.appendChild(el("h4", "الخط الزمني"));
       const ol = el("ol");
@@ -64,6 +72,18 @@
     }
     addList(body, "الأثر الفعلي", content.impact?.actual, x => x.text || x);
     addList(body, "الأثر المحتمل المشروط", content.impact?.potential, x => x.text || x);
+    if (Array.isArray(content.scenarios) && content.scenarios.length) {
+      const section = el("section", null, "editorial-scenarios");
+      section.appendChild(el("h4", "السيناريوهات المحتملة"));
+      content.scenarios.forEach(x => {
+        const card = el("article", null, "editorial-scenario");
+        card.appendChild(el("h5", x.title || "مسار محتمل"));
+        if (x.conditions) { card.appendChild(el("strong", "شروط تحقق المسار")); card.appendChild(el("p", x.conditions)); }
+        if (x.consequences) { card.appendChild(el("strong", "النتائج المحتملة")); card.appendChild(el("p", x.consequences)); }
+        section.appendChild(card);
+      });
+      body.appendChild(section);
+    }
     if (Array.isArray(content.watchNext) && content.watchNext.length) {
       const section = el("section"); section.appendChild(el("h4", "ماذا نراقب تالياً؟"));
       const ul = el("ul");
