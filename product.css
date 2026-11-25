@@ -101,3 +101,14 @@ fieldset.wp-card legend{font:700 .95rem var(--font-display);color:var(--ink);pad
 .wp-table thead th{font-size:.8rem;color:var(--muted);white-space:nowrap}
 .wp-table-wrap{overflow-x:auto;max-inline-size:100%}
 .wp-market-group{margin-block-end:14px}
+/* news map */
+.wp-controls{display:flex;flex-wrap:wrap;gap:12px}
+.wp-grid-2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin-block:16px}
+.wp-grid-2>*{min-width:0}
+.wp-map-lg{block-size:460px}
+.wp-linkbtn{background:none;border:0;padding:0;font:inherit;font-weight:700;color:var(--ink);cursor:pointer;text-align:start;text-decoration:underline dotted}
+.wp-linkbtn:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+.wp-table tr.is-selected{background:var(--gold-soft)}
+.wp-chips-row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 12px}
+.wp-swatch{border:1px solid var(--line-strong);margin-inline-end:4px}
+@media (max-width:760px){.wp-grid-2{grid-template-columns:minmax(0,1fr)}.wp-map-lg{block-size:300px}}

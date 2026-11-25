@@ -177,6 +177,33 @@
     } catch { return null; }
   }
 
-  return Object.freeze({ BASE, SOURCE, INDICATORS, GROUPS, indicatorsIn, buildUrl, countryUrl, parseIndicator, parseCountry,
+  const countryListUrl = () => BASE + "/country?format=json&per_page=400";
+  /** All real countries (aggregates removed) as {iso3: {region, income}}. */
+  function parseCountryList(payload) {
+    const out = {};
+    if (!Array.isArray(payload) || !Array.isArray(payload[1])) return out;
+    for (const c of payload[1]) {
+      const m = parseCountry([payload[0], [c]]);
+      if (m && !m.isAggregate && m.region) out[m.iso3] = { region: m.region, income: m.income };
+    }
+    return out;
+  }
+  async function fetchCountryList(env) {
+    const e = Object.assign({ fetch: typeof fetch === "function" ? fetch : null, storage: null, now: Date.now() }, env || {});
+    const key = "wl:wb:" + countryListUrl(), hit = cacheGet(e.storage, key, e.now);
+    if (hit) return hit.value;
+    if (!e.fetch) return null;
+    try {
+      const doFetch = e.fetch;
+      const res = await doFetch(countryListUrl());
+      if (!res.ok) return null;
+      const list = parseCountryList(await res.json());
+      if (!Object.keys(list).length) return null;
+      cacheSet(e.storage, key, { at: e.now, value: list });
+      return list;
+    } catch { return null; }
+  }
+
+  return Object.freeze({ countryListUrl, parseCountryList, fetchCountryList, BASE, SOURCE, INDICATORS, GROUPS, indicatorsIn, buildUrl, countryUrl, parseIndicator, parseCountry,
     series, latest, change, formatValue, fetchIndicator, fetchIndicatorMulti, fetchCountry });
 });
