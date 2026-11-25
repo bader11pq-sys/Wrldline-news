@@ -5,6 +5,7 @@ const path = require("node:path");
 const { PGlite } = require("@electric-sql/pglite");
 const read = (p) => fs.readFileSync(path.join(__dirname, "..", p), "utf8");
 const UP = "supabase/migrations/20261126020000_newsroom_desk.sql";
+const GRANT = "supabase/migrations/20261126030000_editor_role_helper_execute.sql";
 const DOWN = "supabase/rollbacks/20261126020000_newsroom_desk.down.sql";
 const ED = "11111111-1111-4111-8111-111111111111", READER = "22222222-2222-4222-8222-222222222222", ADMIN = "33333333-3333-4333-8333-333333333333";
 const art = (n) => `00000000-0000-4000-8000-${String(n).padStart(12, "0")}`;
@@ -20,6 +21,9 @@ async function setup() {
     grant usage on schema public to anon,authenticated;
     create function private.trust_is_editor() returns boolean language sql stable set search_path=pg_catalog as $$
       select auth.uid() is not null and coalesce(auth.jwt()->'app_metadata'->>'role','') in ('editor','admin'); $$;
+    -- Production ships this revoked (20261115030000). Mirrored here so the harness cannot hide a
+    -- policy that needs an EXECUTE privilege authenticated does not hold.
+    revoke all on function private.trust_is_editor() from public, anon, authenticated;
     create function public.wrldline_source_key(n text, u text) returns text language sql immutable as $$ select lower(btrim(n)) $$;
     create table public.articles(id uuid primary key, title text not null, editorial_status text not null default 'draft', editorial_trust_status text default 'unconfirmed',
       trust_needs_review boolean not null default true, audience_lane text default 'pending', source_name text, source_url text, published_at timestamptz, corrected_at timestamptz);
@@ -39,7 +43,7 @@ async function setup() {
     insert into public.article_change_log(article_id,change_type) values ('${art(2)}','correction'),('${art(2)}','updated'),('${art(1)}','created');
     insert into public.article_updates(article_id,kind) values ('${art(2)}','correction');
     insert into public.article_translations(translation_status) values ('review'),('published');`);
-  await db.exec(read(UP));
+  await db.exec(read(GRANT)); await db.exec(read(UP));
   return db;
 }
 const as = async (db, who, role) => {
@@ -138,7 +142,7 @@ test("a later non-request note closes an open change request", async () => {
 test("the desk does not touch articles and rollback removes everything it added", async () => {
   const db = await setup(); await db.exec("reset role");
   assert.equal((await db.query("select count(*)::int n from public.articles")).rows[0].n, 6);
-  await db.exec(read(UP)); // idempotent re-application
+  await db.exec(read(GRANT)); await db.exec(read(UP)); // idempotent re-application
   await db.exec(read(DOWN));
   const left = await db.query(`select (select count(*)::int from pg_proc where proname like 'editor\\_%') f,
     (select count(*)::int from pg_tables where tablename = 'article_review_notes') t`);

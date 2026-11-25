@@ -144,4 +144,5 @@ revoke all on function public.editor_newsroom_overview(integer), public.editor_a
 grant execute on function public.editor_newsroom_overview(integer), public.editor_article_queue(text, text, text, integer, integer),
   public.editor_source_summary(integer) to authenticated, service_role;
 
+notify pgrst, 'reload schema';
 commit;
