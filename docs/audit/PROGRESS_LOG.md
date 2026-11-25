@@ -1,3 +1,9 @@
 # Progress log
 - 2026-11-25: Phase 1 audit completed (static + local tests). See AUDIT.md.
-- 2026-11-25: Added `supabase/functions/_shared/ai-router.mjs` with 8 passing tests (not wired into production functions).
+- 2026-11-25: Added `supabase/functions/_shared/ai-router.mjs` with 8 passing tests (since wired into translate and classify, see PRs #110 and #108).
+- 2026-11-25: Router hardened after review (JSON parsing, error classification, Retry-After bounds, redaction, deadline, circuit breaker). 15 tests.
+- 2026-11-25: PR #110 routes translate-articles through the router with persisted usage log (migration + tested rollback, PGlite tests). PR #108 routes classify-news (stacked on #110).
+- 2026-11-25: PR #109 fixes healthcheck cron auth (root cause: Bearer with opaque sb_secret key; now apikey header + DB-verified secret; fail-closed). 8 tests.
+- 2026-11-25: PR #111 source diagnosis (pause artefacts vs defects), admin-only detail, manual reachability probe. Ingestion remains paused; nothing scheduled.
+- 2026-11-25: PR #112 HTML-sink scanner and review; PR #113 JSON-LD on 30 static pages.
+- Pending: personalised feed, country profiles, economic dashboards, map and editorial tools (backlog P2), Lighthouse/axe CI, hreflang, staging rollout of migration.
