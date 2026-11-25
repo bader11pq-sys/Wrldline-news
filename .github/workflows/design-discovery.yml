@@ -37,14 +37,23 @@ jobs:
           python -m pip install "playwright==1.56.0"
           python -m playwright install chromium
 
-      - name: Validate catalog and Python syntax
+      - name: Validate catalog, analyzer tests, and Python syntax
         run: |
           python tests/test_design_agent_catalog.py
-          python -m py_compile scripts/design-agent/capture_references.py
+          python tests/test_design_agent_analyzer.py
+          python -m py_compile scripts/design-agent/capture_references.py scripts/design-agent/analyze_references.py
 
       - name: Capture reference homepages
         run: |
           python scripts/design-agent/capture_references.py --limit "${{ github.event.inputs.source_limit || '0' }}"
+
+      - name: Analyze screenshots with Gemini and Groq fallback
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+          GEMINI_MODEL: ${{ vars.GEMINI_MODEL || 'gemini-3.8-flash' }}
+          GROQ_VISION_MODEL: ${{ vars.GROQ_VISION_MODEL || 'qwen/qwen3.8-27b' }}
+        run: python scripts/design-agent/analyze_references.py
 
       - name: Upload visual research artifact
         uses: actions/upload-artifact@0b7f8abb1508181956e8e162db84b466c27e18ce # v4.6.2
