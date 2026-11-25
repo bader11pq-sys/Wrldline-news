@@ -1,4 +1,5 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
+import { authorizeHealthcheck } from "./auth.mjs";
 const cors={"Access-Control-Allow-Origin":Deno.env.get("SITE_URL")||"https://al-ghaib.us.ci","Access-Control-Allow-Headers":"authorization, apikey, content-type, x-client-info, x-wrldline-cron-secret","Access-Control-Allow-Methods":"POST, OPTIONS","Content-Type":"application/json","Vary":"Origin"};
 const json=(body:unknown,status=200)=>new Response(JSON.stringify(body),{status,headers:cors});
 const prompt="You are validating the WRLDLINE editorial classification pipeline. Source headline: 'Regional leaders meet to discuss trade'. Source summary: 'Officials met today and discussed regional trade cooperation.' Return one JSON object with exactly one top-level key: classification. It must contain category (one of politics,economy,security,tech,sports,culture,health,world), country, risk_level (one of unknown,low,guarded,elevated,high,critical), risk_score (integer 0-100), confidence (number 0-1), and summary (short string). Use neutral facts only; do not invent a location. Keep every value short.";
@@ -91,33 +92,8 @@ async function run(name:string,key:string|null,fn:(key:string)=>Promise<any>){if
 Deno.serve(async(req:Request)=>{
  if(req.method==="OPTIONS")return new Response("ok",{headers:cors});
  if(req.method!=="POST")return json({ok:false,error:"Method not allowed"},405);
- const serviceKey=Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")||(()=>{try{return JSON.parse(Deno.env.get("SUPABASE_SECRET_KEYS")||"{}").default}catch{return null}})();
- const authHeader=req.headers.get("Authorization")||"";
- const token=authHeader.startsWith("Bearer ")?authHeader.slice(7):authHeader;
- let authorized=!!serviceKey&&token===serviceKey;
- if(!authorized&&serviceKey){
-  const cronSecret=req.headers.get("x-wrldline-cron-secret")||"";
-  if(cronSecret.length>=32){
-   try{
-    const base=Deno.env.get("SUPABASE_URL")||"https://vmaxbnogmmfyrcucapnq.supabase.co";
-    const check=await fetch(base+"/rest/v1/rpc/verify_wrldline_cron_secret",{method:"POST",headers:{"apikey":serviceKey,"Authorization":"Bearer "+serviceKey,"Content-Type":"application/json"},body:JSON.stringify({p_secret:cronSecret}),signal:AbortSignal.timeout(8000)});
-    authorized=check.ok&&(await check.json())===true;
-   }catch{}
-  }
- }
- if(!authorized&&token){
-  const base=Deno.env.get("SUPABASE_URL")||"https://vmaxbnogmmfyrcucapnq.supabase.co";
-  const anonKey=Deno.env.get("SUPABASE_ANON_KEY")||Deno.env.get("SUPABASE_PUBLISHABLE_KEY")||"";
-  if(anonKey){
-   try{
-    const userResponse=await fetch(base+"/auth/v1/user",{headers:{"apikey":anonKey,"Authorization":"Bearer "+token},signal:AbortSignal.timeout(8000)});
-    if(userResponse.ok){
-     const user=await userResponse.json();
-     authorized=["admin","editor"].includes(user?.app_metadata?.role);
-    }
-   }catch{}
-  }
- }
+ const authResult=await authorizeHealthcheck({headers:req.headers,env:Deno.env.toObject()});
+ const authorized=authResult.authorized;
  if(!authorized)return json({ok:false,error:"Admin/editor authorization required"},401);
  const geminiApiKey=Deno.env.get("GEMINI_API_KEY")||Deno.env.get("GOOGLE_API_KEY")||null;
  const results=await Promise.all([
