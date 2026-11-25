@@ -1,0 +1,122 @@
+{
+  "schema_version": 1,
+  "purpose": "Public visual reference capture for Worldline News design research.",
+  "policy": {
+    "homepage_only": true,
+    "max_navigation_per_source_per_run": 1,
+    "no_login": true,
+    "no_form_submission": true,
+    "no_interaction_or_crawling": true,
+    "do_not_bypass_access_controls": true,
+    "capture_viewports": [
+      {
+        "name": "desktop",
+        "width": 1440,
+        "height": 1000
+      },
+      {
+        "name": "mobile",
+        "width": 390,
+        "height": 844
+      }
+    ]
+  },
+  "sources": [
+    {
+      "id": "bbc-news",
+      "name": "BBC News",
+      "url": "https://www.bbc.com/news",
+      "region": "international",
+      "language": "en",
+      "kind": "news-homepage"
+    },
+    {
+      "id": "reuters",
+      "name": "Reuters",
+      "url": "https://www.reuters.com/",
+      "region": "international",
+      "language": "en",
+      "kind": "news-homepage"
+    },
+    {
+      "id": "ap-news",
+      "name": "Associated Press",
+      "url": "https://apnews.com/",
+      "region": "international",
+      "language": "en",
+      "kind": "news-homepage"
+    },
+    {
+      "id": "the-guardian",
+      "name": "The Guardian",
+      "url": "https://www.theguardian.com/international",
+      "region": "international",
+      "language": "en",
+      "kind": "news-homepage"
+    },
+    {
+      "id": "financial-times",
+      "name": "Financial Times",
+      "url": "https://www.ft.com/",
+      "region": "international",
+      "language": "en",
+      "kind": "news-homepage"
+    },
+    {
+      "id": "al-jazeera",
+      "name": "Al Jazeera",
+      "url": "https://www.aljazeera.com/",
+      "region": "arabic-and-international",
+      "language": "en",
+      "kind": "news-homepage"
+    },
+    {
+      "id": "france24-ar",
+      "name": "France 24 Arabic",
+      "url": "https://www.france24.com/ar/",
+      "region": "arabic",
+      "language": "ar",
+      "kind": "news-homepage"
+    },
+    {
+      "id": "dw-arabic",
+      "name": "DW Arabic",
+      "url": "https://www.dw.com/ar/",
+      "region": "arabic",
+      "language": "ar",
+      "kind": "news-homepage"
+    },
+    {
+      "id": "sky-news-arabia",
+      "name": "Sky News Arabia",
+      "url": "https://www.skynewsarabia.com/",
+      "region": "arabic",
+      "language": "ar",
+      "kind": "news-homepage"
+    },
+    {
+      "id": "al-arabiya",
+      "name": "Al Arabiya",
+      "url": "https://www.alarabiya.net/",
+      "region": "arabic",
+      "language": "ar",
+      "kind": "news-homepage"
+    },
+    {
+      "id": "nikkei-asia",
+      "name": "Nikkei Asia",
+      "url": "https://asia.nikkei.com/",
+      "region": "asia",
+      "language": "en",
+      "kind": "news-homepage"
+    },
+    {
+      "id": "nhk-world",
+      "name": "NHK World",
+      "url": "https://www3.nhk.or.jp/nhkworld/",
+      "region": "asia",
+      "language": "en",
+      "kind": "news-homepage"
+    }
+  ]
+}
