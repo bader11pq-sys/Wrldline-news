@@ -89,18 +89,14 @@ test("the generated hreflang blocks are in sync with the generator", async () =>
 
 test("the sitemap repeats the hreflang pairs for crawlers", () => {
   const xml = read("sitemap.xml");
-  assert.match(xml, /xmlns:xhtml="http:\/\/www\.w3\.org\/1999\/xhtml"/, "sitemap needs the xhtml namespace");
+  assert.ok(xml.includes('xmlns:xhtml="http://www.w3.org/1999/xhtml"'), "sitemap needs the xhtml namespace");
   for (const [ar, en] of Object.entries(PAIRS)) {
-    for (const [file, other] of [
-      [ar, en],
-      [en, ar],
-    ]) {
-      const entry = xml.split(`<loc>${ORIGIN}/${file}</loc>`)[1] || "";
-      const block = entry.split("</url>")[0];
-      assert.match(block, new RegExp(`hreflang="ar" href="${ORIGIN.replace(/\./g, "\\.")}/${ar}"`), `${file}: sitemap ar alternate`);
-      assert.match(block, new RegExp(`hreflang="en" href="${ORIGIN.replace(/\./g, "\\.")}/${en}"`), `${file}: sitemap en alternate`);
+    for (const file of [ar, en]) {
+      const block = (xml.split(`<loc>${ORIGIN}/${file}</loc>`)[1] || "").split("</url>")[0];
+      assert.ok(block, `${file}: missing from the sitemap`);
+      assert.ok(block.includes(`hreflang="ar" href="${ORIGIN}/${ar}"`), `${file}: sitemap ar alternate`);
+      assert.ok(block.includes(`hreflang="en" href="${ORIGIN}/${en}"`), `${file}: sitemap en alternate`);
       assert.ok(block.includes(`hreflang="x-default" href="${ORIGIN}/${ar}"`), `${file}: sitemap x-default`);
-      assert.ok(block.includes(other) || other === file);
     }
   }
 });
