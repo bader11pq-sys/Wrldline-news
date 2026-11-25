@@ -1,5 +1,7 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "npm:@supabase/supabase-js@2";
+import { CircuitBreaker, runWithFallback } from "../_shared/ai-router.mjs";
+import { attachUsage, createUsageRecorder, tokensFromPayload } from "../_shared/ai-usage.mjs";
 
 const cors={"Access-Control-Allow-Origin":Deno.env.get("SITE_URL")||"https://al-ghaib.us.ci","Access-Control-Allow-Headers":"authorization, apikey, content-type, x-client-info, x-wrldline-cron-secret","Access-Control-Allow-Methods":"POST, OPTIONS","Content-Type":"application/json","Vary":"Origin"};
 const schema={type:"object",additionalProperties:false,properties:{title:{type:"string"},summary:{type:"string"},ai_summary:{type:"string"}},required:["title","summary","ai_summary"]};
@@ -163,7 +165,7 @@ async function groqGenerate(prompt: string, apiKey: string, maxOutputTokens: num
       const payload = await response.json();
       const raw = payload.choices?.[0]?.message?.content;
       if (typeof raw !== "string" || !raw.trim()) throw new Error("Groq returned no structured output.");
-      return extractJsonObject(raw);
+      return attachUsage(extractJsonObject(raw), tokensFromPayload(payload));
     }
     const detail = (await response.text()).slice(0, 500);
     lastError = "Groq API " + response.status + ": " + detail;
@@ -247,7 +249,7 @@ async function nvidiaTranslate(prompt:string, apiKey:string, maxOutputTokens:num
  if(!response.ok)throw new Error("NVIDIA API "+response.status+": "+(await response.text()).slice(0,350));
  const payload=await response.json(),raw=payload.choices?.[0]?.message?.content;
  if(typeof raw!=="string"||!raw.trim())throw new Error("NVIDIA returned no structured translation.");
- const data=extractJsonObject(raw);
+ const data=attachUsage(extractJsonObject(raw),tokensFromPayload(payload));
  if(!String(data.title||"").trim()||!String(data.summary||"").trim())throw new Error("NVIDIA returned an empty title or summary.");
  return data;
 }
@@ -264,7 +266,7 @@ async function gonkaTranslate(prompt:string,apiKey:string,maxOutputTokens:number
  if(!response.ok)throw new Error("Gonka API "+response.status);
  const payload=await response.json(),raw=payload.choices?.[0]?.message?.content;
  if(typeof raw!=="string"||!raw.trim())throw new Error("Gonka returned empty translation");
- const data=extractJsonObject(raw);
+ const data=attachUsage(extractJsonObject(raw),tokensFromPayload(payload));
  if(!String(data.title||"").trim()||!String(data.summary||"").trim())throw new Error("Gonka returned empty title or summary");
  return data;
 }
@@ -279,19 +281,20 @@ async function bazaarlinkTranslate(prompt: string, apiKey: string, maxOutputToke
  if(!response.ok)throw new Error("BazaarLink API "+response.status+": "+(await response.text()).slice(0,300));
  const payload=await response.json(),raw=payload.choices?.[0]?.message?.content;
  if(typeof raw!=="string"||!raw.trim())throw new Error("BazaarLink returned empty translation");
- const data=extractJsonObject(raw);
+ const data=attachUsage(extractJsonObject(raw),tokensFromPayload(payload));
  if(!String(data.title||"").trim()||!String(data.summary||"").trim())throw new Error("BazaarLink returned an empty title or summary");
  return data;
 }
-async function generateWithFallback(prompt: string, geminiKey: string | null, groqKey: string | null, nvidiaKey: string | null, gonkaKey: string | null, openRouterKey: string | null, bazaarlinkKey: string | null, openRouterModel: string, bazaarlinkModel: string, maxOutputTokens: number, startIndex = 0, db: any, cooldowns: Set<string>) {
- const errors:string[]=[];
+const statusOf=(error:unknown)=>{const m=String((error as any)?.message||error).match(/\b(?:API|HTTP)\s*(\d{3})\b/i);return m?Number(m[1]):Number((error as any)?.status)||0;};
+const providerModels:Record<string,string>={gemini:"gemini-3.5-flash-lite",groq:"openai/gpt-oss-20b",nvidia:"nvidia/nemotron-3.5-lightning-30b-a3b",deepl:"deepl"};
+async function generateWithFallback(prompt: string, geminiKey: string | null, groqKey: string | null, nvidiaKey: string | null, gonkaKey: string | null, openRouterKey: string | null, bazaarlinkKey: string | null, openRouterModel: string, bazaarlinkModel: string, maxOutputTokens: number, startIndex = 0, db: any, cooldowns: Set<string>, usage: ReturnType<typeof createUsageRecorder> | null = null) {
  const providers = [
   {name:"gemini", enabled:!!geminiKey, run:async()=>{
    const response=await geminiGenerateTranslation(prompt,geminiKey!,maxOutputTokens);
    const payload=await response.json();
    const raw=payload.candidates?.[0]?.content?.parts?.map((part:any)=>part.text||"").join("").trim();
    if(!raw)throw new Error("Gemini returned no structured output.");
-   const data=extractJsonObject(raw);
+   const data=attachUsage(extractJsonObject(raw),tokensFromPayload(payload));
    if(!String(data.title||"").trim()||!String(data.summary||"").trim())throw new Error("Gemini returned an empty title or summary.");
    return data;
   }},
@@ -314,7 +317,7 @@ async function generateWithFallback(prompt: string, geminiKey: string | null, gr
    if(!response.ok)throw new Error("OpenRouter API "+response.status+": "+(await response.text()).slice(0,400));
    const payload=await response.json(),raw=payload.choices?.[0]?.message?.content;
    if(typeof raw!=="string"||!raw.trim())throw new Error("OpenRouter returned no structured output.");
-   const data=extractJsonObject(raw);
+   const data=attachUsage(extractJsonObject(raw),tokensFromPayload(payload));
    if(!String(data.title||"").trim()||!String(data.summary||"").trim())throw new Error("OpenRouter returned an empty title or summary.");
    return data;
   }},
@@ -322,17 +325,33 @@ async function generateWithFallback(prompt: string, geminiKey: string | null, gr
  ].filter(p=>p.enabled&&!cooldowns.has(p.name));
  if(!providers.length)throw Object.assign(new Error("All AI providers are cooling down or no AI provider key is configured."),{deferred:true,retryAfter:300});
  const offset=((startIndex%providers.length)+providers.length)%providers.length;
- const ordered=[...providers.slice(offset),...providers.slice(0,offset)];
- for(const provider of ordered){
-  try{
-   const data=await provider.run();
-   await recordProviderSuccess(db,cooldowns,provider.name);
-   return {data,provider:provider.name};
-  }catch(error){
-   errors.push(provider.name+": "+String(error).slice(0,260));
-   await recordProviderFailure(db,cooldowns,provider.name,error);
-  }
+ const ordered=[...providers.slice(offset),...providers.slice(0,offset)].map((p,i)=>({name:p.name,priority:i,tasks:["translate"],run:p.run,model:providerModels[p.name]||null}));
+ // Each adapter already retries internally (Groq/Gemini), so the router adds fallback,
+ // classification, cooldown persistence and usage records without multiplying retries.
+ const breaker=new CircuitBreaker({threshold:99,quotaCooldownMs:30*60*1000});
+ const outcome=await runWithFallback({
+  providers:ordered,task:"translate",request:null,breaker,maxRetries:0,
+  validate:(v:any)=>!!(v&&String(v.title||"").trim()&&String(v.summary||"").trim()),
+  call:async(provider:any)=>{
+   try{
+    const data=await provider.run();
+    return {ok:true,json:data,usage:(data as any)?.__usage||null};
+   }catch(error){
+    return {ok:false,status:statusOf(error),error:String(error)};
+   }
+  },
+  cooldownFor:(provider:any,_kind:string,text:string)=>{const s=providerCooldownSeconds(provider.name,text);return s>0?s*1000:null;},
+  onCooldown:async(name:string,ms:number,_kind:string,reason:string)=>{
+   cooldowns.add(name);
+   await db.from("ai_provider_cooldowns").upsert({provider:name,disabled_until:new Date(Date.now()+ms).toISOString(),reason,updated_at:new Date().toISOString()},{onConflict:"provider"});
+  },
+  onUsage:(rec:any)=>usage?.record({...rec,model:providerModels[rec.provider]||null}),
+ });
+ if(outcome.ok){
+  await recordProviderSuccess(db,cooldowns,outcome.provider);
+  return {data:outcome.result,provider:outcome.provider};
  }
+ const errors=outcome.attempts.filter((a:any)=>!a.ok).map((a:any)=>a.provider+": "+String(a.message||a.kind).slice(0,260));
  const rateLimited=errors.some(x=>/429|quota|resource_exhausted|rate.?limit/i.test(x));
  throw Object.assign(new Error("All available AI providers failed. "+errors.join(" | ")),{deferred:true,quotaExceeded:rateLimited,retryAfter:rateLimited?300:60});
 }
@@ -423,6 +442,7 @@ Deno.serve(async(req:Request)=>{
  let pauseReason:string|null=null;
  async function processArticle(article:any) {
   let deeplError:string|null=null;
+  const usage=createUsageRecorder(db,{functionName:"translate-articles",task:"translate",articleId:article.id});
   try {
    if(!isWithinAiWindow(article)) return {id:article.id,status:"expired_ignored"};
    const declaredLang=String(article.lang||"").toLowerCase();
@@ -454,10 +474,14 @@ Deno.serve(async(req:Request)=>{
    let provider="deepl";
    if(deeplKey&&!deeplDisabled) {
     try {
-     const values=await deeplTranslate([String(article.title||""),sourceContent.slice(0,4000),String(article.ai_summary||sourceContent).slice(0,4000)],deeplKey,target);
+     const deeplTexts=[String(article.title||""),sourceContent.slice(0,4000),String(article.ai_summary||sourceContent).slice(0,4000)];
+     const deeplStarted=Date.now();
+     const values=await deeplTranslate(deeplTexts,deeplKey,target);
+     usage.recordDirect({provider:"deepl",model:"deepl",task:"translate",ok:true,ms:Date.now()-deeplStarted,usage:{inputChars:deeplTexts.reduce((n,t)=>n+t.length,0)}});
      translated={title:values[0],summary:values[1],ai_summary:values[2]};
     } catch(error) {
      deeplError=String(error).slice(0,220);
+     usage.recordDirect({provider:"deepl",model:"deepl",task:"translate",ok:false,status:Number((error as any)?.status)||0,kind:(error as any)?.quotaExceeded?"quota":([401,403].includes(Number((error as any)?.status))?"auth":"transient"),message:deeplError});
      if((error as any)?.quotaExceeded) {
       deeplDisabled=true;deeplQuotaExhausted=true;
       deeplDisabledUntil=await deeplQuotaResetAt(deeplKey);
@@ -472,7 +496,7 @@ Deno.serve(async(req:Request)=>{
     deeplError=deeplQuotaExhausted?"DeepL monthly character quota exhausted; using AI fallback.":"DeepL temporarily disabled after authentication failure; using AI fallback.";
    }
    if(!translated) {
-    const generated=await generateWithFallback(prompt,gemini,groqKey,nvidiaKey,gonkaKey,openRouterKey,bazaarlinkKey,openRouterModel,bazaarlinkModel,900,aiProviderCursor++,db,providerCooldowns);
+    const generated=await generateWithFallback(prompt,gemini,groqKey,nvidiaKey,gonkaKey,openRouterKey,bazaarlinkKey,openRouterModel,bazaarlinkModel,900,aiProviderCursor++,db,providerCooldowns,usage);
     translated=generated.data;
     provider=generated.provider;
    }
@@ -501,6 +525,8 @@ Deno.serve(async(req:Request)=>{
    const message=String(error).slice(0,180);
    await db.from("articles").update({translation_attempts:attempts,translation_retry_after:new Date(Date.now()+Math.min(1800,300*Math.pow(2,Math.min(attempts-1,2)))*1000).toISOString(),translation_last_error:message}).eq("id",article.id);
    return {id:article.id,status:"failed",error:deeplError?"DeepL: "+deeplError+" | AI fallback: "+message:message};
+  } finally {
+   await usage.flush();
   }
  }
  async function worker() {
