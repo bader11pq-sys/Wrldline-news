@@ -23,11 +23,25 @@
 
   /* Registry hrefs are site-root relative for pages the Worker owns and
    * document relative for static pages. Both work from any page at the root. */
+  /* Editorial standards and corrections have dedicated English editions that the
+   * language switch has always served through data-editorial-page. */
+  const EDITORIAL_PAGES = { "about.html": "about", "corrections.html": "corrections" };
+  const editorialAttr = item => {
+    const page = EDITORIAL_PAGES[item.href.split("#")[0]];
+    return page ? ` data-editorial-page="${page}"` : "";
+  };
+
   function hrefOf(item) {
     const href = item.href;
     const [path, hash] = href.split("#");
-    if (/^(\/|https?:)/.test(path) || path === "" || path === "news/") return href;
+    if (/^https?:/.test(path) || path === "news/") return href;
     const [file, query] = path.split("?");
+    const editorial = EDITORIAL_PAGES[file];
+    if (editorial) {
+      const suffix = langOf() === "en" ? "-en" : "";
+      return `/${file.replace(/\.html$/, "")}${suffix}.html${hash ? "#" + hash : ""}`;
+    }
+    if (path.startsWith("/") || path === "") return href;
     return file + (query ? "?" + query : "") + (hash ? "#" + hash : "");
   }
 
@@ -52,11 +66,11 @@
 
   function primaryLink(item) {
     const active = isActive(item);
-    return `<a class="wl-nav-link${active ? " is-active" : ""}" href="${esc(hrefOf(item))}"${active ? ' aria-current="page"' : ""}>${bi(item.ar, item.en)}</a>`;
+    return `<a class="wl-nav-link${active ? " is-active" : ""}" href="${esc(hrefOf(item))}"${editorialAttr(item)}${active ? ' aria-current="page"' : ""}>${bi(item.ar, item.en)}</a>`;
   }
 
   function moreLink(item) {
-    return `<a href="${esc(hrefOf(item))}"><span class="wl-more-icon">${icon(item.key)}</span><span>${bi(item.ar, item.en)}</span></a>`;
+    return `<a href="${esc(hrefOf(item))}"${editorialAttr(item)}><span class="wl-more-icon">${icon(item.key)}</span><span>${bi(item.ar, item.en)}</span></a>`;
   }
 
   function drawerSectionHeading(ar, en) {
@@ -65,7 +79,7 @@
 
   function drawerLink(item, nested) {
     const active = isActive(item);
-    return `<a class="wl-drawer-link${nested ? " is-sub" : ""}${active ? " is-active" : ""}" href="${esc(hrefOf(item))}"${active ? ' aria-current="page"' : ""}>${bi(item.ar, item.en)}</a>`;
+    return `<a class="wl-drawer-link${nested ? " is-sub" : ""}${active ? " is-active" : ""}" href="${esc(hrefOf(item))}"${editorialAttr(item)}${active ? ' aria-current="page"' : ""}>${bi(item.ar, item.en)}</a>`;
   }
 
   function drawerHTML() {
@@ -111,7 +125,7 @@
     return registry.FOOTER_COLUMNS.map(column =>
       `<div class="footer-col"><h3>${bi(column.ar, column.en)}</h3>${column.items.map(key => {
         const entry = registry.item(key);
-        return `<a href="${esc(hrefOf(entry))}">${bi(entry.ar, entry.en)}</a>`;
+        return `<a href="${esc(hrefOf(entry))}"${editorialAttr(entry)}>${bi(entry.ar, entry.en)}</a>`;
       }).join("")}</div>`
     ).join("");
   }
