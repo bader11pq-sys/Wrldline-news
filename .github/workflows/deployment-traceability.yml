@@ -1,0 +1,77 @@
+name: Deployment traceability
+
+# Answers one question, on a schedule and on demand:
+# "which commit is live, in each component, right now?"
+#
+# It is report-only by default so a known-stale Worker cannot turn main red.
+# Dispatch it with strict=true when you want it to fail on drift, which is what
+# the release checklist uses.
+
+on:
+  workflow_dispatch:
+    inputs:
+      strict:
+        description: 'Fail when the live components disagree with main'
+        type: boolean
+        default: false
+  schedule:
+    - cron: '17 */6 * * *'
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/deployment-traceability.yml'
+      - 'scripts/verify-deployment.mjs'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deployment-traceability
+  cancel-in-progress: true
+
+jobs:
+  report:
+    name: Reconcile main, Pages and the Worker
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: '22.23.0'
+      - name: Verify
+        id: verify
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -uo pipefail
+          strict=""
+          [ "${{ inputs.strict }}" = "true" ] && strict="--strict"
+          node scripts/verify-deployment.mjs $strict | tee /tmp/traceability.txt
+          echo "exit=$?" >> "$GITHUB_OUTPUT"
+      - name: Job summary
+        if: always()
+        run: |
+          {
+            echo "## Deployment traceability"
+            echo ""
+            echo '```'
+            cat /tmp/traceability.txt || echo "verifier produced no output"
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+      - name: Machine-readable evidence
+        if: always()
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: node scripts/verify-deployment.mjs --json > /tmp/traceability.json || true
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: always()
+        with:
+          name: deployment-traceability-${{ github.run_id }}
+          path: |
+            /tmp/traceability.txt
+            /tmp/traceability.json
+          retention-days: 30
