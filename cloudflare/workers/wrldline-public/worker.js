@@ -230,6 +230,11 @@ function htmlResponse(options, status = 200) {
     "Cache-Control": "no-store",
     "X-Content-Type-Options": "nosniff",
     "Referrer-Policy": "strict-origin-when-cross-origin",
+    // No API surface here needs device sensors, camera, microphone or geolocation.
+    "Permissions-Policy": "camera=(), microphone=(), geolocation=(), payment=(), usb=(), interest-cohort=()",
+    // Keep article pages out of other sites' window references and cross-origin reads.
+    "Cross-Origin-Opener-Policy": "same-origin",
+    "Cross-Origin-Resource-Policy": "same-origin",
     "Content-Security-Policy": `default-src 'self'; script-src 'self'${nonce ? ` 'nonce-${nonce}'` : ""}; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' https: http: data: blob:; connect-src 'self' https://vmaxbnogmmfyrcucapnq.supabase.co; object-src 'none'; base-uri 'none'; frame-ancestors 'self'; form-action 'self'`,
     ...(status !== 200 ? { "X-Robots-Tag": "noindex, nofollow" } : {}),
     ...(status === 503 ? { "Retry-After": "60" } : {})
