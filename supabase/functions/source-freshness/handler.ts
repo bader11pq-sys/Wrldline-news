@@ -1,7 +1,8 @@
 // Caller authentication is mandatory before operational reads or writes.
 import { evaluateSource } from './evaluate.mjs';
+import { diagnose, summarize } from './diagnose.mjs';
 
-type Dependencies = { url: string; serviceKey: string; fetch: typeof fetch; now: () => Date };
+type Dependencies = { url: string; serviceKey: string; fetch: typeof fetch; now: () => Date; ingestionPaused?: boolean };
 export function createHandler(deps: Dependencies) {
   const headers = { apikey: deps.serviceKey, Authorization: `Bearer ${deps.serviceKey}`, 'Content-Type': 'application/json' };
   const reply = (body: unknown, status = 200) => Response.json(body, { status, headers: { 'Cache-Control': 'no-store' } });
@@ -12,7 +13,7 @@ export function createHandler(deps: Dependencies) {
     if (request.method !== 'POST') return reply({ error: 'POST required' }, 405);
     if (!deps.serviceKey || !deps.url) return reply({ error: 'Monitoring not configured' }, 503);
     try {
-      let authorized = false;
+      let authorized = false, isAdminSession = false;
       const secret = request.headers.get('x-wrldline-cron-secret');
       if (secret) {
         const result = await db('rpc/verify_wrldline_cron_secret', { p_secret: secret });
@@ -27,10 +28,14 @@ export function createHandler(deps: Dependencies) {
           });
           const user = result.ok ? await result.json() : null;
           authorized = Boolean(user?.id && user?.app_metadata?.role === 'admin');
+          isAdminSession = authorized;
         }
       }
       if (!authorized) return reply({ error: 'Unauthorized' }, 401);
       const metrics: ReturnType<typeof evaluateSource>[] = [];
+      const labels = new Map<string, { name: string; kind: string }>();
+      let wantDetail = false;
+      try { wantDetail = request.headers.get('content-length') !== '0' && (await request.clone().json())?.detail === true; } catch { /* no body */ }
       const checkedAt = deps.now();
       for (let offset = 0; ; offset += 500) {
         if (offset >= 100000) throw new Error('Source pagination safety limit reached');
@@ -39,6 +44,7 @@ export function createHandler(deps: Dependencies) {
         const rows = await response.json();
         if (!Array.isArray(rows)) throw new Error('Invalid snapshot');
         metrics.push(...rows.map((source) => evaluateSource(source, checkedAt)));
+        for (const row of rows) labels.set(String(row.source_key), { name: String(row.source_name ?? ''), kind: String(row.source_kind ?? '') });
         if (rows.length < 500) break;
       }
       // Keep historic metrics for disabled sources; checked_at exposes old values.
@@ -47,10 +53,19 @@ export function createHandler(deps: Dependencies) {
         const response = await db('source_freshness_metrics?on_conflict=source_key', rows);
         if (!response.ok) throw new Error('Metrics persistence failed');
       }
-      const counts: Record<string, number> = {};
+            const counts: Record<string, number> = {};
       for (const metric of metrics) counts[metric.status] = (counts[metric.status] ?? 0) + 1;
-      // No outbound email/SMS/webhook. Do not return source names or URLs.
-      return reply({ ok: true, checked_sources: metrics.length, actionable_sources: metrics.filter((m) => m.actionable).length, counts, alert_delivery: 'not_configured' });
+      // Diagnosis separates deliberate-pause effects from real defects. Counts only unless an admin session asks for detail.
+      const paused = deps.ingestionPaused !== false;
+      const diagnoses = metrics.map((metric) => diagnose(metric, { ingestionPaused: paused }));
+      const summary = summarize(diagnoses);
+      // No outbound email/SMS/webhook. Source names are returned ONLY to an admin session that explicitly requests detail.
+      const detail = isAdminSession && wantDetail
+        ? metrics.map((m, i) => ({ source_key: m.source_key, ...labels.get(m.source_key), status: m.status, flags: m.flags, ...diagnoses[i], last_success_at: m.last_success_at, last_published_at: m.last_published_at }))
+            .filter((row) => row.severity >= 2).sort((a, b) => b.severity - a.severity).slice(0, 600)
+        : undefined;
+      return reply({ ok: true, checked_sources: metrics.length, actionable_sources: metrics.filter((m) => m.actionable).length, counts,
+        ingestion_paused: paused, diagnosis: summary, ...(detail ? { detail } : {}), alert_delivery: 'not_configured' });
     } catch {
       // Backend errors may contain secrets or private excerpts: never return them.
       return reply({ ok: false, error: 'Freshness check failed' }, 503);

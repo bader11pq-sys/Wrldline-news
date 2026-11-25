@@ -29,6 +29,16 @@
         const item = document.createElement("p");
         item.textContent = label + ": " + number(report.counts[key]); values.appendChild(item);
       }
+      if (report.diagnosis && report.diagnosis.counts) {
+        const dlabels = { never_succeeded: "عطل: لم ينجح قط", last_attempt_failed: "عطل: آخر محاولة فشلت", stale_source: "عطل: مصدر راكد", paused_expected: "متوقع بسبب إيقاف الجلب", never_polled: "لم يُفحص بعد", misconfigured: "يحتاج إعداد وتيرة" };
+        for (const [key, label] of Object.entries(dlabels)) {
+          const item = document.createElement("p"); item.dataset.diagnosis = key;
+          item.textContent = label + ": " + number(report.diagnosis.counts[key]); values.appendChild(item);
+        }
+        const note = document.createElement("p"); note.className = "muted";
+        note.textContent = report.ingestion_paused ? "الجلب موقوف عمدًا؛ تأخر المصادر الناتج عن الإيقاف لا يُعد عطلًا في المصدر." : "الجلب مفعّل؛ كل تأخر يُعد عطلًا.";
+        values.appendChild(note);
+      }
       status.textContent = "فُحص " + number(report.checked_sources) + " مصدرًا؛ يحتاج " + number(report.actionable_sources) + " إلى متابعة. آخر تحديث: " + new Date().toLocaleString("ar-SA") + ". التنبيهات الخارجية غير مهيأة.";
     } catch { status.textContent = "تعذر فحص المصادر. حاول لاحقًا؛ لا يُعامل فشل الفحص على أنه نجاح أو مصدر سليم."; }
     finally { busy = false; button.disabled = false; }
