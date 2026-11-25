@@ -37,6 +37,11 @@ jobs:
           python -m pip install "playwright==1.56.0"
           python -m playwright install chromium
 
+      - name: Validate catalog and Python syntax
+        run: |
+          python tests/test_design_agent_catalog.py
+          python -m py_compile scripts/design-agent/capture_references.py
+
       - name: Capture reference homepages
         run: |
           python scripts/design-agent/capture_references.py --limit "${{ github.event.inputs.source_limit || '0' }}"
