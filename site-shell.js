@@ -30,6 +30,7 @@
   copy.ar.briefing = "ملخص اليوم";
   copy.ar.forYou = "لك"; copy.en.forYou = "For you";
   copy.ar.countries = "الدول"; copy.en.countries = "Countries";
+  copy.ar.newsmap = "خريطة الأخبار"; copy.en.newsmap = "News map";
   copy.ar.economy = copy.ar.economy || "لوحات الاقتصاد"; copy.en.economy = copy.en.economy || "Economy dashboards";
   copy.en.briefing = "Daily briefing";
   const t = (key) => copy[lang][key] || copy.ar[key];
@@ -78,6 +79,7 @@
       <a class="wl-nav-link" href="for-you.html">${t("forYou")}</a>
       <a class="wl-nav-link" href="countries.html">${t("countries")}</a>
       <a class="wl-nav-link" href="economy.html">${t("economy")}</a>
+      <a class="wl-nav-link" href="news-map.html">${t("newsmap")}</a>
       <a class="wl-nav-link" href="daily-briefing.html">${t("briefing")}</a>
       <a class="wl-nav-link" href="/news/?lang=${lang}">${lang === "ar" ? "الأرشيف" : "Archive"}</a>
     </div></nav></div>
