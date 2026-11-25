@@ -111,7 +111,7 @@
     <symbol id="i-home" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1V10Z"/></symbol>
   </svg>
 
-  <div class="wl-utility">
+  <div class="wl-utility" role="region" aria-label="شريط حالة الموقع">
     <div class="wl-container wl-utility-in">
       <span class="wl-utility-date"><svg aria-hidden="true"><use href="#i-clock"/></svg><time id="todayLabel" aria-label="تاريخ اليوم">تغطية عالمية على مدار الساعة</time></span>
       <span class="wl-utility-side">
@@ -125,13 +125,13 @@
   <header class="wl-header" id="siteHeader">
     <div class="wl-container wl-masthead">
       <button class="wl-icon-btn wl-mobile-menu" id="menuButton" aria-label="فتح القائمة" aria-expanded="false" aria-controls="mainNav"><svg aria-hidden="true"><use href="#i-menu"/></svg></button>
-      <a class="wl-brand" href="index.html" aria-label="WRLDLINE NEWS — الصفحة الرئيسية">
+      <a class="wl-brand" href="index.html">
         <span class="wl-brand-mark" aria-hidden="true"><img src="/assets/brand/wrldline-symbol-small.webp" alt="" width="44" height="34"></span>
         <span class="wl-brand-copy"><strong>WRLDLINE</strong><small>NEWS</small></span>
       </a>
       <div class="wl-head-actions" data-site-editor-main>
-        <button class="wl-search-trigger" id="searchButton" type="button" aria-label="ابحث في الأخبار" aria-haspopup="dialog">
-          <svg aria-hidden="true"><use href="#i-search"/></svg><span>ابحث في الأخبار</span><kbd class="wl-kbd" dir="ltr" aria-hidden="true">Ctrl / ⌘ K</kbd>
+        <button class="wl-search-trigger" id="searchButton" type="button" aria-haspopup="dialog">
+          <svg aria-hidden="true"><use href="#i-search"/></svg><span>ابحث في الأخبار</span><kbd class="wl-kbd" dir="ltr">Ctrl / ⌘ K</kbd>
         </button>
         <button class="wl-icon-btn" id="savedButton" type="button" aria-label="المحفوظات"><svg aria-hidden="true"><use href="#i-star"/></svg></button>
         <button class="wl-icon-btn" id="themeButton" type="button" aria-label="تغيير المظهر"><svg aria-hidden="true"><use href="#i-moon"/></svg></button>
@@ -311,7 +311,6 @@
   </div>
   <ol class="front-edition-grid">
     <li class="front-pick front-pick--dossier front-pick--lead">
-      <span class="front-pick-num" aria-hidden="true">01</span>
       <a class="front-pick-link" href="/dossier/opec-plus-december-2026.html" hreflang="ar">
         <span class="front-pick-meta"><span class="front-pick-type"><span lang="ar">ملف الحدث</span><span lang="en">Event dossier</span></span><span><span lang="ar">الطاقة والأسواق</span><span lang="en">Energy and markets</span></span></span>
         <h3><span lang="ar">أوبك+: ما الذي حُسم لديسمبر، وما الذي ننتظره؟</span><span lang="en">OPEC+: What is settled for December, and what comes next?</span></h3>
@@ -320,7 +319,6 @@
       </a>
     </li>
     <li class="front-pick front-pick--dossier">
-      <span class="front-pick-num" aria-hidden="true">02</span>
       <a class="front-pick-link" href="/dossier/hormuz-closure-2026.html" hreflang="ar">
         <span class="front-pick-meta"><span class="front-pick-type"><span lang="ar">ملف الحدث</span><span lang="en">Event dossier</span></span><span><span lang="ar">الملاحة</span><span lang="en">Shipping</span></span></span>
         <h3><span lang="ar">هرمز: ما الذي تعنيه إحاطة مجلس الأمن للملاحة؟</span><span lang="en">Hormuz: What the UN briefing tells us about shipping</span></h3>
@@ -329,7 +327,6 @@
       </a>
     </li>
     <li class="front-pick front-pick--dossier">
-      <span class="front-pick-num" aria-hidden="true">03</span>
       <a class="front-pick-link" href="/dossier/bab-al-mandab-2026.html" hreflang="ar">
         <span class="front-pick-meta"><span class="front-pick-type"><span lang="ar">ملف الحدث</span><span lang="en">Event dossier</span></span><span><span lang="ar">أمن البحر الأحمر</span><span lang="en">Red Sea security</span></span></span>
         <h3><span lang="ar">باب المندب بعد انسحاب القوات الحكومية اليمنية</span><span lang="en">Bab al-Mandab after the Yemeni government forces’ withdrawal</span></h3>
@@ -338,7 +335,6 @@
       </a>
     </li>
     <li class="front-pick front-pick--analysis">
-      <span class="front-pick-num" aria-hidden="true">04</span>
       <a class="front-pick-link" href="/news/7dad6cc7-0433-4f23-b358-314c249f02b9" data-article-edition-link>
         <span class="front-pick-meta"><span class="front-pick-type"><span lang="ar">تحليل</span><span lang="en">Analysis</span></span><span><span lang="ar">السودان</span><span lang="en">Sudan</span></span></span>
         <h3><span lang="ar">القاعدة التي لم تُبنَ بعد: لماذا تهم بورسودان موسكو؟</span><span lang="en">The base that hasn’t been built: Why Port Sudan matters to Moscow</span></h3>
@@ -347,7 +343,6 @@
       </a>
     </li>
     <li class="front-pick front-pick--reported">
-      <span class="front-pick-num" aria-hidden="true">05</span>
       <a class="front-pick-link" href="/news/c9e9967a-9096-49ef-8e5e-074a5ce2d733" data-article-edition-link>
         <span class="front-pick-meta"><span class="front-pick-type"><span lang="ar">ملخص منسوب</span><span lang="en">Attributed summary</span></span><span><span lang="ar">الشؤون الإنسانية</span><span lang="en">Humanitarian affairs</span></span></span>
         <h3><span lang="ar">مركز الملك سلمان يوزّع مساعدات غذائية على نازحين في اليمن</span><span lang="en">King Salman aid centre distributes food to displaced families in Yemen</span></h3>

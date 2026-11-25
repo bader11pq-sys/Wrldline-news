@@ -196,7 +196,7 @@
     slots.mapBox = h("div", { class: "wp-map wp-map-lg", id: "newsMap", role: "region", "aria-label": t("map") });
     slots.legend = h("div", {}); slots.country = h("div", {}); slots.region = h("div", {}); slots.list = h("div", {}); slots.listHead = h("div", {});
     fill(app, slots.controls, slots.summary,
-      h("section", { class: "wp-card", "aria-labelledby": "nMapT" }, h("h2", { id: "nMapT", text: t("map") }), h("p", { class: "wp-footnote", text: t("mapHint") }), slots.mapBox, slots.legend),
+      h("section", { class: "wp-card" }, h("h2", { id: "nMapT", text: t("map") }), h("p", { class: "wp-footnote", text: t("mapHint") }), slots.mapBox, slots.legend),
       h("div", { class: "wp-grid-2" },
         h("section", { class: "wp-card", "aria-labelledby": "nCt" }, h("h2", { id: "nCt", text: t("countries") }), slots.country),
         h("section", { class: "wp-card", "aria-labelledby": "nRg" }, h("h2", { id: "nRg", text: t("region") }), slots.region)),

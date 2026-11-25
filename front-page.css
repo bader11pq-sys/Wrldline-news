@@ -23,11 +23,6 @@ html[data-lang="en"] .front-edition span[lang="en"] { display: inline; }
   grid-row: span 2; color: #faf7f0; background:
     radial-gradient(ellipse at 3% 110%, #2b4358 0%, transparent 62%), #162736;
 }
-.front-pick-num {
-  position: absolute; z-index: -1; inset-inline-end: .8rem; inset-block-start: .45rem;
-  font: 800 2.6rem/1 var(--font-latin, sans-serif); color: var(--ink-2); opacity: .16;
-}
-.front-pick--lead .front-pick-num { color: #fff; opacity: .12; font-size: clamp(5rem, 12vw, 10rem); }
 .front-pick-link {
   display: flex; flex-direction: column; align-items: flex-start; gap: .55rem; height: 100%;
   color: inherit; padding: clamp(.85rem, 1.8vw, 1.35rem); text-decoration: none;

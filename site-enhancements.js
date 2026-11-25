@@ -6,7 +6,14 @@
  if(!document.querySelector('script[src*="wl-modern.js"]')){const sc=document.createElement('script');sc.src='/wl-modern.js?v=20261122-reader';sc.defer=true;document.body.appendChild(sc);}
 
  const bar=document.createElement('div');bar.className='wl-reading-progress';bar.setAttribute('aria-hidden','true');document.body.prepend(bar);
- const skip=document.createElement('a');skip.className='wl-skip-enhanced';skip.href=document.querySelector('#main')?'#main':'#mainContent';skip.textContent='انتقل إلى المحتوى';document.body.prepend(skip);
+ const hasSkip=document.querySelector('a.skip-link,a.desk-skip,a.monitor-skip,a.wl-skip-enhanced');
+ if(!hasSkip){
+  const main=document.querySelector('#main,#mainContent,main');
+  if(main){if(!main.id)main.id='mainContent';
+   const skip=document.createElement('a');skip.className='wl-skip-enhanced';skip.href='#'+main.id;
+   skip.textContent=(document.documentElement.lang==='en')?'Skip to content':'انتقل إلى المحتوى';
+   const host=document.querySelector('#siteHeader')||document.body;host.prepend(skip);}
+ }
  const top=document.createElement('button');top.className='wl-top-button';top.type='button';top.setAttribute('aria-label','العودة إلى أعلى الصفحة');top.textContent='↑';document.body.append(top);
  const update=()=>{const h=document.documentElement,s=h.scrollHeight-h.clientHeight,p=s>0?(scrollY/s)*100:0;bar.style.width=Math.min(100,p)+'%';top.classList.toggle('is-visible',scrollY>520)};
  addEventListener('scroll',update,{passive:true});update();top.addEventListener('click',()=>scrollTo({top:0,behavior:'smooth'}));

@@ -12,7 +12,7 @@ html,body{overflow-x:clip}
 .wlm-tabbar{position:fixed;inset-inline:0;bottom:0;z-index:95;display:none;grid-template-columns:repeat(5,1fr);padding:6px 6px calc(6px + env(safe-area-inset-bottom));background:color-mix(in srgb,var(--paper,#f5f2ea) 92%,transparent);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border-top:1px solid var(--line,#e2dccf);box-shadow:0 -8px 24px #06101a14}
 .wlm-tab{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;min-height:50px;border:0;background:none;border-radius:12px;color:var(--muted,#5f6b7a);font:600 11px/1.1 "IBM Plex Sans Arabic",system-ui,sans-serif;text-decoration:none;cursor:pointer}
 .wlm-tab svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
-.wlm-tab.is-active{color:var(--gold-strong,#8d6827);background:var(--gold-soft,#f2e6cc)}
+.wlm-tab.is-active{color:var(--gold-strong,#7d5a1f);background:var(--gold-soft,#f2e6cc)}
 .wlm-tab--live svg{color:#c4362d}
 .wlm-sheet{position:fixed;inset:0;margin:0;border:0;padding:0;width:100%;height:100%;max-width:none;max-height:none;background:transparent;color:inherit}
 .wlm-sheet:not([open]){display:none}
@@ -22,7 +22,7 @@ body.wlm-sheet-open{overflow:hidden}
 .wlm-sheet-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
 .wlm-sheet-head h2{margin:0;font:800 20px/1.3 "Noto Kufi Arabic",system-ui,sans-serif}
 .wlm-close{width:44px;height:44px;border-radius:50%;border:1px solid var(--line,#e2dccf);background:var(--card,#fff);color:inherit;font-size:20px;cursor:pointer}
-.wlm-group{margin:16px 0 8px;font:700 12px/1 "IBM Plex Sans Arabic",sans-serif;color:var(--gold-strong,#8d6827);letter-spacing:.02em}
+.wlm-group{margin:16px 0 8px;font:700 12px/1 "IBM Plex Sans Arabic",sans-serif;color:var(--gold-strong,#7d5a1f);letter-spacing:.02em}
 .wlm-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;list-style:none;padding:0;margin:0}
 .wlm-item{display:flex;flex-direction:column;gap:4px;padding:13px;border-radius:14px;border:1px solid var(--line,#e2dccf);background:var(--card,#fff);color:inherit;text-decoration:none;min-height:70px}
 .wlm-item strong{font:700 14px/1.35 "IBM Plex Sans Arabic",sans-serif}

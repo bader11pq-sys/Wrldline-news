@@ -77,7 +77,6 @@ export function renderEdition({ editedOn, picks }, catalog) {
     const format = t(desk.label(p.type, "ar"), desk.label(p.type, "en"));
     const cta = p.type === "dossier" ? t("افتح ملف الحدث", "Open the dossier") : t("اقرأ القصة", "Read the story");
     return `<li class="front-pick front-pick--${p.type}${lead ? " front-pick--lead" : ""}">
-      <span class="front-pick-num" aria-hidden="true">${String(i + 1).padStart(2, "0")}</span>
       <a class="front-pick-link" href="${esc(p.url)}"${p.type === "dossier" ? ' hreflang="ar"' : ' data-article-edition-link'}>
         <span class="front-pick-meta"><span class="front-pick-type">${format}</span><span>${localized(p.desk)}</span></span>
         <h3>${localized(p.title)}</h3>

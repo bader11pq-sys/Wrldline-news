@@ -197,7 +197,7 @@
     const a = item.article;
     const saved = state.savedIds.has(a.id);
     const link = h("a", { href: "/news/" + a.id, onclick: () => recordRead(a), ...(a.titleLang ? { lang: a.titleLang, dir: a.titleLang === "ar" ? "rtl" : "ltr" } : {}) },
-      h("h3", { text: a.title }));
+      h("h2", { text: a.title }));
     const reasons = withReasons && item.reasons ? item.reasons.filter((r) => !["read", "saved"].includes(r.type)).map((r) => F.reasonText(r, lang, names)).filter(Boolean) : [];
     if (item.explore) reasons.push(t("exploration"));
     return h("article", { class: "wp-card wp-article" },
