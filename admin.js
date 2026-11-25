@@ -14,7 +14,7 @@ const workspace=window.WLEditorWorkspace;
 const editionEditor=window.WLEditorEditions;
 let publishedNotice=null;
 try{if(typeof BroadcastChannel==="function")publishedNotice=new BroadcastChannel("wrldline:publication");}catch{}
-const listCore="id,title,category,country,event_country,source_name,source_url,published_at,url,image_url,editorial_status,is_breaking,correction_note,corrected_at,lang,source_language";
+const listCore="id,title,category,country,event_country,source_name,source_url,published_at,url,image_url,editorial_status,is_breaking,is_exclusive,exclusive_reason,correction_note,corrected_at,lang,source_language,audience_lane,gate_reason";
 const editorExtra="media_type,content_type,sponsor_name,sponsor_url,ai_classification_status,ai_risk_level";
 const countryLabel=value=>{if(!value)return "";const map={"السعودية":"Saudi Arabia","المملكة العربية السعودية":"Saudi Arabia","مصر":"Egypt","الصين":"China","دولي":"Unknown","الإمارات":"United Arab Emirates","قطر":"Qatar","الكويت":"Kuwait","البحرين":"Bahrain","عمان":"Oman","اليمن":"Yemen","الأردن":"Jordan","لبنان":"Lebanon","فلسطين":"Palestine","سوريا":"Syria","العراق":"Iraq","المغرب":"Morocco","الجزائر":"Algeria","تونس":"Tunisia","ليبيا":"Libya","السودان":"Sudan"};return currentLang()==="en"?(map[value]||value):value;};
 const editorialLabel=value=>{const map={published:t("منشور","Published"),draft:t("مسودة","Draft"),review:t("قيد المراجعة","In review"),rejected:t("مرفوض","Rejected")};return map[value]||value;};
@@ -105,8 +105,9 @@ function resetForm(){
  const original=$("originalArticleLanguage");
  original.disabled=false;
  original.querySelector("option[data-existing]")?.remove();
- $("articleForm").reset();$("articleId").value="";$("contentType").value="news";$("source").value="هيئة التحرير";$("source").readOnly=false;syncContentType();$("editorialStatus").value="published";$("articleKind").value="news";$("sponsorName").value="";$("sponsorUrl").value="";$("correctionNote").value="";syncSponsorFields();$("isBreaking").checked=false;$("mediaType").value="image";$("mediaFile").value="";setMediaPreview("");closeMediaLibrary();syncPublishButtons();
+ $("articleForm").reset();$("articleId").value="";$("contentType").value="news";$("source").value="هيئة التحرير";$("source").readOnly=false;syncContentType();$("editorialStatus").value="published";$("articleKind").value="news";$("sponsorName").value="";$("sponsorUrl").value="";$("correctionNote").value="";syncSponsorFields();$("isBreaking").checked=false;$("isExclusive").checked=false;$("exclusiveReason").value="";window.WLEditorialAssist?.syncExclusive();$("mediaType").value="image";$("mediaFile").value="";setMediaPreview("");closeMediaLibrary();syncPublishButtons();
  workspace?.setBody("");workspace?.markClean();workspace?.showSavedDraft();
+ const gateNote=$("publishGateNote");if(gateNote){gateNote.hidden=true;gateNote.textContent="";}
 }
 function syncPublishButtons(){
  const status=$("editorialStatus").value;
@@ -247,6 +248,35 @@ function renderArticleList(){
  }
  $("articleList").replaceChildren(result);
 }
+const GATE_REASONS={
+ short_headline:"العنوان قصير جدًا (أقل من ٨ أحرف).",
+ missing_source:"لا يوجد اسم مصدر ولا رابط مصدر.",
+ blocked_source:"المصدر مصنّف كمصدر محجوب (مجمّع أخبار مثل Google News).",
+ low_value_format:"النص يشبه إعلان وظائف أو محتوى منخفض القيمة.",
+ arabic_sport:"خبر رياضي؛ السياسة الحالية تحوّل الرياضة إلى أرشيف منفصل. اختر قسمًا آخر أو اجعل نوع المحتوى «مقال تحريري».",
+ non_arabic_unvetted_source:"لغة النص غير عربية والمصدر غير موثوق. اختر «العربية» أو غيّر المصدر إلى «WRLDLINE NEWS».",
+ non_arabic_off_topic:"نص غير عربي في قسم غير سياسي/اقتصادي/أمني. غيّر لغة النص إلى العربية أو القسم.",
+ non_arabic_no_regional_link:"نص غير عربي بلا صلة إقليمية واضحة.",
+ not_permitted:"لم تجتز بوابة النشر."
+};
+async function checkPublicationVisibility(id){
+ const note=$("publishGateNote");
+ const {data,error}=await db.from("articles").select("audience_lane,gate_reason,editorial_status,published_at").eq("id",id).single();
+ if(error||!data){if(note)note.hidden=true;return {ok:true,message:""};}
+ const lane=data.audience_lane||"";
+ const ok=lane==="arabic"||lane==="world";
+ if(note){
+  note.hidden=false;
+  note.dataset.tone=ok?"ok":"";
+  if(ok)note.textContent=lane==="world"?"منشور في المسار الدولي المختار، وسيظهر في صفحة الأخبار.":"منشور ويظهر الآن في «أحدث الأخبار» وفي قسمه.";
+  else{
+   const reason=GATE_REASONS[data.gate_reason]||("سبب تقني: "+(data.gate_reason||"غير محدد"));
+   note.textContent="حُفظ الخبر لكنه لن يظهر للقرّاء: "+reason+" عدّل الحقول المذكورة ثم اضغط حفظ التعديلات. "+
+    "إن كان النص من تحرير WRLDLINE فاختر نوع المحتوى «مقال / منشور تحريري» ليعامل كعمل بشري.";
+  }
+ }
+ return {ok,message:ok?"":("الخبر محجوب عن العرض العام: "+(GATE_REASONS[data.gate_reason]||data.gate_reason||"غير محدد"))};
+}
 function announcePublication(id){
  const link="/news/"+encodeURIComponent(id);
  workspace?.saved(t("تم النشر على الموقع.","Published on the site."),link);
@@ -259,7 +289,7 @@ async function setArticleStatus(id,status){
  if(status==="published")values.published_at=new Date().toISOString();
  const {error}=await db.from("articles").update(values).eq("id",id).eq("editorial_status",previous.editorial_status).select("id").single();
  if(error){message("تعذر تغيير حالة الخبر: "+error.message);return;}
- if(status==="published"){announcePublication(id);$("publishFeedback").scrollIntoView({block:"nearest"});}
+ if(status==="published"){const visibility=await checkPublicationVisibility(id);if(visibility.ok)announcePublication(id);else message(visibility.message);$("publishFeedback").scrollIntoView({block:"nearest"});}
  message(t("تم تحديث حالة الخبر إلى ","Story status updated to ")+editorialLabel(status)+".");void loadArticles();
 }
 async function editArticle(ref,restoring=false){
@@ -288,7 +318,7 @@ async function editArticle(ref,restoring=false){
  if(!["ar","en"].includes(code)){const option=new Option(lang,lang);option.dataset.existing="";original.add(option);}
  original.value=code;original.disabled=true;
  editionEditor?.attach(db,a);
- $("articleId").value=a.id;$("title").value=a.title||"";$("category").value=a.category||"uncategorized";$("country").value=a.country||"";$("contentType").value=a.source_name==="WRLDLINE NEWS"?"editorial":"news";syncContentType();$("sourceUrl").value=a.source_url||(/^https?:\/\//i.test(a.url||"")?a.url:"");$("source").value=a.source_name||"هيئة التحرير";$("imageUrl").value=a.image_url||"";$("mediaType").value=a.media_type||"image";$("mediaFile").value="";setMediaPreview(a.image_url||"",a.media_type||"image");$("editorialStatus").value=a.editorial_status||"published";$("articleKind").value=a.content_type||"news";$("sponsorName").value=a.sponsor_name||"";$("sponsorUrl").value=a.sponsor_url||"";$("correctionNote").value=a.correction_note||"";syncSponsorFields();$("isBreaking").checked=!!a.is_breaking;
+ $("articleId").value=a.id;$("title").value=a.title||"";$("category").value=a.category||"uncategorized";$("country").value=a.country||"";$("contentType").value=a.source_name==="WRLDLINE NEWS"?"editorial":"news";syncContentType();$("sourceUrl").value=a.source_url||(/^https?:\/\//i.test(a.url||"")?a.url:"");$("source").value=a.source_name||"هيئة التحرير";$("imageUrl").value=a.image_url||"";$("mediaType").value=a.media_type||"image";$("mediaFile").value="";setMediaPreview(a.image_url||"",a.media_type||"image");$("editorialStatus").value=a.editorial_status||"published";$("articleKind").value=a.content_type||"news";$("sponsorName").value=a.sponsor_name||"";$("sponsorUrl").value=a.sponsor_url||"";$("correctionNote").value=a.correction_note||"";syncSponsorFields();$("isBreaking").checked=!!a.is_breaking;$("isExclusive").checked=!!a.is_exclusive;$("exclusiveReason").value=a.exclusive_reason||"";window.WLEditorialAssist?.syncExclusive();
  if(workspace)workspace.setBody(a.summary);else $("summary").value=a.summary||"";
  syncPublishButtons();workspace?.markClean();workspace?.showSavedDraft();workspace?.saved("");
  $("title").focus({preventScroll:true});
@@ -317,6 +347,9 @@ $("articleForm").addEventListener("submit",async e=>{
   if(!title||!summary.trim()||summary.length>1000000||!["published","draft","review","rejected"].includes(status)){
    workspace?.saved("تحقّق من العنوان والنص وحالة النشر. الحد الأقصى مليون حرف.");return;
   }
+  if($("isExclusive").checked&&!$("exclusiveReason").value.trim()){
+   workspace?.saved("اكتب أساس الحصرية: من أين حصلت التحرير على المادة؟");$("exclusiveReason").focus();return;
+  }
   button.disabled=true;draftButton.disabled=true;$("articleForm").inert=true;$("restoreWorkingDraft").disabled=true;
   button.textContent=t("جارٍ الحفظ…","Saving…");
   workspace?.saved(t("جارٍ الحفظ…","Saving…"));
@@ -326,7 +359,7 @@ $("articleForm").addEventListener("submit",async e=>{
    await ensureDb();
    uploaded=await uploadSelectedMedia();
    const imageUrl=uploaded?uploaded.url:($("imageUrl").value.trim()||null);
-   const payload={title,summary,category:$("category").value,country:$("country").value.trim()||null,source_name:$("contentType").value==="editorial"?"WRLDLINE NEWS":$("source").value.trim(),url:$("sourceUrl").value.trim()||(!/^https?:\/\//i.test(previous?.url||"")&&previous?.url)||("editorial-"+Date.now()),image_url:imageUrl,media_type:uploaded?uploaded.type:(imageUrl?($("mediaType").value||"image"):null),editorial_status:status,is_breaking:$("isBreaking").checked,content_type:$("articleKind").value,sponsor_name:$("articleKind").value==="sponsored"?($("sponsorName").value.trim()||null):null,sponsor_url:$("articleKind").value==="sponsored"?($("sponsorUrl").value.trim()||null):null,correction_note:$("correctionNote").value.trim()||null,corrected_at:$("correctionNote").value.trim()?new Date().toISOString():null};
+   const payload={title,summary,category:$("category").value,country:$("country").value.trim()||null,source_name:$("contentType").value==="editorial"?"WRLDLINE NEWS":$("source").value.trim(),url:$("sourceUrl").value.trim()||(!/^https?:\/\//i.test(previous?.url||"")&&previous?.url)||("editorial-"+Date.now()),image_url:imageUrl,media_type:uploaded?uploaded.type:(imageUrl?($("mediaType").value||"image"):null),editorial_status:status,is_breaking:$("isBreaking").checked,is_exclusive:$("isExclusive").checked,exclusive_reason:$("isExclusive").checked?($("exclusiveReason").value.trim()||null):null,content_type:$("articleKind").value,sponsor_name:$("articleKind").value==="sponsored"?($("sponsorName").value.trim()||null):null,sponsor_url:$("articleKind").value==="sponsored"?($("sponsorUrl").value.trim()||null):null,correction_note:$("correctionNote").value.trim()||null,corrected_at:$("correctionNote").value.trim()?new Date().toISOString():null};
    payload.source_url=$("sourceUrl").value.trim()||null;payload.event_country=payload.country;
    if(!canSetBreaking)delete payload.is_breaking;
    if(previous&&previous.country===payload.event_country){delete payload.country;delete payload.event_country;}
@@ -340,7 +373,11 @@ $("articleForm").addEventListener("submit",async e=>{
    message(status==="published"?"تم نشر الخبر.":status==="draft"?"حُفظت المسودة الخاصة.":"حُفظ الخبر دون نشره.");
    workspace?.clearSaved();resetForm();
    editionEditor?.attach(db,{id:result.data.id,title,lang:previous?.lang||originalLang,source_language:previous?.source_language||originalLang,editorial_status:status});
-   if(status==="published")announcePublication(result.data.id);
+   if(status==="published"){
+    const visibility=await checkPublicationVisibility(result.data.id);
+    if(visibility.ok)announcePublication(result.data.id);
+    else{workspace?.saved(visibility.message);message(visibility.message);}
+   }
    else workspace?.saved(status==="draft"?"حُفظت المسودة. يمكنك فتحها من غرفة المراجعة.":"تم الحفظ دون نشر.");
    // A list/dashboard refresh failure must never hide a successful database save.
    loadArticles().catch(refreshError=>{console.error("Article saved, but list refresh failed",refreshError);});

@@ -303,9 +303,16 @@
     const count = node("small");
     const rendered = node("div",null,{class:"wl-edit-preview"});
     rendered.hidden = true;
-    function stats() {
-      count.textContent = new Intl.NumberFormat(document.documentElement.lang).format(body.value.trim() ? body.value.trim().split(/\s+/u).length : 0) + t(" كلمة"," words");
-      if (!rendered.hidden) void showPreview();
+    let statsTimer = 0;
+    function stats(immediate) {
+      clearTimeout(statsTimer);
+      statsTimer = setTimeout(() => {
+        if (!body.isConnected) return;
+        const value = body.value;
+        const words = value.trim() ? (value.match(/\S+/gu) || []).length : 0;
+        count.textContent = new Intl.NumberFormat(document.documentElement.lang).format(words) + t(" كلمة"," words");
+        if (!rendered.hidden) void showPreview();
+      }, immediate ? 0 : 300);
     }
     function insert(prefix) {
       const start = body.selectionStart, end = body.selectionEnd;
