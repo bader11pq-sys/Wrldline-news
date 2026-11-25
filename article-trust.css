@@ -10,3 +10,14 @@
 #editorialTrustPanel input[type=checkbox]{width:auto}#editorialTrustPanel .trust-entry{padding:12px 0;border-top:1px solid var(--line,#33445b)}#editorialTrustPanel textarea{min-height:85px}#editorialTrustPanel .trust-evidence-choice{display:flex;gap:8px;font-weight:400}#editorialTrustPanel .trust-inline{display:flex;gap:8px;align-items:center;flex-wrap:wrap}#editorialTrustPanel .trust-inline label{margin:0}#editorialTrustPanel .trust-notice{color:#f0cb89}#editorialTrustPanel fieldset{border:1px solid var(--line,#33445b);border-radius:10px;margin:16px 0;padding:14px}#editorialTrustPanel legend{color:var(--gold,#d5ad69)}
 @media(max-width:600px){.wl-trust-header{align-items:flex-start;flex-direction:column}.wl-trust{border-radius:10px}.wl-trust-badge{max-width:100%}}
 @media print{.wl-trust{background:white;color:#182439;border:1px solid #bbb}.wl-trust p,.wl-trust small,.wl-trust h3,.wl-trust a,.wl-trust time{color:#182439}.wl-trust a:after{content:" (" attr(href) ")";font-size:.75rem}}
+.pn-updates{margin-block:24px;padding:20px 22px;border:1px solid var(--line);border-inline-start:3px solid var(--gold);border-radius:var(--radius-sm,8px);background:var(--surface)}
+.pn-updates h2{font-size:1.15rem;margin:0 0 4px}.pn-updates-meta{color:var(--muted);font-size:13px;margin:0 0 14px}
+.pn-updates-list{list-style:none;margin:0;padding:0;border-inline-start:2px solid var(--line);margin-inline-start:6px}
+.pn-update{position:relative;padding:4px 18px 18px;padding-inline:18px 0}
+.pn-update::before{content:"";position:absolute;inset-inline-start:-7px;top:9px;width:12px;height:12px;border-radius:50%;background:var(--gold);border:2px solid var(--surface)}
+.pn-update--correction::before{background:#d9534f}.pn-update--development::before{background:#4aa37a}
+.pn-update-top{font-size:12px;color:var(--muted);margin:0 0 4px}.pn-update-kind{color:var(--gold-strong,var(--gold))}
+.pn-update--correction .pn-update-kind{color:#e5827e}
+.pn-update-body{margin:0;line-height:1.9;white-space:pre-line}
+.pn-update-src{display:inline-block;margin-top:6px;font-size:13px;color:var(--gold-strong,var(--gold));text-decoration:underline;text-underline-offset:4px}
+.pn-updates-jump{display:inline-block;margin:2px 0 10px;padding:4px 12px;border:1px solid var(--gold);border-radius:999px;font-size:12px;color:var(--gold-strong,var(--gold));text-decoration:none}
