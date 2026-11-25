@@ -1,0 +1,80 @@
+/* WRLDLINE NEWS — cross-cutting quality layer.
+ *
+ * One place for the few rules that must hold on every page regardless of which
+ * page-specific stylesheet is in use. Keep this file small and surgical: it
+ * loads last, so anything added here wins over earlier stylesheets at equal
+ * specificity.
+ *
+ * Covers:
+ *   1. Pointer target sizes (WCAG 2.2 SC 2.5.8, minimum 24 x 24 CSS px).
+ *   2. A readable floor for brand and kicker micro-type on small screens.
+ */
+
+/* 1. Pointer targets ------------------------------------------------------ */
+
+/* Source links, external links and small text buttons measured 14-22px tall,
+ * which is under the 24px minimum and hard to hit with a thumb. The negative
+ * block margin keeps the visual rhythm unchanged: the target grows into the
+ * surrounding whitespace instead of pushing the layout down. */
+:is(.source-link, .wl-external-link, .text-button, .back-link, .missed-source-link a, .exclusive-source-link) {
+  display: inline-flex;
+  align-items: center;
+  min-block-size: 24px;
+  min-inline-size: 24px;
+  margin-block: -3px;
+  padding-block: 3px;
+}
+
+/* Footer and utility navigation stacks 19px rows on an 11px type size. */
+:is(.ed-footer nav a, .footer-links a, .policy-site-links a, .footer-nav a, .wl-footer-nav a) {
+  display: inline-flex;
+  align-items: center;
+  min-block-size: 24px;
+  padding-block: 2px;
+}
+
+/* Link lists inside policy prose and the edition index render as 20-22px
+ * boxes. They are standalone targets, not links inside a sentence. */
+:is(.ed-sections p a, .front-edition-index a) {
+  display: inline-flex;
+  align-items: center;
+  min-block-size: 24px;
+}
+
+/* Consent banner actions. */
+.wrldline-consent .actions a {
+  display: inline-flex;
+  align-items: center;
+  min-block-size: 24px;
+}
+
+/* Row-based menu items that are full-width already only need the height. */
+:is(.dock-item, .wl-desk-card a, .list-row a) {
+  min-block-size: 24px;
+}
+
+/* 2. Micro-type floor on small screens ----------------------------------- */
+
+@media (max-width: 640px) {
+  /* The brand kicker drops to 6-7px and the hero kicker to 8px, which is
+   * below the point where letter-spaced capitals stay legible on a phone. */
+  :is(.wl-home .wl-brand-copy small, .brand-copy small, .footer-brand .wl-brand-copy small) {
+    font-size: 9px;
+    letter-spacing: 0.16em;
+  }
+  :is(.wl-home .wl-hero-title .wl-kicker, .hero-kicker, .wl-kicker) {
+    font-size: 10px;
+    letter-spacing: 0.14em;
+  }
+  /* Datelines, read times and category eyebrows sit at 9px. */
+  :is(.utility-date, .read-time, .eyebrow, .section-kicker, .card-byline, .story-source time) {
+    font-size: 10px;
+  }
+}
+
+/* Touch devices: never let a 24px target sit flush against another one. */
+@media (pointer: coarse) {
+  :is(.source-link, .wl-external-link, .text-button, .back-link) {
+    margin-inline-end: 4px;
+  }
+}

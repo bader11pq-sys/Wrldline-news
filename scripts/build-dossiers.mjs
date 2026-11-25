@@ -338,6 +338,7 @@ function pageShell({ title, description, canonical, body, jsonLd, extraHead = ""
 <link rel="alternate" type="application/rss+xml" title="ملفات WRLDLINE" href="/dossier/feed.xml">
 ${extraHead}
 <script type="application/ld+json">${jsonLd}</script>
+  <link rel="stylesheet" href="/quality.css?v=quality-1">
 </head>
 <body class="dossier-page ${bodyClass}">
 <a class="skip-link" href="#main">تجاوز إلى المحتوى</a>
