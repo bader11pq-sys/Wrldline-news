@@ -57,7 +57,7 @@ jobs:
           for file in supabase/functions/*/index.ts; do deno check --no-lock "$file"; done
           deno check --no-lock tests/reliability-edge_test.ts
       - name: Test protected endpoints and consent with no network permissions
-        run: deno test --no-lock --allow-env --allow-read tests/reliability-edge_test.ts tests/audience-collector.test.ts tests/notifications-edge_test.ts tests/stripe-webhook_test.ts
+        run: deno test --no-lock --allow-env --allow-read tests/reliability-edge_test.ts tests/audience-collector.test.ts tests/notifications-edge_test.ts tests/stripe-webhook_test.ts tests/translate-router_test.ts
       - name: Test editorial and newsletter RLS in disposable databases
         shell: bash
         run: |
