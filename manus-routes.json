@@ -115,6 +115,58 @@
     {
       "path": "/news/:id",
       "title": "خبر منشور"
+    },
+    {
+      "path": "/sections.html",
+      "title": "أقسام الصحيفة — الخريطة الكاملة"
+    },
+    {
+      "path": "/section/politics",
+      "title": "سياسة"
+    },
+    {
+      "path": "/section/economy",
+      "title": "الاقتصاد"
+    },
+    {
+      "path": "/section/world",
+      "title": "العالم"
+    },
+    {
+      "path": "/section/security",
+      "title": "الأمن والدفاع"
+    },
+    {
+      "path": "/section/society",
+      "title": "المجتمع"
+    },
+    {
+      "path": "/section/environment",
+      "title": "البيئة والمناخ"
+    },
+    {
+      "path": "/section/tech",
+      "title": "التقنية"
+    },
+    {
+      "path": "/section/culture",
+      "title": "الثقافة"
+    },
+    {
+      "path": "/section/science",
+      "title": "العلوم"
+    },
+    {
+      "path": "/section/health",
+      "title": "الصحة"
+    },
+    {
+      "path": "/section/sports",
+      "title": "الرياضة"
+    },
+    {
+      "path": "/section/rights",
+      "title": "الحقوق والحريات"
     }
   ]
 }

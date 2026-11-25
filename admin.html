@@ -106,13 +106,36 @@
    <p class="muted">التأكيد يتطلب دليلين من مجموعتي تقارير مستقلتين سجلهما المحرر، ولا يسمح بضم دليل مخالف أو مسحوب كدليل تأكيد. راجع تناقضات القصة قبل اعتمادها.</p>
    <div class="actions"><button id="trustSaveClaim" type="button" class="btn secondary">حفظ الادعاء</button><button id="trustResetClaim" type="button" class="btn secondary">ادعاء جديد</button></div>
   </fieldset>
-  <fieldset><legend>قرار بشري صريح — يحرسه الخادم</legend>
+  <fieldset class="credibility-quick" id="credibilityQuick">
+   <legend>حالة المصداقية — تغيير فوري بنقرة واحدة</legend>
+   <p class="muted credibility-help" id="credibilityHelp">اختر الحالة ليُحفظ التغيير مباشرة. لا يلزم إرفاق روابط مصادر أو كتابة ملاحظة. تُسجَّل هوية المحرر ووقت التغيير في سجل التدقيق تلقائيًا.</p>
+   <div class="grid">
+    <div><label for="credibilityStatus">حالة المصداقية</label>
+     <select id="credibilityStatus" aria-describedby="credibilityHelp credibilitySaveState">
+      <option value="unconfirmed">غير مؤكد</option>
+      <option value="single">مصدر واحد</option>
+      <option value="multi">مؤكد من مصادر متعددة</option>
+      <option value="confirmed">مؤكد بمراجعة بشرية</option>
+      <option value="field_confirmed">تأكيد ميداني</option>
+      <option value="official_confirmed">تأكيد رسمي</option>
+      <option value="disputed">متنازع عليه</option>
+      <option value="corrected">مصحّح</option>
+      <option value="retracted">مسحوب</option>
+     </select></div>
+    <div><label for="credibilityNote">ملاحظة داخلية (اختياري)</label><input id="credibilityNote" maxlength="500" placeholder="لماذا تغيّرت الحالة؟"></div>
+   </div>
+   <p id="credibilitySaveState" class="credibility-save" role="status" aria-live="polite">اختر حالة لحفظها فورًا.</p>
+  </fieldset>
+  <details class="credibility-advanced"><summary>المراجعة المتقدمة بالأدلة والادعاءات (اختيارية)</summary>
+  <fieldset><legend>قرار بشري صريح — المسار الصارم</legend>
+   <p class="muted">هذا المسار يتحقق من الادعاءات والترجمة ويسجّل ملاحظة إلزامية. استخدمه عند الحاجة إلى تأكيد موثّق بالأدلة، أما التغيير السريع فمتاح في الأعلى.</p>
    <label for="trustStoryStatus">تقييم القصة</label><select id="trustStoryStatus"><option value="unconfirmed">غير مؤكد</option><option value="disputed">متنازع عليه</option><option value="confirmed">مؤكد بعد مراجعة الأدلة</option></select>
    <label for="trustReviewNote">سبب قرار المحرر — داخلي، مطلوب</label><textarea id="trustReviewNote" maxlength="2000"></textarea>
    <label for="trustTranslationStatus">مراجعة نص المقال المترجم</label><select id="trustTranslationStatus"><option value="pending">لم تكتمل المراجعة البشرية</option><option value="reviewed">قارنت النص المترجم بالمصدر وراجعته بشريًا</option><option value="not_required">النص بلغة المصدر ولا يتطلب ترجمة</option></select>
    <label for="trustTranslationNote">ماذا راجعت في الترجمة؟ — داخلي، مطلوب عند اعتماد ترجمة</label><textarea id="trustTranslationNote" maxlength="2000"></textarea>
    <button id="trustReviewStory" type="button" class="btn">تسجيل قراري البشري</button>
   </fieldset>
+  </details>
   <details><summary>سجل التغييرات المنقّح لهذا الخبر</summary><div id="trustEditorHistory"></div></details>
  </div>
 </section>

@@ -75,12 +75,13 @@
     <div class="wl-nav-wrap" id="mainNav"><nav class="wl-nav" aria-label="${t("sections")}"><div class="wl-nav-scroll">
       <a class="wl-nav-link" href="index.html">${t("navHome")}</a>
       <a class="wl-nav-link" href="sections.html" hreflang="ar">${t("sections")}</a>
+      <a class="wl-nav-link" href="daily-briefing.html">${t("briefing")}</a>
+      <a class="wl-nav-link" href="history.html">${t("history")}</a>
       <a class="wl-nav-link" href="analysis.html" hreflang="ar">${t("analysis")}</a>
       <a class="wl-nav-link" href="for-you.html">${t("forYou")}</a>
       <a class="wl-nav-link" href="countries.html">${t("countries")}</a>
       <a class="wl-nav-link" href="economy.html">${t("economy")}</a>
       <a class="wl-nav-link" href="news-map.html">${t("newsmap")}</a>
-      <a class="wl-nav-link" href="daily-briefing.html">${t("briefing")}</a>
       <a class="wl-nav-link" href="/news/?lang=${lang}">${lang === "ar" ? "الأرشيف" : "Archive"}</a>
     </div></nav></div>
   </div>
@@ -92,9 +93,9 @@
     <div class="footer-main">
       <div><a class="wl-brand footer-brand" href="index.html"><img class="footer-logo" src="/assets/brand/wrldline-logo-main.jpg" alt="WRLDLINE NEWS" width="420" height="145"></a><p class="footer-about">${t("about")}</p></div>
       <div class="footer-col"><h2>${t("newsrooms")}</h2><a href="index.html">${t("navHome")}</a><a href="dossier/">${t("dossiers")}</a><a href="dossier/watchlist.html">${t("watchlist")}</a><a href="context.html">${t("context")}</a><a href="balance.html">${t("balance")}</a><a href="impact.html">${t("impact")}</a></div>
-      <div class="footer-col"><h2>${t("knowledge")}</h2><a href="history.html">${t("history")}</a><a href="mirror.html">${t("mirror")}</a><a href="explainers.html">${t("explainers")}</a><a href="promises.html">${t("promises")}</a></div>
+      <div class="footer-col"><h2>${t("knowledge")}</h2><a href="daily-briefing.html">${t("briefing")}</a><a href="history.html">${t("history")}</a><a href="mirror.html">${t("mirror")}</a><a href="explainers.html">${t("explainers")}</a><a href="promises.html">${t("promises")}</a></div>
       <div class="footer-col"><h2>${t("encyclopediaCol")}</h2><a href="history-explore.html">${t("atlas")}</a><a href="history-compare.html">${t("compare")}</a><a href="history-library.html">${t("library")}</a><a href="about.html">${t("aboutLink")}</a></div>
-      <div class="footer-col"><h2>${lang === "ar" ? "تابع الأخبار" : "Follow news"}</h2><a href="/news/">${lang === "ar" ? "كل الأخبار العامة" : "Public news"}</a><a href="topics.html">${t("topics")}</a><a href="tags.html">${t("tags")}</a><a href="/newsletter.html">${lang === "ar" ? "النشرة البريدية" : "Newsletter"}</a><a href="intelligence.html">${lang === "ar" ? "أعمال ومؤسسات" : "Business & institutions"}</a><a href="advertise.html">${t("advertise")}</a><a href="/rss.xml">RSS</a><a href="/atom.xml">Atom</a><button type="button" data-analytics-settings>${lang === "ar" ? "إعدادات الخصوصية" : "Privacy settings"}</button></div>
+      <div class="footer-col"><h2>${lang === "ar" ? "تابع الأخبار" : "Follow news"}</h2><a href="/news/">${lang === "ar" ? "كل الأخبار العامة" : "Public news"}</a><a href="sections.html">${t("sections")}</a><a href="tags.html">${t("tags")}</a><a href="/newsletter.html">${lang === "ar" ? "النشرة البريدية" : "Newsletter"}</a><a href="intelligence.html">${lang === "ar" ? "أعمال ومؤسسات" : "Business & institutions"}</a><a href="advertise.html">${t("advertise")}</a><a href="/rss.xml">RSS</a><a href="/atom.xml">Atom</a><button type="button" data-analytics-settings>${lang === "ar" ? "إعدادات الخصوصية" : "Privacy settings"}</button></div>
     </div>
     <div class="footer-bottom"><span>${t("copyright")}</span><span>${t("editorial")}</span></div>
   </div>

@@ -14,7 +14,7 @@ const workspace=window.WLEditorWorkspace;
 const editionEditor=window.WLEditorEditions;
 let publishedNotice=null;
 try{if(typeof BroadcastChannel==="function")publishedNotice=new BroadcastChannel("wrldline:publication");}catch{}
-const listCore="id,title,category,country,event_country,source_name,source_url,published_at,url,image_url,editorial_status,is_breaking,is_exclusive,exclusive_reason,correction_note,corrected_at,lang,source_language,audience_lane,gate_reason";
+const listCore="id,title,category,country,event_country,source_name,source_url,published_at,url,image_url,editorial_status,is_breaking,is_exclusive,exclusive_reason,correction_note,corrected_at,lang,source_language,audience_lane,gate_reason,verification";
 const editorExtra="media_type,content_type,sponsor_name,sponsor_url,ai_classification_status,ai_risk_level";
 const countryLabel=value=>{if(!value)return "";const map={"السعودية":"Saudi Arabia","المملكة العربية السعودية":"Saudi Arabia","مصر":"Egypt","الصين":"China","دولي":"Unknown","الإمارات":"United Arab Emirates","قطر":"Qatar","الكويت":"Kuwait","البحرين":"Bahrain","عمان":"Oman","اليمن":"Yemen","الأردن":"Jordan","لبنان":"Lebanon","فلسطين":"Palestine","سوريا":"Syria","العراق":"Iraq","المغرب":"Morocco","الجزائر":"Algeria","تونس":"Tunisia","ليبيا":"Libya","السودان":"Sudan"};return currentLang()==="en"?(map[value]||value):value;};
 const editorialLabel=value=>{const map={published:t("منشور","Published"),draft:t("مسودة","Draft"),review:t("قيد المراجعة","In review"),rejected:t("مرفوض","Rejected")};return map[value]||value;};
@@ -327,7 +327,7 @@ async function editArticle(ref,restoring=false){
  return true;
 }
 async function loadTrustContext(id,version){
- const columns="agency_name,agency_account_url,agency_statement_url,agency_narrative,trust_source_excerpt,editorial_trust_status,human_translation_status";
+ const columns="agency_name,agency_account_url,agency_statement_url,agency_narrative,trust_source_excerpt,editorial_trust_status,verification,trust_needs_review,trust_reviewed_at,human_translation_status";
  const [core,notes]=await Promise.all([
   db.from("articles").select(columns).eq("id",id).single(),
   db.rpc("get_editor_article_trust",{p_article_ids:[id]})
@@ -468,10 +468,23 @@ let activeTrustId=null;
 let trustEvidence=[];
 let trustClaims=[];
 let trustLoadVersion=0;
-const trustStatusLabel=value=>({confirmed:t("مؤكد بمراجعة بشرية","Human-reviewed confirmation"),unconfirmed:t("غير مؤكد","Unconfirmed"),disputed:t("متنازع عليه","Disputed")}[value]||t("غير مؤكد","Unconfirmed"));
+const CREDIBILITY_LABELS={
+ unconfirmed:[t("غير مؤكد","Unconfirmed")],single:[t("مصدر واحد","Single source")],
+ multi:[t("مؤكد من مصادر متعددة","Confirmed by multiple sources")],
+ confirmed:[t("مؤكد بمراجعة بشرية","Human-reviewed confirmation")],
+ field_confirmed:[t("تأكيد ميداني","Field-confirmed")],official_confirmed:[t("تأكيد رسمي","Officially confirmed")],
+ disputed:[t("متنازع عليه","Disputed")],corrected:[t("مصحّح","Corrected")],retracted:[t("مسحوب","Retracted")]
+};
+const CREDIBILITY_VALUES=Object.keys(CREDIBILITY_LABELS);
+const credibilityLabel=value=>CREDIBILITY_LABELS[value]?CREDIBILITY_LABELS[value][0]:t("غير مؤكد","Unconfirmed");
+const trustStatusLabel=value=>credibilityLabel(value);
+let credibilitySaved=null;
 function trustNotice(value){$("trustEditorStatus").textContent=value;}
 function resetTrustEditor(){
- activeTrustId=null;trustLoadVersion++;trustEvidence=[];trustClaims=[];
+ activeTrustId=null;trustLoadVersion++;trustEvidence=[];trustClaims=[];credibilitySaved=null;
+ if($("credibilityStatus")){$("credibilityStatus").disabled=true;$("credibilityStatus").dataset.saved="";}
+ if($("credibilitySaveState")){$("credibilitySaveState").textContent=t("اختر خبرًا لتغيير حالته.","Select a story to change its status.");$("credibilitySaveState").classList.remove("is-saved","is-error");}
+ if($("credibilityNote"))$("credibilityNote").value="";
  $("trustEditorControls").classList.add("hidden");
  trustNotice(t("اختر خبرًا محفوظًا لتحرير سجل المصداقية.","Select a saved story to edit its credibility context."));
 }
@@ -500,7 +513,18 @@ async function loadTrustEditor(id){
   trustEvidence=results[0].data||[];trustClaims=results[1].data||[];
   const story=activeArticle?.id===id?activeArticle:null;if(!story)throw new Error("الخبر غير موجود في محرّر المقال.");
   for(const [input,column] of Object.entries({trustAgencyName:"agency_name",trustAgencyAccount:"agency_account_url",trustAgencyStatement:"agency_statement_url",trustAgencyNarrative:"agency_narrative",trustSourceExcerpt:"trust_source_excerpt",trustReviewNote:"trust_review_note",trustTranslationNote:"human_translation_note"}))$(input).value=story[column]||"";
-  $("trustStoryStatus").value=story.editorial_trust_status||"unconfirmed";$("trustTranslationStatus").value=story.human_translation_status||"pending";
+  const creditValue=CREDIBILITY_VALUES.includes(story.verification)?story.verification:(CREDIBILITY_VALUES.includes(story.editorial_trust_status)?story.editorial_trust_status:"unconfirmed");
+  $("credibilityStatus").value=creditValue;$("credibilityStatus").dataset.saved=creditValue;$("credibilityStatus").disabled=false;
+  if(document.activeElement!==$("credibilityNote"))$("credibilityNote").value=story.trust_review_note||"";
+  if(credibilitySaved&&credibilitySaved.id===id){
+    $("credibilitySaveState").textContent=t("تم حفظ الحالة: ","Status saved: ")+credibilityLabel(credibilitySaved.status)+" · "+credibilitySaved.at;
+    $("credibilitySaveState").classList.add("is-saved");
+  }else{
+    $("credibilitySaveState").textContent=t("الحالة الحالية: ","Current status: ")+credibilityLabel(creditValue)+" · "+t("التغيير يُحفظ فور الاختيار.","Changes save as soon as you choose.");
+    $("credibilitySaveState").classList.remove("is-saved");
+  }
+  $("trustStoryStatus").value=["confirmed","unconfirmed","disputed"].includes(story.editorial_trust_status)?story.editorial_trust_status:(["multi","field_confirmed","official_confirmed"].includes(creditValue)?"confirmed":"unconfirmed");
+  $("trustTranslationStatus").value=story.human_translation_status||"pending";
   $("trustCanonicalLink").href="/news/"+encodeURIComponent(id);
   const evidenceHost=$("trustEvidenceList");evidenceHost.replaceChildren();
   for(const row of trustEvidence){const box=trustNode("div",null,"trust-entry");box.append(trustNode("strong",row.publisher),trustNode("small",row.evidence_url));
@@ -555,5 +579,34 @@ $("trustReviewStory").addEventListener("click",()=>trustOperation("trustReviewSt
  if(!confirm(t("هذا إقرار بأنك راجعت الأدلة ومضمون النص بشريًا، وليس اعتمادًا على ثقة الذكاء الاصطناعي. متابعة؟","This records your human review of the evidence and text, not AI confidence. Continue?")))return false;
  const result=await db.rpc("review_article_trust",{p_article_id:id,p_status:$("trustStoryStatus").value,p_note:note,p_translation_status:translationStatus,p_translation_note:translationNote||null});if(result.error)throw result.error;
 }));
+let credibilityWriting=false;
+$("credibilityStatus").addEventListener("change",async event=>{
+ const select=event.currentTarget,id=activeTrustId,status=select.value,note=$("credibilityNote").value.trim();
+ if(!id||!CREDIBILITY_VALUES.includes(status)||credibilityWriting)return;
+ const previous=select.dataset.saved||"unconfirmed";
+ if(status===previous){return;}
+ credibilityWriting=true;select.disabled=true;
+ const state=$("credibilitySaveState");state.classList.remove("is-saved","is-error");
+ state.textContent=t("جارٍ حفظ الحالة…","Saving status…");
+ try{
+  const result=await db.rpc("set_article_credibility",{p_article_id:id,p_status:status,p_note:note||null});
+  if(result.error)throw result.error;
+  const at=new Date().toLocaleTimeString(currentLang()==="ar"?"ar-SA":"en-GB",{hour:"2-digit",minute:"2-digit"});
+  credibilitySaved={id,status,at};
+  if(activeArticle&&activeArticle.id===id)Object.assign(activeArticle,{verification:status,editorial_trust_status:result.data?.editorial_trust_status||status,trust_needs_review:false});
+  select.dataset.saved=status;
+  state.textContent=t("تم حفظ الحالة: ","Status saved: ")+credibilityLabel(status)+" · "+at;
+  state.classList.add("is-saved");
+  message(t("حُفظت حالة المصداقية بنجاح.","Credibility status saved successfully."));
+  await loadArticles();
+  if(activeTrustId===id&&$("articleId").value===id)await loadTrustEditor(id);
+ }catch(error){
+  select.value=previous;
+  state.textContent=t("تعذّر حفظ الحالة: ","Could not save the status: ")+error.message;
+  state.classList.add("is-error");
+ }finally{
+  credibilityWriting=false;select.disabled=false;
+ }
+});
 $("trustResetEvidence").addEventListener("click",resetEvidenceForm);
 $("trustResetClaim").addEventListener("click",resetClaimForm);
