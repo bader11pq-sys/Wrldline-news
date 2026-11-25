@@ -9,7 +9,17 @@
   const PROJECT_URL = "https://vmaxbnogmmfyrcucapnq.supabase.co";
   const PUBLIC_KEY = "sb_publishable_D3c88u75_LcEN460Y3Jcpw__EfqUnBx";
   const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-  const states = {confirmed: ["مؤكد بمراجعة بشرية", "Human-reviewed confirmation"], unconfirmed: ["غير مؤكد", "Unconfirmed"], disputed: ["متنازع عليه", "Disputed"]};
+  const states = {
+    confirmed: ["مؤكد بمراجعة بشرية", "Human-reviewed confirmation"],
+    unconfirmed: ["غير مؤكد", "Unconfirmed"],
+    multi: ["مؤكد من مصادر متعددة", "Confirmed by multiple sources"],
+    single: ["مصدر واحد", "Single source"],
+    field_confirmed: ["تأكيد ميداني", "Field-confirmed"],
+    official_confirmed: ["تأكيد رسمي", "Officially confirmed"],
+    disputed: ["متنازع عليه", "Disputed"],
+    corrected: ["مصحّح", "Corrected"],
+    retracted: ["مسحوب", "Retracted"]
+  };
   const evidenceTypes = {
     independent_report: ["تقرير صحفي", "Reporting"], official_statement: ["بيان رسمي — ادعاء الجهة وليس إثباتًا مستقلًا", "Official statement — the agency's account, not independent proof"],
     field_report: ["تقرير ميداني", "Field reporting"], primary_document: ["وثيقة أصلية", "Primary document"],

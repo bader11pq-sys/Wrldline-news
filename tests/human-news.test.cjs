@@ -86,14 +86,18 @@ test("the six priorities appear in order and link to existing content", () => {
   const homepage = read("index.html");
   assert.match(homepage, /الأخبار من أجل الإنسان/);
   assert.match(homepage, /class="wl-nav-link wl-nav-sections" href="sections\.html"/);
-  assert.doesNotMatch(sections, /<(script|iframe)\b/i);
+  assert.doesNotMatch(sections, /<iframe\b/i);
+  for (const [, src] of sections.matchAll(/<script\b[^>]*src="([^"]+)"/gi)) {
+    assert.ok(existsSync(resolve(root, src.split("?")[0])), `Missing script ${src}`);
+  }
   assert.match(sections, /href="index\.html\?country=SAU#newsSection"/);
   for (const id of ["justice-law", "investigations", "rights-knowledge"]) assert.ok(sections.includes(`id="${id}"`));
   for (const [, link] of sections.matchAll(/href="([^"#][^"]*)"/g)) {
     if (link.startsWith("https://")) continue;
     const path = link.split(/[?#]/)[0].replace(/^\/+/, "");
+    if (path === "news/") continue; // The Worker serves the archive route.
     if (path.startsWith("section/")) {
-      assert.match(path, /^section\/(?:politics|economy|world|rights|security|society|culture|health|tech|science)$/);
+      assert.match(path, /^section\/(?:politics|economy|world|rights|security|society|culture|health|tech|science|sports|environment)$/);
       continue; // The Worker serves these canonical routes rather than static files.
     }
     assert.ok(existsSync(resolve(root, path)), `Missing ${path}`);

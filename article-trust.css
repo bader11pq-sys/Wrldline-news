@@ -21,3 +21,18 @@
 .pn-update-body{margin:0;line-height:1.9;white-space:pre-line}
 .pn-update-src{display:inline-block;margin-top:6px;font-size:13px;color:var(--gold-strong,var(--gold));text-decoration:underline;text-underline-offset:4px}
 .pn-updates-jump{display:inline-block;margin:2px 0 10px;padding:4px 12px;border:1px solid var(--gold);border-radius:999px;font-size:12px;color:var(--gold-strong,var(--gold));text-decoration:none}
+.wl-trust-badge--multi,.wl-trust-badge--confirmed,.wl-trust-badge--field_confirmed,.wl-trust-badge--official_confirmed{border-color:#64ac92;color:#a9e2cc}
+.wl-trust-badge--single{border-color:#ad8b4e;color:#f0cb89}
+.wl-trust-badge--corrected{border-color:#ad8b4e;color:#f0cb89}
+.wl-trust-badge--retracted,.wl-trust-badge--disputed{border-color:#c76570;color:#ffb8c0}
+
+
+/* Fast credibility switch in the editorial dashboard */
+.credibility-quick{border:1px solid var(--line,#d8cfbd);border-radius:12px;padding:16px 18px;background:rgba(154,107,31,.05)}
+.credibility-quick legend{font-weight:700;padding-inline:6px}
+.credibility-help{margin:0 0 10px;font-size:13px}
+.credibility-save{margin:10px 0 0;font-size:13px;font-weight:600;color:var(--muted,#5d6570);min-height:1.4em}
+.credibility-save.is-saved{color:#1f7a55}
+.credibility-save.is-error{color:#b4232f}
+.credibility-advanced{margin-top:14px}
+.credibility-advanced summary{cursor:pointer;font-weight:600;padding:6px 0}

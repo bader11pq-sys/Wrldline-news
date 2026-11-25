@@ -2,13 +2,68 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url><loc>https://al-ghaib.us.ci/</loc></url>
   <url><loc>https://al-ghaib.us.ci/news/</loc></url>
-  <url><loc>https://al-ghaib.us.ci/section/politics</loc></url>
-  <url><loc>https://al-ghaib.us.ci/section/economy</loc></url>
-  <url><loc>https://al-ghaib.us.ci/section/world</loc></url>
-  <url><loc>https://al-ghaib.us.ci/section/rights</loc></url>
+  <url><loc>https://al-ghaib.us.ci/section/politics</loc>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://al-ghaib.us.ci/section/politics"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://al-ghaib.us.ci/section/politics?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://al-ghaib.us.ci/section/politics"/>
+  </url>
+  <url><loc>https://al-ghaib.us.ci/section/economy</loc>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://al-ghaib.us.ci/section/economy"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://al-ghaib.us.ci/section/economy?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://al-ghaib.us.ci/section/economy"/>
+  </url>
+  <url><loc>https://al-ghaib.us.ci/section/world</loc>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://al-ghaib.us.ci/section/world"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://al-ghaib.us.ci/section/world?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://al-ghaib.us.ci/section/world"/>
+  </url>
+  <url><loc>https://al-ghaib.us.ci/section/security</loc>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://al-ghaib.us.ci/section/security"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://al-ghaib.us.ci/section/security?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://al-ghaib.us.ci/section/security"/>
+  </url>
+  <url><loc>https://al-ghaib.us.ci/section/society</loc>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://al-ghaib.us.ci/section/society"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://al-ghaib.us.ci/section/society?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://al-ghaib.us.ci/section/society"/>
+  </url>
+  <url><loc>https://al-ghaib.us.ci/section/environment</loc>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://al-ghaib.us.ci/section/environment"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://al-ghaib.us.ci/section/environment?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://al-ghaib.us.ci/section/environment"/>
+  </url>
+  <url><loc>https://al-ghaib.us.ci/section/tech</loc>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://al-ghaib.us.ci/section/tech"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://al-ghaib.us.ci/section/tech?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://al-ghaib.us.ci/section/tech"/>
+  </url>
+  <url><loc>https://al-ghaib.us.ci/section/culture</loc>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://al-ghaib.us.ci/section/culture"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://al-ghaib.us.ci/section/culture?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://al-ghaib.us.ci/section/culture"/>
+  </url>
+  <url><loc>https://al-ghaib.us.ci/section/science</loc>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://al-ghaib.us.ci/section/science"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://al-ghaib.us.ci/section/science?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://al-ghaib.us.ci/section/science"/>
+  </url>
+  <url><loc>https://al-ghaib.us.ci/section/health</loc>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://al-ghaib.us.ci/section/health"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://al-ghaib.us.ci/section/health?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://al-ghaib.us.ci/section/health"/>
+  </url>
+  <url><loc>https://al-ghaib.us.ci/section/sports</loc>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://al-ghaib.us.ci/section/sports"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://al-ghaib.us.ci/section/sports?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://al-ghaib.us.ci/section/sports"/>
+  </url>
+  <url><loc>https://al-ghaib.us.ci/section/rights</loc>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://al-ghaib.us.ci/section/rights"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://al-ghaib.us.ci/section/rights?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://al-ghaib.us.ci/section/rights"/>
+  </url>
   <url><loc>https://al-ghaib.us.ci/originals/</loc></url>
   <url><loc>https://al-ghaib.us.ci/originals/saudi-ports-2025.html</loc></url>
-  <url><loc>https://al-ghaib.us.ci/topics.html</loc></url>
   <url><loc>https://al-ghaib.us.ci/for-you.html</loc></url>
   <url><loc>https://al-ghaib.us.ci/countries.html</loc></url>
   <url><loc>https://al-ghaib.us.ci/economy.html</loc></url>

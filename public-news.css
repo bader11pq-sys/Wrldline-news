@@ -147,3 +147,7 @@
 @media(prefers-contrast:more){
   .pn-badge,.pn-tabs a{border-color:var(--ink-2)}
 }
+
+/* Section hierarchy: a subsection says which main desk it belongs to. */
+.pn-section-parent{margin:.2rem 0 .6rem;font-size:.82rem;letter-spacing:.02em;color:var(--pn-muted,#5b6470)}
+.pn-section-parent a{color:inherit;text-underline-offset:3px}

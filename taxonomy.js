@@ -15,6 +15,7 @@
 
   const CATEGORY_DEFINITIONS = [
     { key: "politics", ar: "سياسة", en: "Politics" },
+    { key: "rights", ar: "الحقوق والحريات", en: "Rights & freedoms" },
     { key: "economy", ar: "اقتصاد", en: "Economy" },
     { key: "security", ar: "أمن ودفاع", en: "Security & Defence" },
     { key: "tech", ar: "تقنية", en: "Technology" },

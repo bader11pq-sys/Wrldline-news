@@ -23,12 +23,14 @@ test("homepage keeps the three lead desks, directory and analysis in primary nav
     "/section/politics",
     "rights.html",
     "/section/economy",
+    "/section/tech",
+    "/section/world",
     "shorts.html",
     "sections.html"
   ]);
 
   assert.deepEqual([...more.matchAll(/<a\b[^>]*href="([^"]+)"/g)].map(match => match[1]),
-    ["#breakingSection", "/news/", "office-edition.html", "shorts.html", "analysis.html", "topics.html"]);
+    ["#breakingSection", "/news/", "office-edition.html", "shorts.html", "daily-briefing.html", "history.html", "analysis.html", "sections.html#knowledge-sections"]);
   assert.match(html, /<span lang="ar">المزيد<\/span><span lang="en">More<\/span>/);
   assert.match(html, /href="analysis\.html#tools"/);
   assert.doesNotMatch(html, /class="wl-desk-grid"|id="promisesPreview"|id="explainersRail"/);

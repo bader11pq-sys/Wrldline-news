@@ -1,0 +1,84 @@
+/* WRLDLINE sections directory. Logical properties keep RTL and LTR identical. */
+:root{
+  --sec-bg:#f7f4ec;--sec-surface:#fffdf7;--sec-ink:#151a21;--sec-muted:#5d6570;
+  --sec-line:#d9d2c3;--sec-gold:#9a6b1f;--sec-deep:#101b2d;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body.sections-page{margin:0;background:var(--sec-bg);color:var(--sec-ink);font-family:"IBM Plex Sans Arabic","Segoe UI",system-ui,sans-serif;line-height:1.75}
+.sections-page [lang="en"]{display:none}
+html[lang="en"] .sections-page [lang="en"]{display:inline}
+html[lang="en"] .sections-page [lang="ar"]{display:none}
+.sec-wrap{width:min(1180px,calc(100% - 32px));margin-inline:auto}
+.sec-skip{position:absolute;inset-inline-start:-999px}
+.sec-skip:focus{inset-inline-start:12px;top:8px;background:#fff;padding:8px 12px;border-radius:8px;z-index:50}
+.sec-bar{position:sticky;top:0;z-index:20;background:rgba(247,244,236,.94);backdrop-filter:blur(10px);border-block-end:1px solid var(--sec-line)}
+.sec-bar-inner{display:flex;align-items:center;justify-content:space-between;gap:18px;min-height:64px;flex-wrap:wrap;padding-block:8px}
+.sec-wordmark{font-family:Manrope,system-ui,sans-serif;font-weight:800;letter-spacing:.08em;color:var(--sec-deep);text-decoration:none;font-size:17px}
+.sec-period{color:var(--sec-gold)}
+.sec-nav{display:flex;gap:6px;flex-wrap:wrap;font-size:13px}
+.sec-nav a{color:var(--sec-ink);text-decoration:none;padding:6px 10px;border-radius:999px}
+.sec-nav a:hover,.sec-nav a:focus-visible{background:#ece5d6}
+.sec-nav a[aria-current="page"]{background:var(--sec-deep);color:#fff}
+.sec-hero{padding-block:52px 28px;border-block-end:1px solid var(--sec-line)}
+.sec-kicker{margin:0 0 10px;color:var(--sec-gold);font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase}
+.sec-hero h1{margin:0;font-size:clamp(30px,5vw,54px);line-height:1.15;letter-spacing:-.02em}
+.sec-deck{max-width:62ch;margin:16px 0 0;color:var(--sec-muted);font-size:16px}
+.sec-jump{display:flex;gap:10px;flex-wrap:wrap;margin-top:24px}
+.sec-jump a{font-size:13px;color:var(--sec-deep);border:1px solid var(--sec-line);border-radius:999px;padding:8px 14px;text-decoration:none;background:var(--sec-surface)}
+.sec-jump a:hover{border-color:var(--sec-gold)}
+.sec-section-head{margin-block:44px 20px;display:grid;gap:6px}
+.sec-section-head h2{margin:0;font-size:clamp(22px,3vw,30px)}
+.sec-section-head p{margin:0;color:var(--sec-muted);max-width:75ch;font-size:14px}
+.sec-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.sec-card{background:var(--sec-surface);border:1px solid var(--sec-line);border-radius:16px;padding:22px;display:flex;flex-direction:column;gap:10px}
+.sec-card:target{outline:2px solid var(--sec-gold);outline-offset:3px}
+.sec-card-head{display:flex;align-items:baseline;gap:12px}
+.sec-num{font-family:Manrope,system-ui,sans-serif;font-size:12px;color:var(--sec-gold);font-weight:800;letter-spacing:.1em}
+.sec-title{color:var(--sec-deep);text-decoration:none;font-size:20px;font-weight:700}
+.sec-title:hover{text-decoration:underline;text-underline-offset:4px}
+.sec-intro{margin:0;color:var(--sec-muted);font-size:14px}
+.sec-sub{list-style:none;margin:6px 0 0;padding:0;display:grid;gap:10px;border-block-start:1px solid var(--sec-line);padding-block-start:14px}
+.sec-sub li{display:grid;gap:2px}
+.sec-sub a{color:var(--sec-deep);font-weight:600;text-decoration:none;font-size:14px}
+.sec-sub a:hover{color:var(--sec-gold)}
+.sec-note{margin:0;color:var(--sec-muted);font-size:12.5px;line-height:1.7}
+.sec-groups{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.sec-group{background:var(--sec-surface);border:1px solid var(--sec-line);border-radius:16px;padding:22px}
+.sec-group-head h3{margin:0;font-size:18px;color:var(--sec-deep)}
+.sec-group-head p{margin:4px 0 12px;color:var(--sec-muted);font-size:13px}
+.sec-links{list-style:none;margin:0;padding:0;display:grid;gap:9px}
+.sec-links li{display:grid;gap:1px}
+.sec-link{color:var(--sec-deep);font-weight:600;text-decoration:none;font-size:14px}
+.sec-link:hover{color:var(--sec-gold)}
+.sec-links li>span{color:var(--sec-muted);font-size:12.5px}
+.sec-note.sec-single{border-block-start:1px solid var(--sec-line);padding-block-start:12px}
+.sec-note[aria-labelledby]{margin-block:44px 60px;background:#efe8d9;border-radius:16px;padding:24px;font-size:14px;color:var(--sec-ink)}
+.sec-note[aria-labelledby] h2{margin:0 0 8px;font-size:20px}
+.sec-footer{border-block-start:1px solid var(--sec-line);padding-block:26px;color:var(--sec-muted);font-size:12.5px}
+.sec-footer .sec-wrap{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;align-items:center}
+.sec-footer nav{display:flex;gap:14px;flex-wrap:wrap}
+.sec-footer a{color:var(--sec-muted);text-decoration:none}
+.sec-footer a:hover{color:var(--sec-ink)}
+.language-switch{position:fixed;inset-inline-end:14px;inset-block-end:14px;z-index:40;border:1px solid var(--sec-line);background:var(--sec-deep);color:#fff;border-radius:999px;padding:9px 16px;font:inherit;font-size:13px;cursor:pointer}
+@media(max-width:760px){
+  .sec-grid,.sec-groups{grid-template-columns:1fr}
+  .sec-hero{padding-block:34px 22px}
+  .sec-card,.sec-group{padding:18px}
+  .sec-bar-inner{align-items:center}
+  .sec-nav{width:100%;flex-wrap:nowrap;overflow-x:auto;overscroll-behavior-x:contain;padding-block-end:4px;scrollbar-width:none}
+  .sec-nav::-webkit-scrollbar{display:none}
+  .sec-nav a{flex:0 0 auto;white-space:nowrap}
+}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+
+/* Coverage priorities: legacy reading paths kept on the directory page. */
+.sec-priorities{margin:48px 0;padding:26px;border:1px solid var(--sec-line,#ded5c4);border-radius:18px;background:rgba(154,107,31,.04)}
+.sec-priorities .hn-desks{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:18px;margin-top:18px}
+.sec-priorities .hn-desk{display:flex;gap:10px;font-size:15px;line-height:1.7}
+.sec-priorities .hn-desk>span{font-weight:700;color:#9a6b1f}
+.sec-priorities .hn-desk h2{font-size:18px;margin:0 0 4px}
+.sec-priorities .hn-desk nav{display:flex;flex-wrap:wrap;gap:6px 12px;margin-top:8px;font-size:13px}
+.sec-priorities .hn-desk nav a{text-decoration:underline;text-underline-offset:3px}
+.sec-priorities .hn-note{font-size:14px;margin-top:18px}
+@media(max-width:640px){.sec-priorities{padding:18px}}
