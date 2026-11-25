@@ -35,7 +35,7 @@
       mapNote: "الموقع من بيانات البنك الدولي والحدود من Natural Earth (مقياس 1:110م، قد تغيب الدول الصغيرة جداً).", capitalMarker: "العاصمة", mapFail: "تعذر تحميل الخريطة.", noMap: "لا تتوفر إحداثيات موثقة لهذه الدولة.",
       methodology: "المنهجية", methodText: "الأرقام تُجلب مباشرة من واجهة البنك الدولي عند فتح الصفحة وتُخزَّن في جلسة المتصفح ست ساعات. لا نقدّر ولا نملأ القيم الناقصة. المحتوى التاريخي تحريري ويُنسب إلى مراجعه.",
       newsSources: "مصادر الأخبار المعروضة", indicatorsUsed: "المؤشرات المستخدمة", sourcesAtlas: "مراجع الملف التاريخي", sourcesNone: "لا توجد مراجع تاريخية.",
-      economyLinks: "الأسواق والعملات", marketsLink: "افتح صفحة الأسواق"
+      economyLinks: "الأسواق والعملات", marketsLink: "افتح صفحة الأسواق", compareLink: "قارن بدول أخرى"
     },
     en: {
       dirTitle: "Countries and country profiles", dirLead: "Find any country to reach its profile: published news, history, and World Bank economic and social indicators.",
@@ -59,7 +59,7 @@
       mapNote: "Location from World Bank data; borders from Natural Earth (1:110m, very small states may be missing).", capitalMarker: "Capital", mapFail: "The map could not be loaded.", noMap: "No verified coordinates for this country.",
       methodology: "Methodology", methodText: "Figures are fetched directly from the World Bank API when the page opens and cached in your browser session for six hours. We never estimate or fill missing values. Historical content is editorial and credited to its references.",
       newsSources: "News sources shown", indicatorsUsed: "Indicators used", sourcesAtlas: "History profile references", sourcesNone: "No historical references.",
-      economyLinks: "Markets and currencies", marketsLink: "Open the markets page"
+      economyLinks: "Markets and currencies", marketsLink: "Open the markets page", compareLink: "Compare with other countries"
     }
   };
   const t = (k) => L[lang][k] ?? L.ar[k] ?? k;
@@ -212,7 +212,7 @@
     const env = { storage: fetchStorage };
     const year = new Date().getFullYear();
     const results = {};
-    const loadIndicators = () => Promise.all(Object.keys(WB.INDICATORS).map(async (id) => { results[id] = await WB.fetchIndicator({ countries: [iso3], indicator: id, from: 1990, to: year }, env); }));
+    const loadIndicators = () => Promise.all(Object.keys(WB.INDICATORS).filter((id) => WB.INDICATORS[id].group !== "dashboard").map(async (id) => { results[id] = await WB.fetchIndicator({ countries: [iso3], indicator: id, from: 1990, to: year }, env); }));
     const pMeta = WB.fetchCountry(iso3, env);
     const pInd = loadIndicators();
     const pNews = P.publicNews(600).then((rows) => (Array.isArray(rows) ? rows : []).map((r) => F.toArticle(r, lang)), () => null);
@@ -295,7 +295,7 @@
         body.push(...indicatorBlock(group === "society" ? "society" : group, ctx, results, () => { S[group].body.replaceChildren(h("div", { class: "wp-skeleton" })); loadIndicators().then(() => { paint(); renderSources(); }); }));
         if (group === "society") body.push(...indicatorBlock("geography", ctx, results, () => {}).filter((n) => !n.classList || !n.classList.contains("wp-notice")));
         if (group === "politics") body.push(h("p", { class: "wp-footnote", text: t("govNote") }));
-        if (group === "economy") body.push(h("p", { class: "wp-footnote" }, h("a", { href: "markets.html", text: t("marketsLink") })));
+        if (group === "economy") body.push(h("p", { class: "wp-footnote" }, h("a", { href: "markets.html", text: t("marketsLink") }), " · ", h("a", { href: "economy.html?c=" + encodeURIComponent(ctx.iso3), text: t("compareLink") })));
         const rel = relatedList(articles, THEME_CATS[group]); if (rel) body.push(rel);
         S[group].body.replaceChildren(...body);
       }
