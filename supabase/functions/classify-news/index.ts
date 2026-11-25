@@ -1,5 +1,7 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.119.0";
+import { CircuitBreaker, runWithFallback } from "../_shared/ai-router.mjs";
+import { attachUsage, createUsageRecorder, tokensFromPayload } from "../_shared/ai-usage.mjs";
 import { normalizeCategory, normalizeScope, TAXONOMY_VERSION } from "../_shared/taxonomy.ts";
 import { resolveSupabaseServiceKey, isSupabaseServiceRequest, serviceClientOptions } from "../_shared/service-key.mjs";
 import { acceptedTopic, anchoredEventCountry, eventType, EVENT_TYPES } from "../_shared/editorial-metadata.ts";
@@ -195,7 +197,7 @@ async function groqGenerate(prompt: string, apiKey: string, maxOutputTokens: num
   const payload = await response.json();
   const raw = payload.choices?.[0]?.message?.content;
   if (typeof raw !== "string" || !raw.trim()) throw new Error("Groq returned no structured output.");
-  return extractJsonObject(raw);
+  return attachUsage(extractJsonObject(raw), tokensFromPayload(payload));
 }
 
 
@@ -219,7 +221,7 @@ async function nvidiaGenerate(prompt: string, apiKey: string, maxOutputTokens: n
   const payload = await response.json();
   const raw = payload.choices?.[0]?.message?.content;
   if (typeof raw !== "string" || !raw.trim()) throw new Error("NVIDIA returned no structured output.");
-  return extractJsonObject(raw);
+  return attachUsage(extractJsonObject(raw), tokensFromPayload(payload));
 }
 
 async function bazaarlinkGenerate(prompt: string, apiKey: string, maxOutputTokens: number, model: string) {
@@ -236,7 +238,7 @@ async function bazaarlinkGenerate(prompt: string, apiKey: string, maxOutputToken
  if (!response.ok) throw new Error("BazaarLink API " + response.status + ": " + (await response.text()).slice(0, 300));
  const payload = await response.json(), raw = payload.choices?.[0]?.message?.content;
  if (typeof raw !== "string" || !raw.trim()) throw new Error("BazaarLink returned no structured output.");
- return extractJsonObject(raw);
+ return attachUsage(extractJsonObject(raw), tokensFromPayload(payload));
 }
 
 async function gonkaGenerate(prompt:string,apiKey:string,maxOutputTokens:number) {
@@ -253,14 +255,32 @@ async function gonkaGenerate(prompt:string,apiKey:string,maxOutputTokens:number)
  if(typeof raw!=="string"||!raw.trim())throw new Error("Gonka returned no content");
  return extractJsonObject(raw);
 }
-async function generateWithPrimaryModels(prompt: string, groqKey: string | null, nvidiaKey: string | null, bazaarlinkKey: string | null, bazaarlinkModel: string, maxOutputTokens: number, db: any, cooldowns: Set<string>) {
+const providerModels:Record<string,string>={groq:"openai/gpt-oss-20b",nvidia:"nvidia/nemotron-3.5-lightning-30b-a3b"};
+// One provider call through ai-router: error classification, persisted cooldown, secret-free usage record.
+// The surrounding task split (Groq editorial / NVIDIA risk / BazaarLink fallback) is unchanged.
+async function routedCall(name:string,task:string,model:string|null,run:()=>Promise<any>,db:any,cooldowns:Set<string>,usage:any){
+ const outcome=await runWithFallback({
+  providers:[{name,tasks:[task]}],task,request:null,maxRetries:0,
+  breaker:new CircuitBreaker({threshold:99,quotaCooldownMs:30*60*1000}),
+  validate:(v:any)=>!!v&&typeof v==="object",
+  call:async()=>{try{const data=await run();return {ok:true,json:data,usage:(data as any)?.__usage||null};}
+   catch(error){const m=String((error as any)?.message||error).match(/\b(?:API|HTTP)\s*(\d{3})\b/i);return {ok:false,status:m?Number(m[1]):0,error:String(error)};}},
+  cooldownFor:(_p:any,_k:string,text:string)=>{const s=providerCooldownSeconds(name,text);return s>0?s*1000:null;},
+  onCooldown:async(n:string,ms:number,_k:string,reason:string)=>{cooldowns.add(n);await db.from("ai_provider_cooldowns").upsert({provider:n,disabled_until:new Date(Date.now()+ms).toISOString(),reason,updated_at:new Date().toISOString()},{onConflict:"provider"});},
+  onUsage:(rec:any)=>usage?.record({...rec,model}),
+ });
+ if(outcome.ok){await recordProviderSuccess(db,cooldowns,name);return {data:outcome.result,error:""};}
+ const last:any=outcome.attempts[outcome.attempts.length-1]||{};
+ return {data:null,error:String(last.message||last.kind||"failed")};
+}
+async function generateWithPrimaryModels(prompt: string, groqKey: string | null, nvidiaKey: string | null, bazaarlinkKey: string | null, bazaarlinkModel: string, maxOutputTokens: number, db: any, cooldowns: Set<string>, usage: any = null) {
  const groqPrompt=prompt+"\n\nمهمتك الأساسية والحصرية في هذا الطلب: التصنيف التحريري. أعطِ الأولوية لدقة country_code وcountry_evidence وcountry_confidence وregion وevent_type وsummary وreader_impact وwatch_next وconfidence وtopic وsecondary_topics وgeographic_scope وtopic_confidence وtopic_reason. لا تخمّن عند غياب الدليل. أخرج كائن JSON بالمخطط الكامل المطلوب.";
  const nvidiaPrompt=prompt+"\\n\\nمهمتك الأساسية والحصرية في هذا الطلب: تحليل المخاطر والجغرافيا والحصرية. أعطِ الأولوية لدقة risk_level وrisk_score وlocation_name وlatitude وlongitude وis_exclusive وexclusive_type وexclusive_confidence وexclusive_reason. لا تخمّن عند غياب الدليل. أخرج كائن JSON بالمخطط الكامل المطلوب.";
  async function runPrimary(name:"groq"|"nvidia",key:string|null,taskPrompt:string,call:typeof groqGenerate) {
   if(!key)return {data:null,provider:null,error:name+" API key is not configured"};
   if(cooldowns.has(name))return {data:null,provider:null,error:name+" cooldown is active"};
-  try {const data=await call(taskPrompt,key,maxOutputTokens);await recordProviderSuccess(db,cooldowns,name);return {data,provider:name,error:""};}
-  catch(error){await recordProviderFailure(db,cooldowns,name,error);return {data:null,provider:null,error:name+": "+String(error).slice(0,260)};}
+  const r=await routedCall(name,"classify",providerModels[name]||null,()=>call(taskPrompt,key,maxOutputTokens),db,cooldowns,usage);
+  return r.data?{data:r.data,provider:name,error:""}:{data:null,provider:null,error:name+": "+String(r.error).slice(0,260)};
  }
  const results:any[]=await Promise.all([runPrimary("groq",groqKey,groqPrompt,groqGenerate),runPrimary("nvidia",nvidiaKey,nvidiaPrompt,nvidiaGenerate)]);
  const missing=results.map((value,index)=>value.data?-1:index).filter(index=>index>=0);
@@ -268,8 +288,9 @@ async function generateWithPrimaryModels(prompt: string, groqKey: string | null,
   const primaryErrors=missing.map(index=>results[index].error).join(" | ");
   if(!bazaarlinkKey||cooldowns.has("bazaarlink"))throw Object.assign(new Error("Primary AI analysis is incomplete. "+primaryErrors+"; BazaarLink "+(!bazaarlinkKey?"API key is not configured":"cooldown is active")),{deferred:true,retryAfter:300});
   const fallbackPrompt=missing.length===2?prompt+"\\n\\nنفّذ المهمتين معاً في طلب واحد: التصنيف التحريري الكامل، ثم تحليل المخاطر والجغرافيا والحصرية. أعد كل الحقول المطلوبة في كائن JSON واحد، ولا تخمّن أي قيمة لا يدعمها النص.":missing[0]===0?groqPrompt:nvidiaPrompt;
-  try{const data=await bazaarlinkGenerate(fallbackPrompt,bazaarlinkKey,maxOutputTokens,bazaarlinkModel);await recordProviderSuccess(db,cooldowns,"bazaarlink");for(const index of missing)results[index]={data,provider:"bazaarlink",error:""};}
-  catch(error){await recordProviderFailure(db,cooldowns,"bazaarlink",error);const quota=/429|quota|resource_exhausted|rate.?limit/i.test(String(error));throw Object.assign(new Error("BazaarLink fallback failed after primary provider failure. "+primaryErrors+" | "+String(error).slice(0,300)),{deferred:true,quotaExceeded:quota,retryAfter:quota?60:300});}
+  const fb=await routedCall("bazaarlink","classify",bazaarlinkModel,()=>bazaarlinkGenerate(fallbackPrompt,bazaarlinkKey,maxOutputTokens,bazaarlinkModel),db,cooldowns,usage);
+  if(!fb.data){const quota=/429|quota|resource_exhausted|rate.?limit/i.test(String(fb.error));throw Object.assign(new Error("BazaarLink fallback failed after primary provider failure. "+primaryErrors+" | "+String(fb.error).slice(0,300)),{deferred:true,quotaExceeded:quota,retryAfter:quota?60:300});}
+  for(const index of missing)results[index]={data:fb.data,provider:"bazaarlink",error:""};
  }
  const editorial=results[0].data,intelligence=results[1].data;
  const merged={...editorial,risk_level:intelligence.risk_level,risk_score:intelligence.risk_score,location_name:intelligence.location_name,latitude:intelligence.latitude,longitude:intelligence.longitude,is_exclusive:intelligence.is_exclusive,exclusive_type:intelligence.exclusive_type,exclusive_confidence:intelligence.exclusive_confidence,exclusive_reason:intelligence.exclusive_reason};
@@ -419,7 +440,9 @@ Deno.serve(async (req: Request) => {
         "نص الخبر المستخرج من المصدر (قد يكون أطول من مقتطف RSS): " + articleBody,
         "لا تعتمد على أي تصنيف أو دولة محفوظة مسبقاً؛ استنتجها من نص الخبر والعنوان فقط."
       ].join("\n");
-      const generated = await generateWithPrimaryModels(prompt + "\n\nأعد كائن JSON فقط بالمفاتيح: "+schema.required.join(", ")+". country_code وcountry_evidence وregion وlocation_name وlatitude وlongitude تقبل null.", groqKey, nvidiaKey, bazaarlinkKey, bazaarlinkModel, 1500, db, providerCooldowns);
+      const usage = createUsageRecorder(db, { functionName: "classify-news", task: "classify", articleId: article.id });
+      let generated: any;
+      try { generated = await generateWithPrimaryModels(prompt + "\n\nأعد كائن JSON فقط بالمفاتيح: "+schema.required.join(", ")+". country_code وcountry_evidence وregion وlocation_name وlatitude وlongitude تقبل null.", groqKey, nvidiaKey, bazaarlinkKey, bazaarlinkModel, 1500, db, providerCooldowns, usage); } finally { await usage.flush(); }
       const parsed = generated.data;
       const confidence = clamp(Number(parsed.confidence) || 0, 0, 1);
       const riskScore = clamp(Math.round(Number(parsed.risk_score) || 0), 0, 100);
