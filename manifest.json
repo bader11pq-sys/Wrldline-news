@@ -1,7 +1,7 @@
 {
-  "name": "WRLDLINE NEWS | ورلدلاين نيوز",
+  "name": "WRLDLINE NEWS | الخبر. سياقه. أثره عليك.",
   "short_name": "WRLDLINE",
-  "description": "منصة إخبارية رقمية بتغطية عالمية متعددة المصادر.",
+  "description": "تغطية إخبارية مستقلة تضع أخبار العالم في سياقها، وتفصل بين ما نعرفه وما لا يزال قيد التطور.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
