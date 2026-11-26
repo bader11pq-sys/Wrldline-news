@@ -71,13 +71,13 @@ const html = `<!doctype html>
   <meta property="og:title" content="أقسام WRLDLINE News">
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
   <title>أقسام الصحيفة | WRLDLINE News</title>
-  <link rel="stylesheet" href="sections.css?v=20261126-2">
+  <link rel="stylesheet" href="sections.css?v=20261126-3">
   <link rel="stylesheet" href="/quality.css?v=quality-1">
 </head>
 <body class="sections-page">
   <a class="sec-skip" href="#sectionsMain">${bi("تجاوز إلى المحتوى", "Skip to content")}</a>
   <header class="sec-bar"><div class="sec-wrap sec-bar-inner">
-    <a class="sec-wordmark" href="index.html"><span lang="en" dir="ltr">WRLDLINE <span class="sec-period">News</span></span></a>
+    <a class="sec-wordmark" href="index.html" aria-label="WRLDLINE News"><span lang="en" dir="ltr">WRLDLINE <span class="sec-period">News</span></span></a>
     <nav class="sec-nav" aria-label="Site">${nav}</nav>
   </div></header>
   <main class="sec-wrap" id="sectionsMain" tabindex="-1">

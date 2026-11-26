@@ -60,16 +60,23 @@ async def main():
             await expect(page.locator(".rf-intro h1")).to_have_text("News for people.", use_inner_text=True)
 
             if width == 375:
-                await expect(page.locator('.wlm-chips a[href="rights.html"]')).to_have_text("Rights & freedoms")
-                await expect(page.locator('.wlm-chips a[href="/section/politics"]')).to_have_text("Politics")
-                await expect(page.locator('.wlm-chips a[href="sections.html"]')).to_have_count(1)
-                await page.locator(".wlm-tab[aria-controls=wlmSections]").click()
-                await expect(page.locator('#wlmSections a[href="/section/rights?lang=en"]')).to_be_visible()
-                directory = page.locator('#wlmSections a[href="/sections.html"]')
+                # The chips mirror the registry primary bar and the Sections tab opens
+                # the shared registry drawer, which is the only all-sections sheet.
+                chips = page.locator(".wlm-chips")
+                await expect(chips.locator('a[href="/section/rights"]')).to_have_text("Rights & Freedoms")
+                await expect(chips.locator('a[href="/section/politics"]')).to_have_text("Politics & World")
+                await expect(chips.locator('a[href="sections.html"]')).to_have_count(1)
+                sections_tab = page.locator('.wlm-tab[aria-controls="siteDrawer"]')
+                await sections_tab.click()
+                drawer = page.locator("#siteDrawer")
+                await expect(drawer.locator('summary', has_text="Rights & Freedoms")).to_be_visible()
+                await drawer.locator('summary', has_text="Rights & Freedoms").click()
+                await expect(drawer.locator('a[href="/section/rights"]').first).to_be_visible()
+                directory = drawer.locator('a[href="sections.html"]')
                 await expect(directory).to_be_visible()
-                await expect(directory.locator("strong")).to_have_text("Six editorial priorities")
+                await expect(directory.locator('span[lang="en"]')).to_have_text("Open the full sections directory")
                 await page.keyboard.press("Escape")
-                await expect(page.locator(".wlm-tab[aria-controls=wlmSections]")).to_be_focused()
+                await expect(sections_tab).to_be_focused()
 
             extras_summary = page.locator("#homeExtras > summary")
             async def toggle_extras():
@@ -129,11 +136,12 @@ async def main():
         await expect(page.locator("#qatar-wages details[open] .rd-sources a").first).to_be_visible()
         assert await page.evaluate("document.documentElement.scrollWidth <= innerWidth")
         await page.locator(".rd-nav a[href='sections.html']").click()
-        await expect(page.locator(".hn-desk")).to_have_count(6)
-        for slug in ["politics", "economy", "world", "rights", "society", "health", "culture", "tech", "science"]:
-            await expect(page.locator(f'.hn-desk a[href="/section/{slug}"]')).to_be_visible()
+        # The generated directory shows the six registry desks and their subsections.
+        await expect(page.locator(".sec-card")).to_have_count(6)
+        for slug in ["politics", "economy", "rights", "tech", "society", "environment"]:
+            await expect(page.locator(f'.sec-card a[href="/section/{slug}"]')).to_be_visible()
         assert await page.evaluate("document.documentElement.scrollWidth <= innerWidth")
-        await page.locator(".hn-desk a[href='rights-cases/index.html']").click()
+        await page.locator(".sec-card a[href='rights-cases/index.html']").click()
         await expect(page.locator("#files .hn-card")).to_have_count(6)
         await expect(page.locator("#labels .hn-badge")).to_have_count(6)
         await page.locator(".hn-card a[href='qatar-wages.html']").click()
