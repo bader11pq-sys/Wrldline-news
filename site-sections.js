@@ -256,6 +256,7 @@
    * repository to be either in the registry or in this list, so no page can be
    * silently orphaned. */
   const UNLISTED_PAGES = [
+    { path: "batch-import.html", reason: "Private noindex admin-only manual batch-import utility; intentionally excluded from public navigation and sitemap." },
     { path: "topics.html", reason: "Permanent redirect to sections.html; the old Topics directory is consolidated." },
     { path: "country.html", reason: "Country profile template; readers reach it from countries.html?iso=…, a bare link would show an empty profile." },
     { path: "history-dossier.html", reason: "Historical dossier template rendered from history-dossier.html?id=…; reached from the encyclopedia." },
