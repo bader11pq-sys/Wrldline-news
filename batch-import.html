@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow"><meta name="referrer" content="strict-origin-when-cross-origin">
+<title>استيراد دفعات تحريرية | WRLDLINE NEWS</title>
+<script src="/vendor/supabase-2.119.0.js" onerror="this.onerror=null;this.src='https://unpkg.com/@supabase/supabase-js@2.119.0/dist/umd/supabase.js';"></script>
+<style>
+:root{color-scheme:dark;font-family:system-ui,sans-serif;background:#0b1421;color:#f2f5f9;--panel:#142238;--line:#2b3d55;--gold:#d5ad69;--muted:#a9b6c7}*{box-sizing:border-box}body{margin:0;padding:16px;line-height:1.7}.wrap{max-width:1050px;margin:auto}.panel{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px;margin:14px 0}h1,h2{margin:0 0 10px}p,small{color:var(--muted)}a{color:var(--gold)}input,textarea,button{font:inherit}input[type=file]{width:100%;padding:14px;background:#0d1929;border:1px solid var(--line);border-radius:9px;color:white}.btn{border:0;border-radius:9px;padding:11px 18px;background:var(--gold);color:#172234;font-weight:700;cursor:pointer}.btn:disabled{opacity:.5;cursor:not-allowed}.secondary{background:#263b56;color:white}.status{padding:12px;background:#0d1929;border-radius:9px;white-space:pre-wrap;overflow-wrap:anywhere}.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.metric{background:#0d1929;padding:12px;border-radius:9px}.metric strong{display:block;font-size:24px}.story{padding:12px 0;border-bottom:1px solid var(--line)}.story strong{display:block}.ok{color:#65d6a2}.warn{color:#e7b65c}.bad{color:#ff8888}code{overflow-wrap:anywhere}@media(max-width:650px){body{padding:9px}.panel{padding:13px}.grid{grid-template-columns:1fr 1fr}}
+</style></head>
+<body><main class="wrap">
+<header class="panel"><h1>استيراد ونشر دفعات WRLDLINE</h1><p>أداة يدوية تعمل بجلسة Supabase المحفوظة في هذا المتصفح. لا تطلب كلمة مرور أو مفتاحاً سرياً، ولا تستدعي أي جامع أخبار أو مجدول.</p><p><a href="/admin.html">العودة إلى لوحة المدير</a> · <a href="/news/">عرض الأخبار المنشورة</a></p><div id="auth" class="status">جارٍ التحقق من جلسة الدخول…</div></header>
+<section class="panel"><h2>1. ملف الدفعة</h2><p>ارفع ملف JSON يحتوي على مصفوفة من المواد. كل مادة تشمل نصاً عربياً وإنجليزياً، رابط المصدر، الدولة، القسم، والصورة مع بيانات الإسناد والترخيص.</p><input id="file" type="file" accept=".json,application/json"><div class="grid" id="metrics" hidden><div class="metric"><small>المواد</small><strong id="count">0</strong></div><div class="metric"><small>نسخ لغوية</small><strong id="langs">0</strong></div><div class="metric"><small>مواد مكتملة البيانات</small><strong id="valid">0</strong></div></div><div id="preview" class="status">لم يتم اختيار ملف بعد.</div></section>
+<section class="panel"><h2>2. طريقة الإدخال</h2><label><input id="publish" type="checkbox" checked> محاولة نشر الأصل العربي فور الإدخال (تظل بوابة النشر التحريرية في قاعدة البيانات هي صاحبة القرار).</label><p>النسخة الإنجليزية تُضاف إلى قائمة مراجعة الترجمة البشرية، ولا تُعرض كنسخة معتمدة قبل مراجعتها واعتمادها من داخل لوحة التحرير. لا يتم تجاوز بوابة التحقق الجغرافي أو شروط العرض العام.</p><button id="import" class="btn" disabled>استيراد الدفعة</button><div id="result" class="status" role="status" aria-live="polite">بانتظار ملف صالح.</div></section>
+<section class="panel"><h2>صيغة المادة المطلوبة</h2><pre style="white-space:pre-wrap;direction:ltr;text-align:left;background:#0d1929;padding:12px;border-radius:9px;overflow:auto"><code>[
+  {
+    "title_ar": "عنوان عربي",
+    "body_ar": "النص العربي الكامل",
+    "title_en": "English headline",
+    "body_en": "Full English version",
+    "category": "politics",
+    "content_type": "news",
+    "event_country": "Saudi Arabia",
+    "source_country": "United Kingdom",
+    "source_name": "Reuters",
+    "source_url": "https://www.reuters.com/...",
+    "published_at": "2026-11-26T08:00:00Z",
+    "image_url": "https://...",
+    "image_credit": "Photographer / publisher",
+    "image_license": "CC BY 4.0",
+    "image_source_url": "https://...",
+    "latitude": 24.7136,
+    "longitude": 46.6753,
+    "topics": ["diplomacy", "Gulf"]
+  }
+]</code></pre><p>الصور يجب أن تكون قابلة لإعادة الاستخدام وفق الترخيص المذكور. لا يكفي العثور عليها عبر Google Images؛ يجب أن يكون رابط الصورة ومصدرها وترخيصها موثقاً.</p></section>
+</main>
+<script src="/batch-import.js?v=20261126-1" defer></script></body></html>
