@@ -29,9 +29,9 @@ begin
       end if;
 
       select count(*), count(distinct lower(regexp_replace(
-        coalesce(source_item ->> 'url', ''),
-        '^https?://(www\\.)?([^/:?#]+).*$',
-        '\\2',
+        (regexp_match(coalesce(source_item ->> 'url', ''), '^https?://([^/:?#]+)', 'i'))[1],
+        '^www[.]',
+        '',
         'i'
       )))
       into v_source_count, v_distinct_publishers
